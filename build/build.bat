@@ -1,0 +1,5 @@
+@ECHO OFF
+CALL compile.bat
+IF %ERRORLEVEL% NEQ 0 EXIT /B
+CALL link.bat
+IF %ERRORLEVEL% NEQ 0 EXIT /B
