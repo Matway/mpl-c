@@ -269,11 +269,11 @@ createDefinition: [
     success [0][1] if
   ] call
 
-  #HAS_LOGS [
-  #  cm: memoryCounterMalloc copy;
-  #  cf: memoryCounterFree copy;
-  #  cx: memoryXor copy;
-  #  cu: memoryUsed copy;
-  #  (LF "mallocs: " cm "; frees: " cf "; xors: " cx "; used: " cu LF) assembleString print
-  #] when
+  debugMemory [
+    cm: memoryCounterMalloc copy;
+    cf: memoryCounterFree copy;
+    cx: memoryXor copy;
+    cu: memoryUsed copy;
+    (LF "mallocs: " cm "; frees: " cf "; xors: " cx "; used: " cu LF) printList
+  ] when
 ] "main" exportFunction

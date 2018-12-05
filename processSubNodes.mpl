@@ -1391,7 +1391,13 @@ processIf: [
             i: 0 dynamic;
             [
               i outputs.dataSize < [
-                i outputs.at pushOutput
+                outputRef: i outputs.at;
+                outputRef getVar.data.getTag VarStruct = [
+                  outputRef markAsAbleToDie
+                  outputRef @currentNode.@candidatesToDie.pushBack
+                ] when
+
+                outputRef pushOutput
                 i 1 + @i set TRUE
               ] &&
             ] loop
