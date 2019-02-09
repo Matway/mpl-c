@@ -7,10 +7,6 @@
 "processorImpl" useModule
 "file" useModule
 
-
-# self command: ../fast/astNodeType.fast ../fast/astOptimizers.fast ../fast/builtinImpl.fast ../fast/builtins.fast ../fast/codeNode.fast ../fast/debugWriter.fast ../fast/irWriter.fast ../fast/main.fast ../fast/parser.fast ../fast/pathUtils.fast ../fast/printAST.fast ../fast/processor.fast ../fast/processorImpl.fast ../fast/processSubNodes.fast ../fast/staticCall.fast ../fast/variable.fast ../sl/array.fast ../sl/control.fast ../sl/file.fast ../sl/hashTable.fast ../sl/memory.fast ../sl/owner.fast ../sl/string.fast ../sl/variant.fast
-# sl args: ../sl/array.fast ../sl/control.fast ../sl/file.fast ../sl/hashTable.fast ../sl/memory.fast ../sl/owner.fast ../sl/string.fast ../sl/variant.fast
-
 printInfo: [
   "USAGE: mplc.exe [options] <inputs>" print LF print
   "OPTIONS:" print LF print
