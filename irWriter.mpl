@@ -21,7 +21,6 @@ createDerefToRegister: [
 
 createAllocIR: [
   refToVar:;
-
   var: refToVar getVar;
 
   currentNode.parent 0 = [

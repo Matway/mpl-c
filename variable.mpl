@@ -928,7 +928,6 @@ makeVariableType: [
             ("[" branch.fields.dataSize " x " 0 branch.fields.at.refToVar getIrType "]") assembleString @resultIR.cat
           ] [
             "{" @resultIR.cat
-
             firstGood: TRUE;
             i: 0 dynamic;
             [
@@ -946,7 +945,6 @@ makeVariableType: [
             ] loop
             "}" @resultIR.cat
           ] if
-          #@resultIR makeTypeAlias
 
           "{" @resultDBG.cat
           i: 0 dynamic;
