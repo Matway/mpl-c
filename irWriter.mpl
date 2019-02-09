@@ -36,6 +36,15 @@ createAllocIR: [
   refToVar copy
 ] func;
 
+createStaticInitIR: [
+  refToVar:;
+  var: refToVar getVar;
+  [currentNode.parent 0 =] "Can be used only with global vars!" assert
+  (refToVar getIrName " = local_unnamed_addr global " refToVar getStaticStructIR) assembleString @processor.@prolog.pushBack
+  processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
+  refToVar copy
+] func;
+
 createVarImportIR: [
   refToVar:;
 

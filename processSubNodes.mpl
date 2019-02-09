@@ -1058,7 +1058,20 @@ processCallByIndexArray: [
   ] when
 
   compilable [
-    newNodeIndex processCallByNode
+    newNode: newNodeIndex @processor.@nodes.at.get;
+    currentNode.parent 0 = [nodeCase NodeCaseList = nodeCase NodeCaseObject = or] && [newNode.matchingInfo.inputs.getSize 0 =] && [newNode.outputs.getSize 1 =] && [
+      realCapturesCount: 0;
+      newNode.matchingInfo.captures [.value.refToVar isVirtual not [realCapturesCount 1 + @realCapturesCount set] when] each
+      realCapturesCount 0 =
+    ] && [
+      0 newNode.outputs.at.refToVar isStaticData
+    ] && [
+      result: 0 newNode.outputs.at.refToVar copyVarFromChild;
+      TRUE @newNode.@deleted set
+      result createStaticInitIR push
+    ] [
+      newNodeIndex processCallByNode
+    ] if
   ] when
 ] func;
 

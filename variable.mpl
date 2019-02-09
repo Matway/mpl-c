@@ -114,6 +114,7 @@ Variable: [{
   irNameId: -1 dynamic;
   mplTypeId: -1 dynamic;
   irTypeId: -1 dynamic;
+  dbgTypeId: -1 dynamic;
   storageStaticness: Static;
   staticness: Static;
   global: FALSE dynamic;
@@ -198,6 +199,20 @@ getMplName: [getVar.mplNameId getNameById] func;
 getIrName: [getVar.irNameId getNameById] func;
 getMplType: [getVar.mplTypeId getNameById] func;
 getIrType: [getVar.irTypeId getNameById] func;
+getDbgType: [getVar.dbgTypeId getNameById] func;
+
+getDebugType: [
+  splitted: getDbgType.split;
+  splitted.success [
+    splitted.chars.getSize 256 > [
+      256 @splitted.@chars.shrink
+      "..." makeStringView @splitted.@chars.pushBack
+    ] when
+  ] [
+    ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString compilerError
+  ] if
+  splitted.chars assembleString
+] func;
 
 deepPrintVar: [
   refToVar:;
@@ -337,6 +352,42 @@ markAsAbleToDie: [
 
 isSingle: [
   isStruct not
+] func;
+
+isStaticData: [
+  refToVar:;
+  var: refToVar getVar;
+  refToVar isVirtual not [var.data.getTag VarStruct =] && [
+    unfinished: RefToVar Array;
+    refToVar @unfinished.pushBack
+    result: TRUE dynamic;
+    [
+      result [unfinished.getSize 0 >] && [
+        current: unfinished.last copy;
+        @unfinished.popBack
+        current isVirtual [
+        ] [
+          current isPlain [
+            current staticnessOfVar Weak < [
+              FALSE dynamic @result set
+            ] when
+          ] [
+            curVar: current getVar;
+            curVar.data.getTag VarStruct = [
+              struct: VarStruct curVar.data.get.get;
+              struct.fields [.value.refToVar @unfinished.pushBack] each
+            ] [
+              FALSE dynamic @result set
+            ] if
+          ] if
+        ] if
+        TRUE
+      ] &&
+    ] loop
+    result
+  ] [
+    FALSE
+  ] if
 ] func;
 
 getSingleDataStorageSize: [
@@ -807,10 +858,12 @@ makeVariableType: [
 
   resultIR: String;
   resultMPL: String;
+  resultDBG: String;
 
   refToVar isNonrecursiveType [
     refToVar getNonrecursiveDataIRType @resultIR set
     refToVar getNonrecursiveDataMPLType @resultMPL set
+    refToVar getNonrecursiveDataMPLType @resultDBG set
   ] [
     var.data.getTag VarRef = [
       branch: VarRef var.data.get;
@@ -818,8 +871,10 @@ makeVariableType: [
 
       branch getIrType @resultIR.cat
       "*"  @resultIR.cat
+      "*"  @resultDBG.cat
 
       branch getMplType @resultMPL.cat
+      branch getDbgType @resultDBG.cat
       branch.mutable [
         "R" @resultMPL.cat
       ] [
@@ -892,6 +947,21 @@ makeVariableType: [
             "}" @resultIR.cat
           ] if
           #@resultIR makeTypeAlias
+
+          "{" @resultDBG.cat
+          i: 0 dynamic;
+          [
+            i branch.fields.dataSize < [
+              curField: i branch.fields.at;
+              curField.refToVar isVirtual not [
+                (
+                  curField.nameInfo processor.nameInfos.at.name ":"
+                  curField.refToVar getDbgType ";") assembleString @resultDBG.cat
+              ] when
+              i 1 + @i set TRUE
+            ] &&
+          ] loop
+          "}" @resultDBG.cat
         ] if
 
         "{" @resultMPL.cat
@@ -927,6 +997,7 @@ makeVariableType: [
     @resultIR makeStringId @var.@irTypeId set
   ] if
 
+  @resultDBG makeStringId @var.@dbgTypeId set
   @resultMPL makeStringId @var.@mplTypeId set
   processor.options.debug [refToVar makeDbgTypeId] when
 ] func;
@@ -1016,6 +1087,64 @@ zeroValue: [
       ] if
     ] if
   ] if
+] func;
+
+getStaticStructIR: [
+  refToVar:;
+  result: String;
+  unfinishedVars: RefToVar Array;
+  unfinishedTerminators: StringView Array;
+  refToVar @unfinishedVars.pushBack
+  ", " makeStringView @unfinishedTerminators.pushBack
+  [
+    unfinishedVars.getSize 0 > [
+      current: unfinishedVars.last copy;
+      @unfinishedVars.popBack
+
+      current isVirtual [
+        [FALSE] "Virtual field cannot be processed in static array constant!" assert
+      ] [
+        current isPlain [
+          (current getIrType " " current getPlainConstantIR) @result.catMany
+          [
+            currentTerminator: unfinishedTerminators.last;
+            currentTerminator @result.cat
+            currentTerminator ", " = not
+            @unfinishedTerminators.popBack
+          ] loop
+        ] [
+          curVar: current getVar;
+          curVar.data.getTag VarStruct = [
+            (current getIrType " ") @result.catMany
+            struct: VarStruct curVar.data.get.get;
+            struct.homogeneous ["[" makeStringView] ["{" makeStringView] if @result.cat
+            first: TRUE dynamic;
+            struct.fields [
+              index: .index copy;
+              current: struct.fields.getSize 1 - index - struct.fields.at.refToVar;
+              current isVirtual not [
+                current @unfinishedVars.pushBack
+                first [
+                  struct.homogeneous ["]" makeStringView] ["}" makeStringView] if @unfinishedTerminators.pushBack
+                  FALSE dynamic @first set
+                ] [
+                  ", " makeStringView @unfinishedTerminators.pushBack
+                ] if
+              ] when
+            ] each
+          ] [
+            [FALSE] "Unknown type in static struct!" assert
+          ] if
+        ] if
+      ] if
+
+      TRUE
+    ] &&
+  ] loop
+
+  result.getTextSize 2 - @result.@chars.shrink
+  @result.makeZ
+  result
 ] func;
 
 getPlainConstantIR: [

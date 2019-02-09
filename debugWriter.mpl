@@ -141,7 +141,7 @@ addMemberInfo: [
   name: field.nameInfo processor.nameInfos.at.name makeStringView;
 
   name "" = [
-    ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"[" fieldNumber "]\", scope: !" currentNode.funcDbgIndex
+    ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"f" fieldNumber "\", scope: !" currentNode.funcDbgIndex
       ", file: !" currentNode.position.filename processor.debugInfo.fileNameIds.at
       ", line: " currentNode.position.line ", baseType: !" fr.value ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
   ] [
@@ -212,7 +212,7 @@ getTypeDebugDeclaration: [
             processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
             ("!" index " = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !" currentNode.position.filename processor.debugInfo.fileNameIds.at
-              ", name: \"" refToVar getMplType "\", line: " currentNode.position.line ", size: " refToVar getStorageSize 0ix cast 0 cast 8 * ", elements: !" index 1 -
+              ", name: \"" refToVar getDebugType "\", line: " currentNode.position.line ", size: " refToVar getStorageSize 0ix cast 0 cast 8 * ", elements: !" index 1 -
               ")") assembleString @processor.@debugInfo.@strings.pushBack
             index currentNode.funcDbgIndex @processor.@debugInfo.@locationIds.insert
             index

@@ -694,6 +694,7 @@ copyOneVarWith: [
   dstVar: dst getVar;
   srcVar.irTypeId  @dstVar.@irTypeId set
   srcVar.mplTypeId @dstVar.@mplTypeId set
+  srcVar.dbgTypeId @dstVar.@dbgTypeId set
 
   dst
 ] func;
