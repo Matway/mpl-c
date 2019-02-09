@@ -2722,7 +2722,7 @@ finalizeCodeNode: [
             ] if;
 
             needToCopy [current.refToVar argAbleToCopy not] && [isRealFunction copy] && [
-              "getting huge agrument by copy; fast's export function can not have this signature" compilerError
+              "getting huge agrument by copy; mpl's export function can not have this signature" compilerError
             ] when
 
             needToCopy [
@@ -2769,7 +2769,7 @@ finalizeCodeNode: [
         isDeclaration [output isTinyArg [hasRet not] &&] ||;
 
         passAsRet not [isRealFunction copy] && [
-          "returning two arguments or non-primitive object; fast's function can not have this signature" compilerError
+          "returning two arguments or non-primitive object; mpl's function can not have this signature" compilerError
         ] when
 
         compilable [

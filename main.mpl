@@ -23,7 +23,7 @@ printInfo: [
   "  -linker_option      Add linker option for LLVM" print LF print
   "  -logs               Value of \"HAS_LOGS\" constant in code turn to TRUE" print LF print
   "  -ndebug             Disable debug info; value of \"DEBUG\" constant in code turn to FALSE" print LF print
-  "  -o <file>           Write output to <file>, default output file is \"fast.ll\"" print LF print
+  "  -o <file>           Write output to <file>, default output file is \"mpl.ll\"" print LF print
   "  -statlit            Number literals are static constants, which are used in analysis; default mode is static literals" print LF print
   "  -verbose_ir         Print information about current token in IR" print LF print
   "  -version            Print compiler version while compiling" print LF print
@@ -84,7 +84,7 @@ createDefinition: [
     success: TRUE dynamic;
     fileNames: String Array;
     linkerOptions: String Array;
-    outputFileName: "fast.ll" toString;
+    outputFileName: "mpl.ll" toString;
 
     options: ProcessorOptions;
     optOutputFileName: FALSE dynamic;
@@ -186,16 +186,16 @@ createDefinition: [
       fileNames.getSize 1 = [
         hasVersion [
           DEBUG [
-            ("MPL Fast compiler version " COMPILER_SOURCE_VERSION " debug" LF) printList
+            ("MPL compiler version " COMPILER_SOURCE_VERSION " debug" LF) printList
           ] [
-            ("MPL Fast compiler version " COMPILER_SOURCE_VERSION LF) printList
+            ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
           ] if
         ] [
           "No input files" print LF print
         ] if
       ] [
         hasVersion [
-          ("MPL Fast compiler version " COMPILER_SOURCE_VERSION LF) printList
+          ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
           "Input files ignored" print LF print
         ] [
           fileNames [

@@ -406,7 +406,7 @@ correctUnitInfo: [
   globals: index copy;
 
   ("!" processor.debugInfo.unit " = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !" lastUnit processor.debugInfo.fileNameIds.at
-    ", producer: \"fast compiler\", isOptimized: false, runtimeVersion: 2, emissionKind: FullDebug, globals: !" globals ")") assembleString
+    ", producer: \"mpl compiler\", isOptimized: false, runtimeVersion: 2, emissionKind: FullDebug, globals: !" globals ")") assembleString
   processor.debugInfo.unitStringNumber @processor.@debugInfo.@strings.at set
 
   ("!llvm.dbg.cu = !{!" processor.debugInfo.unit "}") assembleString
