@@ -3442,6 +3442,12 @@ astNodeToCodeNodeImpl: [
 
   processor.depthOfRecursion 255 > [
     "max depth of recursion (256) exceeded" makeStringView compilerError
+    TRUE dynamic @processor.@maxDepthExceeded set
+  ] when
+
+  processor.depthOfPre 64 > [
+    "max depth of PRE recursion (64) exceeded" makeStringView compilerError
+    TRUE dynamic @processor.@maxDepthExceeded set
   ] when
 
   addr: indexArray storageAddress;

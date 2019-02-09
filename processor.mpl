@@ -300,6 +300,7 @@ Processor: [{
 
   usedFloatBuiltins: FALSE dynamic;
   usedHeapBuiltins: FALSE dynamic;
+  maxDepthExceeded: FALSE dynamic;
 
   INIT: [];
   DIE: [];

@@ -1096,8 +1096,10 @@ processPre: [
       processor.depthOfPre 1 - @processor.@depthOfPre set
 
       oldSuccess [
-        ProcessorErrorInfo @processorResult.@errorInfo set
-        TRUE dynamic @processorResult.@success set
+        processor.maxDepthExceeded not [
+          ProcessorErrorInfo @processorResult.@errorInfo set
+          TRUE dynamic @processorResult.@success set
+        ] when
       ] [
         [FALSE] "Has compilerError before trying compiling pre!" assert
       ] if
@@ -1764,6 +1766,7 @@ processExportFunction: [
   ] when
 
   signature.inputs [p:; a: pop;] each
+  ("processed export: " makeStringView name makeStringView) addLog
 
   newNodeIndex
 ] func;
