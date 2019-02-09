@@ -2811,7 +2811,7 @@ finalizeCodeNode: [
       current: i currentNode.buildingMatchingInfo.captures.at;
       current.argCase ArgRef = [
         isRealFunction [
-          "real function can not have local captures" compilerError
+          ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name) assembleString compilerError
         ] when
         current.refToVar FALSE addRefArg
       ] [
