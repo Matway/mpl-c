@@ -1872,7 +1872,6 @@ tryImplicitLambdaCast: [
       csignature: declarationNode.csignature;
       name: ("lambda." processor.nodes.getSize) assembleString;
       astNode: VarCode refToSrc getVar.data.get @multiParserResult.@memory.at;
-      astNode: VarCode refToSrc getVar.data.get @multiParserResult.@memory.at;
       index: csignature astNode name makeStringView TRUE dynamic processExportFunction;
 
       compilable [

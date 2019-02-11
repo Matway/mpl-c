@@ -231,8 +231,7 @@ processImpl: [
 
 
   ("all nodes generated" makeStringView) addLog
-
-  [processor.recursiveNodesStack.getSize 0 =] "Recursive stack is not empty!" assert
+  [compilable not [processor.recursiveNodesStack.getSize 0 =] ||] "Recursive stack is not empty!" assert
 
   processorResult.success [
     #("; total used="           memoryUsed
