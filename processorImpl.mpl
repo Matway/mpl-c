@@ -261,6 +261,7 @@ processImpl: [
     createCtors
     createDtors
     clearUnusedDebugInfo
+    addAliasesForUsedNodes
 
     i: 0 dynamic;
     [
@@ -275,8 +276,7 @@ processImpl: [
     [
       i processor.nodes.dataSize < [
         currentNode: i @processor.@nodes.at.get;
-
-        currentNode.emptyDeclaration not [currentNode.empty not] && [currentNode.deleted not] && [currentNode.nodeCase NodeCaseCodeRefDeclaration = not] && [
+        currentNode nodeHasCode [
           LF makeStringView @processorResult.@program.cat
 
           currentNode.header makeStringView @processorResult.@program.cat

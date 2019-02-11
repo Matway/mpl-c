@@ -173,6 +173,7 @@ CodeNode: [{
   stack: RefToVar Array; # we must compile node without touching parent
   minStackDepth: 0 dynamic;
   program: Instruction Array;
+  aliases: String Array;
   variables: Variable Owner Array; # as unique_ptr...
 
   nodeIsRecursive: FALSE dynamic;
@@ -257,8 +258,9 @@ Processor: [{
   failProcNameInfo:            -1 dynamic;
   conventionNameInfo:          -1 dynamic;
 
-  globalVarCount:    0 dynamic;
-  globalVarId:       0 dynamic;
+  funcAliasCount:     0 dynamic;
+  globalVarCount:     0 dynamic;
+  globalVarId:        0 dynamic;
   globalInitializer: -1 dynamic; # index of func for calling all initializers
   globalDestructibleVars: RefToVar Array;
   processingExport: 0 dynamic;

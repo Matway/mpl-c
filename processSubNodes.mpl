@@ -874,7 +874,8 @@ derefNEntries: [
   ] loop
 ] func;
 
-applyStackChanges: [
+applyNamedStackChanges: [
+  forcedName:;
   appliedVars:;
   copy currentChangesNodeIndex:;
   newNode:;
@@ -908,7 +909,7 @@ applyStackChanges: [
   ] loop
 
   compilable [
-    inputs outputs newNode makeCallInstruction
+    inputs outputs newNode forcedName makeNamedCallInstruction
 
     implicitDerefInfo: Cond Array;
     newNode.outputs [.value.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
@@ -916,9 +917,15 @@ applyStackChanges: [
   ] when
 ] func;
 
+applyStackChanges: [
+  forcedName: StringView;
+  forcedName applyNamedStackChanges
+] func;
+
 makeCallInstructionWith: [
   copy dynamicFunc:;
   refToVar:;
+  forcedName:;
   newNode:;
   outputs:;
   inputs:;
@@ -1009,7 +1016,7 @@ makeCallInstructionWith: [
   ] loop
 
   newNode.empty not [
-    pureFuncName: dynamicFunc [refToVar getIrName][newNode.irName makeStringView] if;
+    pureFuncName: forcedName "" = [dynamicFunc [refToVar getIrName][newNode.irName makeStringView] if][forcedName copy] if;
     funcName: newNode.variadic [("(" newNode.argTypes ") " pureFuncName) assembleString][pureFuncName toString] if;
     convName: newNode.convention;
     retName: argRet argList convName funcName createCallIR;
@@ -1020,9 +1027,15 @@ makeCallInstructionWith: [
   ] when
 ] func;
 
-makeCallInstruction: [
+makeNamedCallInstruction: [
   r: RefToVar;
   r FALSE dynamic makeCallInstructionWith
+] func;
+
+makeCallInstruction: [
+  r: RefToVar;
+  forcedName: StringView;
+  forcedName r FALSE dynamic makeCallInstructionWith
 ] func;
 
 processCall: [
@@ -1051,6 +1064,8 @@ processCallByIndexArray: [
   indexArray:;
   compileOnce
 
+  forcedNameString: String;
+
   newNodeIndex: indexArray tryMatchAllNodes;
   newNodeIndex 0 < [compilable] && [
     name
@@ -1063,7 +1078,32 @@ processCallByIndexArray: [
     positionInfo
     CFunctionSignature
     astNodeToCodeNode @newNodeIndex set
-  ] when
+
+    #newNodeIndex @processor.@nodes.at.get.irName @forcedNameString set
+  ] [
+    #newNode: newNodeIndex @processor.@nodes.at.get;
+    #newNode.state NodeStateCompiled = [
+    #  "@alias_" toString @forcedNameString set
+    #  splitted: name.split;
+    #  splitted.success [
+    #    splitted.chars [
+    #      symbol: .value;
+    #      codePoint: symbol stringMemory Nat8 addressToReference;
+    #      codePoint 48n8 < not [codePoint 57n8 > not] &&         #0..9
+    #      [codePoint 65n8 < not [codePoint 90n8 > not] &&] ||    #A..Z
+    #      [codePoint 97n8 < not [codePoint 122n8 > not] &&] || [ #a..z
+    #        symbol @forcedNameString.cat
+    #      ] when
+    #    ] each
+    #  ] when
+
+    #  ("." processor.funcAliasCount) @forcedNameString.catMany
+    #  processor.funcAliasCount 1 + @processor.@funcAliasCount set
+    #  forcedNameString newNode.irName newNodeIndex getFuncIrType createFuncAliasIR @newNode.@aliases.pushBack
+    #] [
+    #  newNodeIndex @processor.@nodes.at.get.irName @forcedNameString set
+    #] if
+  ] if
 
   compilable [
     newNode: newNodeIndex @processor.@nodes.at.get;
@@ -1078,12 +1118,14 @@ processCallByIndexArray: [
       TRUE @newNode.@deleted set
       result createStaticInitIR push
     ] [
-      newNodeIndex processCallByNode
+      forcedName: forcedNameString makeStringView;
+      newNodeIndex forcedName processNamedCallByNode
     ] if
   ] when
 ] func;
 
-processCallByNode: [
+processNamedCallByNode: [
+  forcedName:;
   copy newNodeIndex:;
   newNode: newNodeIndex processor.nodes.at.get;
   compileOnce
@@ -1097,8 +1139,13 @@ processCallByNode: [
       pair.value pair.key changeVarValue
     ] each
 
-    newNode newNodeIndex @appliedVars applyStackChanges
+    newNode newNodeIndex @appliedVars forcedName applyNamedStackChanges
   ] when
+] func;
+
+processCallByNode: [
+  forcedName: StringView;
+  forcedName processNamedCallByNode
 ] func;
 
 processPre: [
@@ -1948,7 +1995,8 @@ callImportWith: [
         ] &&
       ] loop
     ] [
-      inputs outputs declarationNode refToVar dynamicFunc makeCallInstructionWith
+      forcedName: StringView;
+      inputs outputs declarationNode forcedName refToVar dynamicFunc makeCallInstructionWith
 
       i: 0 dynamic;
       [

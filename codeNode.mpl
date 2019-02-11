@@ -3441,6 +3441,11 @@ addMatchingNode: [
   ] if
 ] func;
 
+nodeHasCode: [
+  node:;
+  node.emptyDeclaration not [node.empty not] && [node.deleted not] && [node.nodeCase NodeCaseCodeRefDeclaration = not] &&
+] func;
+
 astNodeToCodeNodeImpl: [
   forcedSignature:;
   compilerPositionInfo:;

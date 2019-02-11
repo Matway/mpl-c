@@ -80,6 +80,13 @@ createGlobalAliasIR: [
   (alias getNameById " = alias " aliaseeType getNameById ", " aliaseeType getNameById "* " aliasee getNameById) assembleString @processor.@prolog.pushBack
 ] func;
 
+createFuncAliasIR: [
+  aliaseeType:;
+  aliasee:;
+  alias:;
+  (alias " = ifunc " aliaseeType ", " aliaseeType "* " aliasee) assembleString
+] func;
+
 createStoreConstant: [
   refToDst:;
   refWithValue:;
@@ -680,4 +687,15 @@ sortInstructions: [
   @fakePointersAllocs [.@value move @currentNode.@program.pushBack] each
   @fakePointers       [.@value move @currentNode.@program.pushBack] each
   @noallocs           [.@value move @currentNode.@program.pushBack] each
+] func;
+
+addAliasesForUsedNodes: [
+  String @processor.@prolog.pushBack
+  "; Func aliases" toString @processor.@prolog.pushBack
+  @processor.@nodes [
+    currentNode: .@value.get;
+    currentNode nodeHasCode [
+      @currentNode.@aliases [.@value move @processor.@prolog.pushBack] each
+    ] when
+  ] each
 ] func;
