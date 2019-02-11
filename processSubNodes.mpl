@@ -712,7 +712,7 @@ fixCaptureRef: [
   result
 ] func;
 
-applyPreNodeCaptures: [
+usePreCaptures: [
   compileOnce
   currentChangesNode:;
 
@@ -760,6 +760,7 @@ applyNodeChanges: [
     i currentChangesNode.matchingInfo.inputs.dataSize < [
       stackEntry: popForMatching;
       cacheEntry: i currentChangesNode.matchingInfo.inputs.at.refToVar;
+
       stackEntry cacheEntry applyEntriesRec
       stackEntry @pops.pushBack
 
@@ -1222,7 +1223,7 @@ processPre: [
 
     newNode: newNodeIndex processor.nodes.at.get;
     newNode usePreInputs
-    newNode applyPreNodeCaptures
+    newNode usePreCaptures
     #newNode useCapturesAsPreCaptures
     #newNode usePreCaptures
 
@@ -1882,6 +1883,13 @@ processExportFunction: [
           fr.success [TRUE @fr.@value.@used set] when
         ] when
       ] each
+
+      newNode usePreCaptures
+
+      #newNode.matchingInfo.captures [
+      #  capture: .value;
+      #  ("capture; name=" capture.nameInfo processor.nameInfos.at.name "; ctype=" capture.refToVar getMplType) addLog
+      #] each
 
       signature.outputs [
         pair:;
