@@ -1873,9 +1873,9 @@ tryImplicitLambdaCast: [
       astNode: VarCode refToSrc getVar.data.get @multiParserResult.@memory.at;
       astNode: VarCode refToSrc getVar.data.get @multiParserResult.@memory.at;
       index: csignature astNode name makeStringView TRUE dynamic processExportFunction;
-      lambdaNode: index processor.nodes.at.get;
 
       compilable [
+        lambdaNode: index processor.nodes.at.get;
         gnr: lambdaNode.varNameInfo getName;
         compilable not [
           [FALSE] "Name of new lambda is not visible!" assert
