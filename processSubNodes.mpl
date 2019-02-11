@@ -911,7 +911,7 @@ derefNEntries: [
   i: 0 dynamic;
   [
     i count < [
-      i implicitDerefInfo.at [
+      count 1 - i - implicitDerefInfo.at [
         dst: i getStackEntry;
         dst getPossiblePointee @dst set
       ] when
