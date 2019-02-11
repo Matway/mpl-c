@@ -919,7 +919,7 @@ parseSignature: [
 mplBuiltinExportFunction: [
   (
     [compilable]
-    [currentNode.parent 0 = not ["import must be global" compilerError] when]
+    [currentNode.parent 0 = not ["export must be global" compilerError] when]
     [refToName: pop;]
     [refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when]
     [
@@ -942,7 +942,7 @@ mplBuiltinExportFunction: [
 mplBuiltinExportVariable: [
   (
     [compilable]
-    [currentNode.parent 0 = not ["import must be global" compilerError] when]
+    [currentNode.parent 0 = not ["export must be global" compilerError] when]
     [refToName: pop;]
     [refToVar: pop;]
     [refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when]
