@@ -204,8 +204,8 @@ getDbgType: [getVar.dbgTypeId getNameById] func;
 getDebugType: [
   splitted: getDbgType.split;
   splitted.success [
-    splitted.chars.getSize 256 > [
-      256 @splitted.@chars.shrink
+    splitted.chars.getSize 1024 > [
+      1024 @splitted.@chars.shrink
       "..." makeStringView @splitted.@chars.pushBack
     ] when
   ] [
@@ -871,15 +871,16 @@ makeVariableType: [
 
       branch getIrType @resultIR.cat
       "*"  @resultIR.cat
-      "*"  @resultDBG.cat
 
       branch getMplType @resultMPL.cat
-      branch getDbgType @resultDBG.cat
       branch.mutable [
         "R" @resultMPL.cat
       ] [
         "C" @resultMPL.cat
       ] if
+
+      branch getDbgType @resultDBG.cat
+      "*"  @resultDBG.cat
     ] [
       var.data.getTag VarStruct = [
         branch: VarStruct @var.@data.get.get;
