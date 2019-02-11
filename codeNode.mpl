@@ -810,7 +810,13 @@ setOneVar: [
     staticness: refSrc staticnessOfVar;
     staticness Weak = [refDst staticnessOfVar @staticness set] when
     staticness @dstVar.@staticness set
-  ] when
+  ] [
+    srcVar.data.getTag VarRef = [refSrc.mutable copy] && [VarRef srcVar.data.get.mutable copy] && [
+      staticness: refSrc staticnessOfVar;
+      refSrc makeVarTreeDirty
+      staticness @srcVar.@staticness set
+    ] when
+  ] if
 ] func;
 
 setVar: [
