@@ -140,7 +140,8 @@ makeStaticness: [
   refToVar:;
 
   refToVar isVirtual not [
-    staticness refToVar getVar.@staticness set
+    var: refToVar getVar;
+    staticness @var.@staticness set
 
     staticness Virtual = [
       refToVar makeVariableType
@@ -494,9 +495,10 @@ getPointeeWith: [
 
       # create new var of dynamic dereference
       fromParent [
+        pointeeCopy: pointee copyOneVar;
         psBegin: RefToVar;
         psEnd:   RefToVar;
-        pointee @psBegin @psEnd ShadowReasonPointee makeShadowsDynamic
+        pointeeCopy @psBegin @psEnd ShadowReasonPointee makeShadowsDynamic
         psBegin unglobalize
         psEnd unglobalize
         dynamize not [psEnd   makeVarTreeDynamicStoraged] when
@@ -809,12 +811,12 @@ setOneVar: [
   refDst staticnessOfVar Dirty > [
     staticness: refSrc staticnessOfVar;
     staticness Weak = [refDst staticnessOfVar @staticness set] when
-    staticness @dstVar.@staticness set
+    refDst staticness makeStaticness drop:;
   ] [
     srcVar.data.getTag VarRef = [refSrc.mutable copy] && [VarRef srcVar.data.get.mutable copy] && [
       staticness: refSrc staticnessOfVar;
       refSrc makeVarTreeDirty
-      staticness @srcVar.@staticness set
+      refSrc staticness makeStaticness drop:;
     ] when
   ] if
 ] func;
@@ -1072,7 +1074,10 @@ makeVarTreeDirty: [
         ] when
       ] if
 
-      lastRefToVar Dirty makeStaticness @lastRefToVar set
+      var.data.getTag VarImport = not [
+        lastRefToVar Dirty makeStaticness @lastRefToVar set
+      ] when
+
       compilable
     ] &&
   ] loop
@@ -1087,12 +1092,17 @@ makePointeeDirtyIfRef: [
   ] when
 ] func;
 
-makeVarDynamic: [
+makeVarDynamicOrDirty: [
+  newStaticness:;
   refToVar:;
   refToVar staticnessOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
+
   refToVar makePointeeDirtyIfRef
-  msr: refToVar Dynamic makeStaticness;
+  msr: refToVar newStaticness makeStaticness;
 ] func;
+
+makeVarDynamic: [Dynamic makeVarDynamicOrDirty] func;
+makeVarDirty:   [Dirty   makeVarDynamicOrDirty] func;
 
 makeVarTreeDynamicWith: [
   copy dynamicStoraged:;

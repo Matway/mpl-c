@@ -1008,7 +1008,7 @@ mplBuiltinCodeRef: [
       gnr: nullNode.varNameInfo getName;
       cnr: gnr captureName;
       refToVar: cnr.refToVar copy;
-      #("coderef captured var=" refToVar.hostId ":" refToVar.varId " g=" refToVar isGlobal) addLog
+      #("coderef captured var=" refToVar.hostId ":" refToVar.varId " s=" refToVar staticnessOfVar) addLog
 
       refToVar push
     ]

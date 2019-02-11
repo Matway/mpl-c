@@ -785,7 +785,8 @@ applyNodeChanges: [
 
       stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
       #("capture; name=" currentCapture.nameInfo processor.nameInfos.at.name "; ctype=" cacheEntry getMplType "; stype=" stackEntry getMplType) addLog
-      #("capture; se=" stackEntry.hostId ":" stackEntry.varId ":" stackEntry isGlobal) addLog
+      #("capture; se=" stackEntry.hostId ":" stackEntry.varId ":" stackEntry staticnessOfVar) addLog
+      #("capture; ce=" cacheEntry.hostId ":" cacheEntry.varId ":" cacheEntry staticnessOfVar) addLog
       stackEntry cacheEntry applyEntriesRec
       i 1 + @i set compilable
     ] &&
@@ -807,13 +808,13 @@ applyNodeChanges: [
   #("curToNested") addLog
   #appliedVars.curToNested [
   #  pair:;
-  #  (pair.key.hostId ":" pair.key.varId " <-> " pair.value.hostId ":" pair.value.varId) addLog
+  #  (pair.key.hostId ":" pair.key.varId " s " pair.key staticnessOfVar " <-> " pair.value.hostId ":" pair.value.varId " s " pair.value staticnessOfVar " t" pair.key getMplType) addLog
   #] each
 
   #("nestedToCur") addLog
   #appliedVars.nestedToCur [
   #  pair:;
-  #  (pair.key.hostId ":" pair.key.varId " <-> " pair.value.hostId ":" pair.value.varId) addLog
+  #  (pair.key.hostId ":" pair.key.varId " s " pair.key staticnessOfVar " <-> " pair.value.hostId ":" pair.value.varId " s " pair.value staticnessOfVar " t" pair.key getMplType) addLog
   #] each
 
   i: 0 dynamic;
@@ -838,6 +839,11 @@ applyNodeChanges: [
     nestedVar: pair.value getVar;
     nestedVar.data.getTag VarRef = [
       nestedCopy: pair.value copyOneVar;
+      pair.value isGlobal [
+        pVar: pair.value getVar;
+        nVar: nestedCopy getVar;
+        pVar.globalId @nVar.@globalId set
+      ] when
       nestedCopy fixCaptureRef @pair.@value set
     ] when
   ] each
@@ -1693,11 +1699,15 @@ processDynamicLoop: [
         appliedVars.curToNested [
           pair:;
 
-          #("loop checking; key=" pair.key.hostId ":" pair.key.varId " g=" pair.key isGlobal " s=" pair.key staticnessOfVar
-          #  "; value=" pair.value.hostId ":" pair.value.varId " g=" pair.value isGlobal " s=" pair.key staticnessOfVar
+          #("loop checking; key=" pair.key.hostId ":" pair.key.varId " g=" pair.key isGlobal ":" pair.key getVar.globalId " s=" pair.key staticnessOfVar
+          #  "; value=" pair.value.hostId ":" pair.value.varId " g=" pair.value isGlobal ":" pair.value getVar.globalId " s=" pair.value staticnessOfVar
           #  "; type=" pair.key getMplType) addLog
           pair.key pair.value checkToRecompile [
-            pair.key makeVarDynamic
+            pair.value staticnessOfVar Dirty = [
+              pair.key makeVarDirty
+            ] [
+              pair.key makeVarDynamic
+            ] if
             pair.key makePointeeDirtyIfRef
             TRUE dynamic @needToRemake set
           ] when
