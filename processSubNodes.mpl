@@ -253,7 +253,10 @@ tryMatchNode: [
   ] &&;
 
   invisibleName: currentMatchingNode.nodeCase NodeCaseLambda = [currentMatchingNode.varNameInfo 0 < not] && [
-    gnr: currentMatchingNode.varNameInfo currentMatchingNode.refToVar getNameForMatching;
+    matchingCapture: Capture;
+    currentMatchingNode.refToVar @matchingCapture.@refToVar set
+    NameCaseLocal                @matchingCapture.@captureCase set
+    gnr: currentMatchingNode.varNameInfo matchingCapture getNameForMatching;
     gnr.refToVar.hostId 0 <
   ] &&;
 
@@ -335,7 +338,7 @@ tryMatchNode: [
           currentCapture: i currentMatchingNode.matchingInfo.captures.at;
           cacheEntry: currentCapture.refToVar;
           overload: currentCapture getOverload;
-          stackEntry: currentCapture.nameInfo cacheEntry overload getNameForMatchingWithOverload.refToVar;
+          stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload.refToVar;
 
           stackEntry.hostId 0 < not [stackEntry cacheEntry compareEntriesRec] && [
             i 1 + @i set
@@ -752,9 +755,8 @@ applyNodeChanges: [
       cacheEntry: currentCapture.refToVar;
       overload: currentCapture getOverload;
 
-      #("capture; name=" currentCapture.nameInfo processor.nameInfos.at.name "; type=" cacheEntry getMplType
-      #  "; ce=" cacheEntry.hostId ":" cacheEntry.varId ":" cacheEntry isGlobal) addLog
-      stackEntry: currentCapture.nameInfo cacheEntry overload getNameForMatchingWithOverload captureName.refToVar;
+      stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
+      #("capture; name=" currentCapture.nameInfo processor.nameInfos.at.name "; ctype=" cacheEntry getMplType "; stype=" stackEntry getMplType) addLog
       #("capture; se=" stackEntry.hostId ":" stackEntry.varId ":" stackEntry isGlobal) addLog
       stackEntry cacheEntry applyEntriesRec
       i 1 + @i set compilable
@@ -990,7 +992,7 @@ makeCallInstructionWith: [
 
       currentCapture.argCase ArgRef = [
         overload: currentCapture getOverload;
-        refToVar: currentCapture.nameInfo currentCapture.refToVar overload getNameForMatchingWithOverload captureName.refToVar;
+        refToVar: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
         [currentCapture.refToVar refToVar variablesAreSame] "invalid capture type while generating arg list!" assert
 
         arg: IRArgument;

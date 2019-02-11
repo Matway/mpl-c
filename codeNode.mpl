@@ -1333,7 +1333,7 @@ findNameStackObject: [
 getNameAs: [
   copy overload:;
   copy forMatching:;
-  matchingRef:;
+  matchingCapture:;
   copy nameInfo:;
   name: nameInfo processor.nameInfos.at.name;
 
@@ -1367,12 +1367,13 @@ getNameAs: [
         nameInfoEntry.nameCase   @result.@nameCase set
         nameInfoEntry.startPoint @result.@startPoint set
 
-        result.nameCase NameCaseSelfMember = [result.nameCase NameCaseClosureMember =] || [
+        nameCase: matchingCapture.captureCase NameCaseInvalid = [result.nameCase copy] [matchingCapture.captureCase copy] if;
+        nameCase NameCaseSelfMember = [nameCase NameCaseClosureMember =] || [
           object: nameInfoEntry.refToVar;
           overloadShift: curNameInfo.stack.dataSize 1 - overload -;
           fr: nameInfo object overloadShift findFieldWithOverloadShift;
           fr.success [
-            object result.nameCase MemberCaseToObjectCase findLocalObject @result.@object set
+            object nameCase MemberCaseToObjectCase findLocalObject @result.@object set
             fr.index @result.@mplFieldIndex set
             fr.index VarStruct object getVar.data.get .get .fields.at .refToVar @result.@refToVar set
             object.mutable @result.@refToVar.@mutable set
@@ -1380,11 +1381,11 @@ getNameAs: [
             unknownName
           ] if
         ] [
-          result.nameCase NameCaseSelfObject = [result.nameCase NameCaseClosureObject =] || [
+          nameCase NameCaseSelfObject = [nameCase NameCaseClosureObject =] || [
             forMatching [
-              overload curNameInfo.stack.at matchingRef result.nameCase findNameStackObject @result.@refToVar set
+              overload curNameInfo.stack.at matchingCapture.refToVar nameCase findNameStackObject @result.@refToVar set
             ] [
-              nameInfoEntry.refToVar result.nameCase findLocalObject @result.@refToVar set
+              nameInfoEntry.refToVar nameCase findLocalObject @result.@refToVar set
             ] if
           ] [
             nameInfoEntry.refToVar @result.@refToVar set
@@ -1424,12 +1425,12 @@ getNameAs: [
   result
 ] func;
 
-getName: [RefToVar FALSE dynamic -1 dynamic getNameAs] func;
+getName: [Capture FALSE dynamic -1 dynamic getNameAs] func;
 getNameForMatching: [TRUE dynamic -1 dynamic getNameAs] func;
 
 getNameWithOverload: [
   copy overload:;
-  RefToVar FALSE dynamic overload getNameAs
+  Capture FALSE dynamic overload getNameAs
 ] func;
 
 getNameForMatchingWithOverload: [
