@@ -809,8 +809,8 @@ getFuncMplType: [
     "[" @result.cat
     i: 0;
     [
-      i args.dataSize < [
-        current: i args.at.refToVar;
+      i args.getSize < [
+        current: i args.at;
         current getMplType                                            @result.cat
         i 1 + args.getSize < [
           ","                                                         @result.cat
@@ -823,8 +823,8 @@ getFuncMplType: [
 
   "-"                @result.cat
   node.mplConvention @result.cat
-  node.matchingInfo.inputs catData
-  node.outputs catData
+  node.csignature.inputs catData
+  node.csignature.outputs catData
 
   resultId: @result makeStringId;
   resultId getNameById

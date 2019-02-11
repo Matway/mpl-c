@@ -2956,7 +2956,7 @@ finalizeCodeNode: [
     forcedSignature.convention @currentNode.@mplConvention set
   ] [
     String @currentNode.@convention set
-    "-" toString @currentNode.@mplConvention set
+    "" toString @currentNode.@mplConvention set
   ] if
 
   (retType "(" signature ")") assembleString @currentNode.@signature set
