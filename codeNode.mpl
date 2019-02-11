@@ -2838,8 +2838,13 @@ finalizeCodeNode: [
 
   currentNode.variadic [
     isDeclaration [
-      ", ..." @signature.cat
-      ", ..." @argumentList.cat
+      currentNode.buildingMatchingInfo.inputs.getSize 0 = [
+        "..." @signature.cat
+        "..." @argumentList.cat
+      ] [
+        ", ..." @signature.cat
+        ", ..." @argumentList.cat
+      ] if
     ] [
       "export function cannot be variadic" compilerError
     ] if
