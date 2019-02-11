@@ -252,7 +252,12 @@ tryMatchNode: [
     [getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + < not] &&
   ] &&;
 
-  canMatch [
+  invisibleName: currentMatchingNode.nodeCase NodeCaseLambda = [currentMatchingNode.varNameInfo 0 < not] && [
+    gnr: currentMatchingNode.varNameInfo currentMatchingNode.refToVar getNameForMatching;
+    gnr.refToVar.hostId 0 <
+  ] &&;
+
+  canMatch invisibleName not and [
     mismatchMessage: [
       idadd:;
       msg: makeStringView;
@@ -747,10 +752,10 @@ applyNodeChanges: [
       cacheEntry: currentCapture.refToVar;
       overload: currentCapture getOverload;
 
-      stackEntry: currentCapture.nameInfo cacheEntry overload getNameForMatchingWithOverload captureName.refToVar;
       #("capture; name=" currentCapture.nameInfo processor.nameInfos.at.name "; type=" cacheEntry getMplType
-      #  "; ce=" cacheEntry.hostId ":" cacheEntry.varId ":" cacheEntry isGlobal
-      #  "; se=" stackEntry.hostId ":" stackEntry.varId ":" stackEntry isGlobal) addLog
+      #  "; ce=" cacheEntry.hostId ":" cacheEntry.varId ":" cacheEntry isGlobal) addLog
+      stackEntry: currentCapture.nameInfo cacheEntry overload getNameForMatchingWithOverload captureName.refToVar;
+      #("capture; se=" stackEntry.hostId ":" stackEntry.varId ":" stackEntry isGlobal) addLog
       stackEntry cacheEntry applyEntriesRec
       i 1 + @i set compilable
     ] &&
@@ -1004,7 +1009,8 @@ makeCallInstructionWith: [
   newNode.empty not [
     pureFuncName: dynamicFunc [refToVar getIrName][newNode.irName makeStringView] if;
     funcName: newNode.variadic [("(" newNode.argTypes ") " pureFuncName) assembleString][pureFuncName toString] if;
-    retName: argRet argList funcName createCallIR;
+    convName: newNode.convention;
+    retName: argRet argList convName funcName createCallIR;
 
     argRet.varId 0 < not [
       @retName argRet createStoreFromRegister
@@ -1757,8 +1763,8 @@ processExportFunction: [
 
   newNode: newNodeIndex processor.nodes.at.get;
   newNode.outputs.getSize 1 > ["export function cant have 2 or more outputs" compilerError] when
-  newNode.outputs.getSize 1 = [signature.void copy] && ["signature is void, export function must be without output" compilerError] when
-  newNode.outputs.getSize 0 = [signature.void not] && ["signature is not void, export function must have output" compilerError] when
+  newNode.outputs.getSize 1 = [signature.outputs.getSize 0 =] && ["signature is void, export function must be without output" compilerError] when
+  newNode.outputs.getSize 0 = [signature.outputs.getSize 1 =] && ["signature is not void, export function must have output" compilerError] when
 
   compilable [
     newNode.captureNames [
@@ -1770,12 +1776,16 @@ processExportFunction: [
       ] when
     ] each
 
-    signature.void not [
-      newNode.outputs.last.refToVar signature.output variablesAreSame not [
-        ("export function output mismatch, expected " signature.output getMplType ";" LF
-          "but found " newNode.outputs.last.refToVar getMplType) assembleString compilerError
+    signature.outputs [
+      pair:;
+      currentInNode: pair.index newNode.outputs.at.refToVar;
+      currentInSignature: pair.value;
+
+      currentInNode currentInSignature variablesAreSame not [
+        ("export function output mismatch, expected " currentInSignature getMplType ";" LF
+          "but found " currentInNode getMplType) assembleString compilerError
       ] when
-    ] when
+    ] each
   ] when
 
   signature.inputs [p:; a: pop;] each
@@ -1808,13 +1818,18 @@ processImportFunction: [
   #signature.inputs.getSize nSwap
 
   [
+    curPosition: currentNode.position;
     indexOfNode: declarationNodeIndex copy;
     currentNode: @declarationNode;
-    position: currentNode.position copy;
+    curPosition @currentNode.@position set
+    position: curPosition copy;
     compilerPositionInfo: position;
     forcedSignature: signature;
+    processor.options.debug [
+      addDebugReserve @currentNode.@funcDbgIndex set
+    ] when
     forcedSignature.inputs   [p:; a: pop;] each
-    forcedSignature.void not [forcedSignature.output copyVarFromChild push] when
+    forcedSignature.outputs [.value copyVarFromChild push] each
     name finalizeCodeNode
   ] call
 

@@ -71,7 +71,7 @@ createDefinition: [
   ] if
 ] func;
 
-{argc: 0; argv: 0nx;} 0 {} [
+{argc: 0; argv: 0nx;} 0 {convention: "cdecl";} [
   ("Start mplc compiler") addLog
   [
     argc:;

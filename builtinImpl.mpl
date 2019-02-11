@@ -302,7 +302,7 @@ mplNumberBuiltinOp: [
           FALSE @irarg.@byRef set
           irarg @args.pushBack
 
-          result args @opName createCallIR retName:;
+          result args String @opName createCallIR retName:;
 
           retName result createStoreFromRegister
 
@@ -407,7 +407,7 @@ mplBuiltinPow: [
           var2.irTypeId @irarg.@irTypeId set
           irarg @args.pushBack
 
-          result args tag VarReal32 = ["@llvm.pow.f32" makeStringView] ["@llvm.pow.f64" makeStringView] if createCallIR retName:;
+          result args String tag VarReal32 = ["@llvm.pow.f32" makeStringView] ["@llvm.pow.f64" makeStringView] if createCallIR retName:;
 
           @retName result createStoreFromRegister
 
@@ -845,8 +845,6 @@ parseSignature: [
   (
     [compilable]
     [options: pop;]
-    [return: pop;]
-    [arguments: pop;]
     [
       optionsVar: options getVar;
       optionsVar.data.getTag VarStruct = not ["options must be a struct" compilerError] when
@@ -864,26 +862,54 @@ parseSignature: [
               [variadicRefToVar staticnessOfVar Weak < ["value must be Static" compilerError] when]
               [VarCond variadicVar.data.get @result.@variadic set]
             ) sequence
+          ]
+          processor.conventionNameInfo [
+            conventionRefToVar: f.refToVar;
+            conventionVar: conventionRefToVar getVar;
+            (
+              [compilable]
+              [conventionVar.data.getTag VarString = not ["value must be String" compilerError] when]
+              [conventionRefToVar staticnessOfVar Weak < ["value must be Static" compilerError] when]
+              [
+                string: VarString conventionVar.data.get;
+                string (
+                  "mpl"     [ConventionMpl   @result.@convention set]
+                  "stdcall" [ConventionStd   @result.@convention set]
+                  "cdecl"   [ConventionCdecl @result.@convention set]
+                  "fast"    [ConventionFast  @result.@convention set]
+                  [("unknown convention: " string) assembleString compilerError]
+                ) case
+              ]
+            ) sequence
           ] [
             ("unknown option: " f.nameInfo processor.nameInfos.at.name) assembleString compilerError
           ]
         ) case
       ] each
-    ] [
-      return isVirtual [
-        returnVar: return getVar;
-        returnVar.data.getTag VarStruct = not [(return getMplType " can not be a return type") assembleString compilerError] when
-        TRUE @result.@void set
+    ]
+    [
+      result.convention ConventionMpl = [
+        "default convention is not implemented" compilerError
       ] [
-        #todo: detect temporality
-        returnVar: return getVar;
-        returnVar.temporary [
-          return @result.@output set
-        ] [
-          return return.mutable createRef @result.@output set
-        ] if
+        return: pop;
+        compilable [
+          return isVirtual [
+            returnVar: return getVar;
+            returnVar.data.getTag VarStruct = not [(return getMplType " can not be a return type") assembleString compilerError] when
+          ] [
+            #todo: detect temporality
+            returnVar: return getVar;
+            returnVar.temporary [
+              return @result.@outputs.pushBack
+            ] [
+              return return.mutable createRef @result.@outputs.pushBack
+            ] if
+          ] if
+        ] when
       ] if
-    ] [
+    ]
+    [arguments: pop;]
+    [
       arguments parseFieldToSignatureCaptureArray @result.@inputs set
     ]
   ) sequence
@@ -986,7 +1012,7 @@ mplBuiltinCodeRef: [
     [
       #refToVar: index processor.nodes.at.get.refToVar;
       nullNode: index processor.nodes.at.get;
-      gnr: nullNode.varName getName;
+      gnr: nullNode.varNameInfo getName;
       cnr: gnr captureName;
       refToVar: cnr.refToVar copy;
       #("coderef captured var=" refToVar.hostId ":" refToVar.varId " g=" refToVar isGlobal) addLog
@@ -1299,7 +1325,6 @@ addNamesFromModule: [
     moduleNode.labelNames [
       current: .value;
       current.nameInfo current.refToVar addOverloadForPre
-      indexOfNode: moduleId copy; # suppress assert
       current.nameInfo current.refToVar NameCaseFromModule addNameInfo #it is not own local variable
     ] each
   ] when

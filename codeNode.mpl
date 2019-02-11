@@ -30,7 +30,7 @@ addNameInfoWith: [
   refToVar:;
   copy nameId:;
 
-  [refToVar noMatterToCopy [refToVar.hostId indexOfNode =] ||] "addNameInfo indexOfNode mismatch!" assert
+  [addNameCase NameCaseFromModule = [refToVar noMatterToCopy] || [refToVar.hostId indexOfNode =] ||] "addNameInfo indexOfNode mismatch!" assert
 
   nameId 0 < not [
     currentNameInfo: nameId @processor.@nameInfos.at;
@@ -1876,10 +1876,14 @@ tryImplicitLambdaCast: [
       lambdaNode: index processor.nodes.at.get;
 
       compilable [
-        gnr: lambdaNode.varName getName;
-        cnr: gnr captureName;
-        cnr.refToVar @result.@refToVar set
-        TRUE dynamic @result.@success set
+        gnr: lambdaNode.varNameInfo getName;
+        compilable not [
+          [FALSE] "Name of new lambda is not visible!" assert
+        ] [
+          cnr: gnr captureName;
+          cnr.refToVar @result.@refToVar set
+          TRUE dynamic @result.@success set
+        ] if
       ] when
     ] when
   ] when
@@ -2697,8 +2701,9 @@ finalizeCodeNode: [
     currentNode.buildingMatchingInfo.inputs.getSize forcedSignature.inputs.getSize = not [
       currentNode.buildingMatchingInfo.inputs.getSize 0 =
       [forcedSignature.inputs.getSize 1 =] &&
-      [forcedSignature.void not] &&
-      [forcedSignature.output 0 forcedSignature.inputs.at variablesAreSame] && [
+      [forcedSignature.outputs.getSize 1 =] &&
+      [0 forcedSignature.outputs.at 0 forcedSignature.inputs.at variablesAreSame] && [
+        #todo for MPL signature check each
         pop push
       ] [
         ("In signature there are " forcedSignature.inputs.getSize " inputs, but really here " currentNode.buildingMatchingInfo.inputs.getSize " inputs") assembleString compilerError
@@ -2929,6 +2934,29 @@ finalizeCodeNode: [
   ] each
 
   String @currentNode.@irName set
+  hasForcedSignature [processor.options.pointerSize 32nx =] && [
+    forcedSignature.convention (
+      ConventionCdecl []
+      ConventionStd   ["x86_stdcallcc "  toString @currentNode.@convention set]
+      ConventionFast  ["x86_fastcallcc " toString @currentNode.@convention set]
+      []
+    ) case
+  ] [
+    String @currentNode.@convention set
+  ] if
+
+  hasForcedSignature [
+    forcedSignature.convention (
+      ConventionMpl   ["mpl"   toString @currentNode.@mplConvention set]
+      ConventionCdecl ["cdecl" toString @currentNode.@mplConvention set]
+      ConventionStd   ["std"   toString @currentNode.@mplConvention set]
+      ConventionFast  ["fast"  toString @currentNode.@mplConvention set]
+      [[FALSE] "Unknown convention!" assert]
+    ) case
+  ] [
+    "mpl" toString @currentNode.@mplConvention set
+  ] if
+
   (retType "(" signature ")") assembleString @currentNode.@signature set
 
   # fix declarations
@@ -2967,7 +2995,8 @@ finalizeCodeNode: [
     ] if
 
     nameInfo: functionName findNameInfo;
-    nameInfo @declarationNode.@varName set
+    topIndex @declarationNode.@moduleId set
+    nameInfo @declarationNode.@varNameInfo set
     nameInfo refToVar NameCaseLocal addNameInfo
   ] func;
 
@@ -3043,32 +3072,38 @@ finalizeCodeNode: [
         prevNode.signature currentNode.signature = not [
           "node was defined with another signature" compilerError
         ] [
-          currentNode.nodeCase NodeCaseDllDeclaration = [
-            prevNode.nodeCase NodeCaseDllDeclaration = not [
-              "dublicated dllimport func declaration" compilerError
-            ] when
+          prevNode.mplConvention currentNode.mplConvention = not [
+            "node was defined with another convention" compilerError
           ] [
-            currentNode.nodeCase NodeCaseDeclaration = [
-              TRUE @currentNode.@emptyDeclaration set
+            currentNode.nodeCase NodeCaseDllDeclaration = [
+              prevNode.nodeCase NodeCaseDllDeclaration = not [
+                "dublicated dllimport func declaration" compilerError
+              ] when
             ] [
-              prevNode.nodeCase NodeCaseDeclaration = [
-                TRUE @prevNode.@emptyDeclaration set
-                indexOfNode @fr.@value set
+              currentNode.nodeCase NodeCaseDeclaration = [
+                TRUE @currentNode.@emptyDeclaration set
               ] [
-                "dublicated func implementation" compilerError
+                prevNode.nodeCase NodeCaseDeclaration = [
+                  TRUE @prevNode.@emptyDeclaration set
+                  indexOfNode @fr.@value set
+                ] [
+                  "dublicated func implementation" compilerError
+                ] if
               ] if
             ] if
           ] if
         ] if
 
-        fr: @functionName @currentNode.@namedFunctions.find;
-        fr.success not [
-          functionName toString indexOfNode @currentNode.@namedFunctions.insert
-          refToVar: prevNode.refToVar;
+        compilable [
+          fr: @functionName @currentNode.@namedFunctions.find;
+          fr.success not [
+            functionName toString indexOfNode @currentNode.@namedFunctions.insert
+            refToVar: prevNode.refToVar;
 
-          nameInfo: functionName findNameInfo;
-          indexOfNode: refToVar.hostId copy; # suppress assert
-          nameInfo refToVar NameCaseFromModule addNameInfo #it is not own local variable
+            nameInfo: functionName findNameInfo;
+            indexOfNode: refToVar.hostId copy; # suppress assert
+            nameInfo refToVar NameCaseFromModule addNameInfo #it is not own local variable
+          ] when
         ] when
       ] [
         functionName toString indexOfNode @processor.@namedFunctions.insert
@@ -3078,7 +3113,7 @@ finalizeCodeNode: [
     ] if
   ] if
 
-  (retType " " currentNode.irName "(" argumentList ")") @currentNode.@header.catMany
+  (currentNode.convention retType " " currentNode.irName "(" argumentList ")") @currentNode.@header.catMany
   signature @currentNode.@argTypes set
 
 

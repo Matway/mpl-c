@@ -54,6 +54,11 @@ ArgReturn:        [4n8 dynamic] func;
 ArgRefDeref:      [5n8 dynamic] func;
 ArgReturnDeref:   [6n8 dynamic] func;
 
+ConventionMpl:   [0n8 dynamic] func;
+ConventionCdecl: [1n8 dynamic] func;
+ConventionStd:   [2n8 dynamic] func;
+ConventionFast:  [3n8 dynamic] func;
+
 Argument: [{
   refToVar: RefToVar;
   argCase: ArgRef;
@@ -155,9 +160,9 @@ MatchingInfo: [{
 
 CFunctionSignature: [{
   inputs: RefToVar Array;
-  void: FALSE dynamic;
-  output: RefToVar;
+  outputs: RefToVar Array;
   variadic: FALSE dynamic;
+  convention: ConventionMpl dynamic;
 }] func;
 
 UsedModuleInfo: [{
@@ -186,6 +191,8 @@ CodeNode: [{
   header: String;
   argTypes: String;
   csignature: CFunctionSignature;
+  convention: String;
+  mplConvention: String;
   signature: String;
   nodeCompileOnce: FALSE dynamic;
   empty: FALSE dynamic;
@@ -218,7 +225,8 @@ CodeNode: [{
   usedOrIncludedModulesTable: Int32 Cond HashTable; # moduleID, hasUsedVars
 
   refToVar: RefToVar; #refToVar of this node
-  varName: -1 dynamic; #variable name of imported function
+  varNameInfo: -1 dynamic; #variable name of imported function
+  moduleId: -1 dynamic;
   namedFunctions: String Int32 HashTable; # name -> node ID
   capturedVars: RefToVar Array;
   funcDbgIndex: -1 dynamic;
@@ -253,6 +261,7 @@ Processor: [{
   capturesNameInfo:            -1 dynamic;
   variadicNameInfo:            -1 dynamic;
   failProcNameInfo:            -1 dynamic;
+  conventionNameInfo:          -1 dynamic;
 
   globalVarCount:    0 dynamic;
   globalVarId:       0 dynamic;

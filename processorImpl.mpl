@@ -33,7 +33,7 @@ failProcForProcessor: [
   nodeCase: NodeCaseCode;
   parentIndex: 0;
   functionName: StringView Cref;
-} 0 {} "astNodeToCodeNode" importFunction
+} 0 {convention: "cdecl";} "astNodeToCodeNode" importFunction
 
 {
   signature: CFunctionSignature Cref;
@@ -42,7 +42,7 @@ failProcForProcessor: [
   processor: Processor Ref;
   processorResult: ProcessorResult Ref;
   refToVar: RefToVar Cref;
-} () {} "createDtorForGlobalVar" importFunction
+} () {convention: "cdecl";} "createDtorForGlobalVar" importFunction
 
 processImpl: [
   processorResult:;
@@ -64,19 +64,20 @@ processImpl: [
     key id @processor.@nameInfos.at.@name set
   ] each
 
-  ""         findNameInfo @processor.@emptyNameInfo set
-  "CALL"     findNameInfo @processor.@callNameInfo set
-  "PRE"      findNameInfo @processor.@preNameInfo set
-  "DIE"      findNameInfo @processor.@dieNameInfo set
-  "INIT"     findNameInfo @processor.@initNameInfo set
-  "ASSIGN"   findNameInfo @processor.@assignNameInfo set
-  "self"     findNameInfo @processor.@selfNameInfo set
-  "closure"  findNameInfo @processor.@closureNameInfo set
-  "inputs"   findNameInfo @processor.@inputsNameInfo set
-  "outputs"  findNameInfo @processor.@outputsNameInfo set
-  "captures" findNameInfo @processor.@capturesNameInfo set
-  "variadic" findNameInfo @processor.@variadicNameInfo set
-  "failProc" findNameInfo @processor.@failProcNameInfo set
+  ""           findNameInfo @processor.@emptyNameInfo set
+  "CALL"       findNameInfo @processor.@callNameInfo set
+  "PRE"        findNameInfo @processor.@preNameInfo set
+  "DIE"        findNameInfo @processor.@dieNameInfo set
+  "INIT"       findNameInfo @processor.@initNameInfo set
+  "ASSIGN"     findNameInfo @processor.@assignNameInfo set
+  "self"       findNameInfo @processor.@selfNameInfo set
+  "closure"    findNameInfo @processor.@closureNameInfo set
+  "inputs"     findNameInfo @processor.@inputsNameInfo set
+  "outputs"    findNameInfo @processor.@outputsNameInfo set
+  "captures"   findNameInfo @processor.@capturesNameInfo set
+  "variadic"   findNameInfo @processor.@variadicNameInfo set
+  "failProc"   findNameInfo @processor.@failProcNameInfo set
+  "convention" findNameInfo @processor.@conventionNameInfo set
 
   addCodeNode
   TRUE dynamic @processor.@nodes.last.get.@root set
@@ -322,7 +323,7 @@ processImpl: [
   unitId: 0;
   options: ProcessorOptions Cref;
   multiParserResult: MultiParserResult Cref;
-} () {} [
+} () {convention: "cdecl";} [
   processorResult:;
   unitId:;
   options:;
@@ -343,7 +344,7 @@ processImpl: [
   nodeCase: NodeCaseCode;
   parentIndex: 0;
   functionName: StringView Cref;
-} 0 {}  [
+} 0 {convention: "cdecl";}  [
   signature:;
   compilerPositionInfo:;
   multiParserResult:;
@@ -408,7 +409,7 @@ createDtorForGlobalVarImpl: [
   processor: Processor Ref;
   processorResult: ProcessorResult Ref;
   refToVar: RefToVar Cref;
-} () {} [
+} () {convention: "cdecl";} [
   forcedSignature:;
   compilerPositionInfo:;
   multiParserResult:;

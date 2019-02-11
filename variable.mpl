@@ -819,6 +819,8 @@ getFuncMplType: [
     "]" @result.cat
   ] func;
 
+  "-"                @result.cat
+  node.mplConvention @result.cat
   node.matchingInfo.inputs catData
   node.outputs catData
 

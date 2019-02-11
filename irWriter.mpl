@@ -462,6 +462,7 @@ createRetValue: [
 
 createCallIR: [
   funcName:;
+  conventionName:;
   argList:;
   refToRet:;
 
@@ -473,9 +474,9 @@ createCallIR: [
   haveRet [
     generateRegisterIRName @retName set
 
-    ("  " @retName getNameById " = call " refToRet getIrType " ") @operation.catMany
+    ("  " @retName getNameById " = call " conventionName refToRet getIrType " ") @operation.catMany
   ] [
-    "  call void " @operation.cat
+    ("  call " conventionName "void ") @operation.catMany
   ] if
 
   @funcName @operation.cat
