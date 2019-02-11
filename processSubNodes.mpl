@@ -712,6 +712,34 @@ fixCaptureRef: [
   result
 ] func;
 
+applyPreNodeCaptures: [
+  compileOnce
+  currentChangesNode:;
+
+  i: 0 dynamic;
+  [
+    i currentChangesNode.matchingInfo.captures.dataSize < [
+      currentCapture: i currentChangesNode.matchingInfo.captures.at;
+      cacheEntry: currentCapture.refToVar;
+      overload: currentCapture getOverload;
+      stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
+      i 1 + @i set compilable
+    ] &&
+  ] loop
+
+  i: 0 dynamic;
+  [
+    i currentChangesNode.matchingInfo.fieldCaptures.dataSize < [
+      currentFieldCapture: i currentChangesNode.matchingInfo.fieldCaptures.at;
+      fieldName: currentFieldCapture.nameInfo copy;
+      overload: currentFieldCapture getOverload;
+      fieldCnr: currentFieldCapture.nameInfo overload getNameWithOverload captureName;
+
+      i 1 + @i set compilable
+    ] &&
+  ] loop
+] func;
+
 applyNodeChanges: [
   compileOnce
   copy currentChangesNodeIndex:;
@@ -851,6 +879,18 @@ usePreInputs: [
   ] when
 ] func;
 
+#useCapturesAsPreCaptures: [
+#  newNode:;
+#  newNode.captures [.value @currentNode.@preCaptures.pushBack] each
+#  newNode.fieldCaptures [.value @currentNode.@preFieldCaptures.pushBack] each
+#] func;
+
+#usePreCaptures: [
+#  newNode:;
+#  newNode.preCaptures [.value @currentNode.@preCaptures.pushBack] each
+#  newNode.preFieldCaptures [.value @currentNode.@preFieldCaptures.pushBack] each
+#] func;
+
 pushOutput: [push] func;
 
 isImplicitDeref: [
@@ -882,6 +922,7 @@ applyNamedStackChanges: [
   compileOnce
 
   newNode usePreInputs
+  #newNode usePreCaptures
 
   inputs: RefToVar Array;
   outputs: RefToVar Array;
@@ -1175,6 +1216,9 @@ processPre: [
 
     newNode: newNodeIndex processor.nodes.at.get;
     newNode usePreInputs
+    newNode applyPreNodeCaptures
+    #newNode useCapturesAsPreCaptures
+    #newNode usePreCaptures
 
     newNode.uncompilable not
     [newNode.outputs.dataSize 0 >] &&
@@ -1232,7 +1276,6 @@ processIf: [
       CFunctionSignature astNodeToCodeNode @newNodeElseIndex set
     ] when
 
-
     compilable [
       newNodeElse: newNodeElseIndex @processor.@nodes.at.get;
 
@@ -1258,7 +1301,9 @@ processIf: [
         appliedVarsThen: newNodeThenIndex applyNodeChanges;
         appliedVarsElse: newNodeElseIndex applyNodeChanges;
         newNodeThen usePreInputs
+        #newNodeThen usePreCaptures
         newNodeElse usePreInputs
+        #newNodeElse usePreCaptures
 
         stackDepth: getStackDepth;
         newNodeThen.matchingInfo.inputs.dataSize stackDepth > ["then branch stack underflow" makeStringView compilerError] when
@@ -1557,6 +1602,7 @@ processLoop: [
         newNode.state NodeStateHasOutput = [NodeStateHasOutput @currentNode.@state set] when
         appliedVars: newNodeIndex applyNodeChanges;
         newNode usePreInputs
+        #newNode usePreCaptures
 
         appliedVars.fixedOutputs.getSize 0 = ["loop body must return Cond" makeStringView compilerError] when
         compilable [
@@ -1625,6 +1671,7 @@ processDynamicLoop: [
 
         appliedVars: newNodeIndex applyNodeChanges;
         newNode usePreInputs
+        #newNode usePreCaptures
 
         checkToRecompile: [
           dst:;
