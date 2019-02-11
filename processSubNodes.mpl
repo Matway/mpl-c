@@ -1761,31 +1761,33 @@ processExportFunction: [
     processor.processingExport 1 - @processor.@processingExport set
   ] when
 
-  newNode: newNodeIndex processor.nodes.at.get;
-  newNode.outputs.getSize 1 > ["export function cant have 2 or more outputs" compilerError] when
-  newNode.outputs.getSize 1 = [signature.outputs.getSize 0 =] && ["signature is void, export function must be without output" compilerError] when
-  newNode.outputs.getSize 0 = [signature.outputs.getSize 1 =] && ["signature is not void, export function must have output" compilerError] when
-
   compilable [
-    newNode.captureNames [
-      currentCaptureName: .value;
-      currentCaptureName.startPoint indexOfNode = not [
-        #("use cap from module " currentCaptureName.startPoint " while get name " currentCaptureName.nameInfo processor.nameInfos.at.name " type " refToVar getMplType) addLog
-        fr: currentCaptureName.startPoint @currentNode.@usedModulesTable.find;
-        fr.success [TRUE @fr.@value.@used set] when
-      ] when
-    ] each
+    newNode: newNodeIndex processor.nodes.at.get;
+    newNode.outputs.getSize 1 > ["export function cant have 2 or more outputs" compilerError] when
+    newNode.outputs.getSize 1 = [signature.outputs.getSize 0 =] && ["signature is void, export function must be without output" compilerError] when
+    newNode.outputs.getSize 0 = [signature.outputs.getSize 1 =] && ["signature is not void, export function must have output" compilerError] when
 
-    signature.outputs [
-      pair:;
-      currentInNode: pair.index newNode.outputs.at.refToVar;
-      currentInSignature: pair.value;
+    compilable [
+      newNode.captureNames [
+        currentCaptureName: .value;
+        currentCaptureName.startPoint indexOfNode = not [
+          #("use cap from module " currentCaptureName.startPoint " while get name " currentCaptureName.nameInfo processor.nameInfos.at.name " type " refToVar getMplType) addLog
+          fr: currentCaptureName.startPoint @currentNode.@usedModulesTable.find;
+          fr.success [TRUE @fr.@value.@used set] when
+        ] when
+      ] each
 
-      currentInNode currentInSignature variablesAreSame not [
-        ("export function output mismatch, expected " currentInSignature getMplType ";" LF
-          "but found " currentInNode getMplType) assembleString compilerError
-      ] when
-    ] each
+      signature.outputs [
+        pair:;
+        currentInNode: pair.index newNode.outputs.at.refToVar;
+        currentInSignature: pair.value;
+
+        currentInNode currentInSignature variablesAreSame not [
+          ("export function output mismatch, expected " currentInSignature getMplType ";" LF
+            "but found " currentInNode getMplType) assembleString compilerError
+        ] when
+      ] each
+    ] when
   ] when
 
   signature.inputs [p:; a: pop;] each

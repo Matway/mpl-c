@@ -850,6 +850,7 @@ parseSignature: [
       optionsVar.data.getTag VarStruct = not ["options must be a struct" compilerError] when
     ] [
       optionsStruct: VarStruct optionsVar.data.get.get;
+      hasConvention: FALSE dynamic;
       optionsStruct.fields [
         f: .value;
         f.nameInfo (
@@ -872,13 +873,8 @@ parseSignature: [
               [conventionRefToVar staticnessOfVar Weak < ["value must be Static" compilerError] when]
               [
                 string: VarString conventionVar.data.get;
-                string (
-                  "mpl"     [ConventionMpl   @result.@convention set]
-                  "stdcall" [ConventionStd   @result.@convention set]
-                  "cdecl"   [ConventionCdecl @result.@convention set]
-                  "fast"    [ConventionFast  @result.@convention set]
-                  [("unknown convention: " string) assembleString compilerError]
-                ) case
+                string @result.@convention set
+                TRUE @hasConvention set
               ]
             ) sequence
           ] [
@@ -888,7 +884,7 @@ parseSignature: [
       ] each
     ]
     [
-      result.convention ConventionMpl = [
+      hasConvention not [
         "default convention is not implemented" compilerError
       ] [
         return: pop;
@@ -950,35 +946,32 @@ mplBuiltinExportVariable: [
       varName: refToName getVar;
       varName.data.getTag VarString = not ["name must be static string" compilerError] when
     ] [
-      varBody: refToVar getVar;
-      varBody.data.getTag VarCode = ["cannot export code" compilerError] when
+      refToVar isVirtual ["cannot export virtual var" compilerError] when
     ] [
-      #oops, it is not a code, its a simple global var
-      refToType: @refToVar;
-      varType: @varBody;
-      varType.temporary not ["export var must be temporary" compilerError] when
+      refToVar getVar.temporary not [
+        refToVar refToVar.mutable createRef @refToVar set
+      ] when
+      var: refToVar getVar;
+      FALSE @var.@temporary set
     ] [
       name: VarString varName.data.get;
-      newRefToVar: @refToType;
-      newVar: @varType;
-
-      oldIrNameId: newVar.irNameId copy;
-      oldInstructionIndex: newVar.globalDeclarationInstructionIndex copy;
-      ("@" name) assembleString makeStringId @newVar.@irNameId set
-      instruction: newVar.globalDeclarationInstructionIndex @processor.@prolog.at;
-      newRefToVar createVarExportIR @newRefToVar set
+      oldIrNameId: var.irNameId copy;
+      oldInstructionIndex: var.globalDeclarationInstructionIndex copy;
+      ("@" name) assembleString makeStringId @var.@irNameId set
+      instruction: var.globalDeclarationInstructionIndex @processor.@prolog.at;
+      refToVar createVarExportIR drop
       @processor.@prolog.last move @instruction set
       @processor.@prolog.popBack
-      TRUE @newRefToVar.@mutable set
-      oldIrNameId newVar.irNameId newVar.irTypeId createGlobalAliasIR
-      oldInstructionIndex @newVar.@globalDeclarationInstructionIndex set
+      TRUE @refToVar.@mutable set
+      oldIrNameId var.irNameId var.irTypeId createGlobalAliasIR
+      oldInstructionIndex @var.@globalDeclarationInstructionIndex set
 
       nameInfo: name findNameInfo;
-      nameInfo newRefToVar addOverloadForPre
-      nameInfo newRefToVar NameCaseLocal addNameInfo
-      processor.options.debug [newRefToVar isVirtual not] && [
-        d: nameInfo newRefToVar addGlobalVariableDebugInfo;
-        globalInstruction: newVar.globalDeclarationInstructionIndex @processor.@prolog.at;
+      nameInfo refToVar addOverloadForPre
+      nameInfo refToVar NameCaseLocal addNameInfo
+      processor.options.debug [
+        d: nameInfo refToVar addGlobalVariableDebugInfo;
+        globalInstruction: var.globalDeclarationInstructionIndex @processor.@prolog.at;
         ", !dbg !"   @globalInstruction.cat
         d            @globalInstruction.cat
       ] when
@@ -1026,24 +1019,26 @@ mplBuiltinImportVariable: [
   currentNode.parent 0 = not ["import must be global" compilerError] when
   compilable [
     refToName: pop;
-    refToOutputs: pop;
+    refToType: pop;
     compilable [
-      refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when
+      refToName staticnessOfVar Weak < ["variable name must be static string" compilerError] when
       compilable [
         varName: refToName getVar;
-        varOutputs: refToOutputs getVar;
-        varName.data.getTag VarString = not ["name must be static string" compilerError] when
+        varName.data.getTag VarString = not ["variable name must be static string" compilerError] when
         compilable [
-          varOutputs.data.getTag VarCode = [
-            "variable cant be a code" compilerError
+          varType: refToType getVar;
+          refToType isVirtual [
+            "variable cant be virtual" compilerError
           ] [
-            refToType: @refToOutputs;
-            varType: @varOutputs;
-            name: VarString varName.data.get;
+            varType.temporary not [
+              refToType refToType.mutable createRef @refToType set
+            ] when
 
+            name: VarString varName.data.get;
             newRefToVar: refToType copyVar;
             newVar: newRefToVar getVar;
             TRUE @newRefToVar.@mutable set
+            FALSE @newVar.@temporary set
             ("@" name) assembleString makeStringId @newVar.@irNameId set
             newRefToVar createVarImportIR makeVarTreeDynamic
 

@@ -21,6 +21,7 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG=TRUE -ndebug -o mp
  ../variable.mpl^
  ../sl/Array.mpl^
  ../sl/control.mpl^
+ ../sl/conventions.mpl^
  ../sl/file.mpl^
  ../sl/HashTable.mpl^
  ../sl/memory.mpl^

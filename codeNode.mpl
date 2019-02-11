@@ -2939,27 +2939,12 @@ finalizeCodeNode: [
   ] each
 
   String @currentNode.@irName set
-  hasForcedSignature [processor.options.pointerSize 32nx =] && [
-    forcedSignature.convention (
-      ConventionCdecl []
-      ConventionStd   ["x86_stdcallcc "  toString @currentNode.@convention set]
-      ConventionFast  ["x86_fastcallcc " toString @currentNode.@convention set]
-      []
-    ) case
+  hasForcedSignature [forcedSignature.convention "" = not] && [
+    (forcedSignature.convention " ") assembleString @currentNode.@convention set
+    forcedSignature.convention @currentNode.@mplConvention set
   ] [
     String @currentNode.@convention set
-  ] if
-
-  hasForcedSignature [
-    forcedSignature.convention (
-      ConventionMpl   ["mpl"   toString @currentNode.@mplConvention set]
-      ConventionCdecl ["cdecl" toString @currentNode.@mplConvention set]
-      ConventionStd   ["std"   toString @currentNode.@mplConvention set]
-      ConventionFast  ["fast"  toString @currentNode.@mplConvention set]
-      [[FALSE] "Unknown convention!" assert]
-    ) case
-  ] [
-    "mpl" toString @currentNode.@mplConvention set
+    "-" toString @currentNode.@mplConvention set
   ] if
 
   (retType "(" signature ")") assembleString @currentNode.@signature set

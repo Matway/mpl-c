@@ -33,7 +33,7 @@ failProcForProcessor: [
   nodeCase: NodeCaseCode;
   parentIndex: 0;
   functionName: StringView Cref;
-} 0 {convention: "cdecl";} "astNodeToCodeNode" importFunction
+} 0 {convention: cdecl;} "astNodeToCodeNode" importFunction
 
 {
   signature: CFunctionSignature Cref;
@@ -42,7 +42,7 @@ failProcForProcessor: [
   processor: Processor Ref;
   processorResult: ProcessorResult Ref;
   refToVar: RefToVar Cref;
-} () {convention: "cdecl";} "createDtorForGlobalVar" importFunction
+} () {convention: cdecl;} "createDtorForGlobalVar" importFunction
 
 processImpl: [
   processorResult:;
@@ -323,7 +323,7 @@ processImpl: [
   unitId: 0;
   options: ProcessorOptions Cref;
   multiParserResult: MultiParserResult Cref;
-} () {convention: "cdecl";} [
+} () {convention: cdecl;} [
   processorResult:;
   unitId:;
   options:;
@@ -344,7 +344,7 @@ processImpl: [
   nodeCase: NodeCaseCode;
   parentIndex: 0;
   functionName: StringView Cref;
-} 0 {convention: "cdecl";}  [
+} 0 {convention: cdecl;}  [
   signature:;
   compilerPositionInfo:;
   multiParserResult:;
@@ -409,7 +409,7 @@ createDtorForGlobalVarImpl: [
   processor: Processor Ref;
   processorResult: ProcessorResult Ref;
   refToVar: RefToVar Cref;
-} () {convention: "cdecl";} [
+} () {convention: cdecl;} [
   forcedSignature:;
   compilerPositionInfo:;
   multiParserResult:;

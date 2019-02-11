@@ -54,11 +54,6 @@ ArgReturn:        [4n8 dynamic] func;
 ArgRefDeref:      [5n8 dynamic] func;
 ArgReturnDeref:   [6n8 dynamic] func;
 
-ConventionMpl:   [0n8 dynamic] func;
-ConventionCdecl: [1n8 dynamic] func;
-ConventionStd:   [2n8 dynamic] func;
-ConventionFast:  [3n8 dynamic] func;
-
 Argument: [{
   refToVar: RefToVar;
   argCase: ArgRef;
@@ -162,7 +157,7 @@ CFunctionSignature: [{
   inputs: RefToVar Array;
   outputs: RefToVar Array;
   variadic: FALSE dynamic;
-  convention: ConventionMpl dynamic;
+  convention: String;
 }] func;
 
 UsedModuleInfo: [{
