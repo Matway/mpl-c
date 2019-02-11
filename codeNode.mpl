@@ -899,7 +899,7 @@ makeVirtualVarReal: [
         refToVar @unfinishedSrc.pushBack
         result @unfinishedDst.pushBack
 
-        result untemporize
+        # result untemporize
         # first pass: make new variable type
         [
           unfinishedSrc.dataSize 0 > [
