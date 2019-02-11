@@ -809,7 +809,6 @@ getFuncMplType: [
       i args.dataSize < [
         current: i args.at.refToVar;
         current getMplType                                            @result.cat
-        #current.mutable ["R" makeStringView]["C" makeStringView] if   @result.cat
         i 1 + args.getSize < [
           ","                                                         @result.cat
         ] when

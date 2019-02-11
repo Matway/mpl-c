@@ -200,7 +200,6 @@ CodeNode: [{
   emptyDeclaration: FALSE dynamic;
   uncompilable: FALSE dynamic;
   variadic: FALSE dynamic;
-  #positionInfo: CompilerPositionInfo;
 
   declarationRefs: Cond Array;
   buildingMatchingInfo: MatchingInfo;

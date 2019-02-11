@@ -2966,7 +2966,6 @@ finalizeCodeNode: [
     # we can call func as imported
     topIndex: indexOfNode copy;
     topNode: @currentNode;
-
     [topNode.parent 0 = not] [
       topNode.parent @topIndex set
       topIndex @processor.@nodes.at.get !topNode
@@ -3471,11 +3470,11 @@ astNodeToCodeNodeImpl: [
   failProc: @failProcForProcessor;
 
   processor.options.autoRecursion @codeNode.@nodeIsRecursive set
-  nodeCase @codeNode.@nodeCase set
-  parentIndex @codeNode.@parent set
-  @compilerPositionInfo @codeNode.@position set
-  getStackDepth @codeNode.@minStackDepth set
-  processor.varCount @codeNode.@variableCountDelta set
+  nodeCase                        @codeNode.@nodeCase set
+  parentIndex                     @codeNode.@parent set
+  @compilerPositionInfo           @codeNode.@position set
+  getStackDepth                   @codeNode.@minStackDepth set
+  processor.varCount              @codeNode.@variableCountDelta set
 
   processor.depthOfRecursion 1 + @processor.@depthOfRecursion set
   processor.depthOfRecursion processor.maxDepthOfRecursion > [
