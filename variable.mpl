@@ -195,14 +195,15 @@ getVar: [
 ] func;
 
 getNameById: [processor.nameBuffer.at makeStringView] func;
-getMplName: [getVar.mplNameId getNameById] func;
-getIrName: [getVar.irNameId getNameById] func;
-getMplType: [getVar.mplTypeId getNameById] func;
-getIrType: [getVar.irTypeId getNameById] func;
-getDbgType: [getVar.dbgTypeId getNameById] func;
+getMplName:  [getVar.mplNameId getNameById] func;
+getIrName:   [getVar.irNameId getNameById] func;
+getMplType:  [getVar.mplTypeId getNameById] func;
+getIrType:   [getVar.irTypeId getNameById] func;
+getDbgType:  [getVar.dbgTypeId getNameById] func;
 
 getDebugType: [
-  splitted: getDbgType.split;
+  dbgType: getDbgType;
+  splitted: dbgType.split;
   splitted.success [
     splitted.chars.getSize 1024 > [
       1024 @splitted.@chars.shrink
@@ -211,7 +212,9 @@ getDebugType: [
   ] [
     ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString compilerError
   ] if
-  splitted.chars assembleString
+  result: (dbgType hash ".") assembleString;
+  splitted.chars @result.catMany
+  @result
 ] func;
 
 deepPrintVar: [
@@ -956,8 +959,10 @@ makeVariableType: [
               curField.refToVar isVirtual not [
                 (
                   curField.nameInfo processor.nameInfos.at.name ":"
-                  curField.refToVar getDbgType ";") assembleString @resultDBG.cat
-              ] when
+                  curField.refToVar getDbgType ";") @resultDBG.catMany
+              ] [
+                (curField.nameInfo processor.nameInfos.at.name ".") @resultDBG.catMany
+              ] if
               i 1 + @i set TRUE
             ] &&
           ] loop
