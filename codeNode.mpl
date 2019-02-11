@@ -993,6 +993,7 @@ makeVirtualVarReal: [
       FALSE @result.@mutable set
       result @realValue set
     ] when
+
     realValue copy
   ] if
 ] func;
@@ -2832,8 +2833,9 @@ finalizeCodeNode: [
       current: i currentNode.buildingMatchingInfo.captures.at;
       current.argCase ArgRef = [
         isRealFunction [
-          ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name) assembleString compilerError
+          ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name "; type=" current.refToVar getMplType) assembleString compilerError
         ] when
+
         current.refToVar FALSE addRefArg
       ] [
         current.argCase ArgGlobal = [
