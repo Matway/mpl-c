@@ -1247,9 +1247,13 @@ processPre: [
     newNodeIndex: indexArray tryMatchAllNodes;
     newNodeIndex 0 < [compilable] && [
       oldSuccess: compilable;
+      oldGlobalErrorCount: processorResult.globalErrorInfo.getSize;
+
       processor.depthOfPre 1 + @processor.@depthOfPre set
       "PRE" makeStringView indexOfNode NodeCaseCode  @processorResult @processor indexArray multiParserResult positionInfo CFunctionSignature astNodeToCodeNode @newNodeIndex set
       processor.depthOfPre 1 - @processor.@depthOfPre set
+
+      oldGlobalErrorCount @processorResult.@globalErrorInfo.shrink
 
       oldSuccess [
         processor.maxDepthExceeded not [
@@ -1900,11 +1904,13 @@ processExportFunction: [
     "export function cannot be variadic" compilerError
   ] when
 
+  oldSuccess: compilable;
   newNodeIndex: @indexArray TRUE dynamic tryMatchAllNodesWith;
   newNodeIndex 0 < [compilable] && [
     nodeCase: asLambda [NodeCaseLambda][NodeCaseExport] if;
     processor.processingExport 1 + @processor.@processingExport set
     name indexOfNode nodeCase @processorResult @processor indexArray multiParserResult positionInfo signature astNodeToCodeNode @newNodeIndex set
+
     processor.processingExport 1 - @processor.@processingExport set
   ] when
 
@@ -1944,6 +1950,12 @@ processExportFunction: [
         ] when
       ] each
     ] when
+  ] when
+
+  oldSuccess compilable not and [
+    @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
+    ProcessorErrorInfo @processorResult.@errorInfo set
+    TRUE dynamic @processorResult.@success set
   ] when
 
   signature.inputs [p:; a: pop;] each

@@ -230,32 +230,35 @@ createDefinition: [
 
             processorResult.success [
               outputFileName @processorResult.@program saveString [
-                ("program written to " makeStringView outputFileName makeStringView) addLog
+                ("program written to " outputFileName) addLog
               ] [
-                ("failed to save program" makeStringView) addLog
+                ("failed to save program" LF) printList
+                FALSE @success set
               ] if
             ] [
-              processorResult.errorInfo.position.dataSize 0 = [
-                ("error, "  processorResult.errorInfo.message) printList LF print
-              ] [
-                i: 0 dynamic;
-                [
-                  i processorResult.errorInfo.position.dataSize < [
-                    nodePosition: i processorResult.errorInfo.position.at;
+              processorResult.globalErrorInfo [
+                pair:;
+                current: pair.value;
+                pair.index 0 > [LF print] when 
+                current.position.getSize 0 = [
+                  ("error, "  current.message) printList LF print
+                ] [
+                  current.position [
+                    pair:;
+                    i: pair.index;
+                    nodePosition: pair.value;
                     (nodePosition.filename options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
 
                     i 0 = [
-                      ("error, [" nodePosition.token "], " processorResult.errorInfo.message) printList LF print
+                      ("error, [" nodePosition.token "], " current.message LF) printList
                     ] [
-                      ("[" nodePosition.token "], called from here") printList LF print
+                      ("[" nodePosition.token "], called from here" LF) printList
                     ] if
+                  ] each
+                ] if
 
-                    i 1 + @i set TRUE
-                  ] &&
-                ] loop
-              ] if
-
-              FALSE @success set
+                FALSE @success set
+              ] each
             ] if
           ] when
         ] if

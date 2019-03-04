@@ -35,6 +35,7 @@ ProcessorResult: [{
   findModuleFail: FALSE dynamic;
   program: String;
   errorInfo: ProcessorErrorInfo;
+  globalErrorInfo: ProcessorErrorInfo Array;
 }] func;
 
 makeInstruction: [{

@@ -119,9 +119,14 @@ processImpl: [
   multiParserResult.nodes.dataSize 0 > [
 
     dependedFiles: String IndexArray HashTable; # string -> array of indexes of dependent files
+    cachedGlobalErrorInfoSize: 0;
 
     clearProcessorResult: [
-      ProcessorResult @processorResult set
+      TRUE dynamic              @processorResult.@success set
+      FALSE dynamic             @processorResult.@findModuleFail set
+      String                    @processorResult.@program set
+      ProcessorErrorInfo        @processorResult.@errorInfo set
+      cachedGlobalErrorInfoSize @processorResult.@globalErrorInfo.shrink
     ] func;
 
     runFile: [
@@ -134,6 +139,7 @@ processImpl: [
       0 dynamic @rootPositionInfo.@offset set
       n dynamic @rootPositionInfo.@filename set
 
+      processorResult.globalErrorInfo.getSize @cachedGlobalErrorInfoSize set
       topNodeIndex: StringView 0 NodeCaseCode @processorResult @processor fileNodes multiParserResult rootPositionInfo CFunctionSignature astNodeToCodeNode;
 
       processorResult.findModuleFail [
@@ -189,6 +195,14 @@ processImpl: [
       ] &&
     ] loop
 
+    processorResult.success not [
+      @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
+    ] when
+
+    processorResult.globalErrorInfo.getSize 0 > [
+      FALSE @processorResult.@success set
+    ] when
+
     processorResult.success [
       processor.options.debug [
         lastFile correctUnitInfo
@@ -224,6 +238,10 @@ processImpl: [
               ("need module: " @pair.@key "; used in file: " pair.value.last processor.options.fileNames.at LF) assembleString @processorResult.@errorInfo.@message.cat
             ] when
           ] each
+        ] when
+
+        processorResult.success not [
+          @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
         ] when
       ] when
     ] when
