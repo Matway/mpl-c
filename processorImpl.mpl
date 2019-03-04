@@ -44,6 +44,18 @@ failProcForProcessor: [
   refToVar: RefToVar Cref;
 } () {convention: cdecl;} "createDtorForGlobalVar" importFunction
 
+clearProcessorResult: [
+  copy cachedGlobalErrorInfoSize:;
+  TRUE dynamic              @processorResult.@success set
+  FALSE dynamic             @processorResult.@findModuleFail set
+  FALSE dynamic             @processorResult.@maxDepthExceeded set
+  String                    @processorResult.@program set
+  ProcessorErrorInfo        @processorResult.@errorInfo set
+  cachedGlobalErrorInfoSize 0 < not [
+    cachedGlobalErrorInfoSize @processorResult.@globalErrorInfo.shrink
+  ] when
+] func;
+
 processImpl: [
   processorResult:;
   copy unitId:;
@@ -121,14 +133,6 @@ processImpl: [
     dependedFiles: String IndexArray HashTable; # string -> array of indexes of dependent files
     cachedGlobalErrorInfoSize: 0;
 
-    clearProcessorResult: [
-      TRUE dynamic              @processorResult.@success set
-      FALSE dynamic             @processorResult.@findModuleFail set
-      String                    @processorResult.@program set
-      ProcessorErrorInfo        @processorResult.@errorInfo set
-      cachedGlobalErrorInfoSize @processorResult.@globalErrorInfo.shrink
-    ] func;
-
     runFile: [
       copy n:;
       n @lastFile set
@@ -153,7 +157,7 @@ processImpl: [
           @processorResult.@errorInfo.@missedModule @a move @dependedFiles.insert
         ] if
 
-        clearProcessorResult
+        cachedGlobalErrorInfoSize clearProcessorResult
       ] [
         ("compiled file " n processor.options.fileNames.at) addLog
         # call files which depends from this module
@@ -208,7 +212,7 @@ processImpl: [
         lastFile correctUnitInfo
       ] when
 
-      clearProcessorResult
+      0 clearProcessorResult
 
       dependedFiles.getSize 0 > [
         hasError: FALSE dynamic;

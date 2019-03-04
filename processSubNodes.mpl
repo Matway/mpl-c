@@ -255,13 +255,11 @@ tryMatchNode: [
 
   goodReality: 
     forceRealFunction not [
-      currentMatchingNode.state NodeStateCompiled = [
-        currentMatchingNode.nodeCase NodeCaseDeclaration =
-        [currentMatchingNode.nodeCase NodeCaseDllDeclaration =] ||
-        [currentMatchingNode.nodeCase NodeCaseCodeRefDeclaration =] ||
-        [currentMatchingNode.nodeCase NodeCaseExport =] ||
-        [currentMatchingNode.nodeCase NodeCaseLambda =] ||
-      ] &&
+      currentMatchingNode.nodeCase NodeCaseDeclaration =
+      [currentMatchingNode.nodeCase NodeCaseDllDeclaration =] ||
+      [currentMatchingNode.nodeCase NodeCaseCodeRefDeclaration =] ||
+      [currentMatchingNode.nodeCase NodeCaseExport =] ||
+      [currentMatchingNode.nodeCase NodeCaseLambda =] ||
     ] ||;
 
   invisibleName: currentMatchingNode.nodeCase NodeCaseLambda = [currentMatchingNode.varNameInfo 0 < not] && [
@@ -1256,10 +1254,7 @@ processPre: [
       oldGlobalErrorCount @processorResult.@globalErrorInfo.shrink
 
       oldSuccess [
-        processor.maxDepthExceeded not [
-          ProcessorErrorInfo @processorResult.@errorInfo set
-          TRUE dynamic @processorResult.@success set
-        ] when
+        processorResult.maxDepthExceeded not [-1 clearProcessorResult] when
       ] [
         [FALSE] "Has compilerError before trying compiling pre!" assert
       ] if
@@ -1905,6 +1900,8 @@ processExportFunction: [
   ] when
 
   oldSuccess: compilable;
+  oldRecursiveNodesStackSize: processor.recursiveNodesStack.getSize;
+
   newNodeIndex: @indexArray TRUE dynamic tryMatchAllNodesWith;
   newNodeIndex 0 < [compilable] && [
     nodeCase: asLambda [NodeCaseLambda][NodeCaseExport] if;
@@ -1921,6 +1918,10 @@ processExportFunction: [
     newNode.outputs.getSize 1 > ["export function cant have 2 or more outputs" compilerError] when
     newNode.outputs.getSize 1 = [signature.outputs.getSize 0 =] && ["signature is void, export function must be without output" compilerError] when
     newNode.outputs.getSize 0 = [signature.outputs.getSize 1 =] && ["signature is not void, export function must have output" compilerError] when
+    newNode.state NodeStateCompiled = not [
+      "can not implement lambda inside itself body" compilerError
+      FALSE @oldSuccess set
+    ] when
 
     compilable [
       newNode.captureNames [
@@ -1954,8 +1955,8 @@ processExportFunction: [
 
   oldSuccess compilable not and [
     @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
-    ProcessorErrorInfo @processorResult.@errorInfo set
-    TRUE dynamic @processorResult.@success set
+    oldRecursiveNodesStackSize @processor.@recursiveNodesStack.shrink
+    -1 clearProcessorResult
   ] when
 
   signature.inputs [p:; a: pop;] each
