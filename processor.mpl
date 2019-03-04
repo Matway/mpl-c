@@ -175,6 +175,8 @@ CodeNode: [{
   program: Instruction Array;
   aliases: String Array;
   variables: Variable Owner Array; # as unique_ptr...
+  lastLambdaName: Int32;
+  nextRecLambdaId: -1 dynamic;
 
   nodeIsRecursive: FALSE dynamic;
   nextLabelIsVirtual: FALSE dynamic;

@@ -1881,21 +1881,42 @@ tryImplicitLambdaCast: [
       declarationIndex: VarImport dstPointeeVar.data.get;
       declarationNode: declarationIndex processor.nodes.at.get;
       csignature: declarationNode.csignature;
-      name: ("lambda." processor.nodes.getSize) assembleString;
       astNode: VarCode refToSrc getVar.data.get @multiParserResult.@memory.at;
-      index: csignature astNode name makeStringView TRUE dynamic processExportFunction;
+      implName: ("lambda." indexOfNode "." currentNode.lastLambdaName) assembleString;
+      implIndex: csignature astNode implName makeStringView TRUE dynamic processExportFunction;
 
       compilable [
-        lambdaNode: index processor.nodes.at.get;
-        gnr: lambdaNode.varNameInfo getName;
-        compilable not [
-          [FALSE] "Name of new lambda is not visible!" assert
-        ] [
-          cnr: gnr captureName;
-          cnr.refToVar @result.@refToVar set
+        implNode: implIndex processor.nodes.at.get;
+        implNode.state NodeStateCompiled = not [
+          #currentNode.recursionState NodeRecursionStateNo = [
+          #  NodeRecursionStateNew @currentNode.@recursionState set
+          #] when
+
+          #implNode.state NodeStateNew = [
+          #  processor.recursiveNodesStack.getSize 0 = [processor.recursiveNodesStack.last implIndex = not] || [
+          #    implIndex @processor.@recursiveNodesStack.pushBack
+          #  ] when
+          #] when
+
+          #"recursive lambda cast not allowed" compilerError
+          currentNode.state NodeStateHasOutput > [NodeStateHasOutput @currentNode.@state set] when
+          dstPointee @result.@refToVar set
           TRUE dynamic @result.@success set
-        ] if
+        ] when
+
+        implNode.varNameInfo 0 < not [
+          gnr: implNode.varNameInfo getName;
+          compilable not [
+            [FALSE] "Name of new lambda is not visible!" assert
+          ] [
+            cnr: gnr captureName;
+            cnr.refToVar @result.@refToVar set
+            TRUE dynamic @result.@success set
+          ] if
+        ] when
       ] when
+
+      currentNode.lastLambdaName 1 + @currentNode.@lastLambdaName set
     ] when
   ] when
 
@@ -2881,7 +2902,8 @@ finalizeCodeNode: [
     ] loop
   ] func;
 
-  noname: hasForcedSignature not [currentNode.nodeCase NodeCaseLambda =] ||;
+  noname: hasForcedSignature not;
+    #[currentNode.nodeCase NodeCaseLambda =] ||;
 
   currentNode.nodeCase NodeCaseEmpty = [
     noname
@@ -2965,6 +2987,7 @@ finalizeCodeNode: [
   addFunctionVariableInfo: [
     declarationNodeIndex: indexOfNode copy;
     declarationNode: @currentNode;
+
     # we can call func as imported
     topIndex: indexOfNode copy;
     topNode: @currentNode;
@@ -2976,7 +2999,22 @@ finalizeCodeNode: [
     indexOfNode: topIndex copy;
     currentNode: @topNode;
 
-    refToVar: declarationNodeIndex VarImport createVariable;
+    refToVar: RefToVar;
+    fr: @functionName @processor.@namedFunctions.find;
+    fr.success [
+      prev: fr.value @processor.@nodes.at.get;
+      prev.refToVar @refToVar set
+      refToVar.hostId 0 < not [
+        declarationNodeIndex @prev.@nextRecLambdaId set
+      ] when
+    ] [
+      functionName toString declarationNodeIndex @processor.@namedFunctions.insert
+    ] if
+
+    refToVar.hostId 0 < [
+      declarationNodeIndex VarImport createVariable @refToVar set
+    ] when
+
     refToVar @declarationNode.@refToVar set
     FALSE refToVar getVar.@temporary set
     declarationNode.nodeCase NodeCaseCodeRefDeclaration = [
@@ -2995,8 +3033,8 @@ finalizeCodeNode: [
       processor.prolog.dataSize 1 - refToVar getVar.@globalDeclarationInstructionIndex set
     ] if
 
-    nameInfo: functionName findNameInfo;
     topIndex @declarationNode.@moduleId set
+    nameInfo: functionName findNameInfo;
     nameInfo @declarationNode.@varNameInfo set
     nameInfo refToVar NameCaseLocal addNameInfo
   ] func;
@@ -3064,46 +3102,48 @@ finalizeCodeNode: [
       ] if
     ] if
 
-    currentNode.nodeCase NodeCaseCodeRefDeclaration = [
+    currentNode.nodeCase NodeCaseCodeRefDeclaration = [currentNode.nodeCase NodeCaseLambda =] || [
       addFunctionVariableInfo
     ] [
       fr: @functionName @processor.@namedFunctions.find;
       fr.success [
         prevNode: fr.value @processor.@nodes.at.get;
-        prevNode.signature currentNode.signature = not [
-          "node was defined with another signature" compilerError
-        ] [
-          prevNode.mplConvention currentNode.mplConvention = not [
-            "node was defined with another convention" compilerError
+        prevNode.state NodeStateCompiled = [
+          prevNode.signature currentNode.signature = not [
+            "node was defined with another signature" compilerError
           ] [
-            currentNode.nodeCase NodeCaseDllDeclaration = [
-              prevNode.nodeCase NodeCaseDllDeclaration = not [
-                "dublicated dllimport func declaration" compilerError
-              ] when
+            prevNode.mplConvention currentNode.mplConvention = not [
+              "node was defined with another convention" compilerError
             ] [
-              currentNode.nodeCase NodeCaseDeclaration = [
-                TRUE @currentNode.@emptyDeclaration set
+              currentNode.nodeCase NodeCaseDllDeclaration = [
+                prevNode.nodeCase NodeCaseDllDeclaration = not [
+                  "dublicated dllimport func declaration" compilerError
+                ] when
               ] [
-                prevNode.nodeCase NodeCaseDeclaration = [
-                  TRUE @prevNode.@emptyDeclaration set
-                  indexOfNode @fr.@value set
+                currentNode.nodeCase NodeCaseDeclaration = [
+                  TRUE @currentNode.@emptyDeclaration set
                 ] [
-                  "dublicated func implementation" compilerError
+                  prevNode.nodeCase NodeCaseDeclaration = [
+                    TRUE @prevNode.@emptyDeclaration set
+                    indexOfNode @fr.@value set
+                  ] [
+                    "dublicated func implementation" compilerError
+                  ] if
                 ] if
               ] if
             ] if
           ] if
-        ] if
 
-        compilable [
-          fr: @functionName @currentNode.@namedFunctions.find;
-          fr.success not [
-            functionName toString indexOfNode @currentNode.@namedFunctions.insert
-            refToVar: prevNode.refToVar;
+          compilable [
+            fr: @functionName @currentNode.@namedFunctions.find;
+            fr.success not [
+              functionName toString indexOfNode @currentNode.@namedFunctions.insert
+              refToVar: prevNode.refToVar;
 
-            nameInfo: functionName findNameInfo;
-            indexOfNode: refToVar.hostId copy; # suppress assert
-            nameInfo refToVar NameCaseFromModule addNameInfo #it is not own local variable
+              nameInfo: functionName findNameInfo;
+              indexOfNode: refToVar.hostId copy; # suppress assert
+              nameInfo refToVar NameCaseFromModule addNameInfo #it is not own local variable
+            ] when
           ] when
         ] when
       ] [
@@ -3116,7 +3156,6 @@ finalizeCodeNode: [
 
   (currentNode.convention retType " " currentNode.irName "(" argumentList ")") @currentNode.@header.catMany
   signature @currentNode.@argTypes set
-
 
   processor.options.debug [currentNode.empty not] && [isDeclaration not] && [currentNode.nodeCase NodeCaseEmpty = not] && [
     compilerPositionInfo functionName makeStringView currentNode.irName makeStringView currentNode.funcDbgIndex addFuncDebugInfo
@@ -3200,7 +3239,7 @@ checkRecursionOfCodeNode: [
     #  processor.recursiveNodesStack [.value print " " print] each
     #  LF print
     #] when
-
+    [processor.recursiveNodesStack.getSize 0 >] "recursiveNodesStack is empty!" assert
     [
       processor.recursiveNodesStack.last indexOfNode = [
         ("processor.recursiveNodesStack.last=" processor.recursiveNodesStack.last "; but indexOfNode=" indexOfNode copy) addLog
@@ -3389,6 +3428,7 @@ checkRecursionOfCodeNode: [
   currentNode.buildingMatchingInfo @currentNode.@matchingInfo set
   clearBuildingMatchingInfo [
     MatchingInfo @currentNode.@buildingMatchingInfo set
+    0            @currentNode.@lastLambdaName set
   ] when
 ] func;
 
@@ -3506,7 +3546,7 @@ astNodeToCodeNodeImpl: [
     1 dynamic TRUE dynamic processUseModule #definitions
   ] when
 
-  #("started loop for node " indexOfNode copy " parent=" currentNode.parent) addLog
+  #("started loop for addr=" addr " node " indexOfNode copy " parent=" currentNode.parent) addLog
 
   recursionTries: 0 dynamic;
   [

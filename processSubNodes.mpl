@@ -247,10 +247,22 @@ tryMatchNode: [
       [
         currentMatchingNode.state NodeStateNew =
         [currentMatchingNode.state NodeStateHasOutput = [currentMatchingNode.recursionState NodeRecursionStateOld =] &&] ||
+        [forceRealFunction copy] ||
       ] &&
     ] ||
     [getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + < not] &&
   ] &&;
+
+  goodReality: 
+    forceRealFunction not [
+      currentMatchingNode.state NodeStateCompiled = [
+        currentMatchingNode.nodeCase NodeCaseDeclaration =
+        [currentMatchingNode.nodeCase NodeCaseDllDeclaration =] ||
+        [currentMatchingNode.nodeCase NodeCaseCodeRefDeclaration =] ||
+        [currentMatchingNode.nodeCase NodeCaseExport =] ||
+        [currentMatchingNode.nodeCase NodeCaseLambda =] ||
+      ] &&
+    ] ||;
 
   invisibleName: currentMatchingNode.nodeCase NodeCaseLambda = [currentMatchingNode.varNameInfo 0 < not] && [
     matchingCapture: Capture;
@@ -260,7 +272,7 @@ tryMatchNode: [
     gnr.refToVar.hostId 0 <
   ] &&;
 
-  canMatch invisibleName not and [
+  canMatch invisibleName not and goodReality and [
     mismatchMessage: [
       idadd:;
       msg: makeStringView;
@@ -284,6 +296,7 @@ tryMatchNode: [
           ] if
         ] if
 
+        (s) addLog
         s compilerError
       ] call
     ] func;
@@ -384,7 +397,8 @@ tryMatchNode: [
 
 ] func;
 
-tryMatchAllNodes: [
+tryMatchAllNodesWith: [
+  forceRealFunction:;
   indexArrayOfSubNode:;
   compileOnce
   indexArrayAddr: indexArrayOfSubNode storageAddress;
@@ -406,11 +420,14 @@ tryMatchAllNodes: [
         ] if
       ] &&
     ] loop
+
     result
   ] [
     -1 dynamic
   ] if
 ] func;
+
+tryMatchAllNodes: [FALSE dynamic tryMatchAllNodesWith] func;
 
 fixRecursionStack: [
   i: indexOfNode copy;
@@ -421,7 +438,9 @@ fixRecursionStack: [
         NodeRecursionStateNo @current.@recursionState set
         @processor.@recursiveNodesStack.popBack
       ] when
+
       current.parent @i set
+      [i 0 = not] "NewNodeIndex is not a parent of indexOfNode while fixRecursionStack!" assert
       TRUE
     ] &&
   ] loop
@@ -439,20 +458,41 @@ changeNewNodeState: [
       newNodeIndex @processor.@recursiveNodesStack.pushBack
     ] when
 
-    #hasLogs [
-    #  "  recStack is " print
-    #  processor.recursiveNodesStack [.value print " " print] each
-    #  LF print
-    #] when
-
     NodeStateNoOutput @currentNode.@state set
   ] [
     newNode.state NodeStateNoOutput = [
       NodeStateNoOutput @currentNode.@state set
     ] [
       newNode.recursionState NodeRecursionStateNo > [
-        fixRecursionStack
         [newNode.nodeIsRecursive copy] "new node must be recursive!" assert
+        fixRecursionStack
+      ] when
+
+      newNode.recursionState NodeRecursionStateFail > [newNode.state NodeStateHasOutput =] || [NodeStateHasOutput @currentNode.@state set] when
+    ] if
+  ] if
+] func;
+
+changeNewExportNodeState: [
+  copy newNodeIndex:;
+  newNode: newNodeIndex @processor.@nodes.at.get;
+  newNode.state NodeStateNew = [
+    [newNode.nodeIsRecursive copy] "new node must be recursive!" assert
+    fixRecursionStack
+    NodeRecursionStateNew @newNode.@recursionState set
+
+    processor.recursiveNodesStack.getSize 0 = [processor.recursiveNodesStack.last newNodeIndex = not] || [
+      newNodeIndex @processor.@recursiveNodesStack.pushBack
+    ] when
+
+    NodeStateHasOutput @currentNode.@state set
+  ] [
+    newNode.state NodeStateNoOutput = [
+      NodeStateHasOutput @currentNode.@state set
+    ] [
+      newNode.recursionState NodeRecursionStateNo > [
+        [newNode.nodeIsRecursive copy] "new node must be recursive!" assert
+        fixRecursionStack
       ] when
 
       newNode.recursionState NodeRecursionStateFail > [newNode.state NodeStateHasOutput =] || [NodeStateHasOutput @currentNode.@state set] when
@@ -1860,7 +1900,7 @@ processExportFunction: [
     "export function cannot be variadic" compilerError
   ] when
 
-  newNodeIndex: @indexArray tryMatchAllNodes;
+  newNodeIndex: @indexArray TRUE dynamic tryMatchAllNodesWith;
   newNodeIndex 0 < [compilable] && [
     nodeCase: asLambda [NodeCaseLambda][NodeCaseExport] if;
     processor.processingExport 1 + @processor.@processingExport set
@@ -1869,6 +1909,8 @@ processExportFunction: [
   ] when
 
   compilable [
+    newNodeIndex changeNewExportNodeState
+
     newNode: newNodeIndex processor.nodes.at.get;
     newNode.outputs.getSize 1 > ["export function cant have 2 or more outputs" compilerError] when
     newNode.outputs.getSize 1 = [signature.outputs.getSize 0 =] && ["signature is void, export function must be without output" compilerError] when
@@ -2086,8 +2128,16 @@ callImport: [RefToVar FALSE dynamic callImportWith] func;
 processFuncPtr: [
   refToVar:;
   var: refToVar getVar;
-  protoIndex: VarImport var.data.get;
+  protoIndex: VarImport var.data.get copy;
   node: protoIndex @processor.@nodes.at.get;
+  [
+    node.nextRecLambdaId 0 < not [
+      node.nextRecLambdaId @protoIndex set
+      protoIndex @processor.@nodes.at.get !node
+      TRUE
+    ] &&
+  ] loop
+
   dynamicFunc: refToVar staticnessOfVar Dynamic > not;
   dynamicFunc not [
     node.nodeCase NodeCaseCodeRefDeclaration = [
