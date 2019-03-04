@@ -885,24 +885,24 @@ parseSignature: [
     ]
     [
       hasConvention not [
-        "default convention is not implemented" compilerError
-      ] [
-        return: pop;
-        compilable [
-          return isVirtual [
-            returnVar: return getVar;
-            returnVar.data.getTag VarStruct = not [(return getMplType " can not be a return type") assembleString compilerError] when
+        String @result.@convention set
+      ] when
+
+      return: pop;
+      compilable [
+        return isVirtual [
+          returnVar: return getVar;
+          returnVar.data.getTag VarStruct = not [(return getMplType " can not be a return type") assembleString compilerError] when
+        ] [
+          #todo: detect temporality
+          returnVar: return getVar;
+          returnVar.temporary [
+            return @result.@outputs.pushBack
           ] [
-            #todo: detect temporality
-            returnVar: return getVar;
-            returnVar.temporary [
-              return @result.@outputs.pushBack
-            ] [
-              return return.mutable createRef @result.@outputs.pushBack
-            ] if
+            return return.mutable createRef @result.@outputs.pushBack
           ] if
-        ] when
-      ] if
+        ] if
+      ] when
     ]
     [arguments: pop;]
     [
