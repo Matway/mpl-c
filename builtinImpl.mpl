@@ -1664,13 +1664,13 @@ parseSignature: [
 [
   TRUE dynamic @processor.@usedHeapBuiltins set
   refToVar: pop;
-  refToVar createNew push TRUE defaultRef
+  compilable [refToVar createNew push TRUE defaultRef] when
 ] "mplBuiltinNew" declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedHeapBuiltins set
   refToVar: pop;
-  refToVar createDelete
+  compilable [refToVar createDelete] when
 ] "mplBuiltinDelete" declareBuiltin ucall
 
 [
