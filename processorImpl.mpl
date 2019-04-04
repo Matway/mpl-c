@@ -11,52 +11,12 @@
 "processor" useModule
 "irWriter" useModule
 
-failProcForProcessor: [
-  failProc: [stringMemory printAddr " - fail while handling fail" stringMemory printAddr] func;
-  copy message:;
-  "ASSERTION FAILED!!!" print LF print
-  message print LF print
-  "While compiling:" print LF print
-  mplBuiltinPrintStackTrace
-
-  "Terminating..." print LF print
-  2 exit
-] func;
-
 {
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
-  multiParserResult: MultiParserResult Cref;
-  indexArray: IndexArray Cref;
-  processor: Processor Ref;
   processorResult: ProcessorResult Ref;
-  nodeCase: NodeCaseCode;
-  parentIndex: 0;
-  functionName: StringView Cref;
-} 0 {convention: cdecl;} "astNodeToCodeNode" importFunction
-
-{
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
+  unitId: 0;
+  options: ProcessorOptions Cref;
   multiParserResult: MultiParserResult Cref;
-  processor: Processor Ref;
-  processorResult: ProcessorResult Ref;
-  refToVar: RefToVar Cref;
-} () {convention: cdecl;} "createDtorForGlobalVar" importFunction
-
-clearProcessorResult: [
-  copy cachedGlobalErrorInfoSize:;
-  TRUE dynamic              @processorResult.@success set
-  FALSE dynamic             @processorResult.@findModuleFail set
-  FALSE dynamic             @processorResult.@maxDepthExceeded set
-  String                    @processorResult.@program set
-  ProcessorErrorInfo        @processorResult.@errorInfo set
-  cachedGlobalErrorInfoSize 0 < not [
-    cachedGlobalErrorInfoSize @processorResult.@globalErrorInfo.shrink
-  ] when
-] func;
-
-processImpl: [
+} () {convention: cdecl;} [
   processorResult:;
   copy unitId:;
   options:;
@@ -337,57 +297,16 @@ processImpl: [
       ] when
     ] each
   ] when
-] func;
-
-{
-  processorResult: ProcessorResult Ref;
-  unitId: 0;
-  options: ProcessorOptions Cref;
-  multiParserResult: MultiParserResult Cref;
-} () {convention: cdecl;} [
-  processorResult:;
-  unitId:;
-  options:;
-  multiParserResult:;
-  multiParserResult
-  options
-  unitId
-  @processorResult processImpl
 ] "process" exportFunction
 
 {
   signature: CFunctionSignature Cref;
   compilerPositionInfo: CompilerPositionInfo Cref;
   multiParserResult: MultiParserResult Cref;
-  indexArray: IndexArray Cref;
   processor: Processor Ref;
   processorResult: ProcessorResult Ref;
-  nodeCase: NodeCaseCode;
-  parentIndex: 0;
-  functionName: StringView Cref;
-} 0 {convention: cdecl;}  [
-  signature:;
-  compilerPositionInfo:;
-  multiParserResult:;
-  indexArray:;
-  processor:;
-  processorResult:;
-  nodeCase:;
-  parentIndex:;
-  functionName:;
-
-  functionName
-  parentIndex
-  nodeCase
-  @processorResult
-  @processor
-  indexArray
-  multiParserResult
-  compilerPositionInfo
-  signature astNodeToCodeNodeImpl
-] "astNodeToCodeNode" exportFunction
-
-createDtorForGlobalVarImpl: [
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} [
   forcedSignature:;
   compilerPositionInfo:;
   multiParserResult:;
@@ -421,21 +340,4 @@ createDtorForGlobalVarImpl: [
   dtorName: ("dtor." refToVar getVar.globalId) assembleString;
   dtorNameStringView: dtorName makeStringView;
   dtorNameStringView finalizeCodeNode
-] func;
-
-{
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
-  multiParserResult: MultiParserResult Cref;
-  processor: Processor Ref;
-  processorResult: ProcessorResult Ref;
-  refToVar: RefToVar Cref;
-} () {convention: cdecl;} [
-  forcedSignature:;
-  compilerPositionInfo:;
-  multiParserResult:;
-  processor:;
-  processorResult:;
-  refToVar:;
-  refToVar @processorResult @processor multiParserResult compilerPositionInfo forcedSignature createDtorForGlobalVarImpl
 ] "createDtorForGlobalVar" exportFunction

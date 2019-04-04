@@ -4,6 +4,9 @@
 "Variant"   includeModule
 "Owner"     includeModule
 
+"irWriter" includeModule
+"debugWriter" includeModule
+
 Dirty:           [0n8 dynamic] func;
 Dynamic:         [1n8 dynamic] func;
 Weak:            [2n8 dynamic] func;

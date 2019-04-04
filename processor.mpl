@@ -1,5 +1,6 @@
 "processor" module
-"control" useModule
+"control" includeModule
+"astNodeType" includeModule
 
 CompilerPositionInfo: [{
   column: -1 dynamic;

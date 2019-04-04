@@ -9,6 +9,7 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG=TRUE -ndebug -o mp
  ../builtins.mpl^
  ../codeNode.mpl^
  ../debugWriter.mpl^
+ ../defaultImpl.mpl^
  ../irWriter.mpl^
  ../main.mpl^
  ../parser.mpl^

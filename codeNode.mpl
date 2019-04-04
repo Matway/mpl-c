@@ -1,7 +1,127 @@
 "codeNode" module
 "control" useModule
 
+"staticCall" includeModule
+"variable" includeModule
+"processor" includeModule
+
 compilable: [processorResult.success copy] func;
+
+{
+  signature: CFunctionSignature Cref;
+  compilerPositionInfo: CompilerPositionInfo Cref;
+  multiParserResult: MultiParserResult Cref;
+  indexArray: IndexArray Cref;
+  processor: Processor Ref;
+  processorResult: ProcessorResult Ref;
+  nodeCase: NodeCaseCode;
+  parentIndex: 0;
+  functionName: StringView Cref;
+} 0 {convention: cdecl;} "astNodeToCodeNode" importFunction
+
+{
+  signature: CFunctionSignature Cref;
+  compilerPositionInfo: CompilerPositionInfo Cref;
+  multiParserResult: MultiParserResult Cref;
+  processor: Processor Ref;
+  processorResult: ProcessorResult Ref;
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} "createDtorForGlobalVar" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref; 
+  positionInfo: CompilerPositionInfo Cref;
+  name: StringView Cref;
+  nodeCase: NodeCaseCode;
+  indexArray: IndexArray Cref;
+} () {convention: cdecl;} "processCallByIndexArrayImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  index: Int32;
+} () {convention: cdecl;} "callBuiltinImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref; 
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} "processFuncPtrImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  preAstNodeIndex: Int32;
+} Cond {convention: cdecl;} "processPreImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  name: StringView Cref;
+  callAstNodeIndex: Int32;
+} () {convention: cdecl;} "processCallImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  asLambda: Cond;
+  name: StringView Cref;
+  astNode: AstNode Cref;
+  signature: CFunctionSignature Cref;
+} Int32 {convention: cdecl;} "processExportFunctionImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  asCodeRef: Cond;
+  name: StringView Cref;
+  signature: CFunctionSignature Cref;
+} Int32 {convention: cdecl;} "processImportFunctionImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+
+  comparingMessage: String Ref;
+  curToNested: RefToVarTable Ref;
+  nestedToCur: RefToVarTable Ref;
+  currentMatchingNodeIndex: Int32;
+  cacheEntry: RefToVar Cref;
+  stackEntry: RefToVar Cref;
+} Cond {convention: cdecl;} "compareEntriesRecImpl" importFunction
+
+callBuiltin:           [multiParserResult @currentNode indexOfNode @processor @processorResult callBuiltinImpl] func;
+processFuncPtr:        [multiParserResult @currentNode indexOfNode @processor @processorResult processFuncPtrImpl] func;
+processPre:            [multiParserResult @currentNode indexOfNode @processor @processorResult processPreImpl] func;
+processCall:           [multiParserResult @currentNode indexOfNode @processor @processorResult processCallImpl] func;
+processExportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processExportFunctionImpl] func;
+processImportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processImportFunctionImpl] func;
+compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode indexOfNode @processor @processorResult compareEntriesRecImpl] func;
 
 addOverload: [
   copy nameId:;
@@ -862,6 +982,28 @@ setVar: [
   ] loop
 ] func;
 
+createRef: [
+  mutable:;
+  refToVar:;
+  refToVar isVirtual [
+    refToVar untemporize
+    refToVar copy #for dropping or getting callables for example
+  ] [
+    var: refToVar getVar;
+    #var.temporary [var.data.getTag VarRef = not] && [
+    #  "getting ref to temporary var" compilerError
+    #] [
+    refToVar staticnessOfVar Weak = [Dynamic @var.@staticness set] when
+    refToVar fullUntemporize
+
+    newRefToVar: refToVar VarRef createVariable;
+    mutable refToVar.mutable and @newRefToVar.@mutable set
+    refToVar newRefToVar createRefOperation
+    newRefToVar
+    #] if
+  ] if
+] func;
+
 createCheckedStaticGEP: [
   refToStruct:;
   copy index:;
@@ -1254,6 +1396,10 @@ processCodeNode: [
   indexOfAstNode makeVarCode push
 ] func;
 
+processCallByIndexArray: [
+  multiParserResult @currentNode indexOfNode @processor @processorResult processCallByIndexArrayImpl
+] func;
+
 processObjectNode: [
   data:;
   position: currentNode.position copy;
@@ -1275,7 +1421,7 @@ compilerError: [
     processorResult.findModuleFail not [processor.depthOfPre 0 =] && [HAS_LOGS] && [
       ("COMPILER ERROR") addLog
       (message) addLog
-      mplBuiltinPrintStackTrace
+      defaultPrintStackTrace
     ] when
 
     compilable [
@@ -1932,7 +2078,7 @@ setRef: [
     ] [
       pointee: VarRef var.data.get;
       pointee.mutable not [
-        FALSE mplBuiltinConstWith #source
+        FALSE defaultMakeConstWith #source
       ] when
 
       compilable [
@@ -1940,13 +2086,13 @@ setRef: [
         compilable [
           src pointee variablesAreSame [
             src push
-            mplBuiltinRef #source
+            TRUE defaultRef #source
             refToVar push
-            mplBuiltinSet
+            defaultSet
           ] [
             src push
             refToVar push
-            mplBuiltinSet
+            defaultSet
           ] if
         ] when
       ] when
@@ -1958,7 +2104,7 @@ setRef: [
       src getVar.temporary [
         src push
         refToVar push
-        mplBuiltinSet
+        defaultSet
       ] [
         "rewrite value works only with temporary values" compilerError
       ] if
@@ -2381,6 +2527,54 @@ killStruct: [
   VarStruct refToVar getVar.data.get.get.unableToDie not [
     refToVar callDie
   ] when
+] func;
+
+addNamesFromModule: [
+  copy moduleId:;
+
+  fru: current currentNode.usedOrIncludedModulesTable.find;
+  fru.success not [
+    moduleId TRUE @currentNode.@usedOrIncludedModulesTable.insert
+
+    moduleNode: moduleId processor.nodes.at.get;
+    moduleNode.labelNames [
+      current: .value;
+      current.nameInfo current.refToVar addOverloadForPre
+      current.nameInfo current.refToVar NameCaseFromModule addNameInfo #it is not own local variable
+    ] each
+  ] when
+] func;
+
+processUseModule: [
+  copy asUse:;
+  copy moduleId:;
+
+  currentModule: moduleId processor.nodes.at.get;
+  moduleList: currentModule.includedModules copy;
+  moduleId @moduleList.pushBack
+
+  moduleList [
+    pair:;
+    current: pair.value;
+    #("try include module with id " current " name " current processor.nodes.at.get.moduleName) addLog
+    last: pair.index moduleList.getSize 1 - =;
+
+    asUse [last copy] && [
+      current {used: FALSE dynamic; position: currentNode.position copy;} @currentNode.@usedModulesTable.insert
+      current TRUE @currentNode.@directlyIncludedModulesTable.insert
+      current addNamesFromModule
+    ] [
+      fr: current currentNode.includedModulesTable.find;
+      fr.success not [
+        last [
+          current TRUE @currentNode.@directlyIncludedModulesTable.insert
+        ] when
+        current @currentNode.@includedModules.pushBack
+        current {used: FALSE dynamic; position: currentNode.position copy;} @currentNode.@includedModulesTable.insert
+        current addNamesFromModule
+      ] when
+    ] if
+  ] each
 ] func;
 
 finalizeListNode: [
@@ -3497,7 +3691,17 @@ nodeHasCode: [
   node.emptyDeclaration not [node.empty not] && [node.deleted not] && [node.nodeCase NodeCaseCodeRefDeclaration = not] &&
 ] func;
 
-astNodeToCodeNodeImpl: [
+{
+  signature: CFunctionSignature Cref;
+  compilerPositionInfo: CompilerPositionInfo Cref;
+  multiParserResult: MultiParserResult Cref;
+  indexArray: IndexArray Cref;
+  processor: Processor Ref;
+  processorResult: ProcessorResult Ref;
+  nodeCase: NodeCaseCode;
+  parentIndex: Int32;
+  functionName: StringView Cref;
+} Int32 {convention: cdecl;} [
   forcedSignature:;
   compilerPositionInfo:;
   multiParserResult:;
@@ -3626,4 +3830,4 @@ astNodeToCodeNodeImpl: [
   ] when
 
   indexOfCodeNode
-] func;
+] "astNodeToCodeNode" exportFunction

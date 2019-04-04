@@ -1,5 +1,7 @@
 "irWriter" module
-"control" useModule
+
+"control" includeModule
+"defaultImpl" includeModule
 
 IRArgument: [{
   irTypeId: 0;
@@ -232,10 +234,10 @@ createFailWithMessage: [
 
   failProcRefToVar getVar.data.getTag VarBuiltin = [
     #no overload
-    mplBuiltinFailProc
+    defaultFailProc
   ] [
     failProcRefToVar derefAndPush
-    mplBuiltinCall
+    defaultCall
   ] if
 ] func;
 
