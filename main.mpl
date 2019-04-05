@@ -239,7 +239,7 @@ createDefinition: [
               processorResult.globalErrorInfo [
                 pair:;
                 current: pair.value;
-                pair.index 0 > [LF print] when 
+                pair.index 0 > [LF print] when
                 current.position.getSize 0 = [
                   ("error, "  current.message) printList LF print
                 ] [

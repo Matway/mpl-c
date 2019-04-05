@@ -33,7 +33,7 @@ compilable: [processorResult.success copy] func;
   processor: Processor Ref;
   indexOfNode: Int32;
   currentNode: CodeNode Ref;
-  multiParserResult: MultiParserResult Cref; 
+  multiParserResult: MultiParserResult Cref;
   positionInfo: CompilerPositionInfo Cref;
   name: StringView Cref;
   nodeCase: NodeCaseCode;
@@ -54,7 +54,7 @@ compilable: [processorResult.success copy] func;
   processor: Processor Ref;
   indexOfNode: Int32;
   currentNode: CodeNode Ref;
-  multiParserResult: MultiParserResult Cref; 
+  multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } () {convention: cdecl;} "processFuncPtrImpl" importFunction
 
@@ -3097,7 +3097,7 @@ finalizeCodeNode: [
   ] func;
 
   noname: hasForcedSignature not;
-    #[currentNode.nodeCase NodeCaseLambda =] ||;
+  #[currentNode.nodeCase NodeCaseLambda =] ||;
 
   currentNode.nodeCase NodeCaseEmpty = [
     noname

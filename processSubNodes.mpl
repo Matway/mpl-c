@@ -293,14 +293,14 @@ tryMatchNode: [
     [getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + < not] &&
   ] &&;
 
-  goodReality: 
-    forceRealFunction not [
-      currentMatchingNode.nodeCase NodeCaseDeclaration =
-      [currentMatchingNode.nodeCase NodeCaseDllDeclaration =] ||
-      [currentMatchingNode.nodeCase NodeCaseCodeRefDeclaration =] ||
-      [currentMatchingNode.nodeCase NodeCaseExport =] ||
-      [currentMatchingNode.nodeCase NodeCaseLambda =] ||
-    ] ||;
+  goodReality:
+  forceRealFunction not [
+    currentMatchingNode.nodeCase NodeCaseDeclaration =
+    [currentMatchingNode.nodeCase NodeCaseDllDeclaration =] ||
+    [currentMatchingNode.nodeCase NodeCaseCodeRefDeclaration =] ||
+    [currentMatchingNode.nodeCase NodeCaseExport =] ||
+    [currentMatchingNode.nodeCase NodeCaseLambda =] ||
+  ] ||;
 
   invisibleName: currentMatchingNode.nodeCase NodeCaseLambda = [currentMatchingNode.varNameInfo 0 < not] && [
     matchingCapture: Capture;
@@ -1201,7 +1201,7 @@ processCallByNode: [
   forcedName processNamedCallByNode
 ] func;
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref; 
+{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
   positionInfo: CompilerPositionInfo Cref; name: StringView Cref; nodeCase: NodeCaseCode; indexArray: IndexArray Cref;} () {convention: cdecl;} [
 
   processorResult:;
@@ -1962,7 +1962,7 @@ nSwap: [
   name:;
   astNode:;
   signature:;
-  
+
   indexArray: AstNodeType.Code astNode.data.get;
   positionInfo: astNode makeCompilerPosition;
   compileOnce
@@ -2231,7 +2231,7 @@ callImportWith: [
 
 callImport: [RefToVar FALSE dynamic callImportWith] func;
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref; 
+{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;} () {convention: cdecl;} [
 
   processorResult:;
