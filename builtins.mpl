@@ -96,8 +96,8 @@ builtins: (
   {name: "xor"                     ; impl: @mplBuiltinXor                     ;}
 );
 
-builtinFirst: [0 static] func;
-builtinLast: [builtins fieldCount 0 cast 2 /] func;
+builtinFirst: [0 static];
+builtinLast: [builtins fieldCount 0 cast 2 /];
 
 addBuiltin: [
   copy id:;
@@ -117,7 +117,7 @@ addBuiltin: [
 
   bvar: @id VarBuiltin createVariable Virtual makeStaticness;
   nameId bvar NameCaseBuiltin addNameInfo
-] func;
+];
 
 initBuiltins: [
   processor:;
@@ -131,7 +131,7 @@ initBuiltins: [
     p:;
     p.value.name makeStringView p.index addBuiltin
   ] each
-] func;
+];
 
 {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref; index: Int32;} () {convention: cdecl;} [
   processorResult:;

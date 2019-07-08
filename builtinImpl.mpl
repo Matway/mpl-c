@@ -31,7 +31,7 @@ staticnessOfBinResult: [
       Static
     ] if
   ] if
-] func;
+];
 
 mplNumberBinaryOp: [
   exValidator:;
@@ -88,7 +88,7 @@ mplNumberBinaryOp: [
       ] if
     ] when
   ] when
-] func;
+];
 
 [
   VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fadd" makeStringView]["add" makeStringView] if] [+] [copy] [y:; x:;] mplNumberBinaryOp
@@ -124,7 +124,7 @@ mplNumberBinaryOp: [
     comparable: [
       arg:;
       arg isPlain [arg getVar.data.getTag VarString =] ||
-    ] func;
+    ];
 
     var1: arg1 getVar;
     var2: arg2 getVar;
@@ -238,7 +238,7 @@ mplNumberUnaryOp: [
       ] if
     ] when
   ] when
-] func;
+];
 
 [
   VarCond VarNatX 1 + [a:; "xor" makeStringView] [
@@ -330,7 +330,7 @@ mplNumberBuiltinOp: [
       ] if
     ] when
   ] when
-] func;
+];
 
 [
   TRUE dynamic @processor.@usedFloatBuiltins set
@@ -491,7 +491,7 @@ mplShiftBinaryOp: [
       ] if
     ] when
   ] when
-] func;
+];
 
 [
   [t2:; t1:; "shl" makeStringView][lshift] mplShiftBinaryOp
@@ -660,7 +660,7 @@ mplBuiltinProcessAtList: [
   ] when
 
   result
-] func;
+];
 
 [
   field: mplBuiltinProcessAtList;
@@ -767,7 +767,7 @@ parseFieldToSignatureCaptureArray: [
   ] when
 
   result
-] func;
+];
 
 parseSignature: [
   result: CFunctionSignature;
@@ -839,7 +839,7 @@ parseSignature: [
     ]
   ) sequence
   result
-] func;
+];
 
 [
   (

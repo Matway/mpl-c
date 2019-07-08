@@ -47,7 +47,7 @@ addDebugProlog: [
   t: "r64" makeStringView 64 "DW_ATE_float" makeStringView addTypeInfo;
   t: "string element" makeStringView 8 "DW_ATE_signed_char" makeStringView addTypeInfo;
   t: "DW_TAG_pointer_type" makeStringView t processor.options.pointerSize 0ix cast 0 cast addDerivedTypeInfo;
-] func;
+];
 
 addLinkerOptionsDebugInfo: [
   index: processor.debugInfo.lastId copy;
@@ -70,7 +70,7 @@ addLinkerOptionsDebugInfo: [
     String @processor.@debugInfo.@strings.pushBack
     String @processor.@debugInfo.@strings.pushBack
   ] if
-] func;
+];
 
 getPlainTypeDebugDeclaration: [
   var: getVar;
@@ -104,7 +104,7 @@ getPlainTypeDebugDeclaration: [
       ] if
     ] if
   ] if
-] func;
+];
 
 getPointerTypeDebugDeclaration: [
   refToVar:;
@@ -113,7 +113,7 @@ getPointerTypeDebugDeclaration: [
   fr: var.mplTypeId @processor.@debugInfo.@typeIdToDbgId.find;
   [fr.success copy] "Pointee has no type debug info!" assert
   "DW_TAG_pointer_type" makeStringView fr.value processor.options.pointerSize 0ix cast 0 cast addDerivedTypeInfo
-] func;
+];
 
 addLinkedLib: [
   libName:;
@@ -121,7 +121,7 @@ addLinkedLib: [
   fr.success not [
     @libName TRUE @processor.@libNames.insert
   ] when
-] func;
+];
 
 addMemberInfo: [
   copy fieldNumber:;
@@ -155,7 +155,7 @@ addMemberInfo: [
 
   offset fsize + @offset set
   index
-] func;
+];
 
 getTypeDebugDeclaration: [
   refToVar:;
@@ -224,7 +224,7 @@ getTypeDebugDeclaration: [
       ] if
     ] if
   ] if
-] func;
+];
 
 addVariableDebugInfo: [
   refToVar:;
@@ -245,7 +245,7 @@ addVariableDebugInfo: [
   ] [
     -1
   ] if
-] func;
+];
 
 addGlobalVariableDebugInfo: [
   refToVar:;
@@ -272,7 +272,7 @@ addGlobalVariableDebugInfo: [
   ] [
     -1
   ] if
-] func;
+];
 
 addVariableMetadata: [
   refToVar:;
@@ -283,14 +283,14 @@ addVariableMetadata: [
     ("  call void @llvm.dbg.declare(metadata " refToVar getIrType "* " refToVar getIrName ", metadata !" localVariableDebugIndex ", metadata !" processor.debugInfo.unit 1 + ")"
     ) assembleString makeInstruction @currentNode.@program.pushBack
   ] when
-] func;
+];
 
 addExpression: [
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   ("!" index " = !DIExpression()") assembleString @processor.@debugInfo.@strings.pushBack
   index
-] func;
+];
 
 addTypeInfo: [
   encoding:;
@@ -302,7 +302,7 @@ addTypeInfo: [
   ("!" index " = !DIBasicType(name: \"" @name "\", size: " size ", encoding: " @encoding ")") assembleString @processor.@debugInfo.@strings.pushBack
 
   index
-] func;
+];
 
 addDerivedTypeInfo: [
   copy size:;
@@ -313,7 +313,7 @@ addDerivedTypeInfo: [
   ("!" index " = !DIDerivedType(tag: " @tag ", baseType: !" base ", size: " @size ")") assembleString @processor.@debugInfo.@strings.pushBack
 
   index
-] func;
+];
 
 addFileDebugInfo: [
   compileOnce
@@ -325,7 +325,7 @@ addFileDebugInfo: [
   onlyPath: onlyFileName: fullPath simplifyPath;;
   ("!" index " = !DIFile(filename: \"" onlyFileName "\", directory: \"" onlyPath makeStringView getStringImplementation "\")" ) assembleString @processor.@debugInfo.@strings.pushBack
   index
-] func;
+];
 
 addFuncSubroutineInfo: [
   compileOnce
@@ -340,7 +340,7 @@ addFuncSubroutineInfo: [
   ("!" index " = !DISubroutineType(types: !" types ")") assembleString @processor.@debugInfo.@strings.pushBack
 
   index
-] func;
+];
 
 addFuncDebugInfo: [
   compileOnce
@@ -357,7 +357,7 @@ addFuncDebugInfo: [
     "\", scope: !" position.fileNumber processor.debugInfo.fileNameIds.at
     ", file: !" position.fileNumber processor.debugInfo.fileNameIds.at ", line: " position.line  ", type: !" subroutineIndex
     ", scopeLine: " position.line ", unit: !" processor.debugInfo.unit ")") assembleString @processor.@debugInfo.@strings.pushBack
-] func;
+];
 
 addDebugLocation: [
   compileOnce
@@ -371,21 +371,21 @@ addDebugLocation: [
 
   index funcDbgIndex @processor.@debugInfo.@locationIds.insert
   index
-] func;
+];
 
 addDebugReserve: [
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   String @processor.@debugInfo.@strings.pushBack
   index
-] func;
+];
 
 moveLastDebugString: [
   copy index:;
   processor.debugInfo.strings.last
   index 4 + @processor.@debugInfo.@strings.at set
   @processor.@debugInfo.@strings.popBack
-] func;
+];
 
 correctUnitInfo: [
   copy lastUnit:;
@@ -411,7 +411,7 @@ correctUnitInfo: [
 
   ("!llvm.dbg.cu = !{!" processor.debugInfo.unit "}") assembleString
   processor.debugInfo.cuStringNumber @processor.@debugInfo.@strings.at set
-] func;
+];
 
 clearUnusedDebugInfo: [
   processor.debugInfo.locationIds [
@@ -424,4 +424,4 @@ clearUnusedDebugInfo: [
     ] when
   ] each
 
-] func;
+];

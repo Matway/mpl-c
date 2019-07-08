@@ -24,7 +24,7 @@ printInfo: [
   "  -verbose_ir         Print information about current token in IR" print LF print
   "  -version            Print compiler version while compiling" print LF print
   FALSE @success set
-] func;
+];
 
 addToProcess: [
   fileText:;
@@ -44,7 +44,7 @@ addToProcess: [
       parserResult.errorInfo.message) assembleString print LF print
     FALSE @success set
   ] if
-] func;
+];
 
 createDefinition: [
   splittedOption:;
@@ -70,7 +70,7 @@ createDefinition: [
     value: eqIndex 1 + splittedOption.chars.getSize splittedOption.chars makeSubRange assembleString;
     (name makeStringView ": [" value makeStringView " static];" LF) assembleString @definitions.cat
   ] if
-] func;
+];
 
 {argc: 0; argv: 0nx;} 0 {convention: cdecl;} [
   ("Start mplc compiler") addLog

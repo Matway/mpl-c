@@ -9,7 +9,7 @@ fillPositionInfo: [
   lastPosition.line @astNode.@line set
   lastPosition.column @astNode.@column set
   currentFileNumber @astNode.@fileNumber set
-] func;
+];
 
 makeLabelNode: [
   children:;
@@ -22,7 +22,7 @@ makeLabelNode: [
   children @branch.@children set
   name @branch.@name set
   @result
-] func;
+];
 
 makeCodeNode: [
   children:;
@@ -33,7 +33,7 @@ makeCodeNode: [
   branch: AstNodeType.Code @result.@data.get;
   children @branch set
   @result
-] func;
+];
 
 makeObjectNode: [
   children:;
@@ -44,7 +44,7 @@ makeObjectNode: [
   branch: AstNodeType.Object @result.@data.get;
   children @branch set
   @result
-] func;
+];
 
 makeListNode: [
   children:;
@@ -55,7 +55,7 @@ makeListNode: [
   branch: AstNodeType.List @result.@data.get;
   children @branch set
   @result
-] func;
+];
 
 makeNameNode: [
   name:;
@@ -66,7 +66,7 @@ makeNameNode: [
   branch: AstNodeType.Name @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeNameReadNode: [
   name:;
@@ -77,7 +77,7 @@ makeNameReadNode: [
   branch: AstNodeType.NameRead @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeNameWriteNode: [
   name:;
@@ -88,7 +88,7 @@ makeNameWriteNode: [
   branch: AstNodeType.NameWrite @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeNameMemberNode: [
   name:;
@@ -99,7 +99,7 @@ makeNameMemberNode: [
   branch: AstNodeType.NameMember @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeNameReadMemberNode: [
   name:;
@@ -110,7 +110,7 @@ makeNameReadMemberNode: [
   branch: AstNodeType.NameReadMember @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeNameWriteMemberNode: [
   name:;
@@ -121,7 +121,7 @@ makeNameWriteMemberNode: [
   branch: AstNodeType.NameWriteMember @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeStringNode: [
   value:;
@@ -132,7 +132,7 @@ makeStringNode: [
   branch: AstNodeType.String @result.@data.get;
   value @branch set
   @result
-] func;
+];
 
 makeNumberi8Node: [
   token:;
@@ -144,7 +144,7 @@ makeNumberi8Node: [
   branch: AstNodeType.Numberi8 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumberi16Node: [
   token:;
@@ -156,7 +156,7 @@ makeNumberi16Node: [
   branch: AstNodeType.Numberi16 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumberi32Node: [
   token:;
@@ -168,7 +168,7 @@ makeNumberi32Node: [
   branch: AstNodeType.Numberi32 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumberi64Node: [
   token:;
@@ -180,7 +180,7 @@ makeNumberi64Node: [
   branch: AstNodeType.Numberi64 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumberixNode: [
   token:;
@@ -192,7 +192,7 @@ makeNumberixNode: [
   branch: AstNodeType.Numberix @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumbern8Node: [
   token:;
@@ -204,7 +204,7 @@ makeNumbern8Node: [
   branch: AstNodeType.Numbern8 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumbern16Node: [
   token:;
@@ -216,7 +216,7 @@ makeNumbern16Node: [
   branch: AstNodeType.Numbern16 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumbern32Node: [
   token:;
@@ -228,7 +228,7 @@ makeNumbern32Node: [
   branch: AstNodeType.Numbern32 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumbern64Node: [
   token:;
@@ -240,7 +240,7 @@ makeNumbern64Node: [
   branch: AstNodeType.Numbern64 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumbernxNode: [
   token:;
@@ -252,7 +252,7 @@ makeNumbernxNode: [
   branch: AstNodeType.Numbernx @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeReal32Node: [
   token:;
@@ -264,7 +264,7 @@ makeReal32Node: [
   branch: AstNodeType.Real32 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeReal64Node: [
   token:;
@@ -276,41 +276,41 @@ makeReal64Node: [
   branch: AstNodeType.Real64 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeParserConstants: [{
-  eof:        [  0n32] func;
+  eof:        [  0n32];
 
-  cr:         [ 13n32] func;
-  lf:         [ 10n32] func;
-  space:      [ 32n32] func;
-  exclamation:[ 33n32] func;
-  quote:      [ 34n32] func;
-  grid:       [ 35n32] func;
-  openRBr:    [ 40n32] func;
-  closeRBr:   [ 41n32] func;
-  openSBr:    [ 91n32] func;
-  closeSBr:   [ 93n32] func;
-  openFBr:    [123n32] func;
-  closeFBr:   [125n32] func;
-  plus:       [ 43n32] func;
-  comma:      [ 44n32] func;
-  minus:      [ 45n32] func;
-  dot:        [ 46n32] func;
-  zero:       [ 48n32] func;
-  colon:      [ 58n32] func;
-  semicolon:  [ 59n32] func;
-  dog:        [ 64n32] func;
-  backSlash:  [ 92n32] func;
+  cr:         [ 13n32];
+  lf:         [ 10n32];
+  space:      [ 32n32];
+  exclamation:[ 33n32];
+  quote:      [ 34n32];
+  grid:       [ 35n32];
+  openRBr:    [ 40n32];
+  closeRBr:   [ 41n32];
+  openSBr:    [ 91n32];
+  closeSBr:   [ 93n32];
+  openFBr:    [123n32];
+  closeFBr:   [125n32];
+  plus:       [ 43n32];
+  comma:      [ 44n32];
+  minus:      [ 45n32];
+  dot:        [ 46n32];
+  zero:       [ 48n32];
+  colon:      [ 58n32];
+  semicolon:  [ 59n32];
+  dog:        [ 64n32];
+  backSlash:  [ 92n32];
   # it is for numbers
-  aCode:      [ 97n32] func;
-  aCodeBig:   [ 65n32] func;
-  eCode:      [101n32] func;
-  eCodeBig:   [ 69n32] func;
-  iCode:      [105n32] func;
-  nCode:      [110n32] func;
-  rCode:      [114n32] func;
-  xCode:      [120n32] func;
+  aCode:      [ 97n32];
+  aCodeBig:   [ 65n32];
+  eCode:      [101n32];
+  eCodeBig:   [ 69n32];
+  iCode:      [105n32];
+  nCode:      [110n32];
+  rCode:      [114n32];
+  xCode:      [120n32];
 
   makeLookupTable: [
     av:;
@@ -323,7 +323,7 @@ makeParserConstants: [{
     ] each
 
     result
-  ] func;
+  ];
 
   joinLookupTables: [
     right:;
@@ -338,7 +338,7 @@ makeParserConstants: [{
     ] each
 
     result
-  ] func;
+  ];
 
   starters: (openRBr openSBr openFBr) makeLookupTable;
   terminators: (eof closeRBr closeSBr closeFBr semicolon) makeLookupTable;
@@ -364,13 +364,13 @@ makeParserConstants: [{
     6n32  [i 10 + 0n32 cast aCodeBig 0 cast i + @result.at set] times
     result
   ] call;
-}] func;
+}];
 
 inArray: [
   where:;
   copy code:;
   code 256n32 < [code 0 cast where.at copy] &&
-] func;
+];
 
 undo: [
   mainResult.success [
@@ -383,7 +383,7 @@ undo: [
       pc.eof @currentCode set
     ] if
   ] when
-] func;
+];
 
 iterate: [
   mainResult.success [
@@ -405,13 +405,13 @@ iterate: [
       pc.eof @currentCode set
     ] if
   ] when
-] func;
+];
 
 lexicalError: [
   toString @mainResult.@errorInfo.@message set
   currentPosition @mainResult.@errorInfo.@position set
   FALSE @mainResult.@success set
-] func;
+];
 
 parseStringConstant: [
   nameSymbols: StringView Array;
@@ -453,7 +453,7 @@ parseStringConstant: [
 
   nameSymbols assembleString makeStringNode @mainResult.@memory.pushBack
   TRUE
-] func;
+];
 
 tryParseNumberAfterSign: [
   currentCode pc.digits inArray [
@@ -461,9 +461,9 @@ tryParseNumberAfterSign: [
   ] [
     undo parseName
   ] if
-] func;
+];
 
-dCheck: [currentCode pc.digits inArray not ["wrong number constant" lexicalError] when ] func;
+dCheck: [currentCode pc.digits inArray not ["wrong number constant" lexicalError] when ];
 xCheck: [
   currentCode pc.digits inArray not [
     currentCode pc.xCode = [
@@ -473,12 +473,12 @@ xCheck: [
       "wrong number constant" lexicalError
     ] if
   ] when
-] func;
+];
 
 parseDecNumber: [
   copy hasMinus:;
 
-  IntArray: [Int32 Array] func;
+  IntArray: [Int32 Array];
   beforeDot: IntArray;
   afterDot: IntArray;
   afterE: IntArray;
@@ -661,11 +661,11 @@ parseDecNumber: [
   ] if
 
   mainResult.success copy
-] func;
+];
 
 parseHexNumber: [
   copy hasMinus:;
-  IntArray: [Int32 Array] func;
+  IntArray: [Int32 Array];
   beforeT: IntArray;
   afterT: IntArray;
   currentArray: @beforeT;
@@ -779,7 +779,7 @@ parseHexNumber: [
   ] if
 
   mainResult.success copy
-] func;
+];
 
 parseNumber: [
   hasMinus: FALSE dynamic;
@@ -805,7 +805,7 @@ parseNumber: [
   ] [
     hasMinus parseDecNumber
   ] if
-] func;
+];
 
 makeLabel: [
   name:;
@@ -813,7 +813,7 @@ makeLabel: [
   pc.semicolon @unfinishedTerminators.pushBack
   name toString @unfinishedLabelNames.pushBack
   IndexArray @unfinishedNodes.pushBack
-] func;
+];
 
 parseName: [
   member: FALSE dynamic;
@@ -821,7 +821,7 @@ parseName: [
   write: FALSE dynamic;
   label: FALSE dynamic;
   checkOffset: currentPosition.offset copy;
-  checkFirst: [currentPosition.offset checkOffset > ["invalid identifier" lexicalError] when] func;
+  checkFirst: [currentPosition.offset checkOffset > ["invalid identifier" lexicalError] when];
   nameSymbols: StringView Array;
   first: TRUE dynamic;
 
@@ -936,7 +936,7 @@ parseName: [
   ] [
     FALSE
   ] if
-] func;
+];
 
 parseIdentifier: [
   compileOnce
@@ -954,14 +954,14 @@ parseIdentifier: [
       ] if
     ] if
   ] if
-] func;
+];
 
 parseComment: [
   [
     iterate
     currentCode pc.eof = currentCode pc.lf = or not
   ] loop
-] func;
+];
 
 addNestedNode: [
   currentPosition @unfinishedPositions.pushBack
@@ -982,12 +982,12 @@ addNestedNode: [
   ] if
 
   iterate
-] func;
+];
 
 addToLastUnfinished: [
   @mainResult.@memory.pushBack
   mainResult.memory.dataSize 1 - @unfinishedNodes.last.pushBack
-] func;
+];
 
 parseNode: [
   [
@@ -1089,7 +1089,7 @@ parseNode: [
 
     unfinishedNodes.dataSize 0 > [mainResult.success copy] &&
   ] loop
-] func;
+];
 
 {
   currentFileNumber: Int32;

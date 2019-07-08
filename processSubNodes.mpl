@@ -13,7 +13,7 @@ clearProcessorResult: [
   cachedGlobalErrorInfoSize 0 < not [
     cachedGlobalErrorInfoSize @processorResult.@globalErrorInfo.shrink
   ] when
-] func;
+];
 
 variablesHaveSameGlobality: [
   cacheEntry:;
@@ -27,7 +27,7 @@ variablesHaveSameGlobality: [
   ] [
     stackEntry isGlobal not
   ] if
-] func;
+];
 
 variablesAreEqualWith: [
   copy checkRefs:;
@@ -81,15 +81,15 @@ variablesAreEqualWith: [
       ] || # both dynamic
     ] if
   ] &&
-] func;
+];
 
 variablesAreEqualForMatching: [
   Weak FALSE dynamic variablesAreEqualWith
-] func;
+];
 
 variablesAreEqual: [
   Dynamic TRUE dynamic variablesAreEqualWith
-] func;
+];
 
 variableIsUnused: [
   refToVar:;
@@ -97,7 +97,7 @@ variableIsUnused: [
   refToVar.hostId currentMatchingNodeIndex = not [refToVar noMatterToCopy not] &&
   #] ||
   #] ||
-] func;
+];
 
 compareOnePair: [
   copy first:;
@@ -134,7 +134,7 @@ compareOnePair: [
     ] if
   ] if
 
-] func;
+];
 
 {
   processorResult: ProcessorResult Ref;
@@ -170,11 +170,11 @@ compareOnePair: [
     copy currentName:;
     copy current:;
     copy prev:;
-  }] func;
+  }];
 
   WayInfo: [
     -1 dynamic -1 dynamic StringView makeWayInfo
-  ] func;
+  ];
 
   unfinishedStack: RefToVar Array;
   unfinishedCache: RefToVar Array;
@@ -270,7 +270,7 @@ getOverload: [
   ] [
     overload maxOverloadCountCur + maxOverloadCountNes -
   ] if
-] func;
+];
 
 tryMatchNode: [
   currentMatchingNode:;
@@ -337,7 +337,7 @@ tryMatchNode: [
         (s) addLog
         s compilerError
       ] call
-    ] func;
+    ];
 
     success: TRUE;
     i: 0 dynamic;
@@ -432,7 +432,7 @@ tryMatchNode: [
 
     success
   ] &&
-] func;
+];
 
 {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref; forceRealFunction: Cond; indexArrayOfSubNode: IndexArray Cref;} Int32 {convention: cdecl;} [
   processorResult:;
@@ -474,11 +474,11 @@ tryMatchNode: [
 
 tryMatchAllNodes: [
   FALSE multiParserResult @currentNode indexOfNode @processor @processorResult tryMatchAllNodesWith
-] func;
+];
 
 tryMatchAllNodesForRealFunction: [
   TRUE multiParserResult @currentNode indexOfNode @processor @processorResult tryMatchAllNodesWith
-] func;
+];
 
 fixRecursionStack: [
   i: indexOfNode copy;
@@ -495,7 +495,7 @@ fixRecursionStack: [
       TRUE
     ] &&
   ] loop
-] func;
+];
 
 changeNewNodeState: [
   copy newNodeIndex:;
@@ -522,7 +522,7 @@ changeNewNodeState: [
       newNode.recursionState NodeRecursionStateFail > [newNode.state NodeStateHasOutput =] || [NodeStateHasOutput @currentNode.@state set] when
     ] if
   ] if
-] func;
+];
 
 changeNewExportNodeState: [
   copy newNodeIndex:;
@@ -549,7 +549,7 @@ changeNewExportNodeState: [
       newNode.recursionState NodeRecursionStateFail > [newNode.state NodeStateHasOutput =] || [NodeStateHasOutput @currentNode.@state set] when
     ] if
   ] if
-] func;
+];
 
 fixRef: [
   copy refToVar:;
@@ -603,7 +603,7 @@ fixRef: [
     ] when
   ] if
   refToVar
-] func;
+];
 
 applyOnePair: [
   cacheEntry:;
@@ -685,7 +685,7 @@ applyOnePair: [
       ] when
     ] if
   ] if
-] func;
+];
 
 applyEntriesRec: [
   cacheEntry:;
@@ -735,7 +735,7 @@ applyEntriesRec: [
       i 1 + @i set compilable
     ] &&
   ] loop
-] func;
+];
 
 fixOutputRefsRec: [
   stackEntry:;
@@ -773,7 +773,7 @@ fixOutputRefsRec: [
       i 1 + @i set compilable
     ] &&
   ] loop
-] func;
+];
 
 fixCaptureRef: [
   refToVar:;
@@ -801,7 +801,7 @@ fixCaptureRef: [
   ] loop
 
   result
-] func;
+];
 
 usePreCaptures: [
   compileOnce
@@ -829,7 +829,7 @@ usePreCaptures: [
       i 1 + @i set compilable
     ] &&
   ] loop
-] func;
+];
 
 applyNodeChanges: [
   compileOnce
@@ -941,7 +941,7 @@ applyNodeChanges: [
   ] each
 
   @appliedVars
-] func;
+];
 
 changeVarValue: [
   dst:;
@@ -967,7 +967,7 @@ changeVarValue: [
       ] when
     ] if
   ] when
-] func;
+];
 
 usePreInputs: [
   newNode:;
@@ -975,27 +975,27 @@ usePreInputs: [
   newMinStackDepth currentNode.minStackDepth < [
     newMinStackDepth @currentNode.@minStackDepth set
   ] when
-] func;
+];
 
 #useCapturesAsPreCaptures: [
 #  newNode:;
 #  newNode.captures [.value @currentNode.@preCaptures.pushBack] each
 #  newNode.fieldCaptures [.value @currentNode.@preFieldCaptures.pushBack] each
-#] func;
+#];
 
 #usePreCaptures: [
 #  newNode:;
 #  newNode.preCaptures [.value @currentNode.@preCaptures.pushBack] each
 #  newNode.preFieldCaptures [.value @currentNode.@preFieldCaptures.pushBack] each
-#] func;
+#];
 
-pushOutput: [push] func;
+pushOutput: [push];
 
 isImplicitDeref: [
   copy case:;
   case ArgReturnDeref =
   case ArgRefDeref = or
-] func;
+];
 
 derefNEntries: [
   copy count:;
@@ -1010,7 +1010,7 @@ derefNEntries: [
       i 1 + @i set TRUE
     ] &&
   ] loop
-] func;
+];
 
 applyNamedStackChanges: [
   forcedName:;
@@ -1054,12 +1054,12 @@ applyNamedStackChanges: [
     newNode.outputs [.value.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
     implicitDerefInfo appliedVars.fixedOutputs.getSize derefNEntries
   ] when
-] func;
+];
 
 applyStackChanges: [
   forcedName: StringView;
   forcedName applyNamedStackChanges
-] func;
+];
 
 makeCallInstructionWith: [
   copy dynamicFunc:;
@@ -1164,18 +1164,18 @@ makeCallInstructionWith: [
       @retName argRet createStoreFromRegister
     ] when
   ] when
-] func;
+];
 
 makeNamedCallInstruction: [
   r: RefToVar;
   r FALSE dynamic makeCallInstructionWith
-] func;
+];
 
 makeCallInstruction: [
   r: RefToVar;
   forcedName: StringView;
   forcedName r FALSE dynamic makeCallInstructionWith
-] func;
+];
 
 processNamedCallByNode: [
   forcedName:;
@@ -1194,12 +1194,12 @@ processNamedCallByNode: [
 
     newNode newNodeIndex @appliedVars forcedName applyNamedStackChanges
   ] when
-] func;
+];
 
 processCallByNode: [
   forcedName: StringView;
   forcedName processNamedCallByNode
-] func;
+];
 
 {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
   positionInfo: CompilerPositionInfo Cref; name: StringView Cref; nodeCase: NodeCaseCode; indexArray: IndexArray Cref;} () {convention: cdecl;} [
@@ -1449,7 +1449,7 @@ processIf: [
             ] [
               index branch.fixedOutputs.dataSize + longestOutputSize - branch.fixedOutputs.at copy
             ] if
-          ] func;
+          ];
 
           isOutputImplicitDeref: [
             branch:;
@@ -1459,7 +1459,7 @@ processIf: [
             ] [
               index branch.outputs.dataSize + longestOutputSize - branch.outputs.at.argCase isImplicitDeref
             ] if
-          ] func;
+          ];
 
           getCompiledInput: [
             compiledOutputs:;
@@ -1471,7 +1471,7 @@ processIf: [
             ] [
               index branch.outputs.dataSize + longestOutputSize - compiledOutputs.at copy
             ] if
-          ] func;
+          ];
 
           getCompiledOutput: [
             compiledOutputs:;
@@ -1482,7 +1482,7 @@ processIf: [
             ] [
               index branch.outputs.dataSize + longestOutputSize - compiledOutputs.at
             ] if
-          ] func;
+          ];
 
           # merge captures
           mergeValues: [
@@ -1504,7 +1504,7 @@ processIf: [
                 value2 makePointeeDirtyIfRef
               ] if
             ] if
-          ] func;
+          ];
 
           mergeValuesRec: [
             refToDst:;
@@ -1552,7 +1552,7 @@ processIf: [
                 TRUE
               ] &&
             ] loop
-          ] func;
+          ];
 
           appliedVarsThen.curToNested [
             pair:;
@@ -1664,7 +1664,7 @@ processIf: [
                   ] &&
                 ] loop
                 result
-              ] func;
+              ];
 
               0 refToCond createBranch
               createLabel
@@ -1687,9 +1687,9 @@ processIf: [
     ] when
   ] when
 
-] func;
+];
 
-maxLoopLength: [64 dynamic] func;
+maxLoopLength: [64 dynamic];
 
 processLoop: [
   astNode:;
@@ -1760,7 +1760,7 @@ processLoop: [
   ] loop
 
   loopIsDynamic [indexArray processDynamicLoop] when
-] func;
+];
 
 processDynamicLoop: [
 
@@ -1810,7 +1810,7 @@ processDynamicLoop: [
           ] if
 
           result
-        ] func;
+        ];
 
         appliedVars.curToNested [
           pair:;
@@ -1895,7 +1895,7 @@ processDynamicLoop: [
                 i 1 + @i set TRUE
               ] &&
             ] loop
-          ] func;
+          ];
 
           # create instruction
           processor.options.verboseIR ["loop prepare..." makeStringView createComent] when
@@ -1931,7 +1931,7 @@ processDynamicLoop: [
       ] if
     ] &&
   ] loop
-] func;
+];
 
 nSwap: [
   copy n:;
@@ -1947,7 +1947,7 @@ nSwap: [
     i 1 + @i set
     j 1 - @j set
   ] while
-] func;
+];
 
 {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
   asLambda: Cond; name: StringView Cref; astNode: AstNode Cref; signature: CFunctionSignature Cref;} Int32 {convention: cdecl;} [
@@ -2227,9 +2227,9 @@ callImportWith: [
       implicitDerefInfo outputs.getSize derefNEntries
     ]
   ) sequence
-] func;
+];
 
-callImport: [RefToVar FALSE dynamic callImportWith] func;
+callImport: [RefToVar FALSE dynamic callImportWith];
 
 {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;} () {convention: cdecl;} [

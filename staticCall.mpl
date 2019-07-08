@@ -44,4 +44,4 @@ staticCall: [
       ] if
     ] if
   ] if
-] func;
+];

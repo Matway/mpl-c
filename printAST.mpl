@@ -6,123 +6,123 @@ printLabelNode: [
   ("; Label:" data.name "; id:" data.nameInfo) printList
   data.children cref @unfinishedNodes.pushBack
   0n32 @unfinishedIndexes.pushBack
-] func;
+];
 
 printCodeNode: [
   cref data:;
   ("; Code:") printList
   data deref cref @unfinishedNodes.pushBack
   0n32 @unfinishedIndexes.pushBack
-] func;
+];
 
 printObjectNode: [
   cref data:;
   ("; Object:") printList
   data deref cref @unfinishedNodes.pushBack
   0n32 @unfinishedIndexes.pushBack
-] func;
+];
 
 printListNode: [
   cref data:;
   ("; List:") printList
   data deref cref @unfinishedNodes.pushBack
   0n32 @unfinishedIndexes.pushBack
-] func;
+];
 
 printNameNode: [
   cref data:;
   ("; Name:" data.name "; id:" data.nameInfo) printList
-] func;
+];
 
 printNameReadNode: [
   cref data:;
   ("; NameRead:" data.name "; id:" data.nameInfo) printList
-] func;
+];
 
 printNameWriteNode: [
   cref data:;
   ("; NameWrite:" data.name "; id:" data.nameInfo) printList
-] func;
+];
 
 printNameMemberNode: [
   cref data:;
   ("; NameMember:" data.name "; id:" data.nameInfo) printList
-] func;
+];
 
 printNameReadMemberNode: [
   cref data:;
   ("; NameReadMember:" data.name "; id:" data.nameInfo) printList
-] func;
+];
 
 printNameWriteMemberNode: [
   cref data:;
   ("; NameWriteMember:" data.name "; id:" data.nameInfo) printList
-] func;
+];
 
 printStringNode: [
   cref data:;
   ("; String:" data deref) printList
-] func;
+];
 
 printInt8Node: [
   cref data:;
   ("; Int8:" data deref) printList
-] func;
+];
 
 printInt16Node: [
   cref data:;
   ("; Int16:" data deref) printList
-] func;
+];
 
 printInt32Node: [
   cref data:;
   ("; Int32:" data deref) printList
-] func;
+];
 
 printInt64Node: [
   cref data:;
   ("; Int64:" data deref) printList
-] func;
+];
 
 printIntXNode: [
   cref data:;
   ("; IntX:" data deref) printList
-] func;
+];
 
 printNat8Node: [
   cref data:;
   ("; Nat8:" data deref) printList
-] func;
+];
 
 printNat16Node: [
   cref data:;
   ("; Nat16:" data deref) printList
-] func;
+];
 
 printNat32Node: [
   cref data:;
   ("; Nat32:" data deref) printList
-] func;
+];
 
 printNat64Node: [
   cref data:;
   ("; Nat64:" data deref) printList
-] func;
+];
 
 printNatXNode: [
   cref data:;
   ("; NatX:" data deref) printList
-] func;
+];
 
 printReal32Node: [
   cref data:;
   ("; Real32:" data deref) printList
-] func;
+];
 
 printReal64Node: [
   cref data:;
   ("; Real64:" data deref) printList
-] func;
+];
 
 printCurrentNode: [
   cref node:;
@@ -157,7 +157,7 @@ printCurrentNode: [
 
   ("; token:" node.token) printList
   LF print
-] func;
+];
 
 printAST: [
   ref parserResult:;
@@ -183,4 +183,4 @@ printAST: [
       unfinishedNodes.dataSize 0n32 >
     ] if
   ] loop
-] func;
+];

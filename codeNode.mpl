@@ -5,13 +5,13 @@
 "variable" includeModule
 "processor" includeModule
 
-callBuiltin:           [multiParserResult @currentNode indexOfNode @processor @processorResult callBuiltinImpl] func;
-processFuncPtr:        [multiParserResult @currentNode indexOfNode @processor @processorResult processFuncPtrImpl] func;
-processPre:            [multiParserResult @currentNode indexOfNode @processor @processorResult processPreImpl] func;
-processCall:           [multiParserResult @currentNode indexOfNode @processor @processorResult processCallImpl] func;
-processExportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processExportFunctionImpl] func;
-processImportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processImportFunctionImpl] func;
-compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode indexOfNode @processor @processorResult compareEntriesRecImpl] func;
+callBuiltin:           [multiParserResult @currentNode indexOfNode @processor @processorResult callBuiltinImpl];
+processFuncPtr:        [multiParserResult @currentNode indexOfNode @processor @processorResult processFuncPtrImpl];
+processPre:            [multiParserResult @currentNode indexOfNode @processor @processorResult processPreImpl];
+processCall:           [multiParserResult @currentNode indexOfNode @processor @processorResult processCallImpl];
+processExportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processExportFunctionImpl];
+processImportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processImportFunctionImpl];
+compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode indexOfNode @processor @processorResult compareEntriesRecImpl];
 
 addOverload: [
   copy nameId:;
@@ -24,13 +24,13 @@ addOverload: [
     "bad overload index" makeStringView compilerError
     -1
   ] if
-] func;
+];
 
 getOverloadCount: [
   copy nameId:;
   overloads: nameId processor.nameInfos.at.stack;
   overloads.getSize
-] func;
+];
 
 addNameInfoWith: [
   copy reg:;
@@ -105,11 +105,11 @@ addNameInfoWith: [
   ] [
     #we add "self" or "closure" but dont use them in program
   ] if
-] func;
+];
 
-addNameInfo: [indexOfNode copy -1 dynamic TRUE addNameInfoWith] func;
-addNameInfoOverloaded: [TRUE addNameInfoWith] func;
-addNameInfoNoReg: [indexOfNode copy -1 dynamic FALSE addNameInfoWith] func;
+addNameInfo: [indexOfNode copy -1 dynamic TRUE addNameInfoWith];
+addNameInfoOverloaded: [TRUE addNameInfoWith];
+addNameInfoNoReg: [indexOfNode copy -1 dynamic FALSE addNameInfoWith];
 
 getNameLastIndexInfo: [
   nameId:;
@@ -119,7 +119,7 @@ getNameLastIndexInfo: [
   currentNameInfo.stack.dataSize 1 - @result.@overload set
   currentNameInfo.stack.last.dataSize 1 - @result.@index set
   result
-] func;
+];
 
 deleteNameInfoWithOverload: [
   copy nameId:;
@@ -136,14 +136,14 @@ deleteNameInfoWithOverload: [
       TRUE
     ] &&
   ] loop
-] func;
+];
 
 deleteNameInfo: [
   copy nameId:;
 
   currentNameInfo: nameId @processor.@nameInfos.at;
   currentNameInfo.stack.dataSize 1 - nameId deleteNameInfoWithOverload
-] func;
+];
 
 makeStaticness: [
   copy staticness:;
@@ -159,7 +159,7 @@ makeStaticness: [
   ] when
 
   refToVar copy
-] func;
+];
 
 makeStorageStaticness: [
   copy staticness:;
@@ -170,11 +170,11 @@ makeStorageStaticness: [
   ] when
 
   refToVar
-] func;
+];
 
 createVariable: [
   FALSE dynamic TRUE dynamic createVariableWithVirtual
-] func;
+];
 
 createVariableWithVirtual: [
   copy makeType:;
@@ -228,12 +228,12 @@ createVariableWithVirtual: [
   ] when
 
   result
-] func;
+];
 
 push: [
   entry:;
   entry @currentNode.@stack.pushBack
-] func;
+];
 
 getStackEntryForPreInput: [
   copy depth:;
@@ -243,28 +243,28 @@ getStackEntryForPreInput: [
   shadowEnd: RefToVar;
   entry @shadowBegin @shadowEnd ShadowReasonInput makeShadows
   shadowEnd
-] func;
+];
 
-makeVarCode:   [VarCode   createVariable] func;
-makeVarString: [VarString createVariable createStringIR] func;
+makeVarCode:   [VarCode   createVariable];
+makeVarString: [VarString createVariable createStringIR];
 
-makeVarInt8:   [VarInt8   checkValue VarInt8   createVariable createPlainIR] func;
-makeVarInt16:  [VarInt16  checkValue VarInt16  createVariable createPlainIR] func;
-makeVarInt32:  [VarInt32  checkValue VarInt32  createVariable createPlainIR] func;
-makeVarInt64:  [VarInt64  checkValue VarInt64  createVariable createPlainIR] func;
-makeVarIntX:   [VarIntX   checkValue VarIntX   createVariable createPlainIR] func;
-makeVarNat8:   [VarNat8   checkValue VarNat8   createVariable createPlainIR] func;
-makeVarNat16:  [VarNat16  checkValue VarNat16  createVariable createPlainIR] func;
-makeVarNat32:  [VarNat32  checkValue VarNat32  createVariable createPlainIR] func;
-makeVarNat64:  [VarNat64  checkValue VarNat64  createVariable createPlainIR] func;
-makeVarNatX:   [VarNatX   checkValue VarNatX   createVariable createPlainIR] func;
-makeVarReal32: [VarReal32 checkValue VarReal32 createVariable createPlainIR] func;
-makeVarReal64: [VarReal64 checkValue VarReal64 createVariable createPlainIR] func;
+makeVarInt8:   [VarInt8   checkValue VarInt8   createVariable createPlainIR];
+makeVarInt16:  [VarInt16  checkValue VarInt16  createVariable createPlainIR];
+makeVarInt32:  [VarInt32  checkValue VarInt32  createVariable createPlainIR];
+makeVarInt64:  [VarInt64  checkValue VarInt64  createVariable createPlainIR];
+makeVarIntX:   [VarIntX   checkValue VarIntX   createVariable createPlainIR];
+makeVarNat8:   [VarNat8   checkValue VarNat8   createVariable createPlainIR];
+makeVarNat16:  [VarNat16  checkValue VarNat16  createVariable createPlainIR];
+makeVarNat32:  [VarNat32  checkValue VarNat32  createVariable createPlainIR];
+makeVarNat64:  [VarNat64  checkValue VarNat64  createVariable createPlainIR];
+makeVarNatX:   [VarNatX   checkValue VarNatX   createVariable createPlainIR];
+makeVarReal32: [VarReal32 checkValue VarReal32 createVariable createPlainIR];
+makeVarReal64: [VarReal64 checkValue VarReal64 createVariable createPlainIR];
 
 makeConst: [
   var:;
   FALSE dynamic @var.@mutable set
-] func;
+];
 
 getPointeeForMatching: [
   refToVar:;
@@ -274,7 +274,7 @@ getPointeeForMatching: [
   result: pointee copy;
   refToVar.mutable pointee.mutable and @result.@mutable set # to deref is
   result
-] func;
+];
 
 getPointeeWith: [
   copy dynamize:;
@@ -370,11 +370,11 @@ getPointeeWith: [
     refToVar.mutable pointee.mutable and @result.@mutable set # to deref is
     result
   ] if
-] func;
+];
 
-getPointee:              [TRUE  FALSE getPointeeWith] func;
-getPointeeNoDerefIR:     [FALSE FALSE getPointeeWith] func;
-getPointeeWhileDynamize: [FALSE TRUE  getPointeeWith] func;
+getPointee:              [TRUE  FALSE getPointeeWith];
+getPointeeNoDerefIR:     [FALSE FALSE getPointeeWith];
+getPointeeWhileDynamize: [FALSE TRUE  getPointeeWith];
 
 getFieldForMatching: [
   refToVar:;
@@ -402,7 +402,7 @@ getFieldForMatching: [
     "index is out of bounds" makeStringView compilerError
     RefToVar
   ] if
-] func;
+];
 
 getField: [
   refToVar:;
@@ -449,7 +449,7 @@ getField: [
     failResult: RefToVar Ref;
     @failResult
   ] if
-] func;
+];
 
 captureEntireStruct: [
   refToVar:;
@@ -476,7 +476,7 @@ captureEntireStruct: [
       i 1 + @i set TRUE
     ] &&
   ] loop
-] func;
+];
 
 setOneVar: [
   copy first:;
@@ -509,7 +509,7 @@ setOneVar: [
       refSrc staticness makeStaticness drop:;
     ] when
   ] if
-] func;
+];
 
 setVar: [
   copy refDst:;
@@ -550,7 +550,7 @@ setVar: [
       i 1 + @i set TRUE
     ] &&
   ] loop
-] func;
+];
 
 createRef: [
   mutable:;
@@ -573,7 +573,7 @@ createRef: [
     newRefToVar
     #] if
   ] if
-] func;
+];
 
 createCheckedStaticGEP: [
   refToStruct:;
@@ -587,7 +587,7 @@ createCheckedStaticGEP: [
     fieldRef index refToStruct createStaticGEP
     currentNode.program.dataSize 1 - @fieldVar.@getInstructionIndex set
   ] when
-] func;
+];
 
 makeVirtualVarReal: [
   refToVar:;
@@ -709,7 +709,7 @@ makeVirtualVarReal: [
 
     realValue copy
   ] if
-] func;
+];
 
 makeVarVirtual: [
   refToVar:;
@@ -751,7 +751,7 @@ makeVarVirtual: [
   compilable [
     msr: refToVar Virtual makeStaticness;
   ] when
-] func;
+];
 
 makeVarTreeDirty: [
   refToVar:;
@@ -795,7 +795,7 @@ makeVarTreeDirty: [
       compilable
     ] &&
   ] loop
-] func;
+];
 
 makePointeeDirtyIfRef: [
   refToVar:;
@@ -804,7 +804,7 @@ makePointeeDirtyIfRef: [
     pointee: refToVar getPointeeWhileDynamize;
     pointee.mutable [pointee makeVarTreeDirty] when
   ] when
-] func;
+];
 
 makeVarDynamicOrDirty: [
   newStaticness:;
@@ -813,10 +813,10 @@ makeVarDynamicOrDirty: [
 
   refToVar makePointeeDirtyIfRef
   msr: refToVar newStaticness makeStaticness;
-] func;
+];
 
-makeVarDynamic: [Dynamic makeVarDynamicOrDirty] func;
-makeVarDirty:   [Dirty   makeVarDynamicOrDirty] func;
+makeVarDynamic: [Dynamic makeVarDynamicOrDirty];
+makeVarDirty:   [Dirty   makeVarDynamicOrDirty];
 
 makeVarTreeDynamicWith: [
   copy dynamicStoraged:;
@@ -865,10 +865,10 @@ makeVarTreeDynamicWith: [
       compilable
     ] &&
   ] loop
-] func;
+];
 
-makeVarTreeDynamic:         [FALSE dynamic makeVarTreeDynamicWith] func;
-makeVarTreeDynamicStoraged: [TRUE  dynamic makeVarTreeDynamicWith] func;
+makeVarTreeDynamic:         [FALSE dynamic makeVarTreeDynamicWith];
+makeVarTreeDynamicStoraged: [TRUE  dynamic makeVarTreeDynamicWith];
 
 addOverloadForPre: [
   refToVar:;
@@ -883,7 +883,7 @@ addOverloadForPre: [
       overload @struct.@structName.@nameOverload set
     ] when
   ] when
-] func;
+];
 
 createNamedVariable: [
   refToVar:;
@@ -956,34 +956,34 @@ createNamedVariable: [
       newField @currentNode.@struct.@fields.pushBack
     ] when
   ] when
-] func;
+];
 
 processLabelNode: [
   .nameInfo pop createNamedVariable
-] func;
+];
 
 processCodeNode: [
   data:;
   indexOfAstNode makeVarCode push
-] func;
+];
 
 processCallByIndexArray: [
   multiParserResult @currentNode indexOfNode @processor @processorResult processCallByIndexArrayImpl
-] func;
+];
 
 processObjectNode: [
   data:;
   position: currentNode.position copy;
   name: "objectInitializer" makeStringView;
   data NodeCaseObject dynamic name position processCallByIndexArray
-] func;
+];
 
 processListNode: [
   data:;
   position: currentNode.position copy;
   name: "listInitializer" makeStringView;
   data NodeCaseList dynamic name position processCallByIndexArray
-] func;
+];
 
 {
   processorResult: ProcessorResult Ref;
@@ -1047,7 +1047,7 @@ findLocalObject: [
     ] &&
   ] loop
   refToVar
-] func;
+];
 
 findNameStackObject: [
   copy nameCase:;
@@ -1069,7 +1069,7 @@ findNameStackObject: [
   ] loop
 
   result
-] func;
+];
 
 getNameAs: [
   copy overload:;
@@ -1083,7 +1083,7 @@ getNameAs: [
     ] [
       ("unknown name:" name) assembleString compilerError
     ] if
-  ] func;
+  ];
 
   result: {
     refToVar: RefToVar;
@@ -1150,7 +1150,7 @@ getNameAs: [
           ] [
             refToVar copy
           ] if
-        ] func;
+        ];
 
         result.refToVar moveToTail @result.@refToVar set
         result.object moveToTail @result.@object set
@@ -1164,20 +1164,20 @@ getNameAs: [
     unknownName
   ] if
   result
-] func;
+];
 
-getName: [Capture FALSE dynamic -1 dynamic getNameAs] func;
-getNameForMatching: [TRUE dynamic -1 dynamic getNameAs] func;
+getName: [Capture FALSE dynamic -1 dynamic getNameAs];
+getNameForMatching: [TRUE dynamic -1 dynamic getNameAs];
 
 getNameWithOverload: [
   copy overload:;
   Capture FALSE dynamic overload getNameAs
-] func;
+];
 
 getNameForMatchingWithOverload: [
   copy overload:;
   TRUE dynamic overload getNameAs
-] func;
+];
 
 captureName: [
   getNameResult:;
@@ -1296,7 +1296,7 @@ captureName: [
       ] if
 
       result
-    ] func;
+    ];
 
     # now we must capture and create GEP instruction
     getNameResult.mplFieldIndex 0 < not [
@@ -1358,7 +1358,7 @@ captureName: [
   ] if
 
   result
-] func;
+];
 
 
 isCallable: [
@@ -1371,7 +1371,7 @@ isCallable: [
       processor.callNameInfo refToVar findField.success copy
     ] &&
   ] ||
-] func;
+];
 
 addFieldsNameInfos: [
   copy addNameCase:;
@@ -1390,7 +1390,7 @@ addFieldsNameInfos: [
       i 1 + @i set TRUE
     ] &&
   ] loop
-] func;
+];
 
 deleteFieldsNameInfos: [
   refToVar:;
@@ -1407,7 +1407,7 @@ deleteFieldsNameInfos: [
       currentField.nameInfo deleteNameInfo # name info pointing to the struct, not to a field!
     ] &&
   ] loop
-] func;
+];
 
 regNamesClosure: [
   object:;
@@ -1417,7 +1417,7 @@ regNamesClosure: [
     processor.closureNameInfo object NameCaseClosureObject addNameInfoNoReg
     object NameCaseClosureMember addFieldsNameInfos
   ] when
-] func;
+];
 
 regNamesSelf: [
   object:;
@@ -1427,7 +1427,7 @@ regNamesSelf: [
     processor.selfNameInfo object NameCaseSelfObject addNameInfoNoReg
     object NameCaseSelfMember addFieldsNameInfos
   ] when
-] func;
+];
 
 unregNamesClosure: [
   object:;
@@ -1435,7 +1435,7 @@ unregNamesClosure: [
     object deleteFieldsNameInfos
     processor.closureNameInfo deleteNameInfo
   ] when
-] func;
+];
 
 unregNamesSelf: [
   object:;
@@ -1443,7 +1443,7 @@ unregNamesSelf: [
     object deleteFieldsNameInfos
     processor.selfNameInfo deleteNameInfo
   ] when
-] func;
+];
 
 callCallableStruct: [
   name:;
@@ -1469,7 +1469,7 @@ callCallableStruct: [
   ] [
     "CALL field is not a code" compilerError
   ] if
-] func;
+];
 
 callCallableField: [
   name:;
@@ -1483,7 +1483,7 @@ callCallableField: [
   object regNamesClosure
   code @name processCall
   object unregNamesClosure
-] func;
+];
 
 callCallableStructWithPre: [
   name:;
@@ -1552,7 +1552,7 @@ callCallableStructWithPre: [
 
     nextIteration [compilable] &&
   ] loop
-] func;
+];
 
 callCallable: [
   predicate:;
@@ -1581,7 +1581,7 @@ callCallable: [
       ] if
     ] if
   ] if
-] func;
+];
 
 getPossiblePointee: [
   refToVar:;
@@ -1591,11 +1591,11 @@ getPossiblePointee: [
     refToVar copy
   ] if
 
-] func;
+];
 
 derefAndPush: [
   getPossiblePointee push
-] func;
+];
 
 tryImplicitLambdaCast: [
   refToDst:;
@@ -1655,7 +1655,7 @@ tryImplicitLambdaCast: [
   ] when
 
   result
-] func;
+];
 
 setRef: [
   compileOnce
@@ -1699,7 +1699,7 @@ setRef: [
       ] if
     ] when
   ] if
-] func;
+];
 
 copyOneVarWith: [
   copy toNew:;
@@ -1711,7 +1711,7 @@ copyOneVarWith: [
 
   checkedStaticnessOfVar: [
     toNew [staticnessOfVar Dynamic maxStaticness] [staticnessOfVar] if
-  ] func;
+  ];
 
   srcVar.data.getTag VarStruct = [
     srcStruct: VarStruct srcVar.data.get.get;
@@ -1749,7 +1749,7 @@ copyOneVarWith: [
   srcVar.dbgTypeId @dstVar.@dbgTypeId set
 
   dst
-] func;
+];
 
 copyVarImpl: [
   copy toNew:;
@@ -1803,13 +1803,13 @@ copyVarImpl: [
     ] loop
     result
   ] if
-] func;
+];
 
-copyOneVar: [FALSE dynamic copyOneVarWith] func;
+copyOneVar: [FALSE dynamic copyOneVarWith];
 
-copyVar:          [FALSE FALSE dynamic copyVarImpl] func; #fromchild is static arg
-copyVarFromChild: [TRUE  FALSE dynamic copyVarImpl] func;
-copyVarToNew:     [FALSE TRUE  dynamic copyVarImpl] func;
+copyVar:          [FALSE FALSE dynamic copyVarImpl]; #fromchild is static arg
+copyVarFromChild: [TRUE  FALSE dynamic copyVarImpl];
+copyVarToNew:     [FALSE TRUE  dynamic copyVarImpl];
 
 {
   dynamicStoraged: Cond;
@@ -1895,7 +1895,7 @@ copyVarToNew:     [FALSE TRUE  dynamic copyVarImpl] func;
       end                 @headVar.@capturedTail set # head->newTail
       head                 @endVar.@capturedHead set # newTail->head
       end @currentNode.@capturedVars.pushBack       # remember
-    ] func;
+    ];
 
     dynamicStoraged [
       reallyCreateShadows
@@ -1926,12 +1926,12 @@ copyVarToNew:     [FALSE TRUE  dynamic copyVarImpl] func;
 makeShadows:        [
   multiParserResult @currentNode indexOfNode @processor @processorResult
   FALSE makeShadowsImpl
-] func;
+];
 
 makeShadowsDynamic: [
   multiParserResult @currentNode indexOfNode @processor @processorResult
   TRUE  makeShadowsImpl
-] func;
+];
 
 {
   forMatching: Cond;
@@ -2013,13 +2013,13 @@ pop:            [
   result: RefToVar;
   @result multiParserResult @currentNode indexOfNode @processor @processorResult FALSE popImpl
   result
-] func;
+];
 
 popForMatching: [
   result: RefToVar;
   @result multiParserResult @currentNode indexOfNode @processor @processorResult TRUE popImpl
   result
-] func;
+];
 
 pushName: [
   copy nameInfo:;
@@ -2045,7 +2045,7 @@ pushName: [
       ] if
     ] if
   ] if
-] func;
+];
 
 processNameNode: [
   data:;
@@ -2056,7 +2056,7 @@ processNameNode: [
   compilable [
     cnr.object refToVar 0 data.nameInfo pushName
   ] when
-] func;
+];
 
 processNameReadNode: [
   data:;
@@ -2076,7 +2076,7 @@ processNameReadNode: [
       ] if
     ] if
   ] when
-] func;
+];
 
 processNameWriteNode: [
   data:;
@@ -2085,7 +2085,7 @@ processNameWriteNode: [
   refToVar: cnr.refToVar;
 
   compilable [refToVar setRef] when
-] func;
+];
 
 processStaticAt: [
   refToStruct:;
@@ -2108,7 +2108,7 @@ processStaticAt: [
   ] [
     RefToVar
   ] if
-] func;
+];
 
 processMember: [
   copy read:;
@@ -2120,7 +2120,7 @@ processMember: [
 
     fieldError: [
       (refToStruct getMplType " has no field " data.name) assembleString compilerError
-    ] func;
+    ];
 
     refToStruct getVar.data.getTag VarRef = [
       refToStruct isVirtualRef [
@@ -2163,25 +2163,25 @@ processMember: [
       ] if
     ] when
   ] when
-] func;
+];
 
-processNameMemberNode: [pop 0 dynamic processMember] func;
-processNameReadMemberNode: [pop 1 dynamic processMember] func;
-processNameWriteMemberNode: [pop -1 dynamic processMember] func;
+processNameMemberNode: [pop 0 dynamic processMember];
+processNameReadMemberNode: [pop 1 dynamic processMember];
+processNameWriteMemberNode: [pop -1 dynamic processMember];
 
-processStringNode: [makeVarString push] func;
-processInt8Node:   [makeVarInt8   push] func;
-processInt16Node:  [makeVarInt16  push] func;
-processInt32Node:  [makeVarInt32  push] func;
-processInt64Node:  [makeVarInt64  push] func;
-processIntXNode:   [makeVarIntX   push] func;
-processNat8Node:   [makeVarNat8   push] func;
-processNat16Node:  [makeVarNat16  push] func;
-processNat32Node:  [makeVarNat32  push] func;
-processNat64Node:  [makeVarNat64  push] func;
-processNatXNode:   [makeVarNatX   push] func;
-processReal32Node: [makeVarReal32 push] func;
-processReal64Node: [makeVarReal64 push] func;
+processStringNode: [makeVarString push];
+processInt8Node:   [makeVarInt8   push];
+processInt16Node:  [makeVarInt16  push];
+processInt32Node:  [makeVarInt32  push];
+processInt64Node:  [makeVarInt64  push];
+processIntXNode:   [makeVarIntX   push];
+processNat8Node:   [makeVarNat8   push];
+processNat16Node:  [makeVarNat16  push];
+processNat32Node:  [makeVarNat32  push];
+processNat64Node:  [makeVarNat64  push];
+processNatXNode:   [makeVarNatX   push];
+processReal32Node: [makeVarReal32 push];
+processReal64Node: [makeVarReal64 push];
 
 addDebugLocationForLastInstruction: [
   processor.options.debug [
@@ -2195,17 +2195,17 @@ addDebugLocationForLastInstruction: [
       locationIndex @operation.cat
     ] when
   ] when
-] func;
+];
 
 addCodeNode: [
   CodeNode owner @processor.@nodes.pushBack
   processor.nodeCount 1 + @processor.@nodeCount set
-] func;
+];
 
 argAbleToCopy: [
   arg:;
   arg.mutable not [arg isTinyArg] &&
-] func;
+];
 
 callInit: [
   copy refToVar:;
@@ -2265,7 +2265,7 @@ callInit: [
       ] &&
     ] loop
   ] when
-] func;
+];
 
 callAssign: [
   refToDst:;
@@ -2338,7 +2338,7 @@ callAssign: [
       ] &&
     ] loop
   ] when
-] func;
+];
 
 callDie: [
   copy refToVar:;
@@ -2385,7 +2385,7 @@ callDie: [
       ] &&
     ] loop
   ] when
-] func;
+];
 
 killStruct: [
   refToVar:;
@@ -2393,7 +2393,7 @@ killStruct: [
   VarStruct refToVar getVar.data.get.get.unableToDie not [
     refToVar callDie
   ] when
-] func;
+];
 
 {
   processorResult: ProcessorResult Ref;
@@ -2457,7 +2457,7 @@ killStruct: [
 
 processNode: [
   astNode indexOfAstNode multiParserResult @currentNode indexOfNode @processor @processorResult processNodeImpl
-] func;
+];
 
 addNamesFromModule: [
   copy moduleId:;
@@ -2473,7 +2473,7 @@ addNamesFromModule: [
       current.nameInfo current.refToVar NameCaseFromModule addNameInfo #it is not own local variable
     ] each
   ] when
-] func;
+];
 
 processUseModule: [
   copy asUse:;
@@ -2505,7 +2505,7 @@ processUseModule: [
       ] when
     ] if
   ] each
-] func;
+];
 
 finalizeListNode: [
   struct: Struct;
@@ -2561,7 +2561,7 @@ finalizeListNode: [
     @currentNode.@stack.clear
     refToStruct @currentNode.@stack.pushBack
   ] when
-] func;
+];
 
 finalizeObjectNode: [
   refToStruct: @currentNode.@struct move owner VarStruct createVariable;
@@ -2596,7 +2596,7 @@ finalizeObjectNode: [
   ] when
 
   refToStruct @currentNode.@stack.pushBack
-] func;
+];
 
 unregCodeNodeNames: [
   #currentNode.parent 0 = not [ # if parent index is 0, it is not node in file, we must save names
@@ -2607,7 +2607,7 @@ unregCodeNodeNames: [
       #("unreg " nameWithOverload.nameInfo processor.nameInfos.at.name) addLog
       nameWithOverload.nameOverload nameWithOverload.nameInfo deleteNameInfoWithOverload
     ] each
-  ] func;
+  ];
 
   #("unreg label names") addLog
   @currentNode.@labelNames unregisterNamesIn
@@ -2648,7 +2648,7 @@ unregCodeNodeNames: [
   @currentNode.@captureTable.release
   @currentNode.@fieldCaptureTable.release
   #] when
-] func;
+];
 
 checkPreStackDepth: [
   newMinStackDepth: getStackDepth currentNode.stack.dataSize -;
@@ -2664,7 +2664,7 @@ checkPreStackDepth: [
       i 1 + @i set TRUE
     ] &&
   ] loop
-] func;
+];
 
 deleteNode: [
   copy nodeIndex:;
@@ -2687,13 +2687,13 @@ deleteNode: [
   #  ] when
   #] each
   processor.deletedNodeCount 1 + @processor.@deletedNodeCount set
-] func;
+];
 
 clearRecursionStack: [
   processor.recursiveNodesStack.getSize 0 > [processor.recursiveNodesStack.last indexOfNode =] && [
     @processor.@recursiveNodesStack.popBack
   ] when
-] func;
+];
 
 checkRecursionOfCodeNode: [
   clearBuildingMatchingInfo: FALSE dynamic;
@@ -2728,7 +2728,7 @@ checkRecursionOfCodeNode: [
     @currentNode.@program.clear
     @currentNode.@stack.clear
     TRUE @clearBuildingMatchingInfo set
-  ] func;
+  ];
 
   approvePrevNodes: [
     #check recursion stack state
@@ -2775,7 +2775,7 @@ checkRecursionOfCodeNode: [
       ] &&
     ] loop
     #recursion successful
-  ] func;
+  ];
 
 
   currentNode.state NodeStateNew = [
@@ -2813,7 +2813,7 @@ checkRecursionOfCodeNode: [
             se2: refToVar2 noMatterToCopy [refToVar2][refToVar2 getVar.shadowEnd] if;
             [se1.hostId 0 < not [se2.hostId 0 < not] &&] "variables has no shadowEnd!" assert
             se1 se2 compareEntriesRec
-          ] func;
+          ];
 
           #compare inputs
           result [
@@ -2929,7 +2929,7 @@ checkRecursionOfCodeNode: [
     MatchingInfo @currentNode.@buildingMatchingInfo set
     0            @currentNode.@lastLambdaName set
   ] when
-] func;
+];
 
 makeCompilerPosition: [
   astNode:;
@@ -2942,7 +2942,7 @@ makeCompilerPosition: [
   astNode.token      @result.@token set
 
   result
-] func;
+];
 
 {
   processorResult: ProcessorResult Ref;
@@ -3004,7 +3004,7 @@ makeCompilerPosition: [
     ] [
       refToVar copy FALSE
     ] if
-  ] func;
+  ];
 
   addArg: [
     copy asCopy:;
@@ -3066,12 +3066,12 @@ makeCompilerPosition: [
     ] when
 
     TRUE @hasEffect set
-  ] func;
+  ];
 
-  addCopyArg: [FALSE TRUE addArg] func;
-  addRetArg: [-1 dynamic TRUE TRUE addArg] func;
-  addRefArg: [copy output:; -1 dynamic output FALSE addArg] func;
-  addOutputArg: [TRUE dynamic addRefArg] func;
+  addCopyArg: [FALSE TRUE addArg];
+  addRetArg: [-1 dynamic TRUE TRUE addArg];
+  addRefArg: [copy output:; -1 dynamic output FALSE addArg];
+  addOutputArg: [TRUE dynamic addRefArg];
 
   addVirtualOutput: [
     copy refToVar:;
@@ -3095,7 +3095,7 @@ makeCompilerPosition: [
       TRUE @var.@usedInHeader set
       refToVar markAsUnableToDie
     ] when
-  ] func;
+  ];
 
   callDestructors: [
     currentNode.parent 0 = [
@@ -3130,7 +3130,7 @@ makeCompilerPosition: [
       @retInstruction move @currentNode.@program.pushBack
       FALSE retInstructionIndex @currentNode.@program.at.@enabled set
     ] if
-  ] func;
+  ];
 
   isDeclaration:
   currentNode.nodeCase NodeCaseDeclaration =
@@ -3318,7 +3318,7 @@ makeCompilerPosition: [
         i 1 + @i set TRUE
       ] &&
     ] loop
-  ] func;
+  ];
 
   noname: hasForcedSignature not;
   #[currentNode.nodeCase NodeCaseLambda =] ||;
@@ -3341,7 +3341,7 @@ makeCompilerPosition: [
       current: .@value;
       current.refToVar noMatterToCopy not [current.refToVar getVar.shadowBegin @current.@refToVar set] when
     ] each
-  ] func;
+  ];
 
   @currentNode.@buildingMatchingInfo.@inputs fixArrShadows
   @currentNode.@buildingMatchingInfo.@captures fixArrShadows
@@ -3455,7 +3455,7 @@ makeCompilerPosition: [
     nameInfo: functionName findNameInfo;
     nameInfo @declarationNode.@varNameInfo set
     nameInfo refToVar NameCaseLocal addNameInfo
-  ] func;
+  ];
 
   #generate function header
   noname [processorResult.findModuleFail copy] || [
@@ -3587,7 +3587,7 @@ makeCompilerPosition: [
 
 finalizeCodeNode: [
   compilerPositionInfo forcedSignature multiParserResult @currentNode indexOfNode @processor @processorResult finalizeCodeNodeImpl
-] func;
+];
 
 addIndexArrayToProcess: [
   indexArray:;
@@ -3601,7 +3601,7 @@ addIndexArrayToProcess: [
       TRUE
     ] &&
   ] loop
-] func;
+];
 
 addMatchingNode: [
   copy indexOfNode:;
@@ -3615,12 +3615,12 @@ addMatchingNode: [
     indexOfNode @tableValue.pushBack
     addr @tableValue move @processor.@matchingNodes.insert
   ] if
-] func;
+];
 
 nodeHasCode: [
   node:;
   node.emptyDeclaration not [node.empty not] && [node.deleted not] && [node.nodeCase NodeCaseCodeRefDeclaration = not] &&
-] func;
+];
 
 {
   signature: CFunctionSignature Cref;

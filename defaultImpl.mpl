@@ -2,7 +2,7 @@
 "control" includeModule
 
 failProcForProcessor: [
-  failProc: [stringMemory printAddr " - fail while handling fail" stringMemory printAddr] func;
+  failProc: [stringMemory printAddr " - fail while handling fail" stringMemory printAddr];
   copy message:;
   "ASSERTION FAILED!!!" print LF print
   message print LF print
@@ -11,11 +11,11 @@ failProcForProcessor: [
 
   "Terminating..." print LF print
   2 exit
-] func;
+];
 
 defaultFailProc: [
   text: pop;
-] func;
+];
 
 defaultCall: [
   refToVar: pop;
@@ -35,7 +35,7 @@ defaultCall: [
       ] if
     ] if
   ] when
-] func;
+];
 
 defaultSet: [
   refToDst: pop;
@@ -67,7 +67,7 @@ defaultSet: [
       ] if
     ] if
   ] when
-] func;
+];
 
 defaultRef: [
   copy mutable:;
@@ -75,7 +75,7 @@ defaultRef: [
   compilable [
     refToVar mutable createRef push
   ] when
-] func;
+];
 
 defaultMakeConstWith: [
   copy check:;
@@ -88,7 +88,7 @@ defaultMakeConstWith: [
       refToVar push
     ] if
   ] when
-] func;
+];
 
 defaultUseOrIncludeModule: [
   copy asUse:;
@@ -118,7 +118,7 @@ defaultUseOrIncludeModule: [
       ] if
     ]
   ) sequence
-] func;
+];
 
 getStackEntryWith: [
   copy check:;
@@ -145,10 +145,10 @@ getStackEntryWith: [
     ] if
   ] loop
   @result
-] func;
+];
 
-getStackEntry:          [compileOnce TRUE  static getStackEntryWith] func;
-getStackEntryUnchecked: [            FALSE static getStackEntryWith] func;
+getStackEntry:          [compileOnce TRUE  static getStackEntryWith];
+getStackEntryUnchecked: [            FALSE static getStackEntryWith];
 
 getStackDepth: [
   depth: 0 dynamic;
@@ -167,7 +167,7 @@ getStackDepth: [
   [inputsCount depth > not] "Missed stack overflow!" assert
 
   depth inputsCount -
-] func;
+];
 
 defaultPrintStack: [
   ("stack:" LF "depth=" getStackDepth LF) printList
@@ -180,7 +180,7 @@ defaultPrintStack: [
       i 1 + @i set TRUE
     ] &&
   ] loop
-] func;
+];
 
 defaultPrintStackTrace: [
   nodeIndex: indexOfNode copy;
@@ -201,7 +201,7 @@ defaultPrintStackTrace: [
   ] loop
 
   defaultPrintStack
-] func;
+];
 
 findNameInfo: [
   key:;
@@ -220,4 +220,4 @@ findNameInfo: [
 
     result
   ] if
-] func;
+];

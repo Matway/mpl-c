@@ -139,7 +139,7 @@
 
         ] when
       ] if
-    ] func;
+    ];
 
     unfinishedFiles: IndexArray;
     n: 0 dynamic;
