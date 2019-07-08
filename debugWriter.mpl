@@ -142,11 +142,11 @@ addMemberInfo: [
 
   name "" = [
     ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"f" fieldNumber "\", scope: !" currentNode.funcDbgIndex
-      ", file: !" currentNode.position.filename processor.debugInfo.fileNameIds.at
+      ", file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
       ", line: " currentNode.position.line ", baseType: !" fr.value ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
   ] [
     ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"" name "\", scope: !" currentNode.funcDbgIndex
-      ", file: !" currentNode.position.filename processor.debugInfo.fileNameIds.at
+      ", file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
       ", line: " currentNode.position.line ", baseType: !" fr.value ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
   ] if
 
@@ -211,7 +211,7 @@ getTypeDebugDeclaration: [
             index: processor.debugInfo.lastId copy;
             processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
-            ("!" index " = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !" currentNode.position.filename processor.debugInfo.fileNameIds.at
+            ("!" index " = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
               ", name: \"" refToVar getDebugType "\", line: " currentNode.position.line ", size: " refToVar getStorageSize 0ix cast 0 cast 8 * ", elements: !" index 1 -
               ")") assembleString @processor.@debugInfo.@strings.pushBack
             index currentNode.funcDbgIndex @processor.@debugInfo.@locationIds.insert
@@ -237,7 +237,7 @@ addVariableDebugInfo: [
     index: processor.debugInfo.lastId copy;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
     ("!" index " = !DILocalVariable(name: \"" nameInfo processor.nameInfos.at.name "\", scope: !" currentNode.funcDbgIndex
-      ", file: !" currentNode.position.filename processor.debugInfo.fileNameIds.at
+      ", file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
       ", line: " currentNode.position.line ", type: !" debugDeclarationIndex ")") assembleString @processor.@debugInfo.@strings.pushBack
     index currentNode.funcDbgIndex @processor.@debugInfo.@locationIds.insert
 
@@ -263,7 +263,7 @@ addGlobalVariableDebugInfo: [
     index: processor.debugInfo.lastId copy;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
     ("!" index " = !DIGlobalVariable(name: \"" nameInfo processor.nameInfos.at.name "\", linkageName: \"" refToVar getIrName
-      "\", scope: !" processor.debugInfo.unit ", file: !" currentNode.position.filename processor.debugInfo.fileNameIds.at
+      "\", scope: !" processor.debugInfo.unit ", file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
       ", line: " currentNode.position.line ", type: !" debugDeclarationIndex ", isLocal: false, isDefinition: true)") assembleString @processor.@debugInfo.@strings.pushBack
 
     result: index 1 -;
@@ -354,8 +354,8 @@ addFuncDebugInfo: [
 
   (
     "!" funcDebugIndex " = distinct !DISubprogram(name: \"" funcImplementation makeStringView "\", linkageName: \"" @funcIRName
-    "\", scope: !" position.filename processor.debugInfo.fileNameIds.at
-    ", file: !" position.filename processor.debugInfo.fileNameIds.at ", line: " position.line  ", type: !" subroutineIndex
+    "\", scope: !" position.fileNumber processor.debugInfo.fileNameIds.at
+    ", file: !" position.fileNumber processor.debugInfo.fileNameIds.at ", line: " position.line  ", type: !" subroutineIndex
     ", scopeLine: " position.line ", unit: !" processor.debugInfo.unit ")") assembleString @processor.@debugInfo.@strings.pushBack
 ] func;
 

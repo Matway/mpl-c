@@ -120,6 +120,55 @@ defaultUseOrIncludeModule: [
   ) sequence
 ] func;
 
+getStackEntryWith: [
+  copy check:;
+  copy depth:;
+
+  index: indexOfNode copy;
+  result: RefToVar Ref; #ref to 0nx
+
+  [
+    node: index @processor.@nodes.at .get;
+
+    node.root [
+      check ["stack underflow" compilerError] when
+      FALSE
+    ] [
+      depth node.stack.dataSize < [
+        node.stack.dataSize 1 - depth - @node.@stack.at !result
+        FALSE
+      ] [
+        depth node.stack.dataSize - node.buildingMatchingInfo.inputs.dataSize + @depth set
+        node.parent @index set
+        TRUE
+      ] if
+    ] if
+  ] loop
+  @result
+] func;
+
+getStackEntry:          [compileOnce TRUE  static getStackEntryWith] func;
+getStackEntryUnchecked: [            FALSE static getStackEntryWith] func;
+
+getStackDepth: [
+  depth: 0 dynamic;
+  inputsCount: 0 dynamic;
+  index: indexOfNode copy;
+  [
+    node: index processor.nodes.at.get;
+    node.root not [
+      depth node.stack.dataSize + @depth set
+      inputsCount node.buildingMatchingInfo.inputs.dataSize + @inputsCount set
+      node.parent @index set
+      TRUE
+    ] &&
+  ] loop
+
+  [inputsCount depth > not] "Missed stack overflow!" assert
+
+  depth inputsCount -
+] func;
+
 defaultPrintStack: [
   ("stack:" LF "depth=" getStackDepth LF) printList
 
@@ -140,7 +189,7 @@ defaultPrintStackTrace: [
     node.root [
       FALSE
     ] [
-      ("at filename: "  node.position.filename processor.options.fileNames.at
+      ("at filename: "   node.position.fileNumber processor.options.fileNames.at
         ", token: "      node.position.token
         ", nodeIndex: "  nodeIndex
         ", line: "       node.position.line
@@ -152,4 +201,23 @@ defaultPrintStackTrace: [
   ] loop
 
   defaultPrintStack
+] func;
+
+findNameInfo: [
+  key:;
+  fr: @key @processor.@nameToId.find;
+  fr.success [
+    fr.value copy
+  ] [
+    string: key toString;
+    result: processor.nameToId.getSize;
+    [result processor.nameInfos.dataSize =] "Name info data sizes inconsistent!" assert
+    string result @processor.@nameToId.insert
+
+    newNameInfo: NameInfo;
+    string @newNameInfo.@name set
+    newNameInfo @processor.@nameInfos.pushBack
+
+    result
+  ] if
 ] func;

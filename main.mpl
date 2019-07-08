@@ -30,8 +30,9 @@ addToProcess: [
   fileText:;
   copy fileNumber:;
   fileName:;
+  parserResult: ParserResult;
 
-  parserResult: fileText fileNumber parseString;
+  @parserResult fileText makeStringView fileNumber parseString
 
   parserResult.success [
     @parserResult optimizeLabels
@@ -247,7 +248,7 @@ createDefinition: [
                     pair:;
                     i: pair.index;
                     nodePosition: pair.value;
-                    (nodePosition.filename options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
+                    (nodePosition.fileNumber options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
 
                     i 0 = [
                       ("error, [" nodePosition.token "], " current.message LF) printList

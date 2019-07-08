@@ -5,116 +5,6 @@
 "variable" includeModule
 "processor" includeModule
 
-compilable: [processorResult.success copy] func;
-
-{
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
-  multiParserResult: MultiParserResult Cref;
-  indexArray: IndexArray Cref;
-  processor: Processor Ref;
-  processorResult: ProcessorResult Ref;
-  nodeCase: NodeCaseCode;
-  parentIndex: 0;
-  functionName: StringView Cref;
-} 0 {convention: cdecl;} "astNodeToCodeNode" importFunction
-
-{
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
-  multiParserResult: MultiParserResult Cref;
-  processor: Processor Ref;
-  processorResult: ProcessorResult Ref;
-  refToVar: RefToVar Cref;
-} () {convention: cdecl;} "createDtorForGlobalVar" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  indexOfNode: Int32;
-  currentNode: CodeNode Ref;
-  multiParserResult: MultiParserResult Cref;
-  positionInfo: CompilerPositionInfo Cref;
-  name: StringView Cref;
-  nodeCase: NodeCaseCode;
-  indexArray: IndexArray Cref;
-} () {convention: cdecl;} "processCallByIndexArrayImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  indexOfNode: Int32;
-  currentNode: CodeNode Ref;
-  multiParserResult: MultiParserResult Cref;
-  index: Int32;
-} () {convention: cdecl;} "callBuiltinImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  indexOfNode: Int32;
-  currentNode: CodeNode Ref;
-  multiParserResult: MultiParserResult Cref;
-  refToVar: RefToVar Cref;
-} () {convention: cdecl;} "processFuncPtrImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  indexOfNode: Int32;
-  currentNode: CodeNode Ref;
-  multiParserResult: MultiParserResult Cref;
-  preAstNodeIndex: Int32;
-} Cond {convention: cdecl;} "processPreImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  indexOfNode: Int32;
-  currentNode: CodeNode Ref;
-  multiParserResult: MultiParserResult Cref;
-  name: StringView Cref;
-  callAstNodeIndex: Int32;
-} () {convention: cdecl;} "processCallImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  indexOfNode: Int32;
-  currentNode: CodeNode Ref;
-  multiParserResult: MultiParserResult Cref;
-  asLambda: Cond;
-  name: StringView Cref;
-  astNode: AstNode Cref;
-  signature: CFunctionSignature Cref;
-} Int32 {convention: cdecl;} "processExportFunctionImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  indexOfNode: Int32;
-  currentNode: CodeNode Ref;
-  multiParserResult: MultiParserResult Cref;
-  asCodeRef: Cond;
-  name: StringView Cref;
-  signature: CFunctionSignature Cref;
-} Int32 {convention: cdecl;} "processImportFunctionImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  indexOfNode: Int32;
-  currentNode: CodeNode Ref;
-  multiParserResult: MultiParserResult Cref;
-
-  comparingMessage: String Ref;
-  curToNested: RefToVarTable Ref;
-  nestedToCur: RefToVarTable Ref;
-  currentMatchingNodeIndex: Int32;
-  cacheEntry: RefToVar Cref;
-  stackEntry: RefToVar Cref;
-} Cond {convention: cdecl;} "compareEntriesRecImpl" importFunction
-
 callBuiltin:           [multiParserResult @currentNode indexOfNode @processor @processorResult callBuiltinImpl] func;
 processFuncPtr:        [multiParserResult @currentNode indexOfNode @processor @processorResult processFuncPtrImpl] func;
 processPre:            [multiParserResult @currentNode indexOfNode @processor @processorResult processPreImpl] func;
@@ -345,216 +235,6 @@ push: [
   entry @currentNode.@stack.pushBack
 ] func;
 
-getStackDepth: [
-  depth: 0 dynamic;
-  inputsCount: 0 dynamic;
-  index: indexOfNode copy;
-  [
-    node: index processor.nodes.at.get;
-    node.root not [
-      depth node.stack.dataSize + @depth set
-      inputsCount node.buildingMatchingInfo.inputs.dataSize + @inputsCount set
-      node.parent @index set
-      TRUE
-    ] &&
-  ] loop
-
-  [inputsCount depth > not] "Missed stack overflow!" assert
-
-  depth inputsCount -
-] func;
-
-getStackEntryWith: [
-  copy check:;
-  copy depth:;
-
-  index: indexOfNode copy;
-  result: RefToVar Ref; #ref to 0nx
-
-  [
-    node: index @processor.@nodes.at .get;
-
-    node.root [
-      check ["stack underflow" compilerError] when
-      FALSE
-    ] [
-      depth node.stack.dataSize < [
-        node.stack.dataSize 1 - depth - @node.@stack.at !result
-        FALSE
-      ] [
-        depth node.stack.dataSize - node.buildingMatchingInfo.inputs.dataSize + @depth set
-        node.parent @index set
-        TRUE
-      ] if
-    ] if
-  ] loop
-  @result
-] func;
-
-getStackEntry:          [compileOnce TRUE  static getStackEntryWith] func;
-getStackEntryUnchecked: [            FALSE static getStackEntryWith] func;
-
-makeShadowsWith: [
-  copy dynamicStoraged:;
-  copy reason:;
-  end:;
-  begin:;
-  refToVar:;
-  compileOnce
-
-  refToVar noMatterToCopy [
-    refToVar @begin set
-    refToVar @end set
-  ] [
-    var: refToVar getVar;
-    head: var.capturedHead copy;
-    headVar: head getVar;
-
-    reallyCreateShadows: [
-      refToVar copyOneVar @begin set
-      refToVar copyOneVar @end set
-
-
-      beginVar: begin getVar;
-      endVar: end getVar;
-      global: refToVar isGlobal;
-
-      global [
-        reason ShadowReasonField = not [
-          var.irNameId @endVar.@irNameId set
-        ] when
-
-        TRUE @beginVar.@global set
-        TRUE @endVar.@global set
-
-        headVar.capturedTail.hostId processor.nodes.at.get.parent 0 = # capture directly from global vars
-        [refToVar isVirtual not] &&
-        [processor.processingExport 0 >] &&
-        [var.data.getTag VarImport = not] && [
-          begin Dirty makeStaticness @begin set
-          end   Dirty makeStaticness @end   set
-        ] when
-      ] [
-        begin unglobalize
-        end unglobalize
-      ] if
-
-      begin @endVar  .@shadowBegin set
-      end   @beginVar.@shadowEnd   set
-
-      var.globalId @beginVar.@globalId set
-      var.globalId   @endVar.@globalId set
-      var.globalDeclarationInstructionIndex @beginVar.@globalDeclarationInstructionIndex set
-      var.globalDeclarationInstructionIndex   @endVar.@globalDeclarationInstructionIndex set
-
-      #("really create shadows for " refToVar.hostId ":" refToVar.varId "; b=" begin.hostId ":" begin.varId "; e=" end.hostId ":" end.varId " in " indexOfNode) addLog
-      reason @beginVar.@shadowReason set
-      reason   @endVar.@shadowReason set
-
-      # add info  to linked list, link to end (changed value)
-      headVar.capturedTail @endVar.@capturedPrev set # newTail->oldTail
-      end                 @headVar.@capturedTail set # head->newTail
-      head                 @endVar.@capturedHead set # newTail->head
-      end @currentNode.@capturedVars.pushBack       # remember
-    ] func;
-
-    dynamicStoraged [
-      reallyCreateShadows
-    ] [
-      headVar.capturedTail.hostId indexOfNode = [
-        headVar.capturedTail @end set
-        end getVar.shadowBegin @begin set
-
-        refToVar.mutable @begin.@mutable set
-        refToVar.mutable @end.@mutable set
-
-        beginVar: begin getVar;
-        endVar: end getVar;
-        reason beginVar.shadowReason < [
-          reason @beginVar.@shadowReason set
-          reason   @endVar.@shadowReason set
-        ] when
-
-        [begin.hostId indexOfNode =] "Begin hostId incorrect in makeShadows!" assert
-        [end.hostId indexOfNode =] "End hostId incorrect in makeShadows!" assert
-      ] [
-        reallyCreateShadows
-      ] if
-    ] if
-  ] if
-] func;
-
-makeShadows:        [FALSE dynamic makeShadowsWith] func;
-makeShadowsDynamic: [TRUE  dynamic makeShadowsWith] func;
-
-popWith: [
-  copy forMatching:;
-
-  currentNode.stack.dataSize 0 = [
-    entryRef: 0 dynamic getStackEntry;
-    compilable [
-      entry: entryRef copy;
-      entry staticnessOfVar Weak = [
-        entry Dynamic makeStaticness @entry set
-      ] when
-
-      shadowBegin: RefToVar;
-      shadowEnd: RefToVar;
-
-      entry @shadowBegin @shadowEnd ShadowReasonInput makeShadows
-
-      result: shadowEnd copy;
-      entry isForgotten [
-        shadowBegin untemporize
-        shadowEnd   untemporize
-      ] [
-        shadowBegin fullUntemporize
-        shadowEnd   fullUntemporize
-      ] if
-
-      #forMatching not [result unglobalize] when
-      [result noMatterToCopy [result.hostId indexOfNode =] ||] "Shadow host incorrect!" assert
-      result.mutable [TRUE result getVar.@capturedAsMutable set] when
-
-      result getVar.data.getTag VarRef = [
-        # it is for exports only
-        # we have immutable reference, becouse it is a rule of signature
-        # after deref we must force mutability
-        mutableOfPointee: VarRef result getVar.data.get.mutable copy;
-        result getPointee @result set
-        mutableOfPointee @result.@mutable set
-      ] when
-
-      newInput: Argument;
-
-      result @newInput.@refToVar set
-      ArgRef @newInput.@argCase set
-
-      entry isGlobal [ArgGlobal @newInput.@argCase set] when
-
-      #add input
-      newInput @currentNode.@buildingMatchingInfo.@inputs.pushBack
-      currentNode.state NodeStateNew = [
-        result noMatterToCopy not [
-          result getVar.shadowBegin @newInput.@refToVar set
-        ] when
-        newInput @currentNode.@matchingInfo.@inputs.pushBack
-      ] when
-
-      result
-    ] [
-      RefToVar
-    ] if
-  ] [
-    result: currentNode.stack.last copy;
-    @currentNode.@stack.popBack
-    result
-  ] if
-] func;
-
-pop: [FALSE popWith] func;
-popForMatching: [TRUE popWith] func;
-
 getStackEntryForPreInput: [
   copy depth:;
   entry: depth getStackEntry;
@@ -771,116 +451,6 @@ getField: [
   ] if
 ] func;
 
-copyOneVarWith: [
-  copy toNew:;
-  src:;
-  compileOnce
-
-  dst: RefToVar;
-  srcVar: src getVar;
-
-  checkedStaticnessOfVar: [
-    toNew [staticnessOfVar Dynamic maxStaticness] [staticnessOfVar] if
-  ] func;
-
-  srcVar.data.getTag VarStruct = [
-    srcStruct: VarStruct srcVar.data.get.get;
-    # manually copy only nececcary fields
-    dstStruct: Struct;
-    srcStruct.fields          @dstStruct.@fields set
-    srcStruct.structName      @dstStruct.@structName set
-    @dstStruct move owner VarStruct src isVirtualField FALSE dynamic createVariableWithVirtual
-    src checkedStaticnessOfVar makeStaticness @dst set
-    dstStructAc: VarStruct dst getVar.@data.get.get;
-    srcStruct.homogeneous       @dstStructAc.@homogeneous set
-    srcStruct.fullVirtual       @dstStructAc.@fullVirtual set
-    srcStruct.hasPreField       @dstStructAc.@hasPreField set
-    srcStruct.hasDestructor     @dstStructAc.@hasDestructor set
-    srcStruct.realFieldIndexes  @dstStructAc.@realFieldIndexes set
-    srcStruct.structAlignment   @dstStructAc.@structAlignment set
-    srcStruct.structStorageSize @dstStructAc.@structStorageSize set
-  ] [
-    srcVar.data.getTag VarInvalid VarEnd [
-      copy tag:;
-      tag VarStruct = not [
-        tag srcVar.data.get tag src isVirtualField FALSE dynamic createVariableWithVirtual
-        src checkedStaticnessOfVar makeStaticness
-        @dst set
-      ] when
-    ] staticCall
-
-    srcVar.data.getTag VarRef = [srcVar.shadowBegin dst getVar.@shadowBegin set] when  #for ttest48
-  ] if
-
-  src.mutable @dst.@mutable set
-  dstVar: dst getVar;
-  srcVar.irTypeId  @dstVar.@irTypeId set
-  srcVar.mplTypeId @dstVar.@mplTypeId set
-  srcVar.dbgTypeId @dstVar.@dbgTypeId set
-
-  dst
-] func;
-
-copyVarImpl: [
-  copy toNew:;
-  copy fromChildToParent:;
-  refToVar:;
-
-  fromChildToParent toNew or [refToVar noMatterToCopy] && [
-    refToVar copy
-  ] [
-    result: RefToVar;
-    uncopiedSrc: RefToVar Array;
-    uncopiedDst: RefToVar AsRef Array;
-
-    refToVar @uncopiedSrc.pushBack
-    @result AsRef @uncopiedDst.pushBack
-
-    i: 0 dynamic;
-    [
-      i uncopiedSrc.dataSize < [
-        currentSrc: i uncopiedSrc.at copy;
-        currentDst: i @uncopiedDst.at.@data;
-
-        fromChildToParent toNew or [currentSrc noMatterToCopy] && [
-          currentSrc @currentDst set
-        ] [
-          currentSrc toNew copyOneVarWith @currentDst set
-
-          currentSrcVar: currentSrc getVar;
-          currentDstVar: currentDst getVar;
-          currentSrcVar.data.getTag VarStruct = [
-            branchSrc: VarStruct currentSrcVar.data.get.get;
-            branchDst: VarStruct @currentDstVar.@data.get.get;
-            f: 0 dynamic;
-            [
-              f branchSrc.fields.dataSize < [
-                fromChildToParent [
-                  f branchSrc.fields.at.refToVar @uncopiedSrc.pushBack
-                ] [
-                  f currentSrc getField @uncopiedSrc.pushBack
-                ] if
-
-                f @branchDst.@fields.at.@refToVar AsRef @uncopiedDst.pushBack
-
-                f 1 + @f set TRUE
-              ] &&
-            ] loop
-          ] when
-        ] if
-        i 1 + @i set TRUE
-      ] &&
-    ] loop
-    result
-  ] if
-] func;
-
-copyOneVar: [FALSE dynamic copyOneVarWith] func;
-
-copyVar:          [FALSE FALSE dynamic copyVarImpl] func; #fromchild is static arg
-copyVarFromChild: [TRUE  FALSE dynamic copyVarImpl] func;
-copyVarToNew:     [FALSE TRUE  dynamic copyVarImpl] func;
-
 captureEntireStruct: [
   refToVar:;
   unprocessed: RefToVar Array;
@@ -985,6 +555,7 @@ setVar: [
 createRef: [
   mutable:;
   refToVar:;
+
   refToVar isVirtual [
     refToVar untemporize
     refToVar copy #for dropping or getting callables for example
@@ -1414,8 +985,21 @@ processListNode: [
   data NodeCaseList dynamic name position processCallByIndexArray
 ] func;
 
-compilerError: [
-  message: makeStringView;
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  message: StringView Cref;
+} () {convention: cdecl;} [
+  processorResult:;
+  processor:;
+  copy indexOfNode:;
+  currentNode:;
+  multiParserResult:;
+  failProc: @failProcForProcessor;
+  message:;
   [
     compileOnce
     processorResult.findModuleFail not [processor.depthOfPre 0 =] && [HAS_LOGS] && [
@@ -1441,7 +1025,7 @@ compilerError: [
       ] loop
     ] when
   ] call
-] func;
+] "compilerErrorImpl" exportFunction
 
 findLocalObject: [
   copy captureCase:;
@@ -1937,9 +1521,10 @@ callCallableStructWithPre: [
       needPre [
         overload: struct.structName.nameOverload copy;
         nameInfo: struct.structName.nameInfo copy;
+        name: nameInfo processor.nameInfos.at.name makeStringView;
 
         overload 0 = [
-          ("cant call overload for name: " nameInfo processor.nameInfos.at.name) assembleString compilerError
+          ("cant call overload for name: " name) assembleString compilerError
         ] when
 
         compilable [
@@ -1947,7 +1532,7 @@ callCallableStructWithPre: [
           compilable [
             cnr: gnr captureName;
 
-            cnr.object cnr.refToVar nameInfo [
+            cnr.object cnr.refToVar name [
               TRUE @nextIteration set # for builtin or import go out of loop
             ] callCallable
 
@@ -2070,6 +1655,7 @@ tryImplicitLambdaCast: [
 ] func;
 
 setRef: [
+  compileOnce
   refToVar:; # destination
   var: refToVar getVar;
   var.data.getTag VarRef = [
@@ -2110,6 +1696,326 @@ setRef: [
       ] if
     ] when
   ] if
+] func;
+
+copyOneVarWith: [
+  copy toNew:;
+  src:;
+  compileOnce
+
+  dst: RefToVar;
+  srcVar: src getVar;
+
+  checkedStaticnessOfVar: [
+    toNew [staticnessOfVar Dynamic maxStaticness] [staticnessOfVar] if
+  ] func;
+
+  srcVar.data.getTag VarStruct = [
+    srcStruct: VarStruct srcVar.data.get.get;
+    # manually copy only nececcary fields
+    dstStruct: Struct;
+    srcStruct.fields          @dstStruct.@fields set
+    srcStruct.structName      @dstStruct.@structName set
+    @dstStruct move owner VarStruct src isVirtualField FALSE dynamic createVariableWithVirtual
+    src checkedStaticnessOfVar makeStaticness @dst set
+    dstStructAc: VarStruct dst getVar.@data.get.get;
+    srcStruct.homogeneous       @dstStructAc.@homogeneous set
+    srcStruct.fullVirtual       @dstStructAc.@fullVirtual set
+    srcStruct.hasPreField       @dstStructAc.@hasPreField set
+    srcStruct.hasDestructor     @dstStructAc.@hasDestructor set
+    srcStruct.realFieldIndexes  @dstStructAc.@realFieldIndexes set
+    srcStruct.structAlignment   @dstStructAc.@structAlignment set
+    srcStruct.structStorageSize @dstStructAc.@structStorageSize set
+  ] [
+    srcVar.data.getTag VarInvalid VarEnd [
+      copy tag:;
+      tag VarStruct = not [
+        tag srcVar.data.get tag src isVirtualField FALSE dynamic createVariableWithVirtual
+        src checkedStaticnessOfVar makeStaticness
+        @dst set
+      ] when
+    ] staticCall
+
+    srcVar.data.getTag VarRef = [srcVar.shadowBegin dst getVar.@shadowBegin set] when  #for ttest48
+  ] if
+
+  src.mutable @dst.@mutable set
+  dstVar: dst getVar;
+  srcVar.irTypeId  @dstVar.@irTypeId set
+  srcVar.mplTypeId @dstVar.@mplTypeId set
+  srcVar.dbgTypeId @dstVar.@dbgTypeId set
+
+  dst
+] func;
+
+copyVarImpl: [
+  copy toNew:;
+  copy fromChildToParent:;
+  refToVar:;
+
+  fromChildToParent toNew or [refToVar noMatterToCopy] && [
+    refToVar copy
+  ] [
+    result: RefToVar;
+    uncopiedSrc: RefToVar Array;
+    uncopiedDst: RefToVar AsRef Array;
+
+    refToVar @uncopiedSrc.pushBack
+    @result AsRef @uncopiedDst.pushBack
+
+    i: 0 dynamic;
+    [
+      i uncopiedSrc.dataSize < [
+        currentSrc: i uncopiedSrc.at copy;
+        currentDst: i @uncopiedDst.at.@data;
+
+        fromChildToParent toNew or [currentSrc noMatterToCopy] && [
+          currentSrc @currentDst set
+        ] [
+          currentSrc toNew copyOneVarWith @currentDst set
+
+          currentSrcVar: currentSrc getVar;
+          currentDstVar: currentDst getVar;
+          currentSrcVar.data.getTag VarStruct = [
+            branchSrc: VarStruct currentSrcVar.data.get.get;
+            branchDst: VarStruct @currentDstVar.@data.get.get;
+            f: 0 dynamic;
+            [
+              f branchSrc.fields.dataSize < [
+                fromChildToParent [
+                  f branchSrc.fields.at.refToVar @uncopiedSrc.pushBack
+                ] [
+                  f currentSrc getField @uncopiedSrc.pushBack
+                ] if
+
+                f @branchDst.@fields.at.@refToVar AsRef @uncopiedDst.pushBack
+
+                f 1 + @f set TRUE
+              ] &&
+            ] loop
+          ] when
+        ] if
+        i 1 + @i set TRUE
+      ] &&
+    ] loop
+    result
+  ] if
+] func;
+
+copyOneVar: [FALSE dynamic copyOneVarWith] func;
+
+copyVar:          [FALSE FALSE dynamic copyVarImpl] func; #fromchild is static arg
+copyVarFromChild: [TRUE  FALSE dynamic copyVarImpl] func;
+copyVarToNew:     [FALSE TRUE  dynamic copyVarImpl] func;
+
+{
+  dynamicStoraged: Cond;
+
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+
+  reason: Nat8;
+  end: RefToVar Ref;
+  begin: RefToVar Ref;
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} [
+  copy dynamicStoraged:;
+
+  processorResult:;
+  processor:;
+  copy indexOfNode:;
+  currentNode:;
+  multiParserResult:;
+  failProc: @failProcForProcessor;
+
+  copy reason:;
+  end:;
+  begin:;
+  refToVar:;
+
+  compileOnce
+
+  refToVar noMatterToCopy [
+    refToVar @begin set
+    refToVar @end set
+  ] [
+    var: refToVar getVar;
+    head: var.capturedHead copy;
+    headVar: head getVar;
+
+    reallyCreateShadows: [
+      refToVar copyOneVar @begin set
+      refToVar copyOneVar @end set
+
+
+      beginVar: begin getVar;
+      endVar: end getVar;
+      global: refToVar isGlobal;
+
+      global [
+        reason ShadowReasonField = not [
+          var.irNameId @endVar.@irNameId set
+        ] when
+
+        TRUE @beginVar.@global set
+        TRUE @endVar.@global set
+
+        headVar.capturedTail.hostId processor.nodes.at.get.parent 0 = # capture directly from global vars
+        [refToVar isVirtual not] &&
+        [processor.processingExport 0 >] &&
+        [var.data.getTag VarImport = not] && [
+          begin Dirty makeStaticness @begin set
+          end   Dirty makeStaticness @end   set
+        ] when
+      ] [
+        begin unglobalize
+        end unglobalize
+      ] if
+
+      begin @endVar  .@shadowBegin set
+      end   @beginVar.@shadowEnd   set
+
+      var.globalId @beginVar.@globalId set
+      var.globalId   @endVar.@globalId set
+      var.globalDeclarationInstructionIndex @beginVar.@globalDeclarationInstructionIndex set
+      var.globalDeclarationInstructionIndex   @endVar.@globalDeclarationInstructionIndex set
+
+      #("really create shadows for " refToVar.hostId ":" refToVar.varId "; b=" begin.hostId ":" begin.varId "; e=" end.hostId ":" end.varId " in " indexOfNode) addLog
+      reason @beginVar.@shadowReason set
+      reason   @endVar.@shadowReason set
+
+      # add info  to linked list, link to end (changed value)
+      headVar.capturedTail @endVar.@capturedPrev set # newTail->oldTail
+      end                 @headVar.@capturedTail set # head->newTail
+      head                 @endVar.@capturedHead set # newTail->head
+      end @currentNode.@capturedVars.pushBack       # remember
+    ] func;
+
+    dynamicStoraged [
+      reallyCreateShadows
+    ] [
+      headVar.capturedTail.hostId indexOfNode = [
+        headVar.capturedTail @end set
+        end getVar.shadowBegin @begin set
+
+        refToVar.mutable @begin.@mutable set
+        refToVar.mutable @end.@mutable set
+
+        beginVar: begin getVar;
+        endVar: end getVar;
+        reason beginVar.shadowReason < [
+          reason @beginVar.@shadowReason set
+          reason   @endVar.@shadowReason set
+        ] when
+
+        [begin.hostId indexOfNode =] "Begin hostId incorrect in makeShadows!" assert
+        [end.hostId indexOfNode =] "End hostId incorrect in makeShadows!" assert
+      ] [
+        reallyCreateShadows
+      ] if
+    ] if
+  ] if
+] "makeShadowsImpl" exportFunction
+
+makeShadows:        [
+  multiParserResult @currentNode indexOfNode @processor @processorResult
+  FALSE makeShadowsImpl
+] func;
+
+makeShadowsDynamic: [
+  multiParserResult @currentNode indexOfNode @processor @processorResult
+  TRUE  makeShadowsImpl
+] func;
+
+{
+  forMatching: Cond;
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  result: RefToVar Ref;
+} () {convention: cdecl;} [
+  copy forMatching:;
+  processorResult:;
+  processor:;
+  copy indexOfNode:;
+  currentNode:;
+  multiParserResult:;
+  failProc: @failProcForProcessor;
+  result:;
+
+  currentNode.stack.dataSize 0 = [
+    entryRef: 0 dynamic getStackEntry;
+    compilable [
+      entry: entryRef copy;
+      entry staticnessOfVar Weak = [
+        entry Dynamic makeStaticness @entry set
+      ] when
+
+      shadowBegin: RefToVar;
+      shadowEnd: RefToVar;
+
+      entry @shadowBegin @shadowEnd ShadowReasonInput makeShadows
+
+      shadowEnd @result set
+      entry isForgotten [
+        shadowBegin untemporize
+        shadowEnd   untemporize
+      ] [
+        shadowBegin fullUntemporize
+        shadowEnd   fullUntemporize
+      ] if
+
+      #forMatching not [result unglobalize] when
+      [result noMatterToCopy [result.hostId indexOfNode =] ||] "Shadow host incorrect!" assert
+      result.mutable [TRUE result getVar.@capturedAsMutable set] when
+
+      result getVar.data.getTag VarRef = [
+        # it is for exports only
+        # we have immutable reference, becouse it is a rule of signature
+        # after deref we must force mutability
+        mutableOfPointee: VarRef result getVar.data.get.mutable copy;
+        result getPointee @result set
+        mutableOfPointee @result.@mutable set
+      ] when
+
+      newInput: Argument;
+
+      result @newInput.@refToVar set
+      ArgRef @newInput.@argCase set
+
+      entry isGlobal [ArgGlobal @newInput.@argCase set] when
+
+      #add input
+      newInput @currentNode.@buildingMatchingInfo.@inputs.pushBack
+      currentNode.state NodeStateNew = [
+        result noMatterToCopy not [
+          result getVar.shadowBegin @newInput.@refToVar set
+        ] when
+        newInput @currentNode.@matchingInfo.@inputs.pushBack
+      ] when
+
+    ] when
+  ] [
+    currentNode.stack.last @result set
+    @currentNode.@stack.popBack
+  ] if
+] "popImpl" exportFunction
+
+pop:            [
+  result: RefToVar;
+  @result multiParserResult @currentNode indexOfNode @processor @processorResult FALSE popImpl
+  result
+] func;
+
+popForMatching: [
+  result: RefToVar;
+  @result multiParserResult @currentNode indexOfNode @processor @processorResult TRUE popImpl
+  result
 ] func;
 
 pushName: [
@@ -2285,49 +2191,6 @@ addDebugLocationForLastInstruction: [
       locationIndex: currentNode.position currentNode.funcDbgIndex addDebugLocation;
       locationIndex @operation.cat
     ] when
-  ] when
-] func;
-
-processNode: [
-  processor.options.verboseIR [
-    ("filename: " currentNode.position.filename processor.options.fileNames.at
-      ", line: " currentNode.position.line ", column: " currentNode.position.column ", token: " astNode.token) assembleString createComent
-  ] when
-
-  programSize: currentNode.program.dataSize copy;
-
-  #("processNode token=" makeStringView astNode.token makeStringView
-  #"; pos=" makeStringView currentNode.position.line 0 cast ":" makeStringView currentNode.position.column 0 cast
-  #) addLog
-  astNode.data.getTag (
-    AstNodeType.Label           [AstNodeType.Label astNode.data.get processLabelNode]
-    AstNodeType.Code            [AstNodeType.Code astNode.data.get processCodeNode]
-    AstNodeType.Object          [AstNodeType.Object astNode.data.get processObjectNode]
-    AstNodeType.List            [AstNodeType.List astNode.data.get processListNode]
-    AstNodeType.Name            [AstNodeType.Name astNode.data.get processNameNode]
-    AstNodeType.NameRead        [AstNodeType.NameRead astNode.data.get processNameReadNode]
-    AstNodeType.NameWrite       [AstNodeType.NameWrite astNode.data.get processNameWriteNode]
-    AstNodeType.NameMember      [AstNodeType.NameMember astNode.data.get processNameMemberNode]
-    AstNodeType.NameReadMember  [AstNodeType.NameReadMember astNode.data.get processNameReadMemberNode]
-    AstNodeType.NameWriteMember [AstNodeType.NameWriteMember astNode.data.get processNameWriteMemberNode]
-    AstNodeType.String          [AstNodeType.String @astNode.@data.get processStringNode]
-    AstNodeType.Numberi8        [AstNodeType.Numberi8 @astNode.@data.get processInt8Node]
-    AstNodeType.Numberi16       [AstNodeType.Numberi16 @astNode.@data.get processInt16Node]
-    AstNodeType.Numberi32       [AstNodeType.Numberi32 @astNode.@data.get processInt32Node]
-    AstNodeType.Numberi64       [AstNodeType.Numberi64 @astNode.@data.get processInt64Node]
-    AstNodeType.Numberix        [AstNodeType.Numberix @astNode.@data.get processIntXNode]
-    AstNodeType.Numbern8        [AstNodeType.Numbern8 @astNode.@data.get processNat8Node]
-    AstNodeType.Numbern16       [AstNodeType.Numbern16 @astNode.@data.get processNat16Node]
-    AstNodeType.Numbern32       [AstNodeType.Numbern32 @astNode.@data.get processNat32Node]
-    AstNodeType.Numbern64       [AstNodeType.Numbern64 @astNode.@data.get processNat64Node]
-    AstNodeType.Numbernx        [AstNodeType.Numbernx @astNode.@data.get processNatXNode]
-    AstNodeType.Real32          [AstNodeType.Real32 @astNode.@data.get processReal32Node]
-    AstNodeType.Real64          [AstNodeType.Real64 @astNode.@data.get processReal64Node]
-    [[FALSE] "Unknown type!" assert]
-  ) case
-
-  currentNode.program.dataSize programSize > [
-    addDebugLocationForLastInstruction
   ] when
 ] func;
 
@@ -2527,6 +2390,70 @@ killStruct: [
   VarStruct refToVar getVar.data.get.get.unableToDie not [
     refToVar callDie
   ] when
+] func;
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  indexOfAstNode: Int32;
+  astNode: AstNode Cref;
+} () {} [
+  processorResult:;
+  processor:;
+  copy indexOfNode:;
+  currentNode:;
+  multiParserResult:;
+  failProc: @failProcForProcessor;
+  copy indexOfAstNode:;
+  astNode:;
+
+  processor.options.verboseIR [
+    ("filename: " currentNode.position.fileNumber processor.options.fileNames.at
+      ", line: " currentNode.position.line ", column: " currentNode.position.column ", token: " astNode.token) assembleString createComent
+  ] when
+
+  programSize: currentNode.program.dataSize copy;
+
+  #("processNode token=" makeStringView astNode.token makeStringView
+  #"; pos=" makeStringView currentNode.position.line 0 cast ":" makeStringView currentNode.position.column 0 cast
+  #) addLog
+  astNode.data.getTag (
+    AstNodeType.Label           [AstNodeType.Label astNode.data.get processLabelNode]
+    AstNodeType.Code            [AstNodeType.Code astNode.data.get processCodeNode]
+    AstNodeType.Object          [AstNodeType.Object astNode.data.get processObjectNode]
+    AstNodeType.List            [AstNodeType.List astNode.data.get processListNode]
+    AstNodeType.Name            [AstNodeType.Name astNode.data.get processNameNode]
+    AstNodeType.NameRead        [AstNodeType.NameRead astNode.data.get processNameReadNode]
+    AstNodeType.NameWrite       [AstNodeType.NameWrite astNode.data.get processNameWriteNode]
+    AstNodeType.NameMember      [AstNodeType.NameMember astNode.data.get processNameMemberNode]
+    AstNodeType.NameReadMember  [AstNodeType.NameReadMember astNode.data.get processNameReadMemberNode]
+    AstNodeType.NameWriteMember [AstNodeType.NameWriteMember astNode.data.get processNameWriteMemberNode]
+    AstNodeType.String          [AstNodeType.String @astNode.@data.get processStringNode]
+    AstNodeType.Numberi8        [AstNodeType.Numberi8 @astNode.@data.get processInt8Node]
+    AstNodeType.Numberi16       [AstNodeType.Numberi16 @astNode.@data.get processInt16Node]
+    AstNodeType.Numberi32       [AstNodeType.Numberi32 @astNode.@data.get processInt32Node]
+    AstNodeType.Numberi64       [AstNodeType.Numberi64 @astNode.@data.get processInt64Node]
+    AstNodeType.Numberix        [AstNodeType.Numberix @astNode.@data.get processIntXNode]
+    AstNodeType.Numbern8        [AstNodeType.Numbern8 @astNode.@data.get processNat8Node]
+    AstNodeType.Numbern16       [AstNodeType.Numbern16 @astNode.@data.get processNat16Node]
+    AstNodeType.Numbern32       [AstNodeType.Numbern32 @astNode.@data.get processNat32Node]
+    AstNodeType.Numbern64       [AstNodeType.Numbern64 @astNode.@data.get processNat64Node]
+    AstNodeType.Numbernx        [AstNodeType.Numbernx @astNode.@data.get processNatXNode]
+    AstNodeType.Real32          [AstNodeType.Real32 @astNode.@data.get processReal32Node]
+    AstNodeType.Real64          [AstNodeType.Real64 @astNode.@data.get processReal64Node]
+    [[FALSE] "Unknown type!" assert]
+  ) case
+
+  currentNode.program.dataSize programSize > [
+    addDebugLocationForLastInstruction
+  ] when
+] "processNodeImpl" exportFunction
+
+processNode: [
+  astNode indexOfAstNode multiParserResult @currentNode indexOfNode @processor @processorResult processNodeImpl
 ] func;
 
 addNamesFromModule: [
@@ -2736,9 +2663,303 @@ checkPreStackDepth: [
   ] loop
 ] func;
 
-finalizeCodeNode: [
+deleteNode: [
+  copy nodeIndex:;
+  node: nodeIndex @processor.@nodes.at.get;
+  TRUE dynamic @node.@empty   set
+  TRUE dynamic @node.@deleted set
+  MatchingInfo @node.@buildingMatchingInfo set
+  MatchingInfo @node.@matchingInfo set
+  @node.@program.release
+
+  #@node.@variables [
+  #  pair:;
+  #  refToVar: RefToVar;
+  #  nodeIndex  @refToVar.@hostId set
+  #  pair.index @refToVar.@varId set
+  #  refToVar noMatterToCopy not [
+  #    @pair.@value.release
+  #    #TRUE @pair.@value.get.@deleted set
+  #    processor.deletedVarCount 1 + @processor.@deletedVarCount set
+  #  ] when
+  #] each
+  processor.deletedNodeCount 1 + @processor.@deletedNodeCount set
+] func;
+
+clearRecursionStack: [
+  processor.recursiveNodesStack.getSize 0 > [processor.recursiveNodesStack.last indexOfNode =] && [
+    @processor.@recursiveNodesStack.popBack
+  ] when
+] func;
+
+checkRecursionOfCodeNode: [
+  clearBuildingMatchingInfo: FALSE dynamic;
+
+  removePrevNodes: [
+    #go back from end of   nodes to current node, delete "hasOutput" and "noOutput" nodes
+    #("recursion incomplete, remove nodes while " indexOfNode) addLog
+    i: processor.nodes.getSize 1 -;
+    processed: FALSE dynamic;
+    [
+      i 0 < not [
+        current: i @processor.@nodes.at.get;
+        current.deleted not [
+          current.recursionState NodeRecursionStateFail > [
+            [i indexOfNode =] "Another recursive node!" assert
+            TRUE @processed set
+            NodeRecursionStateOld @current.@recursionState set
+          ] [
+            [i indexOfNode = not] "Current node no more recursive!" assert
+            [current.state NodeStateCompiled = [current.state NodeStateNoOutput =] || [current.state NodeStateHasOutput =] ||] "Invalid node state in resursion backward deleter!" assert
+            current.state NodeStateNoOutput = [current.state NodeStateHasOutput =] || [
+              #("for " indexOfNode " remove failed rec node " i) addLog
+              i deleteNode
+            ] when
+          ] if
+        ] when
+        i 1 - @i set
+        processed not
+      ] &&
+    ] loop
+    #recursion need more iterations
+    @currentNode.@program.clear
+    @currentNode.@stack.clear
+    TRUE @clearBuildingMatchingInfo set
+  ] func;
+
+  approvePrevNodes: [
+    #check recursion stack state
+    #("recursion complete, approve nodes while " indexOfNode) addLog
+    #hasLogs [
+    #  "  recStack is " print
+    #  processor.recursiveNodesStack [.value print " " print] each
+    #  LF print
+    #] when
+    [processor.recursiveNodesStack.getSize 0 >] "recursiveNodesStack is empty!" assert
+    [
+      processor.recursiveNodesStack.last indexOfNode = [
+        ("processor.recursiveNodesStack.last=" processor.recursiveNodesStack.last "; but indexOfNode=" indexOfNode copy) addLog
+        FALSE
+      ] ||
+    ] "Processor.recursionStack mismatch!" assert
+    @processor.@recursiveNodesStack.popBack
+    #go back from end of   nodes to current node, mark "hasOutput" nodes as "Compiled"; "noOutput" nodes - logic error, assert
+    i: processor.nodes.getSize 1 -;
+    processed: FALSE dynamic;
+    [
+      i 0  < not [
+        current: i @processor.@nodes.at.get;
+        current.deleted not [
+          current.recursionState NodeRecursionStateFail > [
+            [i indexOfNode =] "Another recursive node!" assert
+            NodeRecursionStateNo @currentNode.@recursionState set
+            TRUE @processed set
+          ] [
+            [i indexOfNode = not] "Current node no more recursive!" assert
+            [
+              current.state NodeStateCompiled = [current.state NodeStateHasOutput =] || [
+                ("failed state " current.state " in node " i " while " indexOfNode copy) addLog
+                FALSE
+              ] ||
+            ] "Invalid node state in resursion backward approver!" assert
+            current.state NodeStateHasOutput = [
+              NodeStateCompiled @current.@state set
+            ] when
+          ] if
+        ] when
+        i 1 - @i set
+        processed not
+      ] &&
+    ] loop
+    #recursion successful
+  ] func;
+
+
+  currentNode.state NodeStateNew = [
+    NodeStateCompiled @currentNode.@state set
+  ] [
+    currentNode.recursionState NodeRecursionStateFail > not [
+      #("node want to be used in recursion: " indexOfNode) addLog
+      NodeRecursionStateNo @currentNode.@recursionState set #node will die anyway
+    ] [
+      result: currentNode.recursionState NodeRecursionStateOld =;
+      #("check recursion in" indexOfNode) addLog
+      [currentNode.state NodeStateNew = not] "Recursion logic failed!" assert
+      currentNode.state NodeStateNoOutput = [
+        #it is NOT a recursion
+        #"infinite recursion" compilerError
+        removePrevNodes
+        NodeStateNew @currentNode.@state set
+        MatchingInfo @currentNode.@matchingInfo set
+        NodeRecursionStateFail @currentNode.@recursionState set
+        #("FAILED recursion in " indexOfNode) addLog
+        [processor.recursiveNodesStack.last indexOfNode =] "Processor.recursionStack mismatch!" assert
+        @processor.@recursiveNodesStack.popBack
+      ] [
+        currentNode.state NodeStateHasOutput = [
+          curToNested: RefToVarTable;
+          nestedToCur: RefToVarTable;
+          comparingMessage: String;
+          currentMatchingNodeIndex: indexOfNode copy;
+          currentMatchingNode: currentMatchingNodeIndex @processor.@nodes.at.get;
+
+          compareShadows: [
+            refToVar2:;
+            refToVar1:;
+            se1: refToVar1 noMatterToCopy [refToVar1][refToVar1 getVar.shadowEnd] if;
+            se2: refToVar2 noMatterToCopy [refToVar2][refToVar2 getVar.shadowEnd] if;
+            [se1.hostId 0 < not [se2.hostId 0 < not] &&] "variables has no shadowEnd!" assert
+            se1 se2 compareEntriesRec
+          ] func;
+
+          #compare inputs
+          result [
+            currentNode.matchingInfo.inputs.getSize currentNode.buildingMatchingInfo.inputs.getSize = not [
+              FALSE @result set
+            ] when
+
+            result [
+              i: 0 dynamic;
+              [
+                i currentNode.matchingInfo.inputs.getSize < [
+                  current1: i currentNode.matchingInfo.inputs.at.refToVar;
+                  current2: i currentNode.buildingMatchingInfo.inputs.at.refToVar;
+                  current1 current2 compareShadows not [
+                    FALSE @result set
+                  ] when
+                  i 1 + @i set
+                  result copy
+                ] &&
+              ] loop
+            ] when
+          ] when
+
+          #compare captures
+          result [
+            currentNode.matchingInfo.captures.getSize currentNode.buildingMatchingInfo.captures.getSize = not [
+              FALSE @result set
+            ] when
+
+            result [
+              i: 0 dynamic;
+              [
+                i currentNode.matchingInfo.captures.getSize < [
+                  capture1: i currentNode.matchingInfo.captures.at;
+                  capture2: i currentNode.buildingMatchingInfo.captures.at;
+
+                  capture1.captureCase capture2.captureCase =
+                  [capture1.nameInfo capture2.nameInfo =] &&
+                  [capture1.nameOverload capture2.nameOverload =] &&
+                  [capture1.cntNameOverload capture2.cntNameOverload =] &&
+                  [capture1.refToVar capture2.refToVar compareShadows] && not [
+                    FALSE @result set
+                  ] when
+                  i 1 + @i set
+                  result copy
+                ] &&
+              ] loop
+            ] when
+          ] when
+
+          #compare fieldCaptures
+          result [
+            currentNode.matchingInfo.fieldCaptures.getSize currentNode.buildingMatchingInfo.fieldCaptures.getSize = not [
+              FALSE @result set
+            ] when
+
+            result [
+              i: 0 dynamic;
+              [
+                i currentNode.matchingInfo.fieldCaptures.getSize < [
+                  capture1: i currentNode.matchingInfo.fieldCaptures.at;
+                  capture2: i currentNode.buildingMatchingInfo.fieldCaptures.at;
+
+                  capture1.captureCase capture2.captureCase =
+                  [capture1.nameInfo capture2.nameInfo =] &&
+                  [capture1.nameOverload capture2.nameOverload =] &&
+                  [capture1.cntNameOverload capture2.cntNameOverload =] && not [
+                    FALSE @result set
+                  ] when
+                  i 1 + @i set
+                  result copy
+                ] &&
+              ] loop
+            ] when
+          ] when
+
+          #compareOutputs
+          result [
+            currentNode.stack.getSize currentNode.outputs.getSize = not [
+              FALSE @result set
+            ] when
+
+            result [
+              i: 0 dynamic;
+              [
+                i currentNode.stack.getSize < [
+                  current1: i currentNode.stack.at;
+                  current2: i currentNode.outputs.at.refToVar;
+                  current1 current2 compareEntriesRec not [
+                    FALSE @result set
+                  ] when
+                  i 1 + @i set
+                  result copy
+                ] &&
+              ] loop
+            ] when
+          ] when
+
+          result [
+            approvePrevNodes
+          ] [
+            removePrevNodes
+          ] if
+        ] when
+
+        result [NodeStateCompiled] [NodeStateHasOutput] if @currentNode.@state set
+      ] if
+    ] if
+  ] if
+
+  currentNode.buildingMatchingInfo @currentNode.@matchingInfo set
+  clearBuildingMatchingInfo [
+    MatchingInfo @currentNode.@buildingMatchingInfo set
+    0            @currentNode.@lastLambdaName set
+  ] when
+] func;
+
+makeCompilerPosition: [
+  astNode:;
+  result: CompilerPositionInfo;
+
+  astNode.line       @result.@line set
+  astNode.column     @result.@column set
+  astNode.offset     @result.@offset set
+  astNode.fileNumber @result.@fileNumber set
+  astNode.token      @result.@token set
+
+  result
+] func;
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  forcedSignature: CFunctionSignature Cref;
+  compilerPositionInfo: CompilerPositionInfo Cref;
+  functionName: StringView Cref;
+} () {convention: cdecl;} [
+  processorResult:;
+  processor:;
+  copy indexOfNode:;
+  currentNode:;
+  multiParserResult:;
+  failProc: @failProcForProcessor;
+  forcedSignature:;
+  compilerPositionInfo:;
   functionName:;
-  compileOnce
 
   currentNode.nextLabelIsVirtual ["unused virtual specifier" makeStringView compilerError] when
   currentNode.nextLabelIsSchema["unused schema specifier" makeStringView compilerError] when
@@ -3359,303 +3580,10 @@ finalizeCodeNode: [
   ] when
 
   checkRecursionOfCodeNode
-] func;
+] "finalizeCodeNodeImpl" exportFunction
 
-deleteNode: [
-  copy nodeIndex:;
-  node: nodeIndex @processor.@nodes.at.get;
-  TRUE dynamic @node.@empty   set
-  TRUE dynamic @node.@deleted set
-  MatchingInfo @node.@buildingMatchingInfo set
-  MatchingInfo @node.@matchingInfo set
-  @node.@program.release
-
-  #@node.@variables [
-  #  pair:;
-  #  refToVar: RefToVar;
-  #  nodeIndex  @refToVar.@hostId set
-  #  pair.index @refToVar.@varId set
-  #  refToVar noMatterToCopy not [
-  #    @pair.@value.release
-  #    #TRUE @pair.@value.get.@deleted set
-  #    processor.deletedVarCount 1 + @processor.@deletedVarCount set
-  #  ] when
-  #] each
-  processor.deletedNodeCount 1 + @processor.@deletedNodeCount set
-] func;
-
-clearRecursionStack: [
-  processor.recursiveNodesStack.getSize 0 > [processor.recursiveNodesStack.last indexOfNode =] && [
-    @processor.@recursiveNodesStack.popBack
-  ] when
-] func;
-
-checkRecursionOfCodeNode: [
-  clearBuildingMatchingInfo: FALSE dynamic;
-
-  removePrevNodes: [
-    #go back from end of   nodes to current node, delete "hasOutput" and "noOutput" nodes
-    #("recursion incomplete, remove nodes while " indexOfNode) addLog
-    i: processor.nodes.getSize 1 -;
-    processed: FALSE dynamic;
-    [
-      i 0 < not [
-        current: i @processor.@nodes.at.get;
-        current.deleted not [
-          current.recursionState NodeRecursionStateFail > [
-            [i indexOfNode =] "Another recursive node!" assert
-            TRUE @processed set
-            NodeRecursionStateOld @current.@recursionState set
-          ] [
-            [i indexOfNode = not] "Current node no more recursive!" assert
-            [current.state NodeStateCompiled = [current.state NodeStateNoOutput =] || [current.state NodeStateHasOutput =] ||] "Invalid node state in resursion backward deleter!" assert
-            current.state NodeStateNoOutput = [current.state NodeStateHasOutput =] || [
-              #("for " indexOfNode " remove failed rec node " i) addLog
-              i deleteNode
-            ] when
-          ] if
-        ] when
-        i 1 - @i set
-        processed not
-      ] &&
-    ] loop
-    #recursion need more iterations
-    @currentNode.@program.clear
-    @currentNode.@stack.clear
-    TRUE @clearBuildingMatchingInfo set
-  ] func;
-
-  approvePrevNodes: [
-    #check recursion stack state
-    #("recursion complete, approve nodes while " indexOfNode) addLog
-    #hasLogs [
-    #  "  recStack is " print
-    #  processor.recursiveNodesStack [.value print " " print] each
-    #  LF print
-    #] when
-    [processor.recursiveNodesStack.getSize 0 >] "recursiveNodesStack is empty!" assert
-    [
-      processor.recursiveNodesStack.last indexOfNode = [
-        ("processor.recursiveNodesStack.last=" processor.recursiveNodesStack.last "; but indexOfNode=" indexOfNode copy) addLog
-        FALSE
-      ] ||
-    ] "Processor.recursionStack mismatch!" assert
-    @processor.@recursiveNodesStack.popBack
-    #go back from end of   nodes to current node, mark "hasOutput" nodes as "Compiled"; "noOutput" nodes - logic error, assert
-    i: processor.nodes.getSize 1 -;
-    processed: FALSE dynamic;
-    [
-      i 0  < not [
-        current: i @processor.@nodes.at.get;
-        current.deleted not [
-          current.recursionState NodeRecursionStateFail > [
-            [i indexOfNode =] "Another recursive node!" assert
-            NodeRecursionStateNo @currentNode.@recursionState set
-            TRUE @processed set
-          ] [
-            [i indexOfNode = not] "Current node no more recursive!" assert
-            [
-              current.state NodeStateCompiled = [current.state NodeStateHasOutput =] || [
-                ("failed state " current.state " in node " i " while " indexOfNode copy) addLog
-                FALSE
-              ] ||
-            ] "Invalid node state in resursion backward approver!" assert
-            current.state NodeStateHasOutput = [
-              NodeStateCompiled @current.@state set
-            ] when
-          ] if
-        ] when
-        i 1 - @i set
-        processed not
-      ] &&
-    ] loop
-    #recursion successful
-  ] func;
-
-
-  currentNode.state NodeStateNew = [
-    NodeStateCompiled @currentNode.@state set
-  ] [
-    currentNode.recursionState NodeRecursionStateFail > not [
-      #("node want to be used in recursion: " indexOfNode) addLog
-      NodeRecursionStateNo @currentNode.@recursionState set #node will die anyway
-    ] [
-      result: currentNode.recursionState NodeRecursionStateOld =;
-      #("check recursion in" indexOfNode) addLog
-      [currentNode.state NodeStateNew = not] "Recursion logic failed!" assert
-      currentNode.state NodeStateNoOutput = [
-        #it is NOT a recursion
-        #"infinite recursion" compilerError
-        removePrevNodes
-        NodeStateNew @currentNode.@state set
-        MatchingInfo @currentNode.@matchingInfo set
-        NodeRecursionStateFail @currentNode.@recursionState set
-        #("FAILED recursion in " indexOfNode) addLog
-        [processor.recursiveNodesStack.last indexOfNode =] "Processor.recursionStack mismatch!" assert
-        @processor.@recursiveNodesStack.popBack
-      ] [
-        currentNode.state NodeStateHasOutput = [
-          curToNested: RefToVarTable;
-          nestedToCur: RefToVarTable;
-          comparingMessage: String;
-          currentMatchingNodeIndex: indexOfNode copy;
-          currentMatchingNode: currentMatchingNodeIndex @processor.@nodes.at.get;
-
-          compareShadows: [
-            refToVar2:;
-            refToVar1:;
-            se1: refToVar1 noMatterToCopy [refToVar1][refToVar1 getVar.shadowEnd] if;
-            se2: refToVar2 noMatterToCopy [refToVar2][refToVar2 getVar.shadowEnd] if;
-            [se1.hostId 0 < not [se2.hostId 0 < not] &&] "variables has no shadowEnd!" assert
-            se1 se2 compareEntriesRec
-          ] func;
-
-          #compare inputs
-          result [
-            currentNode.matchingInfo.inputs.getSize currentNode.buildingMatchingInfo.inputs.getSize = not [
-              FALSE @result set
-            ] when
-
-            result [
-              i: 0 dynamic;
-              [
-                i currentNode.matchingInfo.inputs.getSize < [
-                  current1: i currentNode.matchingInfo.inputs.at.refToVar;
-                  current2: i currentNode.buildingMatchingInfo.inputs.at.refToVar;
-                  current1 current2 compareShadows not [
-                    FALSE @result set
-                  ] when
-                  i 1 + @i set
-                  result copy
-                ] &&
-              ] loop
-            ] when
-          ] when
-
-          #compare captures
-          result [
-            currentNode.matchingInfo.captures.getSize currentNode.buildingMatchingInfo.captures.getSize = not [
-              FALSE @result set
-            ] when
-
-            result [
-              i: 0 dynamic;
-              [
-                i currentNode.matchingInfo.captures.getSize < [
-                  capture1: i currentNode.matchingInfo.captures.at;
-                  capture2: i currentNode.buildingMatchingInfo.captures.at;
-
-                  capture1.captureCase capture2.captureCase =
-                  [capture1.nameInfo capture2.nameInfo =] &&
-                  [capture1.nameOverload capture2.nameOverload =] &&
-                  [capture1.cntNameOverload capture2.cntNameOverload =] &&
-                  [capture1.refToVar capture2.refToVar compareShadows] && not [
-                    FALSE @result set
-                  ] when
-                  i 1 + @i set
-                  result copy
-                ] &&
-              ] loop
-            ] when
-          ] when
-
-          #compare fieldCaptures
-          result [
-            currentNode.matchingInfo.fieldCaptures.getSize currentNode.buildingMatchingInfo.fieldCaptures.getSize = not [
-              FALSE @result set
-            ] when
-
-            result [
-              i: 0 dynamic;
-              [
-                i currentNode.matchingInfo.fieldCaptures.getSize < [
-                  capture1: i currentNode.matchingInfo.fieldCaptures.at;
-                  capture2: i currentNode.buildingMatchingInfo.fieldCaptures.at;
-
-                  capture1.captureCase capture2.captureCase =
-                  [capture1.nameInfo capture2.nameInfo =] &&
-                  [capture1.nameOverload capture2.nameOverload =] &&
-                  [capture1.cntNameOverload capture2.cntNameOverload =] && not [
-                    FALSE @result set
-                  ] when
-                  i 1 + @i set
-                  result copy
-                ] &&
-              ] loop
-            ] when
-          ] when
-
-          #compareOutputs
-          result [
-            currentNode.stack.getSize currentNode.outputs.getSize = not [
-              FALSE @result set
-            ] when
-
-            result [
-              i: 0 dynamic;
-              [
-                i currentNode.stack.getSize < [
-                  current1: i currentNode.stack.at;
-                  current2: i currentNode.outputs.at.refToVar;
-                  current1 current2 compareEntriesRec not [
-                    FALSE @result set
-                  ] when
-                  i 1 + @i set
-                  result copy
-                ] &&
-              ] loop
-            ] when
-          ] when
-
-          result [
-            approvePrevNodes
-          ] [
-            removePrevNodes
-          ] if
-        ] when
-
-        result [NodeStateCompiled] [NodeStateHasOutput] if @currentNode.@state set
-      ] if
-    ] if
-  ] if
-
-  currentNode.buildingMatchingInfo @currentNode.@matchingInfo set
-  clearBuildingMatchingInfo [
-    MatchingInfo @currentNode.@buildingMatchingInfo set
-    0            @currentNode.@lastLambdaName set
-  ] when
-] func;
-
-makeCompilerPosition: [
-  astNode:;
-  result: CompilerPositionInfo;
-
-  astNode.line     @result.@line set
-  astNode.column   @result.@column set
-  astNode.offset   @result.@offset set
-  astNode.filename @result.@filename set
-  astNode.token    @result.@token set
-
-  result
-] func;
-
-findNameInfo: [
-  key:;
-  fr: @key @processor.@nameToId.find;
-  fr.success [
-    fr.value copy
-  ] [
-    string: key toString;
-    result: processor.nameToId.getSize;
-    [result processor.nameInfos.dataSize =] "Name info data sizes inconsistent!" assert
-    string result @processor.@nameToId.insert
-
-    newNameInfo: NameInfo;
-    string @newNameInfo.@name set
-    newNameInfo @processor.@nameInfos.pushBack
-
-    result
-  ] if
+finalizeCodeNode: [
+  compilerPositionInfo forcedSignature multiParserResult @currentNode indexOfNode @processor @processorResult finalizeCodeNodeImpl
 ] func;
 
 addIndexArrayToProcess: [
@@ -3754,7 +3682,6 @@ nodeHasCode: [
   ] when
 
   #("started loop for addr=" addr " node " indexOfNode copy " parent=" currentNode.parent) addLog
-
   recursionTries: 0 dynamic;
   [
     #("started iter for node " indexOfNode "; recState=" currentNode.recursionState) addLog

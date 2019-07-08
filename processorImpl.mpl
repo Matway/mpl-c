@@ -101,7 +101,7 @@
       1 dynamic @rootPositionInfo.@column set
       1 dynamic @rootPositionInfo.@line set
       0 dynamic @rootPositionInfo.@offset set
-      n dynamic @rootPositionInfo.@filename set
+      n dynamic @rootPositionInfo.@fileNumber set
 
       processorResult.globalErrorInfo.getSize @cachedGlobalErrorInfoSize set
       topNodeIndex: StringView 0 NodeCaseCode @processorResult @processor fileNodes multiParserResult rootPositionInfo CFunctionSignature astNodeToCodeNode;

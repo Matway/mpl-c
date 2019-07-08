@@ -4,8 +4,9 @@
 "Variant"   includeModule
 "Owner"     includeModule
 
-"irWriter" includeModule
+"irWriter"    includeModule
 "debugWriter" includeModule
+"processor"   includeModule
 
 Dirty:           [0n8 dynamic] func;
 Dynamic:         [1n8 dynamic] func;
@@ -163,6 +164,168 @@ Variable: [{
   INIT: [];
   DIE: [];
 }] func;
+
+compilable: [processorResult.success copy] func;
+
+{
+  signature: CFunctionSignature Cref;
+  compilerPositionInfo: CompilerPositionInfo Cref;
+  multiParserResult: MultiParserResult Cref;
+  indexArray: IndexArray Cref;
+  processor: Processor Ref;
+  processorResult: ProcessorResult Ref;
+  nodeCase: NodeCaseCode;
+  parentIndex: 0;
+  functionName: StringView Cref;
+} 0 {convention: cdecl;} "astNodeToCodeNode" importFunction
+
+{
+  signature: CFunctionSignature Cref;
+  compilerPositionInfo: CompilerPositionInfo Cref;
+  multiParserResult: MultiParserResult Cref;
+  processor: Processor Ref;
+  processorResult: ProcessorResult Ref;
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} "createDtorForGlobalVar" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  positionInfo: CompilerPositionInfo Cref;
+  name: StringView Cref;
+  nodeCase: NodeCaseCode;
+  indexArray: IndexArray Cref;
+} () {convention: cdecl;} "processCallByIndexArrayImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  index: Int32;
+} () {convention: cdecl;} "callBuiltinImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} "processFuncPtrImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  preAstNodeIndex: Int32;
+} Cond {convention: cdecl;} "processPreImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  name: StringView Cref;
+  callAstNodeIndex: Int32;
+} () {convention: cdecl;} "processCallImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  asLambda: Cond;
+  name: StringView Cref;
+  astNode: AstNode Cref;
+  signature: CFunctionSignature Cref;
+} Int32 {convention: cdecl;} "processExportFunctionImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  asCodeRef: Cond;
+  name: StringView Cref;
+  signature: CFunctionSignature Cref;
+} Int32 {convention: cdecl;} "processImportFunctionImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+
+  comparingMessage: String Ref;
+  curToNested: RefToVarTable Ref;
+  nestedToCur: RefToVarTable Ref;
+  currentMatchingNodeIndex: Int32;
+  cacheEntry: RefToVar Cref;
+  stackEntry: RefToVar Cref;
+} Cond {convention: cdecl;} "compareEntriesRecImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} "makeVariableTypeImpl" importFunction
+
+{
+  forMatching: Cond;
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  result: RefToVar Ref;
+} () {convention: cdecl;} "popImpl" importFunction
+
+{
+  dynamicStoraged: Cond;
+
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+
+  reason: Nat8;
+  end: RefToVar Ref;
+  begin: RefToVar Ref;
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} "makeShadowsImpl" importFunction
+
+makeVariableType: [
+  multiParserResult @currentNode indexOfNode @processor @processorResult makeVariableTypeImpl
+] func;
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  message: StringView Cref;
+} () {convention: cdecl;} "compilerErrorImpl" importFunction
+
+compilerError: [
+  makeStringView multiParserResult @currentNode indexOfNode @processor @processorResult compilerErrorImpl
+] func;
+
 
 # these functions require capture "processor"
 variableIsDeleted: [
@@ -482,6 +645,7 @@ getPlainDataIRType: [
 ] func;
 
 getPlainDataMPLType: [
+  compileOnce
   var: getVar;
   result: String;
   var.data.getTag (
@@ -508,6 +672,7 @@ getPlainDataMPLType: [
 ] func;
 
 getNonrecursiveDataIRType: [
+  compileOnce
   refToVar:;
   refToVar isPlain [
     refToVar getPlainDataIRType
@@ -532,6 +697,7 @@ getNonrecursiveDataIRType: [
 ] func;
 
 getNonrecursiveDataMPLType: [
+  compileOnce
   refToVar:;
   refToVar isPlain [
     refToVar getPlainDataMPLType
@@ -845,7 +1011,79 @@ makeDbgTypeId: [
   ] when
 ] func;
 
-makeVariableType: [
+bitView: [
+  copy f:;
+  buffer: f storageAddress (0n8 0n8 0n8 0n8 0n8 0n8 0n8 0n8) addressToReference;
+  result: String;
+  "0x" @result.cat
+  hexToStr: (
+    "0" makeStringView "1" makeStringView "2" makeStringView "3" makeStringView "4" makeStringView
+    "5" makeStringView "6" makeStringView "7" makeStringView "8" makeStringView "9" makeStringView
+    "A" makeStringView "B" makeStringView "C" makeStringView "D" makeStringView "E" makeStringView "F" makeStringView);
+  i: 0 dynamic;
+  [
+    i 0ix cast 0nx cast f storageSize < [
+      d: f storageSize 0ix cast 0 cast i - 1 - buffer @ 0n32 cast;
+      d 4n32 rshift 0 cast @hexToStr @ @result.cat
+      d 15n32 and 0 cast @hexToStr @ @result.cat
+      i 1 + @i set TRUE
+    ] &&
+  ] loop
+
+  result
+] func;
+
+getPlainConstantIR: [
+  var: getVar;
+  result: String;
+  var.data.getTag VarCond = [
+    VarCond var.data.get ["true" toString] ["false" toString] if @result set
+  ] [
+    var.data.getTag VarInt8 = [VarInt8 var.data.get toString @result set] [
+      var.data.getTag VarInt16 = [VarInt16 var.data.get toString @result set] [
+        var.data.getTag VarInt32 = [VarInt32 var.data.get toString @result set] [
+          var.data.getTag VarInt64 = [VarInt64 var.data.get toString @result set] [
+            var.data.getTag VarIntX = [VarIntX var.data.get toString @result set] [
+              var.data.getTag VarNat8 = [VarNat8 var.data.get toString @result set] [
+                var.data.getTag VarNat16 = [VarNat16 var.data.get toString @result set] [
+                  var.data.getTag VarNat32 = [VarNat32 var.data.get toString @result set] [
+                    var.data.getTag VarNat64 = [VarNat64 var.data.get toString @result set] [
+                      var.data.getTag VarNatX = [VarNatX var.data.get toString @result set] [
+                        var.data.getTag VarReal32 = [VarReal32 var.data.get 0.0r32 cast 0.0r64 cast bitView @result set] [
+                          var.data.getTag VarReal64 = [VarReal64 var.data.get bitView @result set] [
+                            ("Tag = " makeStringView var.data.getTag 0 cast) addLog
+                            [FALSE] "Unknown plain struct while getting IR value" assert
+                          ] if
+                        ] if
+                      ] if
+                    ] if
+                  ] if
+                ] if
+              ] if
+            ] if
+          ] if
+        ] if
+      ] if
+    ] if
+  ] if
+
+  result
+] func;
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  refToVar: RefToVar Cref;
+} () {} [
+  processorResult:;
+  processor:;
+  copy indexOfNode:;
+  currentNode:;
+  multiParserResult:;
+  failProc: @failProcForProcessor;
   refToVar:;
 
   #fill info:
@@ -868,7 +1106,7 @@ makeVariableType: [
   resultDBG: String;
 
   refToVar isNonrecursiveType [
-    refToVar getNonrecursiveDataIRType @resultIR set
+    refToVar getNonrecursiveDataIRType  @resultIR set
     refToVar getNonrecursiveDataMPLType @resultMPL set
     refToVar getNonrecursiveDataMPLType @resultDBG set
   ] [
@@ -1008,29 +1246,7 @@ makeVariableType: [
   @resultDBG makeStringId @var.@dbgTypeId set
   @resultMPL makeStringId @var.@mplTypeId set
   processor.options.debug [refToVar makeDbgTypeId] when
-] func;
-
-bitView: [
-  copy f:;
-  buffer: f storageAddress (0n8 0n8 0n8 0n8 0n8 0n8 0n8 0n8) addressToReference;
-  result: String;
-  "0x" @result.cat
-  hexToStr: (
-    "0" makeStringView "1" makeStringView "2" makeStringView "3" makeStringView "4" makeStringView
-    "5" makeStringView "6" makeStringView "7" makeStringView "8" makeStringView "9" makeStringView
-    "A" makeStringView "B" makeStringView "C" makeStringView "D" makeStringView "E" makeStringView "F" makeStringView);
-  i: 0 dynamic;
-  [
-    i 0ix cast 0nx cast f storageSize < [
-      d: f storageSize 0ix cast 0 cast i - 1 - buffer @ 0n32 cast;
-      d 4n32 rshift 0 cast @hexToStr @ @result.cat
-      d 15n32 and 0 cast @hexToStr @ @result.cat
-      i 1 + @i set TRUE
-    ] &&
-  ] loop
-
-  result
-] func;
+] "makeVariableTypeImpl" exportFunction
 
 cutValue: [
   copy tag:;
@@ -1152,43 +1368,6 @@ getStaticStructIR: [
 
   result.getTextSize 2 - @result.@chars.shrink
   @result.makeZ
-  result
-] func;
-
-getPlainConstantIR: [
-  var: getVar;
-  result: String;
-  var.data.getTag VarCond = [
-    VarCond var.data.get ["true" toString] ["false" toString] if @result set
-  ] [
-    var.data.getTag VarInt8 = [VarInt8 var.data.get toString @result set] [
-      var.data.getTag VarInt16 = [VarInt16 var.data.get toString @result set] [
-        var.data.getTag VarInt32 = [VarInt32 var.data.get toString @result set] [
-          var.data.getTag VarInt64 = [VarInt64 var.data.get toString @result set] [
-            var.data.getTag VarIntX = [VarIntX var.data.get toString @result set] [
-              var.data.getTag VarNat8 = [VarNat8 var.data.get toString @result set] [
-                var.data.getTag VarNat16 = [VarNat16 var.data.get toString @result set] [
-                  var.data.getTag VarNat32 = [VarNat32 var.data.get toString @result set] [
-                    var.data.getTag VarNat64 = [VarNat64 var.data.get toString @result set] [
-                      var.data.getTag VarNatX = [VarNatX var.data.get toString @result set] [
-                        var.data.getTag VarReal32 = [VarReal32 var.data.get 0.0r32 cast 0.0r64 cast bitView @result set] [
-                          var.data.getTag VarReal64 = [VarReal64 var.data.get bitView @result set] [
-                            ("Tag = " makeStringView var.data.getTag 0 cast) addLog
-                            [FALSE] "Unknown plain struct while getting IR value" assert
-                          ] if
-                        ] if
-                      ] if
-                    ] if
-                  ] if
-                ] if
-              ] if
-            ] if
-          ] if
-        ] if
-      ] if
-    ] if
-  ] if
-
   result
 ] func;
 

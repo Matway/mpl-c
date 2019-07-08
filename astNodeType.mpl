@@ -48,11 +48,11 @@ NamedBranch: [{
 
 AstNode: [{
   virtual AST_NODE: ();
-  token: String;
-  column: -1 dynamic;
-  line: -1 dynamic;
-  offset: -1 dynamic;
-  filename: 0 dynamic;
+  token:     String;
+  column:    -1 dynamic;
+  line:      -1 dynamic;
+  offset:    -1 dynamic;
+  fileNumber: 0 dynamic;
   data: (
     Cond                 #EmptyNode:
     NamedRecursiveBranch #LabelNode:

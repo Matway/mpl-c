@@ -1,12 +1,14 @@
 "parser" module
-"control" useModule
+"control" includeModule
+"String" includeModule
+"astNodeType" includeModule
 
 fillPositionInfo: [
   astNode:;
   lastPosition.offset @astNode.@offset set
   lastPosition.line @astNode.@line set
   lastPosition.column @astNode.@column set
-  currentFileName @astNode.@filename set
+  currentFileNumber @astNode.@fileNumber set
 ] func;
 
 makeLabelNode: [
@@ -1089,11 +1091,14 @@ parseNode: [
   ] loop
 ] func;
 
-parseString: [
-  compileOnce
-  copy currentFileName:;
-  splittedString: makeStringView.split;
-  mainResult: ParserResult;
+{
+  currentFileNumber: Int32;
+  text: StringView Cref;
+  mainResult: ParserResult Ref;
+} () {convention: cdecl;} [
+  copy currentFileNumber:;
+  splittedString: .split;
+  mainResult:;
   splittedString.success [
     currentPosition: PositionInfo;
     prevPosition: PositionInfo;
@@ -1120,6 +1125,4 @@ parseString: [
     0 @mainResult.@errorInfo.@position.@line set
     splittedString.errorOffset 0 cast @mainResult.@errorInfo.@position.@column set
   ] if
-
-  @mainResult
-] func;
+] "parseString" exportFunction

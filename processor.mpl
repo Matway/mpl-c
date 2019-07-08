@@ -3,11 +3,11 @@
 "astNodeType" includeModule
 
 CompilerPositionInfo: [{
-  column: -1 dynamic;
-  line: -1 dynamic;
-  offset: -1 dynamic;
-  filename: 0 dynamic;
-  token: String;
+  column:     -1 dynamic;
+  line:       -1 dynamic;
+  offset:     -1 dynamic;
+  fileNumber: 0 dynamic;
+  token:      String;
 }] func;
 
 StringArray: [String Array] func;
