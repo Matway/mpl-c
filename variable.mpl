@@ -167,6 +167,16 @@ Variable: [{
 
 compilable: [processorResult.success copy];
 
+callBuiltin:           [multiParserResult @currentNode indexOfNode @processor @processorResult callBuiltinImpl];
+processFuncPtr:        [multiParserResult @currentNode indexOfNode @processor @processorResult processFuncPtrImpl];
+processPre:            [multiParserResult @currentNode indexOfNode @processor @processorResult processPreImpl];
+processCall:           [multiParserResult @currentNode indexOfNode @processor @processorResult processCallImpl];
+processExportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processExportFunctionImpl];
+processImportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processImportFunctionImpl];
+compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode indexOfNode @processor @processorResult compareEntriesRecImpl];
+makeVariableType:      [multiParserResult @currentNode indexOfNode @processor @processorResult makeVariableTypeImpl];
+compilerError:         [makeStringView multiParserResult @currentNode indexOfNode @processor @processorResult compilerErrorImpl];
+
 {
   signature: CFunctionSignature Cref;
   compilerPositionInfo: CompilerPositionInfo Cref;
@@ -309,10 +319,6 @@ compilable: [processorResult.success copy];
   refToVar: RefToVar Cref;
 } () {convention: cdecl;} "makeShadowsImpl" importFunction
 
-makeVariableType: [
-  multiParserResult @currentNode indexOfNode @processor @processorResult makeVariableTypeImpl
-];
-
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
@@ -321,11 +327,6 @@ makeVariableType: [
   multiParserResult: MultiParserResult Cref;
   message: StringView Cref;
 } () {convention: cdecl;} "compilerErrorImpl" importFunction
-
-compilerError: [
-  makeStringView multiParserResult @currentNode indexOfNode @processor @processorResult compilerErrorImpl
-];
-
 
 # these functions require capture "processor"
 variableIsDeleted: [

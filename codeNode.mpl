@@ -5,14 +5,6 @@
 "variable" includeModule
 "processor" includeModule
 
-callBuiltin:           [multiParserResult @currentNode indexOfNode @processor @processorResult callBuiltinImpl];
-processFuncPtr:        [multiParserResult @currentNode indexOfNode @processor @processorResult processFuncPtrImpl];
-processPre:            [multiParserResult @currentNode indexOfNode @processor @processorResult processPreImpl];
-processCall:           [multiParserResult @currentNode indexOfNode @processor @processorResult processCallImpl];
-processExportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processExportFunctionImpl];
-processImportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processImportFunctionImpl];
-compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode indexOfNode @processor @processorResult compareEntriesRecImpl];
-
 addOverload: [
   copy nameId:;
 
