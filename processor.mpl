@@ -309,7 +309,6 @@ Processor: [{
   deletedVarCount: 0 dynamic;
 
   usedFloatBuiltins: FALSE dynamic;
-  usedHeapBuiltins: FALSE dynamic;
 
   INIT: [];
   DIE: [];

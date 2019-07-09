@@ -238,7 +238,6 @@
     ("max depth of recursion=" processor.maxDepthOfRecursion) addLog
 
     processor.usedFloatBuiltins [createFloatBuiltins] when
-    processor.usedHeapBuiltins  [createHeapBuiltins] when
     createCtors
     createDtors
     clearUnusedDebugInfo

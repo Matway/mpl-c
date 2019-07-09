@@ -33,7 +33,6 @@ builtins: (
   {name: "copy"                    ; impl: @mplBuiltinCopy                    ;}
   {name: "DEBUG"                   ; impl: @mplBuiltinDebug                   ;}
   {name: "def"                     ; impl: @mplBuiltinDef                     ;}
-  {name: "delete"                  ; impl: @mplBuiltinDelete                  ;}
   #{name: "deref"                   ; impl: @mplBuiltinDeref                   ;}
   #{name: "dirty"                   ; impl: @mplBuiltinDirty                   ;}
   {name: "dynamic"                 ; impl: @mplBuiltinDirty                   ;}
@@ -67,7 +66,6 @@ builtins: (
   {name: "move"                    ; impl: @mplBuiltinMove                    ;}
   {name: "moveIf"                  ; impl: @mplBuiltinMoveIf                  ;}
   {name: "neg"                     ; impl: @mplBuiltinNeg                     ;}
-  {name: "new"                     ; impl: @mplBuiltinNew                     ;}
   {name: "newVarOfTheSameType"     ; impl: @mplBuiltinNewVarOfTheSameType     ;}
   {name: "not"                     ; impl: @mplBuiltinNot                     ;}
   {name: "or"                      ; impl: @mplBuiltinOr                      ;}

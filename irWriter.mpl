@@ -556,49 +556,6 @@ addStrToProlog: [
   toString @processor.@prolog.pushBack
 ];
 
-createNew: [
-  refToVar:;
-
-  addrName: generateRegisterIRName;
-  processor.options.pointerSize 64nx = [
-    ("  " addrName getNameById " = call i64 @malloc(i64 " refToVar getStorageSize ")") assembleString makeInstruction @currentNode.@program.pushBack
-  ] [
-    ("  " addrName getNameById " = call i32 @malloc(i32 " refToVar getStorageSize ")") assembleString makeInstruction @currentNode.@program.pushBack
-  ] if
-
-  ptrVar: refToVar copyVar;
-  TRUE @ptrVar.@mutable set
-  currentNode.program.dataSize ptrVar getVar.@getInstructionIndex set
-
-  processor.options.pointerSize 64nx = [
-    ("  " ptrVar getIrName " = inttoptr i64 " addrName getNameById " to " ptrVar getIrType "*") assembleString makeInstruction @currentNode.@program.pushBack
-  ] [
-    ("  " ptrVar getIrName " = inttoptr i32 " addrName getNameById " to " ptrVar getIrType "*") assembleString makeInstruction @currentNode.@program.pushBack
-  ] if
-
-  refToVar ptrVar createCheckedCopyToNew
-
-  ptrVar markAsUnableToDie
-  ptrVar
-];
-
-createDelete: [
-  refToVar:;
-
-  refToVar callDie
-
-  ptrName: generateRegisterIRName;
-  castOp: String;
-
-  processor.options.pointerSize 64nx = [
-    ("  " ptrName getNameById " = ptrtoint " refToVar getIrType "* " refToVar getIrName  " to i64") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  call void @free(i64 " ptrName getNameById ")" ) assembleString makeInstruction @currentNode.@program.pushBack
-  ] [
-    ("  " ptrName getNameById " = ptrtoint " refToVar getIrType "* " refToVar getIrName  " to i32") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  call void @free(i32 " ptrName getNameById ")" ) assembleString makeInstruction @currentNode.@program.pushBack
-  ] if
-];
-
 createFloatBuiltins: [
   "declare float @llvm.sin.f32(float)"           addStrToProlog
   "declare double @llvm.sin.f64(double)"         addStrToProlog
@@ -616,24 +573,6 @@ createFloatBuiltins: [
   "declare double @llvm.log10.f64(double)"       addStrToProlog
   "declare float @llvm.pow.f32(float, float)"    addStrToProlog
   "declare double @llvm.pow.f64(double, double)" addStrToProlog
-];
-
-createHeapBuiltins: [
-  "malloc" @processor.@namedFunctions.find.success not [
-    processor.options.pointerSize 64nx = [
-      "declare i64 @malloc(i64)" addStrToProlog
-    ] [
-      "declare i32 @malloc(i32)" addStrToProlog
-    ] if
-  ] when
-
-  "free" @processor.@namedFunctions.find.success not [
-    processor.options.pointerSize 64nx = [
-      "declare void @free(i64)" addStrToProlog
-    ] [
-      "declare void @free(i32)" addStrToProlog
-    ] if
-  ] when
 ];
 
 createCtors: [
