@@ -2042,6 +2042,8 @@ nSwap: [
     @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
     oldRecursiveNodesStackSize @processor.@recursiveNodesStack.shrink
     -1 clearProcessorResult
+
+    signature name FALSE dynamic processImportFunction !newNodeIndex
   ] when
 
   signature.inputs [p:; a: pop;] each
