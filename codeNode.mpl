@@ -1607,7 +1607,7 @@ tryImplicitLambdaCast: [
   };
 
   varSrc: refToSrc getVar;
-  varSrc.data.getTag VarCode = [
+  varSrc.data.getTag VarCode = [refToDst isVirtual not] && [
     dstPointee: refToDst getPossiblePointee;
     dstPointeeVar: dstPointee getVar;
 
