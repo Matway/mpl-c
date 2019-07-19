@@ -6,8 +6,8 @@
 "defaultImpl" includeModule
 
 declareBuiltin: [
-  declareBuiltinName:;
-  declareBuiltinBody:;
+  virtual declareBuiltinName:;
+  virtual declareBuiltinBody:;
 
   {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;} () {} [
     processorResult:;
