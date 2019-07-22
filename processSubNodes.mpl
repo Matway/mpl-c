@@ -201,7 +201,6 @@ compareOnePair: [
           cacheEntryVar: currentFromCache getVar;
           stackEntryVar: currentFromStack getVar;
           cacheEntryVar.data.getTag VarRef = [currentFromCache staticnessOfVar Virtual <] && [currentFromCache staticnessOfVar Weak >] && [
-
             currentFromStack getPointeeForMatching @unfinishedStack.pushBack
             currentFromCache getPointeeForMatching @unfinishedCache.pushBack
             i -1 "deref" makeStringView makeWayInfo @unfinishedWay.pushBack
@@ -1721,7 +1720,6 @@ processIf: [
               processor.options.verboseIR ["end if" makeStringView createComent] when
             ] when
           ] when
-
         ] when
       ] if
     ] when

@@ -534,7 +534,7 @@ parseDecNumber: [
     ] if
 
     p:;
-    p [ currentPosition.offset @tokenEnd set ] when
+    p [currentPosition.offset @tokenEnd set] when
     p mainResult.success and
   ] loop
 

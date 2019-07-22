@@ -588,7 +588,7 @@ mplBuiltinProcessAtList: [
           pointeeVar: pointee getVar;
           pointeeVar.data.getTag VarStruct = not ["not a combined" compilerError] when
         ]
-        [ indexVar.data.getTag VarInt32 = not ["index must be Int32" compilerError] when ]
+        [indexVar.data.getTag VarInt32 = not ["index must be Int32" compilerError] when ]
         [refToIndex staticnessOfVar Weak < [ "index must be static" compilerError] when ]
         [
           index: VarInt32 indexVar.data.get 0 cast;

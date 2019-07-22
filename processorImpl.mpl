@@ -96,7 +96,7 @@
     runFile: [
       copy n:;
       n @lastFile set
-      fileNodes:  n multiParserResult.nodes.at;
+      fileNode: n multiParserResult.nodes.at;
       rootPositionInfo: CompilerPositionInfo;
       1 dynamic @rootPositionInfo.@column set
       1 dynamic @rootPositionInfo.@line set
@@ -104,7 +104,7 @@
       n dynamic @rootPositionInfo.@fileNumber set
 
       processorResult.globalErrorInfo.getSize @cachedGlobalErrorInfoSize set
-      topNodeIndex: StringView 0 NodeCaseCode @processorResult @processor fileNodes multiParserResult rootPositionInfo CFunctionSignature astNodeToCodeNode;
+      topNodeIndex: StringView 0 NodeCaseCode @processorResult @processor fileNode multiParserResult rootPositionInfo CFunctionSignature astNodeToCodeNode;
 
       processorResult.findModuleFail [
         # cant compile this file now, add him to queue
@@ -194,6 +194,7 @@
         hasError [hasErrorMessage not] && [
           String @processorResult.@errorInfo.@message set
           "problem with finding modules" @processorResult.@errorInfo.@message.cat
+
           LF @processorResult.@errorInfo.@message.cat
           dependedFiles [
             # queue is empty, but has uncompiled files
