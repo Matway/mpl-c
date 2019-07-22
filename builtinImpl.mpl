@@ -849,7 +849,7 @@ parseSignature: [
     [refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" compilerError] when
+      varName.data.getTag VarString = not ["function name must be static string" compilerError] when
     ]
     [refToBody: pop;]
     [
@@ -870,10 +870,10 @@ parseSignature: [
     [currentNode.parent 0 = not ["export must be global" compilerError] when]
     [refToName: pop;]
     [refToVar: pop;]
-    [refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when]
+    [refToName staticnessOfVar Weak < ["variable name must be static string" compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" compilerError] when
+      varName.data.getTag VarString = not ["variable name must be static string" compilerError] when
     ] [
       refToVar isVirtual ["cannot export virtual var" compilerError] when
     ] [
@@ -916,7 +916,7 @@ parseSignature: [
     [refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" compilerError] when
+      varName.data.getTag VarString = not ["function name must be static string" compilerError] when
     ]
     [signature: parseSignature;]
     [index: signature VarString varName.data.get makeStringView FALSE dynamic processImportFunction;]
