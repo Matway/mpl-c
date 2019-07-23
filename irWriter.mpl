@@ -111,7 +111,7 @@ getStringImplementation: [
     i: 0 dynamic;
     [
       i stringView.dataSize < [
-        codeRef: stringView.dataBegin storageAddress i 0ix cast 0nx cast + Nat8 addressToReference;
+        codeRef: stringView.dataBegin storageAddress i Natx cast + Nat8 addressToReference;
         code: codeRef copy;
         code 32n8 < not [code 127n8 <] && [code 34n8 = not] && [code 92n8 = not] && [  # exclude " and \
           code 0n32 cast @result.catSymbolCode
