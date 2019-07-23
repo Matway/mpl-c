@@ -1028,11 +1028,16 @@ parseSignature: [
   refToVar: pop;
 
   compilable [
+    varSrc: refToVar getVar;
+    varSchema: refToSchema getVar;
+    varSchema.data.getTag VarRef = [refToSchema isVirtual] && [
+      VarRef varSchema.data.get copyVarFromChild @refToSchema set
+      refToSchema getVar !varSchema
+    ] when
+
     refToVar isNumber refToSchema isNumber and [
       compilable [
         refToVar staticnessOfVar Dynamic > [
-          varSrc: refToVar getVar;
-          varSchema: refToSchema getVar;
           refToDst: RefToVar;
 
           varSrc.data.getTag VarNat8 VarReal64 1 + [
