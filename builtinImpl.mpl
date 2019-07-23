@@ -1292,8 +1292,7 @@ parseSignature: [
 
         fields: RefToVar Array;
 
-        string.chars.dataSize 0 > [
-
+        string.chars.dataSize 0 < not [
           splitted: string makeStringView.split;
           splitted.success [
             splitted.chars [
