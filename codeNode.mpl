@@ -884,6 +884,7 @@ createNamedVariable: [
   compilable [
     newRefToVar: refToVar copy;
     staticness: refToVar staticnessOfVar;
+    var: newRefToVar getVar;
 
     #(
     #  "create label " nameInfo processor.nameInfos.at.name
@@ -895,7 +896,11 @@ createNamedVariable: [
     currentNode.nextLabelIsVirtual [
       refToVar isVirtual not [
         staticness Dynamic > not ["value for virtual label must me static" makeStringView compilerError] when
-        staticness Weak    =     [Static refToVar getVar.@staticness set] when
+        staticness Weak    =     [Static @var.@staticness set] when
+      ] when
+
+      var.data.getTag VarImport = [
+        "funcPtr is always pointer, cannot make it virtual" makeStringView compilerError
       ] when
     ] when
 
