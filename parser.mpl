@@ -790,7 +790,15 @@ makeLabel: [
 ];
 
 parseName: [
-  member: FALSE dynamic;
+  DotState: (
+    "UNKNOWN"
+    "MULTI_DOT"
+    "NOT_A_MEMBER"
+    "WAS_FIRST_DOT"
+    "MEMBER"
+  ) Int32 enum;
+
+  dotState: DotState.UNKNOWN dynamic;
   read: FALSE dynamic;
   write: FALSE dynamic;
   label: FALSE dynamic;
@@ -809,23 +817,43 @@ parseName: [
         FALSE
       ] [
         currentCode ascii.dot = [
-          nameSymbols.getSize 0 > [
-            FALSE
-          ] [
-            checkFirst
-            checkOffset 1 + @checkOffset set
-            TRUE @member set
-            iterate
-            TRUE
-          ] if
+          dotState (
+            DotState.MULTI_DOT [
+              currentSymbol @nameSymbols.pushBack
+              iterate TRUE
+            ]
+            DotState.NOT_A_MEMBER [
+              currentSymbol @nameSymbols.pushBack
+              DotState.MULTI_DOT @dotState set
+              iterate TRUE
+            ]
+            DotState.WAS_FIRST_DOT [
+              currentSymbol @nameSymbols.pushBack
+              DotState.MULTI_DOT @dotState set
+              iterate TRUE
+            ]
+            [
+              nameSymbols.getSize 0 > [
+                FALSE
+              ] [
+                checkFirst
+                checkOffset 1 + @checkOffset set
+                currentSymbol @nameSymbols.pushBack
+                DotState.WAS_FIRST_DOT @dotState set
+                iterate TRUE
+              ] if
+            ]
+          ) case
         ] [
           currentCode ascii.at = [
             checkFirst
+            dotState DotState.UNKNOWN = [DotState.NOT_A_MEMBER @dotState set] when
             TRUE @read set
             iterate TRUE
           ] [
             currentCode ascii.exclamation = [
               checkFirst
+              dotState DotState.UNKNOWN = [DotState.NOT_A_MEMBER @dotState set] when
               TRUE @write set
               iterate TRUE
             ] [
@@ -839,6 +867,22 @@ parseName: [
                   ] when
                   FALSE
                 ] [
+                  dotState
+                  (
+                    DotState.MULTI_DOT [
+                      "identifier cannot start from many dots" lexicalError
+                    ]
+                    DotState.WAS_FIRST_DOT [
+                      DotState.MEMBER @dotState set
+                      @nameSymbols.clear
+                    ]
+                    DotState.MEMBER [
+                    ]
+                    [
+                      DotState.UNKNOWN @dotState set
+                    ]
+                  ) case
+
                   nameSymbols.getSize 1 > [0 nameSymbols.at "," =] && [
                     "identifier cannot start from comma" lexicalError
                   ] when
@@ -861,30 +905,24 @@ parseName: [
     read write and ["wrong identifier" lexicalError] when
 
     nameSymbols.getSize 0 = [
-      member [
-        read write or [undo "wrong identifier" lexicalError] when
-        "." makeNameNode @mainResult.@memory.pushBack
-        TRUE
+      read [
+        label ["@" makeLabel FALSE]["@" makeNameNode @mainResult.@memory.pushBack TRUE] if
       ] [
-        read [
-          label ["@" makeLabel FALSE]["@" makeNameNode @mainResult.@memory.pushBack TRUE] if
+        write [
+          label ["!" makeLabel FALSE]["!" makeNameNode @mainResult.@memory.pushBack TRUE] if
         ] [
-          write [
-            label ["!" makeLabel FALSE]["!" makeNameNode @mainResult.@memory.pushBack TRUE] if
-          ] [
-            "empty name" lexicalError
-            FALSE
-          ] if
+          "empty name" lexicalError
+          FALSE
         ] if
       ] if
     ] [
       name: nameSymbols assembleString;
 
       label [
-        member read write or or ["label declaration must be without . @ ! modifiers" lexicalError] when
+        dotState DotState.MEMBER = read write or or ["label declaration must be without . @ ! modifiers" lexicalError] when
         name makeLabel FALSE
       ] [
-        member [
+        dotState DotState.MEMBER = [
           read [
             name makeNameReadMemberNode @mainResult.@memory.pushBack TRUE
           ] [
