@@ -3152,16 +3152,19 @@ makeCompilerPosition: [
   String @currentNode.@header set
   String @currentNode.@signature set
 
+  inputCountMismatch: [
+    ("In signature there are " forcedSignature.inputs.getSize " inputs, but really here " currentNode.buildingMatchingInfo.inputs.getSize " inputs") assembleString compilerError
+  ];
+
   hasForcedSignature [
     currentNode.buildingMatchingInfo.inputs.getSize forcedSignature.inputs.getSize = not [
-      currentNode.buildingMatchingInfo.inputs.getSize 0 =
-      [forcedSignature.inputs.getSize 1 =] &&
-      [forcedSignature.outputs.getSize 1 =] &&
-      [0 forcedSignature.outputs.at 0 forcedSignature.inputs.at variablesAreSame] && [
+      currentNode.buildingMatchingInfo.inputs.getSize 1 + forcedSignature.inputs.getSize =
+      [forcedSignature.outputs.getSize 0 >] &&
+      [0 forcedSignature.outputs.at forcedSignature.inputs.last variablesAreSame] && [
         #todo for MPL signature check each
         pop push
       ] [
-        ("In signature there are " forcedSignature.inputs.getSize " inputs, but really here " currentNode.buildingMatchingInfo.inputs.getSize " inputs") assembleString compilerError
+        inputCountMismatch
       ] if
     ] when
 
