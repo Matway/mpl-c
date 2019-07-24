@@ -740,6 +740,35 @@ getNonrecursiveDataMPLType: [
   ] if
 ];
 
+getNonrecursiveDataDBGType: [
+  compileOnce
+  refToVar:;
+  refToVar isPlain [
+    refToVar getPlainDataMPLType
+  ] [
+    result: String;
+    var: refToVar getVar;
+    var.data.getTag VarString = [
+      "s" toString @result set
+    ] [
+      var.data.getTag VarCode = [
+        "c" toString @result set
+      ] [
+        var.data.getTag VarBuiltin = [
+          "b" toString @result set
+        ] [
+          var.data.getTag VarImport = [
+            ("F" VarImport var.data.get getFuncDbgType) assembleString @result set
+          ] [
+            "Unknown nonrecursive struct" makeStringView compilerError
+          ] if
+        ] if
+      ] if
+    ] if
+    @result
+  ] if
+];
+
 getStructStorageSize: [
   refToVar:;
   var: refToVar getVar;
@@ -1020,6 +1049,38 @@ getFuncMplType: [
   resultId getNameById
 ];
 
+getFuncDbgType: [
+ Index:;
+  result: String;
+  node:Index processor.nodes.at.get;
+
+  catData: [
+    args:;
+
+    "[" @result.cat
+    i: 0;
+    [
+      i args.getSize < [
+        current: i args.at;
+        current getDbgType                                            @result.cat
+        i 1 + args.getSize < [
+          ","                                                         @result.cat
+        ] when
+        i 1 + @i set TRUE
+      ] &&
+    ] loop
+    "]" @result.cat
+  ];
+
+  "-"                @result.cat
+  node.mplConvention @result.cat
+  node.csignature.inputs catData
+  node.csignature.outputs catData
+
+  resultId: @result makeStringId;
+  resultId getNameById
+];
+
 makeDbgTypeId: [
   refToVar:;
   refToVar isVirtualType not [
@@ -1129,7 +1190,7 @@ getPlainConstantIR: [
   refToVar isNonrecursiveType [
     refToVar getNonrecursiveDataIRType  @resultIR set
     refToVar getNonrecursiveDataMPLType @resultMPL set
-    refToVar getNonrecursiveDataMPLType @resultDBG set
+    refToVar getNonrecursiveDataDBGType @resultDBG set
   ] [
     var.data.getTag VarRef = [
       branch: VarRef var.data.get;
