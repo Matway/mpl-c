@@ -905,7 +905,7 @@ createNamedVariable: [
 
     currentNode.nextLabelIsVirtual [
       refToVar isVirtual not [
-        staticness Dynamic > not ["value for virtual label must me static" makeStringView compilerError] when
+        staticness Dynamic > not ["value for virtual label must be static" makeStringView compilerError] when
         staticness Weak    =     [Static @var.@staticness set] when
       ] when
 

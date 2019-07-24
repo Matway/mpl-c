@@ -264,7 +264,7 @@ getOverload: [
   maxOverloadCountCur: cap.nameInfo getOverloadCount;
   maxOverloadCountNes: cap.cntNameOverload copy;
   overload maxOverloadCountCur + maxOverloadCountNes < [
-    ("While matching cant call overload for name: " cap.nameInfo processor.nameInfos.at.name) assembleString compilerError
+    ("while matching cant call overload for name: " cap.nameInfo processor.nameInfos.at.name) assembleString compilerError
     0
   ] [
     overload maxOverloadCountCur + maxOverloadCountNes -
