@@ -1900,9 +1900,11 @@ copyVarToNew:     [FALSE TRUE  dynamic copyVarImpl];
     headVar: head getVar;
 
     reallyCreateShadows: [
-      refToVar copyOneVar @begin set
-      refToVar copyOneVar @end set
+      shadowSrc: headVar.capturedTail copy;
+      refToVar.mutable @shadowSrc.@mutable set
 
+      shadowSrc copyOneVar @begin set
+      shadowSrc copyOneVar @end set
 
       beginVar: begin getVar;
       endVar: end getVar;
