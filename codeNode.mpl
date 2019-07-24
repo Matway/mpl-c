@@ -431,6 +431,10 @@ getField: [
         psBegin @fieldShadow set
         psEnd @fieldRefToVar set
       ] if
+
+      var.staticness fieldRefToVar getVar.staticness < [
+        var.staticness fieldRefToVar getVar.@staticness set
+      ] when
     ] when
 
     refToVar.mutable @fieldRefToVar.@mutable set
