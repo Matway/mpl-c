@@ -914,7 +914,12 @@ createNamedVariable: [
       ] when
     ] when
 
-    var.temporary [currentNode.nextLabelIsVirtual not] && [refToVar isGlobal] && [
+    isGlobalLabel: [
+      refToVar:;
+      currentNode.nextLabelIsVirtual not [refToVar isVirtual not] && [refToVar isGlobal] &&
+    ];
+
+    var.temporary [refToVar isGlobalLabel] &&  [
       refToVar makeVarTreeDirty
       Dirty @staticness set
     ] when
@@ -930,6 +935,7 @@ createNamedVariable: [
         #"do you mean or or copy?" compilerError
         TRUE @var.@capturedAsMutable set #we need ref
         refToVar TRUE createRef @newRefToVar set
+        newRefToVar isGlobalLabel [newRefToVar makeVarTreeDirty] when
       ] if
     ] if
 
