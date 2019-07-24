@@ -762,30 +762,32 @@ makeVarTreeDirty: [
       var: lastRefToVar getVar;
       lastRefToVar staticnessOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
 
-      var.data.getTag VarStruct = [
-        struct: VarStruct var.data.get.get;
-        j: 0 dynamic;
-        [
-          j struct.fields.dataSize < [
-            j struct.fields.at.refToVar isVirtualField not [
-              j lastRefToVar getField @unfinishedVars.pushBack
-            ] when
-            j 1 + @j set TRUE
-          ] &&
-        ] loop
-      ] [
-        var.data.getTag VarRef = [
-          lastRefToVar staticnessOfVar Static = [
-            pointee: lastRefToVar getPointeeWhileDynamize;
-            pointee.mutable [pointee @unfinishedVars.pushBack] when
-          ] [
-            [lastRefToVar staticnessOfVar Dynamic > not] "Ref must be only Static or Dynamic!" assert
-          ] if
-        ] when
-      ] if
+      compilable [
+        var.data.getTag VarStruct = [
+          struct: VarStruct var.data.get.get;
+          j: 0 dynamic;
+          [
+            j struct.fields.dataSize < [
+              j struct.fields.at.refToVar isVirtualField not [
+                j lastRefToVar getField @unfinishedVars.pushBack
+              ] when
+              j 1 + @j set TRUE
+            ] &&
+          ] loop
+        ] [
+          var.data.getTag VarRef = [
+            lastRefToVar staticnessOfVar Static = [
+              pointee: lastRefToVar getPointeeWhileDynamize;
+              pointee.mutable [pointee @unfinishedVars.pushBack] when
+            ] [
+              [lastRefToVar staticnessOfVar Dynamic > not] "Ref must be only Static or Dynamic!" assert
+            ] if
+          ] when
+        ] if
 
-      var.data.getTag VarImport = not [
-        lastRefToVar Dirty makeStaticness @lastRefToVar set
+        var.data.getTag VarImport = not [
+          lastRefToVar Dirty makeStaticness @lastRefToVar set
+        ] when
       ] when
 
       compilable
