@@ -353,7 +353,7 @@ addFuncDebugInfo: [
   funcImplementation: funcName makeStringView getStringImplementation;
 
   (
-    "!" funcDebugIndex " = distinct !DISubprogram(name: \"" funcImplementation makeStringView "\", linkageName: \"" @funcIRName
+    "!" funcDebugIndex " = distinct !DISubprogram(name: \"" funcImplementation "." funcDebugIndex "\", linkageName: \"" @funcIRName
     "\", scope: !" position.fileNumber processor.debugInfo.fileNameIds.at
     ", file: !" position.fileNumber processor.debugInfo.fileNameIds.at ", line: " position.line  ", type: !" subroutineIndex
     ", scopeLine: " position.line ", unit: !" processor.debugInfo.unit ")") assembleString @processor.@debugInfo.@strings.pushBack
