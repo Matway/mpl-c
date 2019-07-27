@@ -543,7 +543,7 @@ mplShiftBinaryOp: [
   compilable [
     varCode: code getVar;
 
-    varCode.data.getTag VarCode = not ["branch else must be a [CODE]" makeStringView compilerError] when
+    varCode.data.getTag VarCode = not ["branch else must be a [CODE]" compilerError] when
 
     compilable [
       codeIndex: VarCode varCode.data.get.index copy;
