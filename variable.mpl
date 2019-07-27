@@ -922,8 +922,14 @@ getVirtualValue: [
       "}" @result.cat
     ]
 
-    VarString  [VarString var.data.get makeStringView getStringImplementation @result set]
-    VarCode    [VarCode    var.data.get.index @result.cat]
+    VarString  [
+      string: VarString var.data.get;
+      (string textSize "_" string getStringImplementation) @result.catMany
+    ]
+    VarCode    [
+      info: VarCode    var.data.get;
+      ("\"" info.moduleId processor.options.fileNames.at getStringImplementation "\"/" info.line ":" info.column) @result.catMany
+    ]
     VarImport  [VarImport  var.data.get @result.cat]
     VarBuiltin [VarBuiltin var.data.get @result.cat]
     VarRef     ["."                     @result.cat]
