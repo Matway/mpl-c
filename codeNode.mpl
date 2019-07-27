@@ -3581,10 +3581,10 @@ makeCompilerPosition: [
         prevNode: fr.value @processor.@nodes.at.get;
         prevNode.state NodeStateCompiled = [
           prevNode.signature currentNode.signature = not [
-            "node was defined with another signature" compilerError
+            ("node " functionName " was defined with another signature") assembleString compilerError
           ] [
             prevNode.mplConvention currentNode.mplConvention = not [
-              "node was defined with another convention" compilerError
+              ("node " functionName " was defined with another convention") assembleString compilerError
             ] [
               currentNode.nodeCase NodeCaseDllDeclaration = [
                 prevNode.nodeCase NodeCaseDllDeclaration = not [
