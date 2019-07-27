@@ -2007,6 +2007,10 @@ nSwap: [
   positionInfo: astNode makeCompilerPosition;
   compileOnce
 
+
+  signature.variadic [
+    "export function cannot be variadic" compilerError
+  ] when
   ("process export: " makeStringView name makeStringView) addLog
 
   # we dont know count of used in export entites
@@ -2020,9 +2024,6 @@ nSwap: [
     r push
   ] each
 
-  signature.variadic [
-    "export function cannot be variadic" compilerError
-  ] when
 
   oldSuccess: compilable;
   oldRecursiveNodesStackSize: processor.recursiveNodesStack.getSize;
