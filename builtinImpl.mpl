@@ -1149,7 +1149,7 @@ parseSignature: [
       varSchema: refToSchema getVar;
       varSchema.data.getTag VarString = [
         refToDst: String VarString createVariable;
-        Dynamic @refToDst getVar.@staticness set
+        Dirty @refToDst getVar.@staticness set
 
         refToVar refToDst "inttoptr" makeStringView createCastCopyToNew
         refToDst push
@@ -1176,9 +1176,9 @@ parseSignature: [
             "pointee is virtual, cannot cast" compilerError
           ] [
             refToDst: schemaOfResult VarRef createVariable;
-            Dynamic refToDst getVar.@staticness set
+            Dirty refToDst getVar.@staticness set
             refToVar refToDst "inttoptr" makeStringView createCastCopyToNew
-            refToDst derefAndPush
+            refToDst getPointee derefAndPush
           ] if
         ] if
       ] if
