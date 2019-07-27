@@ -1942,6 +1942,7 @@ copyVarToNew:     [FALSE TRUE  dynamic copyVarImpl];
       headVar.capturedTail @endVar.@capturedPrev set # newTail->oldTail
       end                 @headVar.@capturedTail set # head->newTail
       head                 @endVar.@capturedHead set # newTail->head
+      head               @beginVar.@capturedHead set # newTail->head
       end @currentNode.@capturedVars.pushBack       # remember
     ];
 
