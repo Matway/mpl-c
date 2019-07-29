@@ -434,7 +434,7 @@ tryParseNumberAfterSign: [
   ] if
 ];
 
-dCheck: [currentCode pc.digits inArray not ["wrong number constant" lexicalError] when ];
+dCheck: [currentCode pc.digits inArray not ["wrong number constant" lexicalError] when];
 
 xCheck: [
   currentCode pc.digits inArray not [
