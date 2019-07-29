@@ -1360,17 +1360,14 @@ captureName: [
   result
 ] func;
 
-isBuiltinOrImport: [
-  var: getVar;
-  var.data.getTag VarBuiltin =
-  [var.data.getTag VarImport =] ||
-] func;
 
 isCallable: [
   refToVar:;
-  refToVar isBuiltinOrImport
-  [
-    refToVar getVar.data.getTag VarStruct = [
+  var: refToVar getVar;
+  var.data.getTag VarBuiltin =
+  [var.data.getTag VarCode =] ||
+  [var.data.getTag VarImport =] || [
+    var.data.getTag VarStruct = [
       processor.callNameInfo refToVar findField.success copy
     ] &&
   ] ||
@@ -1567,14 +1564,20 @@ callCallable: [
   var.data.getTag VarBuiltin = [
     VarBuiltin var.data.get callBuiltin
   ] [
-    var.data.getTag VarImport = [
-      #VarImport var.data.get processor.nodes.at.get callImport
-      refToVar processFuncPtr
+    var.data.getTag VarCode = [
+      object regNamesSelf
+      VarCode var.data.get @name processCall
+      object unregNamesSelf
     ] [
-      var.data.getTag VarStruct = [
-        @predicate call
+      var.data.getTag VarImport = [
+        #VarImport var.data.get processor.nodes.at.get callImport
+        refToVar processFuncPtr
       ] [
-        [FALSE] "Wrong type to call!" assert
+        var.data.getTag VarStruct = [
+          @predicate call
+        ] [
+          [FALSE] "Wrong type to call!" assert
+        ] if
       ] if
     ] if
   ] if

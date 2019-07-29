@@ -68,7 +68,7 @@ createDefinition: [
   ] [
     name: 0 eqIndex splittedOption.chars makeSubRange assembleString;
     value: eqIndex 1 + splittedOption.chars.getSize splittedOption.chars makeSubRange assembleString;
-    (name makeStringView ": { CALL: [" value makeStringView " static]; };" LF) assembleString @definitions.cat
+    (name makeStringView ": [" value makeStringView " static];" LF) assembleString @definitions.cat
   ] if
 ] func;
 

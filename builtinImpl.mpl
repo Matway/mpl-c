@@ -92,29 +92,29 @@ mplNumberBinaryOp: [
 
 [
   VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fadd" makeStringView]["add" makeStringView] if] [+] [copy] [y:; x:;] mplNumberBinaryOp
-] "mplBuiltinAdd" declareBuiltin ucall
+] "mplBuiltinAdd" @declareBuiltin ucall
 
 [
   VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fsub" makeStringView]["sub" makeStringView] if] [-] [copy] [y:; x:;] mplNumberBinaryOp
-] "mplBuiltinSub" declareBuiltin ucall
+] "mplBuiltinSub" @declareBuiltin ucall
 
 [
   VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fmul" makeStringView]["mul" makeStringView] if] [*] [copy] [y:; x:;] mplNumberBinaryOp
-] "mplBuiltinMul" declareBuiltin ucall
+] "mplBuiltinMul" @declareBuiltin ucall
 
 [
   VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fdiv" makeStringView][a2 isNat ["udiv" makeStringView] ["sdiv" makeStringView] if] if] [/] [copy] [
     y:; x:;
     y y - y = ["division by zero" compilerError] when
   ] mplNumberBinaryOp
-] "mplBuiltinDiv" declareBuiltin ucall
+] "mplBuiltinDiv" @declareBuiltin ucall
 
 [
   VarNat8 VarIntX 1 + [a2:; a1:; a2 isNat ["urem" makeStringView] ["srem" makeStringView] if] [mod] [copy] [
     y:; x:;
     y y - y = ["division by zero" compilerError] when
   ] mplNumberBinaryOp
-] "mplBuiltinMod" declareBuiltin ucall
+] "mplBuiltinMod" @declareBuiltin ucall
 
 [
   arg2: pop;
@@ -181,19 +181,19 @@ mplNumberBinaryOp: [
       ] if
     ] when
   ] when
-] "mplBuiltinEqual" declareBuiltin ucall
+] "mplBuiltinEqual" @declareBuiltin ucall
 
 [
   VarNat8 VarReal64 1 + [
     a2:; a1:; a2 isReal ["fcmp olt" makeStringView][a2 isNat ["icmp ult" makeStringView] ["icmp slt" makeStringView] if] if
   ] [<] [t:; VarCond] [y:; x:;] mplNumberBinaryOp
-] "mplBuiltinLess" declareBuiltin ucall
+] "mplBuiltinLess" @declareBuiltin ucall
 
 [
   VarNat8 VarReal64 1 + [
     a2:; a1:; a2 isReal ["fcmp ogt" makeStringView][a2 isNat ["icmp ugt" makeStringView] ["icmp sgt" makeStringView] if] if
   ] [>] [t:; VarCond] [y:; x:;] mplNumberBinaryOp
-] "mplBuiltinGreater" declareBuiltin ucall
+] "mplBuiltinGreater" @declareBuiltin ucall
 
 mplNumberUnaryOp: [
   exValidator:;
@@ -244,32 +244,32 @@ mplNumberUnaryOp: [
   VarCond VarNatX 1 + [a:; "xor" makeStringView] [
     a:; a getVar.data.getTag VarCond = ["true, " makeStringView]["-1, " makeStringView] if
   ] [not] [x:;] mplNumberUnaryOp
-] "mplBuiltinNot" declareBuiltin ucall
+] "mplBuiltinNot" @declareBuiltin ucall
 
 [
   VarCond VarNatX 1 + [a2:; a1:; "xor" makeStringView] [xor] [copy] [y:; x:;] mplNumberBinaryOp
-] "mplBuiltinXor" declareBuiltin ucall
+] "mplBuiltinXor" @declareBuiltin ucall
 
 [
   VarCond VarNatX 1 + [a2:; a1:; "and" makeStringView] [and] [copy] [y:; x:;] mplNumberBinaryOp
-] "mplBuiltinAnd" declareBuiltin ucall
+] "mplBuiltinAnd" @declareBuiltin ucall
 
 [
   VarCond VarNatX 1 + [a2:; a1:; "or" makeStringView] [or] [copy] [y:; x:;] mplNumberBinaryOp
-] "mplBuiltinOr" declareBuiltin ucall
+] "mplBuiltinOr" @declareBuiltin ucall
 
 [
   TRUE VarCond createVariable createPlainIR push
-] "mplBuiltinTrue" declareBuiltin ucall
+] "mplBuiltinTrue" @declareBuiltin ucall
 
 [
   FALSE VarCond createVariable createPlainIR push
-] "mplBuiltinFalse" declareBuiltin ucall
+] "mplBuiltinFalse" @declareBuiltin ucall
 
 [
   s: LF toString;
   s VarString createVariable createStringIR push
-] "mplBuiltinLF" declareBuiltin ucall
+] "mplBuiltinLF" @declareBuiltin ucall
 
 [
   VarInt8 VarReal64 1 + [
@@ -277,7 +277,7 @@ mplNumberUnaryOp: [
   ] [
     a:; a isAnyInt ["0, " makeStringView]["0x0000000000000000, " makeStringView] if
   ] [neg] [x:;] mplNumberUnaryOp
-] "mplBuiltinNeg" declareBuiltin ucall
+] "mplBuiltinNeg" @declareBuiltin ucall
 
 mplNumberBuiltinOp: [
   exValidator:;
@@ -336,43 +336,43 @@ mplNumberBuiltinOp: [
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.sin.f32" makeStringView]["@llvm.sin.f64" makeStringView] if
   ] [sin] [x:;] mplNumberBuiltinOp
-] "mplBuiltinSin" declareBuiltin ucall
+] "mplBuiltinSin" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.cos.f32" makeStringView]["@llvm.cos.f64" makeStringView] if
   ] [cos] [x:;] mplNumberBuiltinOp
-] "mplBuiltinCos" declareBuiltin ucall
+] "mplBuiltinCos" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.sqrt.f32" makeStringView]["@llvm.sqrt.f64" makeStringView] if
   ] [sqrt] [x:;] mplNumberBuiltinOp
-] "mplBuiltinSqrt" declareBuiltin ucall
+] "mplBuiltinSqrt" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.ceil.f32" makeStringView]["@llvm.ceil.f64" makeStringView] if
   ] [ceil] [x:;] mplNumberBuiltinOp
-] "mplBuiltinCeil" declareBuiltin ucall
+] "mplBuiltinCeil" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.floor.f32" makeStringView]["@llvm.floor.f64" makeStringView] if
   ] [floor] [x:;] mplNumberBuiltinOp
-] "mplBuiltinFloor" declareBuiltin ucall
+] "mplBuiltinFloor" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.log.f32" makeStringView]["@llvm.log.f64" makeStringView] if
   ] [log] [x:;] mplNumberBuiltinOp
-] "mplBuiltinLog" declareBuiltin ucall
+] "mplBuiltinLog" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.log10.f32" makeStringView]["@llvm.log10.f64" makeStringView] if
   ] [log10] [x:;] mplNumberBuiltinOp
-] "mplBuiltinLog10" declareBuiltin ucall
+] "mplBuiltinLog10" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedFloatBuiltins set
@@ -435,7 +435,7 @@ mplNumberBuiltinOp: [
       ] if
     ] when
   ] when
-] "mplBuiltinPow" declareBuiltin ucall
+] "mplBuiltinPow" @declareBuiltin ucall
 
 mplShiftBinaryOp: [
   opFunc:;
@@ -495,15 +495,15 @@ mplShiftBinaryOp: [
 
 [
   [t2:; t1:; "shl" makeStringView][lshift] mplShiftBinaryOp
-] "mplBuiltinLShift" declareBuiltin ucall
+] "mplBuiltinLShift" @declareBuiltin ucall
 
 [
   [t2:; t1:; t1 isNat ["lshr" makeStringView]["ashr" makeStringView] if][rshift] mplShiftBinaryOp
-] "mplBuiltinRShift" declareBuiltin ucall
+] "mplBuiltinRShift" @declareBuiltin ucall
 
-[TRUE defaultRef] "mplBuiltinRef" declareBuiltin ucall
-[FALSE defaultRef] "mplBuiltinCref" declareBuiltin ucall
-[TRUE defaultMakeConstWith] "mplBuiltinConst" declareBuiltin ucall
+[TRUE defaultRef] "mplBuiltinRef" @declareBuiltin ucall
+[FALSE defaultRef] "mplBuiltinCref" @declareBuiltin ucall
+[TRUE defaultMakeConstWith] "mplBuiltinConst" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -518,11 +518,11 @@ mplShiftBinaryOp: [
       "not a reference" makeStringView compilerError
     ] if
   ] when
-] "mplBuiltinDeref" declareBuiltin ucall
+] "mplBuiltinDeref" @declareBuiltin ucall
 
 [
   defaultCall
-] "mplBuiltinCall" declareBuiltin ucall
+] "mplBuiltinCall" @declareBuiltin ucall
 
 [
   code: pop;
@@ -540,7 +540,7 @@ mplShiftBinaryOp: [
       indexArray addIndexArrayToProcess
     ] when
   ] when
-] "mplBuiltinUcall" declareBuiltin ucall
+] "mplBuiltinUcall" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -548,7 +548,7 @@ mplShiftBinaryOp: [
     refToVar makeVarTreeDynamic
     refToVar push
   ] when
-] "mplBuiltinDynamic" declareBuiltin ucall
+] "mplBuiltinDynamic" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -556,7 +556,7 @@ mplShiftBinaryOp: [
     refToVar makeVarTreeDirty
     refToVar push
   ] when
-] "mplBuiltinDirty" declareBuiltin ucall
+] "mplBuiltinDirty" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -564,9 +564,9 @@ mplShiftBinaryOp: [
     refToVar staticnessOfVar Weak = [refToVar Static makeStaticness @refToVar set] when
     refToVar push
   ] when
-] "mplBuiltinStatic" declareBuiltin ucall
+] "mplBuiltinStatic" @declareBuiltin ucall
 
-[defaultSet] "mplBuiltinSet" declareBuiltin ucall
+[defaultSet] "mplBuiltinSet" @declareBuiltin ucall
 
 mplBuiltinProcessAtList: [
   refToStruct: pop;
@@ -667,14 +667,14 @@ mplBuiltinProcessAtList: [
   compilable [
     field derefAndPush
   ] when
-] "mplBuiltinAt" declareBuiltin ucall
+] "mplBuiltinAt" @declareBuiltin ucall
 
 [
   field: mplBuiltinProcessAtList;
   compilable [
     field setRef
   ] when
-] "mplBuiltinExclamation" declareBuiltin ucall
+] "mplBuiltinExclamation" @declareBuiltin ucall
 
 [
   else: pop;
@@ -706,7 +706,7 @@ mplBuiltinProcessAtList: [
       ] if
     ] when
   ] when
-] "mplBuiltinIf" declareBuiltin ucall
+] "mplBuiltinIf" @declareBuiltin ucall
 
 [
   else: pop;
@@ -735,7 +735,7 @@ mplBuiltinProcessAtList: [
       ] if
     ] when
   ] when
-] "mplBuiltinUif" declareBuiltin ucall
+] "mplBuiltinUif" @declareBuiltin ucall
 
 [
   body: pop;
@@ -750,7 +750,7 @@ mplBuiltinProcessAtList: [
       astNode processLoop
     ]
   ) sequence
-] "mplBuiltinLoop" declareBuiltin ucall
+] "mplBuiltinLoop" @declareBuiltin ucall
 
 parseFieldToSignatureCaptureArray: [
   refToStruct:;
@@ -862,7 +862,7 @@ parseSignature: [
       index: signature astNode VarString varName.data.get makeStringView FALSE dynamic processExportFunction;
     ]
   ) sequence
-] "mplBuiltinExportFunction" declareBuiltin ucall
+] "mplBuiltinExportFunction" @declareBuiltin ucall
 
 [
   (
@@ -906,7 +906,7 @@ parseSignature: [
       ] when
     ]
   ) sequence
-] "mplBuiltinExportVariable" declareBuiltin ucall
+] "mplBuiltinExportVariable" @declareBuiltin ucall
 
 [
   (
@@ -921,7 +921,7 @@ parseSignature: [
     [signature: parseSignature;]
     [index: signature VarString varName.data.get makeStringView FALSE dynamic processImportFunction;]
   ) sequence
-] "mplBuiltinImportFunction" declareBuiltin ucall
+] "mplBuiltinImportFunction" @declareBuiltin ucall
 
 [
   (
@@ -942,7 +942,7 @@ parseSignature: [
       refToVar push
     ]
   ) sequence
-] "mplBuiltinCodeRef" declareBuiltin ucall
+] "mplBuiltinCodeRef" @declareBuiltin ucall
 
 [
   currentNode.parent 0 = not ["import must be global" compilerError] when
@@ -985,7 +985,7 @@ parseSignature: [
       ] when
     ] when
   ] when
-] "mplBuiltinImportVariable" declareBuiltin ucall
+] "mplBuiltinImportVariable" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -1008,7 +1008,7 @@ parseSignature: [
       ] if
     ] if
   ] when
-] "mplBuiltinCopy" declareBuiltin ucall
+] "mplBuiltinCopy" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -1021,7 +1021,7 @@ parseSignature: [
 
     result push
   ] when
-] "mplBuiltinNewVarOfTheSameType" declareBuiltin ucall
+] "mplBuiltinNewVarOfTheSameType" @declareBuiltin ucall
 
 [
   refToSchema: pop;
@@ -1114,7 +1114,7 @@ parseSignature: [
       "can cast only numbers" compilerError
     ] if
   ] when
-] "mplBuiltinCast" declareBuiltin ucall
+] "mplBuiltinCast" @declareBuiltin ucall
 
 [
   (
@@ -1135,7 +1135,7 @@ parseSignature: [
       refToDst push
     ]
   ) sequence
-] "mplBuiltinStorageAddress" declareBuiltin ucall
+] "mplBuiltinStorageAddress" @declareBuiltin ucall
 
 [
   refToSchema: pop;
@@ -1186,22 +1186,22 @@ parseSignature: [
       "address must be a NatX" compilerError
     ] if
   ] when
-] "mplBuiltinAddressToReference" declareBuiltin ucall
+] "mplBuiltinAddressToReference" @declareBuiltin ucall
 
 [
   currentNode.nextLabelIsConst ["duplicate virtual specifier" compilerError] when
   TRUE @currentNode.@nextLabelIsConst set
-] "mplBuiltinConstVar" declareBuiltin ucall
+] "mplBuiltinConstVar" @declareBuiltin ucall
 
 [
   currentNode.nextLabelIsVirtual ["duplicate virtual specifier" compilerError] when
   TRUE @currentNode.@nextLabelIsVirtual set
-] "mplBuiltinVirtual" declareBuiltin ucall
+] "mplBuiltinVirtual" @declareBuiltin ucall
 
 [
   currentNode.nextLabelIsSchema ["duplicate schema specifier" compilerError] when
   TRUE @currentNode.@nextLabelIsSchema set
-] "mplBuiltinSchema" declareBuiltin ucall
+] "mplBuiltinSchema" @declareBuiltin ucall
 
 [
   currentNode.parent 0 = not [
@@ -1236,10 +1236,10 @@ parseSignature: [
       ] when
     ] when
   ] if
-] "mplBuiltinModule" declareBuiltin ucall
+] "mplBuiltinModule" @declareBuiltin ucall
 
-[TRUE dynamic defaultUseOrIncludeModule] "mplBuiltinUseModule" declareBuiltin ucall
-[FALSE dynamic defaultUseOrIncludeModule] "mplBuiltinIncludeModule" declareBuiltin ucall
+[TRUE dynamic defaultUseOrIncludeModule] "mplBuiltinUseModule" @declareBuiltin ucall
+[FALSE dynamic defaultUseOrIncludeModule] "mplBuiltinIncludeModule" @declareBuiltin ucall
 
 [
   refToName: pop;
@@ -1258,7 +1258,7 @@ parseSignature: [
       ] when
     ] if
   ] when
-] "mplBuiltinTextSize" declareBuiltin ucall
+] "mplBuiltinTextSize" @declareBuiltin ucall
 
 [
   (
@@ -1277,7 +1277,7 @@ parseSignature: [
     ]
     [(VarString varStr1.data.get VarString varStr2.data.get) assembleString VarString createVariable createStringIR push]
   ) sequence
-] "mplBuiltinStrCat" declareBuiltin ucall
+] "mplBuiltinStrCat" @declareBuiltin ucall
 
 [
   refToName: pop;
@@ -1339,7 +1339,7 @@ parseSignature: [
       ] when
     ] when
   ] when
-] "mplBuiltinTextSplit" declareBuiltin ucall
+] "mplBuiltinTextSplit" @declareBuiltin ucall
 
 [
   (
@@ -1365,7 +1365,7 @@ parseSignature: [
       ] if
     ]
   ) sequence
-] "mplBuiltinHas" declareBuiltin ucall
+] "mplBuiltinHas" @declareBuiltin ucall
 
 [
   (
@@ -1390,7 +1390,7 @@ parseSignature: [
       fr.index Int64 cast VarInt32 createVariable Static makeStaticness createPlainIR push
     ]
   ) sequence
-] "mplBuiltinFieldIndex" declareBuiltin ucall
+] "mplBuiltinFieldIndex" @declareBuiltin ucall
 
 [
   (
@@ -1407,7 +1407,7 @@ parseSignature: [
       VarString varName.data.get findNameInfo pop createNamedVariable
     ]
   ) sequence
-] "mplBuiltinDef" declareBuiltin ucall
+] "mplBuiltinDef" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -1429,7 +1429,7 @@ parseSignature: [
 
     0n64 cast VarNatX createVariable Static makeStaticness createPlainIR push
   ] when
-] "mplBuiltinStorageSize" declareBuiltin ucall
+] "mplBuiltinStorageSize" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -1451,7 +1451,7 @@ parseSignature: [
 
     0n64 cast VarNatX createVariable Static makeStaticness createPlainIR push
   ] when
-] "mplBuiltinAlignment" declareBuiltin ucall
+] "mplBuiltinAlignment" @declareBuiltin ucall
 
 [
   refToName: pop;
@@ -1465,21 +1465,21 @@ parseSignature: [
       ] when
     ] when
   ] when
-] "mplBuiltinPrintCompilerMessage" declareBuiltin ucall
+] "mplBuiltinPrintCompilerMessage" @declareBuiltin ucall
 
 [
   compilable [
     ("var count=" processor.varCount LF) printList
   ] when
-] "mplBuiltinPrintVariableCount" declareBuiltin ucall
+] "mplBuiltinPrintVariableCount" @declareBuiltin ucall
 
 [
   defaultPrintStack
-] "mplBuiltinPrintStack" declareBuiltin ucall
+] "mplBuiltinPrintStack" @declareBuiltin ucall
 
 [
   defaultPrintStackTrace
-] "mplBuiltinPrintStackTrace" declareBuiltin ucall
+] "mplBuiltinPrintStackTrace" @declareBuiltin ucall
 
 [
   refToVar1: pop;
@@ -1487,7 +1487,7 @@ parseSignature: [
   compilable [
     refToVar1 refToVar2 variablesAreSame VarCond createVariable Static makeStaticness createPlainIR push
   ] when
-] "mplBuiltinSame" declareBuiltin ucall
+] "mplBuiltinSame" @declareBuiltin ucall
 
 [
   refToVar1: pop;
@@ -1517,29 +1517,29 @@ parseSignature: [
       FALSE VarCond createVariable Static makeStaticness createPlainIR push
     ] if
   ] when
-] "mplBuiltinIs" declareBuiltin ucall
+] "mplBuiltinIs" @declareBuiltin ucall
 
 [
   refToVar: pop;
   compilable [
     refToVar.mutable not VarCond createVariable Static makeStaticness createPlainIR push
   ] when
-] "mplBuiltinIsConst" declareBuiltin ucall
+] "mplBuiltinIsConst" @declareBuiltin ucall
 
 [
   refToVar: pop;
   compilable [
     refToVar getVar.data.getTag VarStruct = VarCond createVariable Static makeStaticness createPlainIR push
   ] when
-] "mplBuiltinIsCombined" declareBuiltin ucall
+] "mplBuiltinIsCombined" @declareBuiltin ucall
 
 [
   processor.options.debug VarCond createVariable Static makeStaticness createPlainIR push
-] "mplBuiltinDebug" declareBuiltin ucall
+] "mplBuiltinDebug" @declareBuiltin ucall
 
 [
   processor.options.logs VarCond createVariable Static makeStaticness createPlainIR push
-] "mplBuiltinHasLogs" declareBuiltin ucall
+] "mplBuiltinHasLogs" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -1559,7 +1559,7 @@ parseSignature: [
       ] when
     ] if
   ] when
-] "mplBuiltinFieldCount" declareBuiltin ucall
+] "mplBuiltinFieldCount" @declareBuiltin ucall
 
 [
   refToCount: pop;
@@ -1592,11 +1592,11 @@ parseSignature: [
       ] when
     ] when
   ] when
-] "mplBuiltinFieldName" declareBuiltin ucall
+] "mplBuiltinFieldName" @declareBuiltin ucall
 
 [
   COMPILER_SOURCE_VERSION 0i64 cast VarInt32 createVariable Static makeStaticness createPlainIR push
-] "mplBuiltinCompilerVersion" declareBuiltin ucall
+] "mplBuiltinCompilerVersion" @declareBuiltin ucall
 
 [
   refToCount: pop;
@@ -1659,19 +1659,19 @@ parseSignature: [
       ] when
     ] when
   ] when
-] "mplBuiltinArray" declareBuiltin ucall
+] "mplBuiltinArray" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedHeapBuiltins set
   refToVar: pop;
   compilable [refToVar createNew push TRUE defaultRef] when
-] "mplBuiltinNew" declareBuiltin ucall
+] "mplBuiltinNew" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedHeapBuiltins set
   refToVar: pop;
   compilable [refToVar createDelete] when
-] "mplBuiltinDelete" declareBuiltin ucall
+] "mplBuiltinDelete" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -1691,7 +1691,7 @@ parseSignature: [
       "moved can be only mutable variables" makeStringView compilerError
     ] if
   ] when
-] "mplBuiltinMove" declareBuiltin ucall
+] "mplBuiltinMove" @declareBuiltin ucall
 
 [
   refToCond: pop;
@@ -1722,7 +1722,7 @@ parseSignature: [
       ] when
     ] when
   ] when
-] "mplBuiltinMoveIf" declareBuiltin ucall
+] "mplBuiltinMoveIf" @declareBuiltin ucall
 
 [
   refToVar: pop;
@@ -1731,30 +1731,30 @@ parseSignature: [
     refToVar isForgotten
     VarCond createVariable Static makeStaticness createPlainIR push
   ] when
-] "mplBuiltinIsMoved" declareBuiltin ucall
+] "mplBuiltinIsMoved" @declareBuiltin ucall
 
 [
   refToVar: pop;
   compilable [
     refToVar isAutoStruct [refToVar callInit] when
   ] when
-] "mplBuiltinManuallyInitVariable" declareBuiltin ucall
+] "mplBuiltinManuallyInitVariable" @declareBuiltin ucall
 
 [
   refToVar: pop;
   compilable [
     refToVar isAutoStruct [refToVar callDie] when
   ] when
-] "mplBuiltinManuallyDestroyVariable" declareBuiltin ucall
+] "mplBuiltinManuallyDestroyVariable" @declareBuiltin ucall
 
 [
   TRUE dynamic @currentNode.@nodeCompileOnce set
-] "mplBuiltinCompileOnce" declareBuiltin ucall
+] "mplBuiltinCompileOnce" @declareBuiltin ucall
 
 [
   TRUE dynamic @currentNode.@nodeIsRecursive set
-] "mplBuiltinRecursive" declareBuiltin ucall
+] "mplBuiltinRecursive" @declareBuiltin ucall
 
 [
   defaultFailProc
-] "mplBuiltinFailProc" declareBuiltin ucall
+] "mplBuiltinFailProc" @declareBuiltin ucall
