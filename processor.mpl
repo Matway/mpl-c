@@ -206,6 +206,7 @@ CodeNode: [{
   uncompilable: FALSE dynamic;
   variadic: FALSE dynamic;
 
+  countOfUCall: 0 dynamic;
   declarationRefs: Cond Array;
   buildingMatchingInfo: MatchingInfo;
   matchingInfo: MatchingInfo;

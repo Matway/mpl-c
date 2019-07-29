@@ -536,6 +536,8 @@ mplShiftBinaryOp: [
       codeIndex: VarCode varCode.data.get.index copy;
       astNode: codeIndex @multiParserResult.@memory.at;
       [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
+      currentNode.countOfUCall 1 + @currentNode.@countOfUCall set
+      currentNode.countOfUCall 65535 > ["ucall limit exceeded" compilerError] when
       indexArray: AstNodeType.Code astNode.data.get;
       indexArray addIndexArrayToProcess
     ] when
@@ -728,6 +730,8 @@ mplBuiltinProcessAtList: [
         codeIndex: value [VarCode varThen.data.get.index copy] [VarCode varElse.data.get.index copy] if;
         astNode: codeIndex @multiParserResult.@memory.at;
         [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
+        currentNode.countOfUCall 1 + @currentNode.@countOfUCall set
+        currentNode.countOfUCall 65535 > ["ucall limit exceeded" compilerError] when
         indexArray: AstNodeType.Code astNode.data.get;
         indexArray addIndexArrayToProcess
       ] [

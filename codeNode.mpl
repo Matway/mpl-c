@@ -3733,6 +3733,7 @@ nodeHasCode: [
     #("started iter for node " indexOfNode "; recState=" currentNode.recursionState) addLog
     createLabel
 
+    0 @currentNode.@countOfUCall set
     @currentNode.@labelNames.clear
     @currentNode.@fromModuleNames.clear
     @currentNode.@captureNames.clear
