@@ -2079,6 +2079,8 @@ nSwap: [
     ] when
   ] when
 
+  signature.inputs [p:; a: pop;] each
+
   oldSuccess compilable not and [
     @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
     oldRecursiveNodesStackSize @processor.@recursiveNodesStack.shrink
@@ -2087,7 +2089,6 @@ nSwap: [
     signature name FALSE dynamic processImportFunction !newNodeIndex
   ] when
 
-  signature.inputs [p:; a: pop;] each
   ("processed export: " makeStringView name makeStringView) addLog
 
   newNodeIndex
