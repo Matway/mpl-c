@@ -548,8 +548,9 @@ setVar: [
   ] loop
 ];
 
-createRef: [
-  mutable:;
+createRefWith: [
+  copy createOperation:;
+  copy mutable:;
   refToVar:;
 
   refToVar isVirtual [
@@ -565,11 +566,14 @@ createRef: [
 
     newRefToVar: refToVar VarRef createVariable;
     mutable refToVar.mutable and @newRefToVar.@mutable set
-    refToVar newRefToVar createRefOperation
+    createOperation [refToVar newRefToVar createRefOperation] when
     newRefToVar
     #] if
   ] if
 ];
+
+createRef: [TRUE dynamic createRefWith];
+createRefNoOp: [FALSE dynamic createRefWith];
 
 createCheckedStaticGEP: [
   refToStruct:;
@@ -938,7 +942,7 @@ createNamedVariable: [
       ] [
         #"do you mean or or copy?" compilerError
         TRUE @var.@capturedAsMutable set #we need ref
-        refToVar TRUE createRef @newRefToVar set
+        refToVar TRUE currentNode.nextLabelIsSchema not createRefWith @newRefToVar set
         newRefToVar isGlobalLabel [newRefToVar makeVarTreeDirty] when
       ] if
     ] if
