@@ -52,6 +52,10 @@ hash: ["REF_TO_VAR" has] [
   refToVar.hostId 0n32 cast 67n32 * refToVar.varId 0n32 cast 17n32 * +
 ] pfunc;
 
+=: ["CODE_NODE_INFO" has] [
+  l:r:;;
+  l.index r.index =
+] pfunc;
 NameInfoEntry: [{
   refToVar: RefToVar;
   startPoint: -1 dynamic; # id of node
@@ -111,6 +115,16 @@ Struct: [{
   structAlignment: 0nx dynamic;
 }]; #IDs of pointee vars
 
+CodeNodeInfo: [{
+  CODE_NODE_INFO: ();
+
+  moduleId: Int32;
+  offset: Int32;
+  line: Int32;
+  column: Int32;
+  index: Int32;
+}];
+
 Variable: [{
   VARIABLE: ();
 
@@ -153,7 +167,7 @@ Variable: [{
     Int64            #VarIntX
     Real64           #VarReal32
     Real64           #VarReal64
-    Int32            #VarCode; id of node
+    CodeNodeInfo     #VarCode; id of node
     Int32            #VarBuiltin
     Int32            #VarImport
     String           #VarString
@@ -909,7 +923,7 @@ getVirtualValue: [
     ]
 
     VarString  [VarString var.data.get makeStringView getStringImplementation @result set]
-    VarCode    [VarCode    var.data.get @result.cat]
+    VarCode    [VarCode    var.data.get.index @result.cat]
     VarImport  [VarImport  var.data.get @result.cat]
     VarBuiltin [VarBuiltin var.data.get @result.cat]
     VarRef     ["."                     @result.cat]

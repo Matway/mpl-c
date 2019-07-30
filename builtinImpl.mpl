@@ -533,7 +533,7 @@ mplShiftBinaryOp: [
     varCode.data.getTag VarCode = not ["branch else must be a [CODE]" makeStringView compilerError] when
 
     compilable [
-      codeIndex: VarCode varCode.data.get copy;
+      codeIndex: VarCode varCode.data.get.index copy;
       astNode: codeIndex @multiParserResult.@memory.at;
       [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
       indexArray: AstNodeType.Code astNode.data.get;
@@ -694,14 +694,14 @@ mplBuiltinProcessAtList: [
       condition staticnessOfVar Weak > [
         value: VarCond varCond.data.get copy;
         value [
-          VarCode varThen.data.get "staticIfThen" makeStringView processCall
+          VarCode varThen.data.get.index "staticIfThen" makeStringView processCall
         ] [
-          VarCode varElse.data.get "staticIfElse" makeStringView processCall
+          VarCode varElse.data.get.index "staticIfElse" makeStringView processCall
         ] if
       ] [
         condition
-        VarCode varThen.data.get @multiParserResult.@memory.at
-        VarCode varElse.data.get @multiParserResult.@memory.at
+        VarCode varThen.data.get.index @multiParserResult.@memory.at
+        VarCode varElse.data.get.index @multiParserResult.@memory.at
         processIf
       ] if
     ] when
@@ -725,7 +725,7 @@ mplBuiltinProcessAtList: [
     compilable [
       condition staticnessOfVar Weak > [
         value: VarCond varCond.data.get copy;
-        codeIndex: value [VarCode varThen.data.get copy] [VarCode varElse.data.get copy] if;
+        codeIndex: value [VarCode varThen.data.get.index copy] [VarCode varElse.data.get.index copy] if;
         astNode: codeIndex @multiParserResult.@memory.at;
         [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
         indexArray: AstNodeType.Code astNode.data.get;
@@ -746,7 +746,7 @@ mplBuiltinProcessAtList: [
       varBody: body getVar;
       varBody.data.getTag VarCode = not ["body must be [CODE]" compilerError] when
     ] [
-      astNode: VarCode varBody.data.get @multiParserResult.@memory.at;
+      astNode: VarCode varBody.data.get.index @multiParserResult.@memory.at;
       astNode processLoop
     ]
   ) sequence
@@ -858,7 +858,7 @@ parseSignature: [
     ]
     [signature: parseSignature;]
     [
-      astNode: VarCode varBody.data.get @multiParserResult.@memory.at;
+      astNode: VarCode varBody.data.get.index @multiParserResult.@memory.at;
       index: signature astNode VarString varName.data.get makeStringView FALSE dynamic processExportFunction;
     ]
   ) sequence

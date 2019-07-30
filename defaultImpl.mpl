@@ -22,7 +22,7 @@ defaultCall: [
   compilable [
     var: refToVar getVar;
     var.data.getTag VarCode = [
-      VarCode var.data.get "call" makeStringView processCall
+      VarCode var.data.get.index "call" makeStringView processCall
     ] [
       var.data.getTag VarImport = [
         refToVar processFuncPtr

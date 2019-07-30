@@ -6,10 +6,10 @@
 "processor" includeModule
 
 addOverload: [
-  copy nameId:;
+  copy nameInfo:;
 
-  nameId 0 < not [
-    currentNameInfo: nameId @processor.@nameInfos.at;
+  nameInfo 0 < not [
+    currentNameInfo: nameInfo @processor.@nameInfos.at;
     Overload @currentNameInfo.@stack.pushBack
     currentNameInfo.stack.dataSize 1 -
   ] [
@@ -19,8 +19,8 @@ addOverload: [
 ];
 
 getOverloadCount: [
-  copy nameId:;
-  overloads: nameId processor.nameInfos.at.stack;
+  copy nameInfo:;
+  overloads: nameInfo processor.nameInfos.at.stack;
   overloads.getSize
 ];
 
@@ -30,12 +30,12 @@ addNameInfoWith: [
   copy startPoint:;
   copy addNameCase:;
   refToVar:;
-  copy nameId:;
+  copy nameInfo:;
 
   [addNameCase NameCaseFromModule = [refToVar noMatterToCopy] || [refToVar.hostId indexOfNode =] ||] "addNameInfo indexOfNode mismatch!" assert
 
-  nameId 0 < not [
-    currentNameInfo: nameId @processor.@nameInfos.at;
+  nameInfo 0 < not [
+    currentNameInfo: nameInfo @processor.@nameInfos.at;
     currentNameInfo.stack.dataSize 0 = [
       Overload @currentNameInfo.@stack.pushBack # initialisation of nameInfo
     ] when
@@ -53,7 +53,7 @@ addNameInfoWith: [
       nameWithOverload: NameWithOverloadAndRefToVar;
       refToVar    @nameWithOverload.@refToVar     set
       overload    @nameWithOverload.@nameOverload set
-      nameId      @nameWithOverload.@nameInfo     set
+      nameInfo    @nameWithOverload.@nameInfo     set
       startPoint  @nameWithOverload.@startPoint   set
 
       addNameCase NameCaseLocal = [
@@ -104,8 +104,8 @@ addNameInfoOverloaded: [TRUE addNameInfoWith];
 addNameInfoNoReg: [indexOfNode copy -1 dynamic FALSE addNameInfoWith];
 
 getNameLastIndexInfo: [
-  nameId:;
-  currentNameInfo: nameId @processor.@nameInfos.at;
+  nameInfo:;
+  currentNameInfo: nameInfo @processor.@nameInfos.at;
 
   result: IndexInfo;
   currentNameInfo.stack.dataSize 1 - @result.@overload set
@@ -114,10 +114,10 @@ getNameLastIndexInfo: [
 ];
 
 deleteNameInfoWithOverload: [
-  copy nameId:;
+  copy nameInfo:;
   copy overloadId:;
 
-  currentNameInfo: nameId @processor.@nameInfos.at;
+  currentNameInfo: nameInfo @processor.@nameInfos.at;
   overload: overloadId @currentNameInfo.@stack.at;
 
   @overload.popBack
@@ -131,10 +131,10 @@ deleteNameInfoWithOverload: [
 ];
 
 deleteNameInfo: [
-  copy nameId:;
+  copy nameInfo:;
 
-  currentNameInfo: nameId @processor.@nameInfos.at;
-  currentNameInfo.stack.dataSize 1 - nameId deleteNameInfoWithOverload
+  currentNameInfo: nameInfo @processor.@nameInfos.at;
+  currentNameInfo.stack.dataSize 1 - nameInfo deleteNameInfoWithOverload
 ];
 
 makeStaticness: [
@@ -954,10 +954,21 @@ processLabelNode: [
   .nameInfo pop createNamedVariable
 ];
 
-processCodeNode: [
-  data:;
-  indexOfAstNode makeVarCode push
+createVarCode: [
+  indexOfAstNode:;
+  astNode: indexOfAstNode multiParserResult.memory.at; #we have info from parser anyway
+  codeInfo: CodeNodeInfo;
+
+  astNode.column     @codeInfo.@column set
+  astNode.line       @codeInfo.@line set
+  astNode.offset     @codeInfo.@offset set
+  astNode.fileNumber @codeInfo.@moduleId set
+  indexOfAstNode     @codeInfo.@index set
+
+  @codeInfo move makeVarCode
 ];
+
+processCodeNode: [createVarCode push];
 
 processCallByIndexArray: [
   multiParserResult @currentNode indexOfNode @processor @processorResult processCallByIndexArrayImpl
@@ -1455,7 +1466,7 @@ callCallableStruct: [
   codeVar.data.getTag VarCode = [
     object regNamesSelf
     refToVar regNamesClosure
-    VarCode codeVar.data.get name processCall
+    VarCode codeVar.data.get.index name processCall
     refToVar unregNamesClosure
     object unregNamesSelf
   ] [
@@ -1470,7 +1481,7 @@ callCallableField: [
   compileOnce
 
   var: refToVar getVar;
-  code: VarCode var.data.get;
+  code: VarCode var.data.get.index;
 
   object regNamesClosure
   code @name processCall
@@ -1478,7 +1489,7 @@ callCallableField: [
 ];
 
 callCallableStructWithPre: [
-  name:;
+  nameInfo:;
   copy refToVar:;
   copy object:;
   [
@@ -1501,7 +1512,7 @@ callCallableStructWithPre: [
         preField: pfr.index struct.fields.at .refToVar;
         preVar: preField getVar;
         preVar.data.getTag VarCode = [
-          VarCode preVar.data.get processPre not @needPre set
+          VarCode preVar.data.get.index processPre not @needPre set
         ] [
           "PRE field must be a code" compilerError
         ] if
@@ -1521,7 +1532,7 @@ callCallableStructWithPre: [
           compilable [
             cnr: gnr captureName;
 
-            cnr.object cnr.refToVar name [
+            cnr.object cnr.refToVar nameInfo [
               TRUE @nextIteration set # for builtin or import go out of loop
             ] callCallable
 
@@ -1534,7 +1545,7 @@ callCallableStructWithPre: [
       ] [
         # no need pre, just call it!
         refToVar regNamesClosure
-        VarCode codeVar.data.get @name processCall
+        VarCode codeVar.data.get.index nameInfo processor.nameInfos.at.name makeStringView processCall
         refToVar unregNamesClosure
       ] if
       object unregNamesSelf
@@ -1548,7 +1559,7 @@ callCallableStructWithPre: [
 
 callCallable: [
   predicate:;
-  name:;
+  nameInfo:;
   refToVar:;
   object:;
 
@@ -1558,7 +1569,7 @@ callCallable: [
   ] [
     var.data.getTag VarCode = [
       object regNamesSelf
-      VarCode var.data.get @name processCall
+      VarCode var.data.get.index @nameInfo processor.nameInfos.at.name makeStringView processCall
       object unregNamesSelf
     ] [
       var.data.getTag VarImport = [
@@ -1607,8 +1618,8 @@ tryImplicitLambdaCast: [
       declarationIndex: VarImport dstPointeeVar.data.get;
       declarationNode: declarationIndex processor.nodes.at.get;
       csignature: declarationNode.csignature;
-      astNode: VarCode refToSrc getVar.data.get @multiParserResult.@memory.at;
       implName: ("lambda." indexOfNode "." currentNode.lastLambdaName) assembleString;
+      astNode: VarCode refToSrc getVar.data.get.index @multiParserResult.@memory.at;
       implIndex: csignature astNode implName makeStringView TRUE dynamic processExportFunction;
 
       compilable [
@@ -2029,8 +2040,7 @@ pushName: [
     ] [
       possiblePointee: refToVar getPossiblePointee;
       possiblePointee isCallable [
-        name: nameInfo processor.nameInfos.at.name makeStringView;
-        object possiblePointee name [object possiblePointee @name callCallableStructWithPre] callCallable
+        object possiblePointee nameInfo [object possiblePointee @nameInfo callCallableStructWithPre] callCallable
       ] [
         FALSE dynamic @possiblePointee.@mutable set
         possiblePointee push
@@ -2417,7 +2427,7 @@ killStruct: [
   #) addLog
   astNode.data.getTag (
     AstNodeType.Label           [AstNodeType.Label astNode.data.get processLabelNode]
-    AstNodeType.Code            [AstNodeType.Code astNode.data.get processCodeNode]
+    AstNodeType.Code            [indexOfAstNode processCodeNode]
     AstNodeType.Object          [AstNodeType.Object astNode.data.get processObjectNode]
     AstNodeType.List            [AstNodeType.List astNode.data.get processListNode]
     AstNodeType.Name            [AstNodeType.Name astNode.data.get processNameNode]
