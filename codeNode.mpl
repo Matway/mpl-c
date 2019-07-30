@@ -753,6 +753,11 @@ makeVarVirtual: [
   ] when
 ];
 
+makeVarRealCaptured: [
+  refToVar:;
+  TRUE refToVar getVar.@capturedAsRealValue set
+];
+
 makeVarTreeDirty: [
   refToVar:;
   unfinishedVars: RefToVar Array;
@@ -804,6 +809,7 @@ makePointeeDirtyIfRef: [
   var: refToVar getVar;
   var.data.getTag VarRef = [var.staticness Static =] && [
     pointee: refToVar getPointeeWhileDynamize;
+    pointee makeVarRealCaptured
     pointee.mutable [pointee makeVarTreeDirty] when
   ] when
 ];

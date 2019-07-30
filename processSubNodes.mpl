@@ -707,6 +707,8 @@ applyEntriesRec: [
       cacheEntryVar: currentFromCache getVar;
       stackEntryVar: currentFromStack getVar;
 
+      cacheEntryVar.capturedAsRealValue [currentFromStack makeVarRealCaptured] when
+
       cacheEntryVar.data.getTag VarRef = [currentFromCache staticnessOfVar Virtual <] && [currentFromCache staticnessOfVar Dynamic >] && [
         clearPointee: VarRef cacheEntryVar.data.get copy; # if captured, host index will be currentChangesNodeIndex
         clearPointee.hostId currentChangesNodeIndex = [ # we captured it
@@ -2161,6 +2163,7 @@ callImportWith: [
             [stackEntry: pop;]
             [
               input: stackEntry copy;
+              input makeVarRealCaptured
               nodeEntry: i declarationNode.matchingInfo.inputs.at.refToVar;
               nodeMutable: nodeEntry.mutable copy;
               i declarationNode.csignature.inputs.at getVar.data.getTag VarRef = [

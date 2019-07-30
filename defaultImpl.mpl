@@ -42,6 +42,9 @@ defaultSet: [
   refToSrc: pop;
 
   compilable [
+    refToSrc makeVarRealCaptured
+    refToDst makeVarRealCaptured
+
     refToDst refToSrc variablesAreSame [
       refToSrc getVar.data.getTag VarImport = [
         "functions cannot be copied" compilerError

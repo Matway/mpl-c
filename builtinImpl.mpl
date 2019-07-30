@@ -73,6 +73,8 @@ mplNumberBinaryOp: [
           ] when
         ] staticCall
       ] [
+        arg1 makeVarRealCaptured
+        arg2 makeVarRealCaptured
         opName: arg1 arg2 @getOpName call;
         var1.data.getTag firstTag lastTag [
           copy tag:;
@@ -157,6 +159,9 @@ mplNumberBinaryOp: [
           ] staticCall
         ] if
       ] [
+        arg1 makeVarRealCaptured
+        arg2 makeVarRealCaptured
+
         var1.data.getTag VarString = [
           result: FALSE VarCond createVariable Dynamic makeStaticness createAllocIR;
           "icmp eq" makeStringView createBinaryOperation
@@ -223,6 +228,7 @@ mplNumberUnaryOp: [
           ] when
         ] staticCall
       ] [
+        arg makeVarRealCaptured
         opName: arg @getOpName call;
         mopName: arg @getMidOpName call;
         var.data.getTag firstTag lastTag [
@@ -304,6 +310,7 @@ mplNumberBuiltinOp: [
           ] when
         ] staticCall
       ] [
+        arg makeVarRealCaptured
         opName: arg @getOpName call;
         var.data.getTag VarReal32 VarReal64 1 + [
           copy tag:;
@@ -408,6 +415,9 @@ mplNumberBuiltinOp: [
           ] when
         ] staticCall
       ] [
+        arg1 makeVarRealCaptured
+        arg2 makeVarRealCaptured
+
         var1.data.getTag VarReal32 VarReal64 1 + [
           copy tag:;
           resultType: tag copy;
@@ -473,6 +483,9 @@ mplShiftBinaryOp: [
           ] staticCall
         ] staticCall
       ] [
+        arg1 makeVarRealCaptured
+        arg2 makeVarRealCaptured
+
         opName: arg1 arg2 @getOpName call;
         var1.data.getTag VarNat8 VarIntX 1 + [
           copy tag:;
@@ -621,6 +634,7 @@ mplBuiltinProcessAtList: [
                   "can't get dynamic index in virtual struct" compilerError
                 ] when
 
+                refToIndex makeVarRealCaptured
                 fieldRef: 0 realStruct.fields.at.refToVar copy;
                 fieldRef.hostId indexOfNode = not [
                   fBegin: RefToVar;
@@ -994,6 +1008,8 @@ parseSignature: [
 [
   refToVar: pop;
   compilable [
+    refToVar isVirtual not [refToVar makeVarRealCaptured] when
+
     refToVar getVar.temporary [
       "temporary objects cannot be copied" compilerError
     ] [
@@ -1132,6 +1148,7 @@ parseSignature: [
     [refToVar isVirtual ["variable is virtual, cannot get address" compilerError] when]
     [
       TRUE refToVar getVar.@capturedAsMutable set #we need ref
+      refToVar makeVarRealCaptured
       refToVar makeVarTreeDirty
       refToDst: 0n64 VarNatX createVariable;
       Dynamic @refToDst getVar.@staticness set

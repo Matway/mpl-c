@@ -138,6 +138,7 @@ Variable: [{
   temporary: TRUE dynamic;
   usedInHeader: FALSE dynamic;
   capturedAsMutable: FALSE dynamic;
+  capturedAsRealValue: FALSE dynamic;
   tref: TRUE dynamic;
   shadowReason: ShadowReasonNo;
   globalId: -1 dynamic;
