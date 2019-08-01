@@ -3624,6 +3624,8 @@ makeCompilerPosition: [
   ] when
 
   checkRecursionOfCodeNode
+
+  compilable not [TRUE @currentNode.@empty set] when
 ] "finalizeCodeNodeImpl" exportFunction
 
 finalizeCodeNode: [

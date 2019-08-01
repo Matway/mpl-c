@@ -2079,7 +2079,7 @@ nSwap: [
 
   signature.inputs [p:; a: pop;] each
 
-  oldSuccess compilable not and [
+  oldSuccess compilable not and processor.depthOfPre 0 = and [
     @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
     oldRecursiveNodesStackSize @processor.@recursiveNodesStack.shrink
     -1 clearProcessorResult
