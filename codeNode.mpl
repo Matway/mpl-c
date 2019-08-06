@@ -904,7 +904,10 @@ createNamedVariable: [
       ] when
     ] when
 
-    var: newRefToVar getVar;
+    var.temporary [currentNode.nextLabelIsVirtual not] && [refToVar isGlobal] && [
+      refToVar makeVarTreeDirty
+      Dirty @staticness set
+    ] when
 
     var.temporary currentNode.nextLabelIsSchema not and [
       staticness @var.@staticness set
@@ -1874,13 +1877,6 @@ copyVarToNew:     [FALSE TRUE  dynamic copyVarImpl];
         TRUE @beginVar.@global set
         TRUE @endVar.@global set
 
-        headVar.capturedTail.hostId processor.nodes.at.get.parent 0 = # capture directly from global vars
-        [refToVar isVirtual not] &&
-        [processor.processingExport 0 >] &&
-        [var.data.getTag VarImport = not] && [
-          begin Dirty makeStaticness @begin set
-          end   Dirty makeStaticness @end   set
-        ] when
       ] [
         begin unglobalize
         end unglobalize
