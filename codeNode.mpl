@@ -2510,7 +2510,7 @@ processNode: [
 addNamesFromModule: [
   copy moduleId:;
 
-  fru: current currentNode.usedOrIncludedModulesTable.find;
+  fru: moduleId currentNode.usedOrIncludedModulesTable.find;
   fru.success not [
     moduleId TRUE @currentNode.@usedOrIncludedModulesTable.insert
 
