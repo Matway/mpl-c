@@ -545,7 +545,6 @@ parseDecNumber: [
   typeName: 0 dynamic;
   afterT.getSize [typeName 100 * i afterT.at + 1 + @typeName set] times
 
-
   typeClass 2 = [
     type: 0.0r64 dynamic;
     ten: 10.0r64 dynamic;
