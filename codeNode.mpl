@@ -2663,8 +2663,6 @@ deleteNode: [
   node: nodeIndex @processor.@nodes.at.get;
   TRUE dynamic @node.@empty   set
   TRUE dynamic @node.@deleted set
-  MatchingInfo @node.@buildingMatchingInfo set
-  MatchingInfo @node.@matchingInfo set
   @node.@program.release
 
   #@node.@variables [
