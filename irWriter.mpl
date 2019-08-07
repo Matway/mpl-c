@@ -133,9 +133,9 @@ createStringTypeByStringName: [
   ("%type." stringNameNoFirst) assembleString
 ];
 
-createStringIR: [
+createStringIRNoAlloc: [
   refToVar:;
-  var: refToVar createAllocIR getVar;
+  var: refToVar getVar;
   varValue: VarString var.data.get;
   stringSizeWithZero: varValue.chars.dataSize 0 = [1][varValue.chars.dataSize 0 cast] if;
 
@@ -167,6 +167,10 @@ createStringIR: [
   ) assembleString makeInstruction @currentNode.@program.pushBack
 
   refToVar copy
+];
+
+createStringIR: [
+  createAllocIR createStringIRNoAlloc
 ];
 
 createGetTextSizeIR: [

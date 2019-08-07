@@ -685,7 +685,11 @@ makeVirtualVarReal: [
                 ] [
                   lastSrc isPlain [
                     lastSrc lastDst createStoreConstant
-                  ] when
+                  ] [
+                    varSrc.data.getTag VarString = [
+                      lastDst createStringIRNoAlloc drop
+                    ] when
+                  ] if
                 ] if
               ] when
             ] if
