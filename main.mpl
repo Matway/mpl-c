@@ -79,21 +79,24 @@ createDefinition: [
     argv:;
 
     success: TRUE dynamic;
-    fileNames: String Array;
-    linkerOptions: String Array;
-    outputFileName: "mpl.ll" toString;
+
+    optAny:            [0 dynamic];
+    optOutputFileName: [1 dynamic];
+    optLinkerOption:   [3 dynamic];
+    optDefinition:     [4 dynamic];
+    optArrayCheck:     [5 dynamic];
+    nextOption: optAny;
 
     options: ProcessorOptions;
-    optOutputFileName: FALSE dynamic;
-    optLinkerOption: FALSE dynamic;
-    optDefinition: FALSE dynamic;
     hasVersion: FALSE dynamic;
     parserResults: ParserResults;
     definitions: String;
+    hasVersion: FALSE dynamic;
+    outputFileName: "mpl.ll" toString;
 
     forceArrayChecks: -1 dynamic;
 
-    "definitions" toString @fileNames.pushBack
+    "*definitions" toString @options.@fileNames.pushBack
 
     argc 1 = [
       printInfo
@@ -115,64 +118,67 @@ createDefinition: [
               "Invalid argument encoding: " print option print LF print
               printInfo
             ] [
-              optOutputFileName [
-                FALSE dynamic @optOutputFileName set
-                option toString @outputFileName set
-              ] [
-                optLinkerOption [
-                  FALSE dynamic @optLinkerOption set
-                  option toString @linkerOptions.pushBack
-                ] [
-                  forceArrayChecks -2 = [
-                    option (
-                      "0"   [0 @forceArrayChecks set]
-                      "1"   [1 @forceArrayChecks set]
-                      [
-                        "Invalid argument value: " print option print LF print
+              nextOption (
+                optAny [
+                  option (
+                    "-auto_recursion" [TRUE              @options.!autoRecursion]
+                    "-ndebug"         [FALSE             @options.!debug]
+                    "-logs"           [TRUE              @options.!logs]
+                    "-statlit"        [TRUE              @options.!staticLiterals]
+                    "-dynalit"        [FALSE             @options.!staticLiterals]
+                    "-32bits"         [32nx              @options.!pointerSize]
+                    "-64bits"         [64nx              @options.!pointerSize]
+                    "-verbose_ir"     [TRUE              @options.!verboseIR]
+                    "-version"        [TRUE              !hasVersion]
+                    "-linker_option"  [optLinkerOption   !nextOption]
+                    "-o"              [optOutputFileName !nextOption]
+                    "-D"              [optDefinition     !nextOption]
+                    "-array_checks"   [optArrayCheck     !nextOption]
+                    [
+                      0 splittedOption.chars.at "-" = [
+                        "Invalid argument: " print option print LF print
                         printInfo
-                      ]
-                    ) case
-                  ] [
-                    optDefinition [
-                      FALSE @optDefinition set
-                      splittedOption createDefinition
-                    ] [
-                      option (
-                        "-auto_recursion" [TRUE  @options.@autoRecursion set]
-                        "-array_checks"   [-2    @forceArrayChecks set]
-                        "-ndebug"         [FALSE @options.@debug set]
-                        "-logs"           [TRUE  @options.@logs set]
-                        "-statlit"        [TRUE  @options.@staticLiterals set]
-                        "-dynalit"        [FALSE @options.@staticLiterals set]
-                        "-32bits"         [32nx  @options.@pointerSize set]
-                        "-64bits"         [64nx  @options.@pointerSize set]
-                        "-linker_option"  [TRUE  @optLinkerOption set]
-                        "-verbose_ir"     [TRUE  @options.@verboseIR set]
-                        "-version"        [TRUE  @hasVersion set]
-                        "-o"              [TRUE  @optOutputFileName set]
-                        "-D"              [TRUE  @optDefinition set]
-                        [
-                          0 splittedOption.chars.at "-" = [
-                            "Invalid argument: " print option print LF print
-                            printInfo
-                          ] [
-                            option toString @fileNames.pushBack
-                          ] if
-                        ]
-                      ) case
-                    ] if
-                  ] if
-                ] if
-              ] if
+                      ] [
+                        option toString @options.@fileNames.pushBack
+                      ] if
+                    ]
+                  ) case
+                ]
+                optOutputFileName [
+                  option toString @outputFileName set
+                  optAny !nextOption
+                ]
+                optLinkerOption   [
+                  option toString @options.@linkerOptions.pushBack
+                  optAny !nextOption
+                ]
+                optDefinition     [
+                  splittedOption createDefinition
+                  optAny !nextOption
+                ]
+                optArrayCheck     [
+                  option (
+                    "0"   [0 @forceArrayChecks set]
+                    "1"   [1 @forceArrayChecks set]
+                    [
+                      "Invalid argument value: " print option print LF print
+                      printInfo
+                    ]
+                  ) case
+                  optAny !nextOption
+                ]
+                []
+              ) case
             ] if
           ] if
         ] if
       ] times
     ] if
 
-    optDefinition optOutputFileName or -2 forceArrayChecks = or optLinkerOption or [
+    nextOption optAny = not [
       "Value expected" print LF print
       printInfo
+      FALSE @success set
     ] [
       forceArrayChecks (
         0 [FALSE]
@@ -180,7 +186,7 @@ createDefinition: [
         [options.debug copy]
       ) case @options.@arrayChecks set
 
-      fileNames.getSize 1 = [
+      options.fileNames.getSize 1 = [
         hasVersion [
           DEBUG [
             ("MPL compiler version " COMPILER_SOURCE_VERSION " debug" LF) printList
@@ -195,73 +201,78 @@ createDefinition: [
           ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
           "Input files ignored" print LF print
         ] [
-          fileNames [
-            pair:;
-            filename: pair.value;
+          outputFileName "" = [
+            "No output file" print LF print
+            printInfo
+            FALSE @success set
+          ] [
+            options.fileNames [
+              pair:;
+              filename: pair.value;
 
-            pair.index 0 = [
-              filename pair.index definitions addToProcess
-            ] [
-              loadStringResult: filename loadString;
-              loadStringResult.success [
-                ("Loaded string from " filename) addLog
-                ("HASH=" loadStringResult.data hash) addLog
-                filename pair.index loadStringResult.data addToProcess
+              pair.index 0 = [
+                filename pair.index definitions addToProcess
               ] [
-                "Unable to load string:" print filename print LF print
-                FALSE @success set
-              ] if
-            ] if
-          ] each
-
-          success [
-            multiParserResult: MultiParserResult;
-            @parserResults @multiParserResult concatParserResults
-            ("trees concated" makeStringView) addLog
-            @multiParserResult optimizeNames
-            ("names optimized" makeStringView) addLog
-
-            ("filenames:" makeStringView) addLog
-            fileNames [(.value) addLog] each
-            @fileNames move @options.@fileNames set
-            @linkerOptions move @options.@linkerOptions set
-
-            processorResult: ProcessorResult;
-            multiParserResult options 0 @processorResult process
-
-            processorResult.success [
-              outputFileName @processorResult.@program saveString [
-                ("program written to " outputFileName) addLog
-              ] [
-                ("failed to save program" LF) printList
-                FALSE @success set
-              ] if
-            ] [
-              processorResult.globalErrorInfo [
-                pair:;
-                current: pair.value;
-                pair.index 0 > [LF print] when
-                current.position.getSize 0 = [
-                  ("error, "  current.message) printList LF print
+                loadStringResult: filename loadString;
+                loadStringResult.success [
+                  ("Loaded string from " filename) addLog
+                  ("HASH=" loadStringResult.data hash) addLog
+                  filename pair.index loadStringResult.data addToProcess
                 ] [
-                  current.position [
-                    pair:;
-                    i: pair.index;
-                    nodePosition: pair.value;
-                    (nodePosition.fileNumber options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
-
-                    i 0 = [
-                      ("error, [" nodePosition.token "], " current.message LF) printList
-                    ] [
-                      ("[" nodePosition.token "], called from here" LF) printList
-                    ] if
-                  ] each
+                  "Unable to load string:" print filename print LF print
+                  FALSE @success set
                 ] if
+              ] if
+            ] each
 
-                FALSE @success set
-              ] each
-            ] if
-          ] when
+            success [
+              multiParserResult: MultiParserResult;
+              @parserResults @multiParserResult concatParserResults
+              ("trees concated" makeStringView) addLog
+              @multiParserResult optimizeNames
+              ("names optimized" makeStringView) addLog
+
+              ("filenames:" makeStringView) addLog
+              options.fileNames [(.value) addLog] each
+
+              processorResult: ProcessorResult;
+              multiParserResult options 0 @processorResult process
+              processorResult.success [
+                outputFileName @processorResult.@program saveString [
+                  ("program written to " outputFileName) addLog
+                ] [
+                  ("failed to save program" LF) printList
+                  FALSE @success set
+                ] if
+              ] when
+
+              processorResult.success not [
+                processorResult.globalErrorInfo [
+                  pair:;
+                  current: pair.value;
+                  pair.index 0 > [LF print] when
+                  current.position.getSize 0 = [
+                    ("error, "  current.message) printList LF print
+                  ] [
+                    current.position [
+                      pair:;
+                      i: pair.index;
+                      nodePosition: pair.value;
+                      (nodePosition.fileNumber options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
+
+                      i 0 = [
+                        ("error, [" nodePosition.token "], " current.message LF) printList
+                      ] [
+                        ("[" nodePosition.token "], called from here" LF) printList
+                      ] if
+                    ] each
+                  ] if
+
+                  FALSE @success set
+                ] each
+              ] when
+            ] when
+          ] if
         ] if
       ] if
     ] if
