@@ -1910,7 +1910,7 @@ copyVarFromParent: [TRUE  FALSE dynamic copyVarImpl];
       beginVar: begin getVar;
       endVar: end getVar;
       global: refToVar isGlobal;
-      
+
       var.storageStaticness @beginVar.@storageStaticness set
       var.storageStaticness   @endVar.@storageStaticness set
 
