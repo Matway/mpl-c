@@ -726,7 +726,8 @@ parseHexNumber: [
     type: 0i64 dynamic;
     ten: 10i64 dynamic;
     result: 0i64 dynamic;
-    beforeT.dataSize [result 16i64 * i beforeT.at type cast + @result set] times
+    beforeT.getSize 0 = ["empty hex constant" lexicalError] when
+    beforeT.getSize [result 16i64 * i beforeT.at type cast + @result set] times
     typeName 705 = [
       result token makeNumberi64Node @mainResult.@memory.pushBack
     ] [
