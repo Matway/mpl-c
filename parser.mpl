@@ -540,27 +540,27 @@ parseDecNumber: [
 
   token: tokenBegin tokenEnd splittedString.chars makeSubRange assembleString;
 
-  afterT.dataSize 2 > [ "error in number constant" lexicalError ] when
+  afterT.getSize 2 > [ "error in number constant" lexicalError ] when
 
   typeName: 0 dynamic;
-  afterT.dataSize [typeName 100 * i afterT.at + 1 + @typeName set] times
+  afterT.getSize [typeName 100 * i afterT.at + 1 + @typeName set] times
 
 
   typeClass 2 = [
     type: 0.0r64 dynamic;
     ten: 10.0r64 dynamic;
     result: 0.0r64 dynamic;
-    beforeDot.dataSize [result 10.0r64 * i beforeDot.at type cast + @result set] times
+    beforeDot.getSize [result 10.0r64 * i beforeDot.at type cast + @result set] times
     tenRcp: 0.1r64 dynamic;
     fracPartFactor: tenRcp copy;
-    afterDot.dataSize [
+    afterDot.getSize [
       digit: i afterDot.at type cast;
       digit  fracPartFactor * result + @result set
       fracPartFactor tenRcp * @fracPartFactor set
     ] times
 
     decOrder: 0.0r64 dynamic;
-    afterE.dataSize [decOrder 10.0r64 * i afterE.at type cast + @decOrder set] times
+    afterE.getSize [decOrder 10.0r64 * i afterE.at type cast + @decOrder set] times
     hasEMinus [decOrder neg @decOrder set] when
     hasMinus [result neg @result set] when
     result 10.0r64 decOrder ^ * @result set
@@ -580,7 +580,7 @@ parseDecNumber: [
       type: 0n64 dynamic;
       ten: 10n64 dynamic;
       result: 0n64 dynamic;
-      beforeDot.dataSize [result 10n64 * i beforeDot.at 0i64 cast type cast + @result set] times
+      beforeDot.getSize [result 10n64 * i beforeDot.at 0i64 cast type cast + @result set] times
       typeName 705 = [
         result token makeNumbern64Node @mainResult.@memory.pushBack
       ] [
@@ -606,7 +606,7 @@ parseDecNumber: [
       type: 0i64 dynamic;
       ten: 10i64 dynamic;
       result: 0i64 dynamic;
-      beforeDot.dataSize [result 10i64 * i beforeDot.at type cast + @result set] times
+      beforeDot.getSize [result 10i64 * i beforeDot.at type cast + @result set] times
       hasMinus [result neg @result set] when
       typeName 705 = [
         result token makeNumberi64Node @mainResult.@memory.pushBack
@@ -690,17 +690,18 @@ parseHexNumber: [
   ] loop
 
   token: tokenBegin tokenEnd splittedString.chars makeSubRange assembleString;
-  afterT.dataSize 2 > [ "error in number constant" lexicalError ] when
+  afterT.getSize 2 > [ "error in number constant" lexicalError ] when
 
   typeName: 0 dynamic;
-  afterT.dataSize [typeName 100 * i afterT.at + 1 + @typeName set] times
+  afterT.getSize [typeName 100 * i afterT.at + 1 + @typeName set] times
   hasMinus ["negative hex constants not allowed" lexicalError] when
 
   typeClass 1 = [
     type: 0n64;
     ten: 10n64;
     result: 0n64;
-    beforeT.dataSize [result 16n64 * i beforeT.at 0i64 cast type cast + @result set] times
+    beforeT.getSize 0 = ["empty hex constant" lexicalError] when
+    beforeT.getSize [result 16n64 * i beforeT.at 0i64 cast type cast + @result set] times
     typeName 705 = [
       result token makeNumbern64Node @mainResult.@memory.pushBack
     ] [
@@ -808,7 +809,7 @@ parseName: [
         FALSE
       ] [
         currentCode ascii.dot = [
-          nameSymbols.dataSize 0 > [
+          nameSymbols.getSize 0 > [
             FALSE
           ] [
             checkFirst
@@ -828,7 +829,7 @@ parseName: [
               TRUE @write set
               iterate TRUE
             ] [
-              currentCode ascii.comma = nameSymbols.dataSize 0 > and [
+              currentCode ascii.comma = nameSymbols.getSize 0 > and [
                 FALSE
               ] [
                 currentCode pc.endNames inArray [
@@ -838,7 +839,7 @@ parseName: [
                   ] when
                   FALSE
                 ] [
-                  nameSymbols.dataSize 1 > [0 nameSymbols.at "," =] && [
+                  nameSymbols.getSize 1 > [0 nameSymbols.at "," =] && [
                     "identifier cannot start from comma" lexicalError
                   ] when
                   currentSymbol @nameSymbols.pushBack
@@ -859,7 +860,7 @@ parseName: [
   mainResult.success [
     read write and ["wrong identifier" lexicalError] when
 
-    nameSymbols.dataSize 0 = [
+    nameSymbols.getSize 0 = [
       member [
         read write or [undo "wrong identifier" lexicalError] when
         "." makeNameNode @mainResult.@memory.pushBack
@@ -959,7 +960,7 @@ addNestedNode: [
 
 addToLastUnfinished: [
   @mainResult.@memory.pushBack
-  mainResult.memory.dataSize 1 - @unfinishedNodes.last.pushBack
+  mainResult.memory.getSize 1 - @unfinishedNodes.last.pushBack
 ];
 
 parseNode: [
@@ -1003,7 +1004,7 @@ parseNode: [
                     addToLastUnfinished
                   ] [
                     currentCode ascii.null = [
-                      unfinishedNodes.dataSize 1 = not [
+                      unfinishedNodes.getSize 1 = not [
                         "unexpected end of the file!" makeStringView lexicalError
                       ] when
                       0 @unfinishedNodes.at @mainResult.@nodes set
@@ -1055,12 +1056,12 @@ parseNode: [
     ] [
       lastPosition: currentPosition copy;
       parseIdentifier [
-        mainResult.memory.dataSize 1 -   # if made label, dont do it
+        mainResult.memory.getSize 1 -   # if made label, dont do it
         @unfinishedNodes.last.pushBack
       ] when
     ] if
 
-    unfinishedNodes.dataSize 0 > [mainResult.success copy] &&
+    unfinishedNodes.getSize 0 > [mainResult.success copy] &&
   ] loop
 ];
 
