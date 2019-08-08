@@ -1,5 +1,6 @@
 "parser" module
 "control" includeModule
+"ascii" includeModule
 "String" includeModule
 "astNodeType" includeModule
 
@@ -281,36 +282,6 @@ makeReal64Node: [
 makeParserConstants: [{
   eof:        [  0n32];
 
-  cr:         [ 13n32];
-  lf:         [ 10n32];
-  space:      [ 32n32];
-  exclamation:[ 33n32];
-  quote:      [ 34n32];
-  grid:       [ 35n32];
-  openRBr:    [ 40n32];
-  closeRBr:   [ 41n32];
-  openSBr:    [ 91n32];
-  closeSBr:   [ 93n32];
-  openFBr:    [123n32];
-  closeFBr:   [125n32];
-  plus:       [ 43n32];
-  comma:      [ 44n32];
-  minus:      [ 45n32];
-  dot:        [ 46n32];
-  zero:       [ 48n32];
-  colon:      [ 58n32];
-  semicolon:  [ 59n32];
-  dog:        [ 64n32];
-  backSlash:  [ 92n32];
-  # it is for numbers
-  aCode:      [ 97n32];
-  aCodeBig:   [ 65n32];
-  eCode:      [101n32];
-  eCodeBig:   [ 69n32];
-  iCode:      [105n32];
-  nCode:      [110n32];
-  rCode:      [114n32];
-  xCode:      [120n32];
 
   makeLookupTable: [
     av:;
@@ -340,28 +311,28 @@ makeParserConstants: [{
     result
   ];
 
-  starters: (openRBr openSBr openFBr) makeLookupTable;
-  terminators: (eof closeRBr closeSBr closeFBr semicolon) makeLookupTable;
-  digits: (zero zero 1n32 + zero 2n32 + zero 3n32 + zero 4n32 + zero 5n32 + zero 6n32 + zero 7n32 + zero 8n32 + zero 9n32 +) makeLookupTable;
-  numberSigns: (plus minus) makeLookupTable;
-  specials: (space cr lf colon grid) makeLookupTable starters joinLookupTables terminators joinLookupTables;
-  begExp: (eCode eCodeBig) makeLookupTable;
-  endNumbers: specials (comma) makeLookupTable joinLookupTables;
+  starters: (ascii.openRBr ascii.openSBr ascii.openFBr) makeLookupTable;
+  terminators: (ascii.null ascii.closeRBr ascii.closeSBr ascii.closeFBr ascii.semicolon) makeLookupTable;
+  digits: (ascii.zero ascii.one ascii.two ascii.three ascii.four ascii.five ascii.six ascii.seven ascii.eight ascii.nine) makeLookupTable;
+  numberSigns: (ascii.plus ascii.minus) makeLookupTable;
+  specials: (ascii.space ascii.cr ascii.lf ascii.colon ascii.grid) makeLookupTable starters joinLookupTables terminators joinLookupTables;
+  begExp: (ascii.eCode ascii.eCodeBig) makeLookupTable;
+  endNumbers: specials (ascii.comma) makeLookupTable joinLookupTables;
   endNames: specials copy;
 
   hexDigits: (
-    zero zero 1n32 + zero 2n32 + zero 3n32 + zero 4n32 + zero 5n32 + zero 6n32 + zero 7n32 + zero 8n32 + zero 9n32 +
-    aCode aCode 1n32 + aCode 2n32 + aCode 3n32 + aCode 4n32 + aCode 5n32 +
-    aCodeBig aCodeBig 1n32 + aCodeBig 2n32 + aCodeBig 3n32 + aCodeBig 4n32 + aCodeBig 5n32 +
+    ascii.zero ascii.one ascii.two ascii.three ascii.four ascii.five ascii.six ascii.seven ascii.eight ascii.nine
+    ascii.aCode ascii.bCode ascii.cCode ascii.dCode ascii.eCode ascii.fCode
+    ascii.aCodeBig ascii.bCodeBig ascii.cCodeBig ascii.dCodeBig ascii.eCodeBig ascii.fCodeBig
   ) makeLookupTable;
 
   hexToInt: [
     result: Nat32 Array;
     256 @result.resize
 
-    10n32 [i 0n32 cast zero 0 cast i + @result.at set] times
-    6n32  [i 10 + 0n32 cast aCode    0 cast i + @result.at set] times
-    6n32  [i 10 + 0n32 cast aCodeBig 0 cast i + @result.at set] times
+    10 [i      0n32 cast ascii.zero     0 cast i + @result.at set] times
+    6  [i 10 + 0n32 cast ascii.aCode    0 cast i + @result.at set] times
+    6  [i 10 + 0n32 cast ascii.aCodeBig 0 cast i + @result.at set] times
     result
   ] call;
 }];
@@ -380,7 +351,7 @@ undo: [
       currentSymbol stringMemory Nat8 addressToReference Nat32 cast @currentCode set
     ] [
       StringView @currentSymbol set
-      pc.eof @currentCode set
+      ascii.null @currentCode set
     ] if
   ] when
 ];
@@ -389,7 +360,7 @@ iterate: [
   mainResult.success [
     currentPosition @prevPosition set
 
-    currentCode pc.lf = [
+    currentCode ascii.lf = [
       0 dynamic @currentPosition.@column set
       currentPosition.line 1 + @currentPosition.@line set
     ] when
@@ -402,7 +373,7 @@ iterate: [
       currentSymbol stringMemory Nat8 addressToReference Nat32 cast @currentCode set
     ] [
       StringView @currentSymbol set
-      pc.eof @currentCode set
+      ascii.null @currentCode set
     ] if
   ] when
 ];
@@ -419,7 +390,7 @@ parseStringConstant: [
   iterate
 
   [
-    currentCode pc.backSlash = [
+    currentCode ascii.backSlash = [
       slashed [
         currentSymbol @nameSymbols.pushBack
         FALSE @slashed set
@@ -428,7 +399,7 @@ parseStringConstant: [
       ] if
       TRUE
     ] [
-      currentCode pc.quote = [
+      currentCode ascii.quote = [
         slashed [
           currentSymbol @nameSymbols.pushBack
           TRUE
@@ -437,7 +408,7 @@ parseStringConstant: [
         ] if
         FALSE @slashed set
       ] [
-        currentCode pc.eof = [
+        currentCode ascii.null = [
           "unterminated string" lexicalError
           FALSE
         ] [
@@ -464,9 +435,10 @@ tryParseNumberAfterSign: [
 ];
 
 dCheck: [currentCode pc.digits inArray not ["wrong number constant" lexicalError] when ];
+
 xCheck: [
   currentCode pc.digits inArray not [
-    currentCode pc.xCode = [
+    currentCode ascii.xCode = [
       -2 @currentArray.pushBack
       iterate
     ] [
@@ -498,10 +470,10 @@ parseDecNumber: [
 
   [
     currentCode pc.digits inArray [
-      currentCode pc.zero - 0 cast @currentArray.pushBack
+      currentCode ascii.zero - 0 cast @currentArray.pushBack
       iterate TRUE
     ] [
-      currentCode pc.dot = [
+      currentCode ascii.dot = [
         stage 0 = not [
           FALSE
         ] [
@@ -516,7 +488,7 @@ parseDecNumber: [
           ] if
         ] if
       ] [
-        currentCode pc.nCode = [
+        currentCode ascii.nCode = [
           stage 0 = not ["wrong number constant" lexicalError] when
           3 @stage set
           iterate TRUE
@@ -524,14 +496,14 @@ parseDecNumber: [
           xCheck
           1 @typeClass set
         ] [
-          currentCode pc.iCode = [
+          currentCode ascii.iCode = [
             stage 0 = not ["wrong number constant" lexicalError] when
             3 @stage set
             iterate TRUE
             @afterT !currentArray
             xCheck
           ] [
-            currentCode pc.rCode = [
+            currentCode ascii.rCode = [
               stage 1 = stage 2 = or not ["wrong number constant" lexicalError] when
               3 @stage set
               iterate TRUE
@@ -543,7 +515,7 @@ parseDecNumber: [
                 iterate TRUE
                 @afterE !currentArray
                 currentCode pc.numberSigns inArray [
-                  currentCode pc.minus = @hasEMinus set
+                  currentCode ascii.minus = @hasEMinus set
                   iterate
                 ] when
                 dCheck
@@ -683,10 +655,10 @@ parseHexNumber: [
       currentCode 0 cast pc.hexToInt.at 0 cast @currentArray.pushBack
       iterate TRUE
     ] [
-      currentCode pc.dot = [
+      currentCode ascii.dot = [
         FALSE
       ] [
-        currentCode pc.nCode = [
+        currentCode ascii.nCode = [
           stage 0 = not ["wrong number constant" lexicalError] when
           3 @stage set
           iterate TRUE
@@ -694,7 +666,7 @@ parseHexNumber: [
           xCheck
           1 @typeClass set
         ] [
-          currentCode pc.iCode = [
+          currentCode ascii.iCode = [
             stage 0 = not ["wrong number constant" lexicalError] when
             3 @stage set
             iterate TRUE
@@ -783,19 +755,19 @@ parseHexNumber: [
 
 parseNumber: [
   hasMinus: FALSE dynamic;
-  currentCode pc.minus = [
+  currentCode ascii.minus = [
     TRUE dynamic @hasMinus set
     iterate
   ] [
-    currentCode pc.plus = [iterate] when
+    currentCode ascii.plus = [iterate] when
   ] if
 
-  currentCode pc.zero = [
+  currentCode ascii.zero = [
     iterate
-    currentCode pc.xCode = [
+    currentCode ascii.xCode = [
       iterate hasMinus parseHexNumber
     ] [
-      currentCode pc.iCode = currentCode pc.nCode = or currentCode pc.dot = or currentCode pc.endNumbers inArray or [
+      currentCode ascii.iCode = currentCode ascii.nCode = or currentCode ascii.dot = or currentCode pc.endNumbers inArray or [
         undo hasMinus parseDecNumber
       ] [
         "lead zeros in number are not allowed" lexicalError
@@ -810,7 +782,7 @@ parseNumber: [
 makeLabel: [
   name:;
   lastPosition @unfinishedPositions.pushBack
-  pc.semicolon @unfinishedTerminators.pushBack
+  ascii.semicolon @unfinishedTerminators.pushBack
   name toString @unfinishedLabelNames.pushBack
   IndexArray @unfinishedNodes.pushBack
 ];
@@ -830,11 +802,11 @@ parseName: [
       "idendifiers can't begin from number" lexicalError
       FALSE
     ] [
-      currentCode pc.quote = [
+      currentCode ascii.quote = [
         "quote cannot be part of identifier" lexicalError
         FALSE
       ] [
-        currentCode pc.dot = [
+        currentCode ascii.dot = [
           nameSymbols.dataSize 0 > [
             FALSE
           ] [
@@ -845,21 +817,21 @@ parseName: [
             TRUE
           ] if
         ] [
-          currentCode pc.dog = [
+          currentCode ascii.at = [
             checkFirst
             TRUE @read set
             iterate TRUE
           ] [
-            currentCode pc.exclamation = [
+            currentCode ascii.exclamation = [
               checkFirst
               TRUE @write set
               iterate TRUE
             ] [
-              currentCode pc.comma = nameSymbols.dataSize 0 > and [
+              currentCode ascii.comma = nameSymbols.dataSize 0 > and [
                 FALSE
               ] [
                 currentCode pc.endNames inArray [
-                  currentCode pc.colon = [
+                  currentCode ascii.colon = [
                     TRUE @label set
                     iterate
                   ] when
@@ -941,7 +913,7 @@ parseName: [
 parseIdentifier: [
   compileOnce
 
-  currentCode pc.quote = [
+  currentCode ascii.quote = [
     parseStringConstant
   ] [
     currentCode pc.digits inArray [
@@ -959,7 +931,7 @@ parseIdentifier: [
 parseComment: [
   [
     iterate
-    currentCode pc.eof = currentCode pc.lf = or not
+    currentCode ascii.null = currentCode ascii.lf = or not
   ] loop
 ];
 
@@ -967,14 +939,14 @@ addNestedNode: [
   currentPosition @unfinishedPositions.pushBack
 
   IndexArray @unfinishedNodes.pushBack
-  currentCode pc.openRBr = [
-    pc.closeRBr @unfinishedTerminators.pushBack
+  currentCode ascii.openRBr = [
+    ascii.closeRBr @unfinishedTerminators.pushBack
   ] [
-    currentCode pc.openFBr = [
-      pc.closeFBr @unfinishedTerminators.pushBack
+    currentCode ascii.openFBr = [
+      ascii.closeFBr @unfinishedTerminators.pushBack
     ] [
-      currentCode pc.openSBr = [
-        pc.closeSBr @unfinishedTerminators.pushBack
+      currentCode ascii.openSBr = [
+        ascii.closeSBr @unfinishedTerminators.pushBack
       ] [
         "unknown starter for nested node" lexicalError
       ] if
@@ -992,7 +964,7 @@ addToLastUnfinished: [
 parseNode: [
   [
     currentCode pc.specials inArray [
-      currentCode pc.space = [
+      currentCode ascii.space = [
         iterate
       ] [
         currentCode pc.starters inArray [
@@ -1004,32 +976,32 @@ parseNode: [
 
             currentCode goodTerminator = not [
               ("wrong terminator of block started at (" lastPosition.line ":" lastPosition.column
-                "), expected \"" goodTerminator pc.eof = ["END" toString] [goodTerminator codepointToString] if
-                "\", but found \"" currentCode pc.eof = ["END" toString] [currentCode codepointToString] if
+                "), expected \"" goodTerminator ascii.null = ["END" toString] [goodTerminator codepointToString] if
+                "\", but found \"" currentCode ascii.null = ["END" toString] [currentCode codepointToString] if
                 "\"") assembleString lexicalError
             ] [
 
               @unfinishedPositions.popBack
 
-              currentCode pc.closeRBr = [
+              currentCode ascii.closeRBr = [
                 @unfinishedNodes.last makeListNode
                 @unfinishedNodes.popBack
                 @unfinishedTerminators.popBack
                 addToLastUnfinished
               ] [
-                currentCode pc.closeSBr = [
+                currentCode ascii.closeSBr = [
                   @unfinishedNodes.last makeCodeNode
                   @unfinishedNodes.popBack
                   @unfinishedTerminators.popBack
                   addToLastUnfinished
                 ] [
-                  currentCode pc.closeFBr = [
+                  currentCode ascii.closeFBr = [
                     @unfinishedNodes.last makeObjectNode
                     @unfinishedNodes.popBack
                     @unfinishedTerminators.popBack
                     addToLastUnfinished
                   ] [
-                    currentCode pc.eof = [
+                    currentCode ascii.null = [
                       unfinishedNodes.dataSize 1 = not [
                         "unexpected end of the file!" makeStringView lexicalError
                       ] when
@@ -1037,7 +1009,7 @@ parseNode: [
                       @unfinishedNodes.popBack
                       @unfinishedTerminators.popBack
                     ] [
-                      currentCode pc.semicolon = [
+                      currentCode ascii.semicolon = [
                         @unfinishedLabelNames.last @unfinishedNodes.last makeLabelNode
                         @unfinishedNodes.popBack
                         @unfinishedTerminators.popBack
@@ -1054,21 +1026,21 @@ parseNode: [
             iterate
 
             currentCode pc.specials inArray not
-            [currentCode pc.comma = not] &&
-            [currentCode pc.dot = not] && [
+            [currentCode ascii.comma = not] &&
+            [currentCode ascii.dot = not] && [
               "wrong symbol after terminator" lexicalError
             ] when
           ] [
-            currentCode pc.cr = [
+            currentCode ascii.cr = [
               iterate
             ] [
-              currentCode pc.lf = [
+              currentCode ascii.lf = [
                 iterate
               ] [
-                currentCode pc.grid = [
+                currentCode ascii.grid = [
                   parseComment
                 ] [
-                  currentCode pc.colon = [
+                  currentCode ascii.colon = [
                     "separated \":\"" lexicalError
                   ] [
                     "unknown symbol" lexicalError
@@ -1115,7 +1087,7 @@ parseNode: [
 
     currentPosition @unfinishedPositions.pushBack
     IndexArray @unfinishedNodes.pushBack
-    pc.eof @unfinishedTerminators.pushBack
+    ascii.null @unfinishedTerminators.pushBack
 
     iterate parseNode
   ] [

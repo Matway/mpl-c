@@ -20,6 +20,7 @@ mplc -D COMPILER_SOURCE_VERSION=$SOURCE_VERSION -D DEBUG=TRUE -ndebug -o mplc.ll
  ../processSubNodes.mpl\
  ../staticCall.mpl\
  ../variable.mpl\
+ ../sl/ascii.mpl\
  ../sl/Array.mpl\
  ../sl/control.mpl\
  ../sl/conventions.mpl\
