@@ -881,8 +881,6 @@ addOverloadForPre: [
     struct: VarStruct @var.@data.get.get;
     struct.hasPreField [
       overload: nameInfo addOverload;
-      nameInfo @struct.@structName.@nameInfo set
-      overload @struct.@structName.@nameOverload set
     ] when
   ] when
 ];
@@ -1294,6 +1292,7 @@ captureName: [
           currentNode.state NodeStateNew = [
             shadowBegin @newCapture.@refToVar set
             nameInfo getOverloadCount @newCapture.@cntNameOverload set
+            nameInfo getOverloadCount @newCapture.@cntNameOverloadParent set
             newCapture @currentNode.@matchingInfo.@captures.pushBack
           ] when
 
@@ -1370,6 +1369,7 @@ captureName: [
 
         currentNode.state NodeStateNew = [
           getNameResult.nameInfo getOverloadCount @newFieldCapture.@cntNameOverload set
+          getNameResult.nameInfo getOverloadCount @newFieldCapture.@cntNameOverloadParent set
           newFieldCapture @currentNode.@matchingInfo.@fieldCaptures.pushBack
         ] when
       ] when
@@ -1516,6 +1516,9 @@ callCallableStructWithPre: [
   nameInfo:;
   copy refToVar:;
   copy object:;
+  overloadShift: 0 dynamic;
+  findInside: object.hostId 0 < not;
+
   [
     var: refToVar getVar;
     nextIteration: FALSE;
@@ -1528,7 +1531,6 @@ callCallableStructWithPre: [
     codeField: fr.index struct.fields.at .refToVar;
     codeVar: codeField getVar;
     codeVar.data.getTag VarCode = [
-      object regNamesSelf
 
       needPre: FALSE;
       pfr: processor.preNameInfo refToVar findField;
@@ -1543,36 +1545,48 @@ callCallableStructWithPre: [
       ] when
 
       needPre [
-        overload: struct.structName.nameOverload copy;
-        nameInfo: struct.structName.nameInfo copy;
-        name: nameInfo processor.nameInfos.at.name makeStringView;
+        overloadShift 1 + @overloadShift set
 
-        overload 0 = [
-          ("cant call overload for name: " name) assembleString compilerError
+        findInside [
+          fr: nameInfo object overloadShift findFieldWithOverloadShift;
+          fr.success [
+            fr.index object getField @refToVar set
+          ] [
+            0 @overloadShift set
+            FALSE @findInside set
+          ] if
         ] when
 
-        compilable [
-          gnr: nameInfo overload 1 - getNameWithOverload;
+        findInside not [
+          overload: nameInfo getOverloadCount 1 - overloadShift -;
+          overload 0 < [
+            name: nameInfo processor.nameInfos.at.name makeStringView;
+            ("cant call overload for name: " name) assembleString compilerError
+          ] when
+
           compilable [
-            cnr: gnr captureName;
-
-            cnr.object cnr.refToVar nameInfo [
-              TRUE @nextIteration set # for builtin or import go out of loop
-            ] callCallable
-
-            nextIteration [
+            gnr: nameInfo overload getNameWithOverload;
+            compilable [
+              cnr: gnr captureName;
               cnr.object @object set
               cnr.refToVar @refToVar set
             ] when
           ] when
         ] when
+
+        compilable [
+          object refToVar nameInfo [
+            TRUE @nextIteration set # for builtin or import go out of loop
+          ] callCallable
+        ] when
       ] [
         # no need pre, just call it!
+        object regNamesSelf
         refToVar regNamesClosure
         VarCode codeVar.data.get.index nameInfo processor.nameInfos.at.name makeStringView processCall
         refToVar unregNamesClosure
+        object unregNamesSelf
       ] if
-      object unregNamesSelf
     ] [
       "CALL field is not a code" compilerError
     ] if
@@ -1745,7 +1759,6 @@ copyOneVarWith: [
     # manually copy only nececcary fields
     dstStruct: Struct;
     srcStruct.fields          @dstStruct.@fields set
-    srcStruct.structName      @dstStruct.@structName set
     @dstStruct move owner VarStruct src isVirtualField FALSE dynamic createVariableWithVirtual
     src checkedStaticnessOfVar makeStaticness @dst set
     dstStructAc: VarStruct dst getVar.@data.get.get;
@@ -2900,7 +2913,8 @@ checkRecursionOfCodeNode: [
                   capture1.captureCase capture2.captureCase =
                   [capture1.nameInfo capture2.nameInfo =] &&
                   [capture1.nameOverload capture2.nameOverload =] &&
-                  [capture1.cntNameOverload capture2.cntNameOverload =] && not [
+                  [capture1.cntNameOverload capture2.cntNameOverload =] &&
+                  [capture1.cntNameOverloadParent capture2.cntNameOverloadParent =] && not [
                     FALSE @result set
                   ] when
                   i 1 + @i set
@@ -3391,8 +3405,6 @@ makeCompilerPosition: [
     info createComent
   ] when
 
-  unregCodeNodeNames
-
   currentNode.parent 0 = [
     [currentNode.nodeCase NodeCaseCode = [currentNode.nodeCase NodeCaseDtor =] ||] "Root node bust be simple code node or dtor node!" assert
     currentNode.nodeCase NodeCaseCode = [
@@ -3403,14 +3415,20 @@ makeCompilerPosition: [
   ] when
 
   # count inner overload count
-  @currentNode.@buildingMatchingInfo.@captures [
-    current: .@value;
-    current.nameInfo getOverloadCount @current.@cntNameOverload set
+  (@currentNode.@buildingMatchingInfo.@captures @currentNode.@buildingMatchingInfo.@fieldCaptures @currentNode.@labelNames) [
+    .@value [
+      current: .@value;
+      current.nameInfo getOverloadCount @current.@cntNameOverload set
+    ] each
   ] each
 
-  @currentNode.@buildingMatchingInfo.@fieldCaptures [
-    current: .@value;
-    current.nameInfo getOverloadCount @current.@cntNameOverload set
+  unregCodeNodeNames
+
+  (@currentNode.@buildingMatchingInfo.@captures @currentNode.@buildingMatchingInfo.@fieldCaptures @currentNode.@labelNames) [
+    .@value [
+      current: .@value;
+      current.nameInfo getOverloadCount @current.@cntNameOverloadParent set
+    ] each
   ] each
 
   String @currentNode.@irName set

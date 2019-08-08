@@ -69,6 +69,7 @@ Capture: [{
   nameInfo: -1 dynamic;
   nameOverload: -1 dynamic;
   cntNameOverload: -1 dynamic;
+  cntNameOverloadParent: -1 dynamic;
 }];
 
 FieldCapture: [{
@@ -78,6 +79,7 @@ FieldCapture: [{
   nameInfo: -1 dynamic;
   nameOverload: -1 dynamic;
   cntNameOverload: -1 dynamic;
+  cntNameOverloadParent: -1 dynamic;
 }];
 
 IndexInfo: [{
@@ -124,6 +126,8 @@ NameWithOverloadAndRefToVar: [{
   virtual NAME_WITH_OVERLOAD_AND_REF_TO_VAR: ();
   nameInfo: -1 dynamic;
   nameOverload: -1 dynamic;
+  cntNameOverload: -1 dynamic;
+  cntNameOverloadParent: -1 dynamic;
   refToVar: RefToVar;
   startPoint: -1 dynamic;
 }];

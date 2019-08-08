@@ -262,7 +262,7 @@ getOverload: [
   cap:;
   overload: cap.nameOverload copy;
   maxOverloadCountCur: cap.nameInfo getOverloadCount;
-  maxOverloadCountNes: cap.cntNameOverload copy;
+  maxOverloadCountNes: cap.cntNameOverloadParent copy;
   overload maxOverloadCountCur + maxOverloadCountNes < [
     ("while matching cant call overload for name: " cap.nameInfo processor.nameInfos.at.name) assembleString compilerError
     0

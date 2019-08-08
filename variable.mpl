@@ -110,7 +110,6 @@ Struct: [{
   forgotten:     TRUE  dynamic;
   realFieldIndexes: Int32 Array;
   fields: FieldArray;
-  structName: NameWithOverload; # for overloads
   structStorageSize: 0nx dynamic;
   structAlignment: 0nx dynamic;
 }]; #IDs of pointee vars
