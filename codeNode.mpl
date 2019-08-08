@@ -1857,9 +1857,10 @@ copyVarImpl: [
 
 copyOneVar: [FALSE dynamic copyOneVarWith];
 
-copyVar:          [FALSE FALSE dynamic copyVarImpl]; #fromchild is static arg
-copyVarFromChild: [TRUE  FALSE dynamic copyVarImpl];
-copyVarToNew:     [FALSE TRUE  dynamic copyVarImpl];
+copyVar:           [FALSE FALSE dynamic copyVarImpl]; #fromchild is static arg
+copyVarFromChild:  [TRUE  FALSE dynamic copyVarImpl];
+copyVarToNew:      [FALSE TRUE  dynamic copyVarImpl];
+copyVarFromParent: [TRUE  FALSE dynamic copyVarImpl];
 
 {
   dynamicStoraged: Cond;

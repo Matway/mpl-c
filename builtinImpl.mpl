@@ -635,15 +635,15 @@ mplBuiltinProcessAtList: [
                 ] when
 
                 refToIndex makeVarRealCaptured
-                fieldRef: 0 realStruct.fields.at.refToVar copy;
-                fieldRef.hostId indexOfNode = not [
+                firstField: 0 realStruct.fields.at.refToVar;
+                fieldRef: firstField copyVarFromParent;
+                firstField.hostId indexOfNode = not [
                   fBegin: RefToVar;
                   fEnd: RefToVar;
                   fieldRef @fBegin @fEnd ShadowReasonField makeShadowsDynamic
                   fEnd @fieldRef set
                 ] when
 
-                fieldRef copyVar @fieldRef set
                 refToStruct.mutable @fieldRef.@mutable set
                 fieldRef fullUntemporize
                 fieldRef staticnessOfVar Virtual = [
