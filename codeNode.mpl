@@ -2692,7 +2692,6 @@ unregCodeNodeNames: [
   @currentNode.@usedModulesTable.release
   @currentNode.@includedModulesTable.release
   @currentNode.@directlyIncludedModulesTable.release
-  @currentNode.@usedOrIncludedModulesTable.release
   @currentNode.@captureTable.release
   @currentNode.@fieldCaptureTable.release
   #] when
