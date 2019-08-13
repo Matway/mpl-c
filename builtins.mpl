@@ -1,101 +1,97 @@
 "builtins" module
-"control" useModule
 
-virtual builtins: (
-  ["!"                       ] [mplBuiltinExclamation             ]
-  ["@"                       ] [mplBuiltinAt                      ]
-  ["+"                       ] [mplBuiltinAdd                     ]
-  ["-"                       ] [mplBuiltinSub                     ]
-  ["*"                       ] [mplBuiltinMul                     ]
-  ["/"                       ] [mplBuiltinDiv                     ]
-  ["&"                       ] [mplBuiltinStrCat                  ]
-  ["="                       ] [mplBuiltinEqual                   ]
-  ["<"                       ] [mplBuiltinLess                    ]
-  [">"                       ] [mplBuiltinGreater                 ]
-  ["^"                       ] [mplBuiltinPow                     ]
-  ["~"                       ] [mplBuiltinNot                     ]
+"control" includeModule
+"builtinImpl" useModule
 
-  ["addressToReference"      ] [mplBuiltinAddressToReference      ]
-  ["alignment"               ] [mplBuiltinAlignment               ]
-  ["and"                     ] [mplBuiltinAnd                     ]
-  ["array"                   ] [mplBuiltinArray                   ]
-  ["call"                    ] [mplBuiltinCall                    ]
-  ["cast"                    ] [mplBuiltinCast                    ]
-  ["ceil"                    ] [mplBuiltinCeil                    ]
-  ["codeRef"                 ] [mplBuiltinCodeRef                 ]
-  ["cos"                     ] [mplBuiltinCos                     ]
-  #["cref"                    ] [mplBuiltinCref                    ]
-  ["compileOnce"             ] [mplBuiltinCompileOnce             ]
-  ["COMPILER_VERSION"        ] [mplBuiltinCompilerVersion         ]
-  ["const"                   ] [mplBuiltinConst                   ]
-  ["copy"                    ] [mplBuiltinCopy                    ]
-  ["DEBUG"                   ] [mplBuiltinDebug                   ]
-  ["def"                     ] [mplBuiltinDef                     ]
-  ["delete"                  ] [mplBuiltinDelete                  ]
-  #["deref"                   ] [mplBuiltinDeref                   ]
-  #["dirty"                   ] [mplBuiltinDirty                   ]
-  ["dynamic"                 ] [mplBuiltinDirty                   ]
-  ["exportFunction"          ] [mplBuiltinExportFunction          ]
-  ["exportVariable"          ] [mplBuiltinExportVariable          ]
-  ["FALSE"                   ] [mplBuiltinFalse                   ]
-  ["failProc"                ] [mplBuiltinFailProc                ]
-  ["fieldCount"              ] [mplBuiltinFieldCount              ]
-  ["fieldIndex"              ] [mplBuiltinFieldIndex              ]
-  ["fieldName"               ] [mplBuiltinFieldName               ]
-  ["floor"                   ] [mplBuiltinFloor                   ]
-  ["has"                     ] [mplBuiltinHas                     ]
-  ["HAS_LOGS"                ] [mplBuiltinHasLogs                 ]
-  ["if"                      ] [mplBuiltinIf                      ]
-  ["is"                      ] [mplBuiltinIs                      ]
-  ["isMoved"                 ] [mplBuiltinIsMoved                 ]
-  ["importFunction"          ] [mplBuiltinImportFunction          ]
-  ["importVariable"          ] [mplBuiltinImportVariable          ]
-  ["includeModule"           ] [mplBuiltinIncludeModule           ]
-  ["isConst"                 ] [mplBuiltinIsConst                 ]
-  ["isCombined"              ] [mplBuiltinIsCombined              ]
-  ["LF"                      ] [mplBuiltinLF                      ]
-  ["log"                     ] [mplBuiltinLog                     ]
-  ["log10"                   ] [mplBuiltinLog10                   ]
-  ["loop"                    ] [mplBuiltinLoop                    ]
-  ["lshift"                  ] [mplBuiltinLShift                  ]
-  ["manuallyInitVariable"    ] [mplBuiltinManuallyInitVariable    ]
-  ["manuallyDestroyVariable" ] [mplBuiltinManuallyDestroyVariable ]
-  ["mod"                     ] [mplBuiltinMod                     ]
-  ["module"                  ] [mplBuiltinModule                  ]
-  ["move"                    ] [mplBuiltinMove                    ]
-  ["moveIf"                  ] [mplBuiltinMoveIf                  ]
-  ["neg"                     ] [mplBuiltinNeg                     ]
-  ["new"                     ] [mplBuiltinNew                     ]
-  ["newVarOfTheSameType"     ] [mplBuiltinNewVarOfTheSameType     ]
-  ["not"                     ] [mplBuiltinNot                     ]
-  ["or"                      ] [mplBuiltinOr                      ]
-  ["printCompilerMessage"    ] [mplBuiltinPrintCompilerMessage    ]
-  ["printStack"              ] [mplBuiltinPrintStack              ]
-  ["printStackTrace"         ] [mplBuiltinPrintStackTrace         ]
-  ["printVariableCount"      ] [mplBuiltinPrintVariableCount      ]
-  ["recursive"               ] [mplBuiltinRecursive               ]
-  #["ref"                     ] [mplBuiltinRef                     ]
-  ["rshift"                  ] [mplBuiltinRShift                  ]
-  ["same"                    ] [mplBuiltinSame                    ]
-  ["schema"                  ] [mplBuiltinSchema                  ]
-  ["set"                     ] [mplBuiltinSet                     ]
-  ["sin"                     ] [mplBuiltinSin                     ]
-  ["sqrt"                    ] [mplBuiltinSqrt                    ]
-  ["static"                  ] [mplBuiltinStatic                  ]
-  ["storageSize"             ] [mplBuiltinStorageSize             ]
-  ["storageAddress"          ] [mplBuiltinStorageAddress          ]
-  ["textSize"                ] [mplBuiltinTextSize                ]
-  ["textSplit"               ] [mplBuiltinTextSplit               ]
-  ["TRUE"                    ] [mplBuiltinTrue                    ]
-  ["uif"                     ] [mplBuiltinUif                     ]
-  ["ucall"                   ] [mplBuiltinUcall                   ]
-  ["useModule"               ] [mplBuiltinUseModule               ]
-  ["virtual"                 ] [mplBuiltinVirtual                 ]
-  ["xor"                     ] [mplBuiltinXor                     ]
+builtins: (
+  {name: "!"                       ; impl: @mplBuiltinExclamation             ;}
+  {name: "@"                       ; impl: @mplBuiltinAt                      ;}
+  {name: "+"                       ; impl: @mplBuiltinAdd                     ;}
+  {name: "-"                       ; impl: @mplBuiltinSub                     ;}
+  {name: "*"                       ; impl: @mplBuiltinMul                     ;}
+  {name: "/"                       ; impl: @mplBuiltinDiv                     ;}
+  {name: "&"                       ; impl: @mplBuiltinStrCat                  ;}
+  {name: "="                       ; impl: @mplBuiltinEqual                   ;}
+  {name: "<"                       ; impl: @mplBuiltinLess                    ;}
+  {name: ">"                       ; impl: @mplBuiltinGreater                 ;}
+  {name: "^"                       ; impl: @mplBuiltinPow                     ;}
+  {name: "~"                       ; impl: @mplBuiltinNot                     ;}
+
+  {name: "addressToReference"      ; impl: @mplBuiltinAddressToReference      ;}
+  {name: "alignment"               ; impl: @mplBuiltinAlignment               ;}
+  {name: "and"                     ; impl: @mplBuiltinAnd                     ;}
+  {name: "array"                   ; impl: @mplBuiltinArray                   ;}
+  {name: "call"                    ; impl: @mplBuiltinCall                    ;}
+  {name: "cast"                    ; impl: @mplBuiltinCast                    ;}
+  {name: "ceil"                    ; impl: @mplBuiltinCeil                    ;}
+  {name: "codeRef"                 ; impl: @mplBuiltinCodeRef                 ;}
+  {name: "cos"                     ; impl: @mplBuiltinCos                     ;}
+  {name: "compileOnce"             ; impl: @mplBuiltinCompileOnce             ;}
+  {name: "COMPILER_VERSION"        ; impl: @mplBuiltinCompilerVersion         ;}
+  {name: "const"                   ; impl: @mplBuiltinConst                   ;}
+  {name: "copy"                    ; impl: @mplBuiltinCopy                    ;}
+  {name: "DEBUG"                   ; impl: @mplBuiltinDebug                   ;}
+  {name: "def"                     ; impl: @mplBuiltinDef                     ;}
+  {name: "dynamic"                 ; impl: @mplBuiltinDirty                   ;}
+  {name: "exportFunction"          ; impl: @mplBuiltinExportFunction          ;}
+  {name: "exportVariable"          ; impl: @mplBuiltinExportVariable          ;}
+  {name: "FALSE"                   ; impl: @mplBuiltinFalse                   ;}
+  {name: "failProc"                ; impl: @mplBuiltinFailProc                ;}
+  {name: "fieldCount"              ; impl: @mplBuiltinFieldCount              ;}
+  {name: "fieldIndex"              ; impl: @mplBuiltinFieldIndex              ;}
+  {name: "fieldName"               ; impl: @mplBuiltinFieldName               ;}
+  {name: "floor"                   ; impl: @mplBuiltinFloor                   ;}
+  {name: "has"                     ; impl: @mplBuiltinHas                     ;}
+  {name: "HAS_LOGS"                ; impl: @mplBuiltinHasLogs                 ;}
+  {name: "if"                      ; impl: @mplBuiltinIf                      ;}
+  {name: "is"                      ; impl: @mplBuiltinIs                      ;}
+  {name: "isMoved"                 ; impl: @mplBuiltinIsMoved                 ;}
+  {name: "importFunction"          ; impl: @mplBuiltinImportFunction          ;}
+  {name: "importVariable"          ; impl: @mplBuiltinImportVariable          ;}
+  {name: "includeModule"           ; impl: @mplBuiltinIncludeModule           ;}
+  {name: "isConst"                 ; impl: @mplBuiltinIsConst                 ;}
+  {name: "isCombined"              ; impl: @mplBuiltinIsCombined              ;}
+  {name: "LF"                      ; impl: @mplBuiltinLF                      ;}
+  {name: "log"                     ; impl: @mplBuiltinLog                     ;}
+  {name: "log10"                   ; impl: @mplBuiltinLog10                   ;}
+  {name: "loop"                    ; impl: @mplBuiltinLoop                    ;}
+  {name: "lshift"                  ; impl: @mplBuiltinLShift                  ;}
+  {name: "manuallyInitVariable"    ; impl: @mplBuiltinManuallyInitVariable    ;}
+  {name: "manuallyDestroyVariable" ; impl: @mplBuiltinManuallyDestroyVariable ;}
+  {name: "mod"                     ; impl: @mplBuiltinMod                     ;}
+  {name: "module"                  ; impl: @mplBuiltinModule                  ;}
+  {name: "move"                    ; impl: @mplBuiltinMove                    ;}
+  {name: "moveIf"                  ; impl: @mplBuiltinMoveIf                  ;}
+  {name: "neg"                     ; impl: @mplBuiltinNeg                     ;}
+  {name: "newVarOfTheSameType"     ; impl: @mplBuiltinNewVarOfTheSameType     ;}
+  {name: "not"                     ; impl: @mplBuiltinNot                     ;}
+  {name: "or"                      ; impl: @mplBuiltinOr                      ;}
+  {name: "printCompilerMessage"    ; impl: @mplBuiltinPrintCompilerMessage    ;}
+  {name: "printStack"              ; impl: @mplBuiltinPrintStack              ;}
+  {name: "printStackTrace"         ; impl: @mplBuiltinPrintStackTrace         ;}
+  {name: "printVariableCount"      ; impl: @mplBuiltinPrintVariableCount      ;}
+  {name: "recursive"               ; impl: @mplBuiltinRecursive               ;}
+  {name: "rshift"                  ; impl: @mplBuiltinRShift                  ;}
+  {name: "same"                    ; impl: @mplBuiltinSame                    ;}
+  {name: "schema"                  ; impl: @mplBuiltinSchema                  ;}
+  {name: "set"                     ; impl: @mplBuiltinSet                     ;}
+  {name: "sin"                     ; impl: @mplBuiltinSin                     ;}
+  {name: "sqrt"                    ; impl: @mplBuiltinSqrt                    ;}
+  {name: "static"                  ; impl: @mplBuiltinStatic                  ;}
+  {name: "storageSize"             ; impl: @mplBuiltinStorageSize             ;}
+  {name: "storageAddress"          ; impl: @mplBuiltinStorageAddress          ;}
+  {name: "textSize"                ; impl: @mplBuiltinTextSize                ;}
+  {name: "textSplit"               ; impl: @mplBuiltinTextSplit               ;}
+  {name: "TRUE"                    ; impl: @mplBuiltinTrue                    ;}
+  {name: "uif"                     ; impl: @mplBuiltinUif                     ;}
+  {name: "ucall"                   ; impl: @mplBuiltinUcall                   ;}
+  {name: "useModule"               ; impl: @mplBuiltinUseModule               ;}
+  {name: "virtual"                 ; impl: @mplBuiltinVirtual                 ;}
+  {name: "xor"                     ; impl: @mplBuiltinXor                     ;}
 );
 
-builtinFirst: [0 static] func;
-builtinLast: [builtins fieldCount 0 cast 2 /] func;
+builtinFirst: [0 static];
+builtinLast: [builtins fieldCount 0 cast 2 /];
 
 addBuiltin: [
   copy id:;
@@ -115,7 +111,7 @@ addBuiltin: [
 
   bvar: @id VarBuiltin createVariable Virtual makeStaticness;
   nameId bvar NameCaseBuiltin addNameInfo
-] func;
+];
 
 initBuiltins: [
   processor:;
@@ -125,27 +121,21 @@ initBuiltins: [
   currentNode: @codeNode;
   failProc: @failProcForProcessor;
 
-  initBuiltinsInRange: [
-    first:last: copy; copy;
-    i: first copy;
-    [
-      i last < [
-        i 2 * builtins @ call makeStringView i addBuiltin
-        i 1 + @i set
-        TRUE static
-      ] [
-        FALSE static
-      ] if
-    ] loop
-  ] func;
+  builtins makeArrayRange [
+    p:;
+    p.value.name makeStringView p.index addBuiltin
+  ] each
+];
 
-  builtinMiddle: builtinFirst builtinLast + 2 /;
-  builtinFirst builtinMiddle initBuiltinsInRange
-  builtinMiddle builtinLast initBuiltinsInRange
-] func;
+{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref; index: Int32;} () {convention: cdecl;} [
+  processorResult:;
+  processor:;
+  copy indexOfNode:;
+  currentNode:;
+  multiParserResult:;
+  failProc: @failProcForProcessor;
+  copy index:;
 
-callBuiltin: [
-  builtinFirst builtinLast [
-    2 * 1 + builtins @ call
-  ] staticCall
-] func;
+  builtinFunc: index builtins @ .@impl;
+  multiParserResult @currentNode indexOfNode @processor @processorResult @builtinFunc call
+] "callBuiltinImpl" exportFunction

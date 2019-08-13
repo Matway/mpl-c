@@ -4,40 +4,44 @@
 "Variant"   includeModule
 "Owner"     includeModule
 
-Dirty:           [0n8 dynamic] func;
-Dynamic:         [1n8 dynamic] func;
-Weak:            [2n8 dynamic] func;
-Static:          [3n8 dynamic] func;
-Virtual:         [4n8 dynamic] func;
+"irWriter"    includeModule
+"debugWriter" includeModule
+"processor"   includeModule
 
-NameCaseInvalid:               [ 0n8 dynamic] func;
-NameCaseBuiltin:               [ 1n8 dynamic] func;
-NameCaseLocal:                 [ 2n8 dynamic] func;
-NameCaseFromModule:            [ 3n8 dynamic] func;
-NameCaseCapture:               [ 4n8 dynamic] func;
+Dirty:           [0n8 dynamic];
+Dynamic:         [1n8 dynamic];
+Weak:            [2n8 dynamic];
+Static:          [3n8 dynamic];
+Virtual:         [4n8 dynamic];
 
-NameCaseSelfMember:            [ 5n8 dynamic] func;
-NameCaseClosureMember:         [ 6n8 dynamic] func;
-NameCaseSelfObject:            [ 7n8 dynamic] func;
-NameCaseClosureObject:         [ 8n8 dynamic] func;
-NameCaseSelfObjectCapture:     [ 9n8 dynamic] func;
-NameCaseClosureObjectCapture:  [10n8 dynamic] func;
+NameCaseInvalid:               [ 0n8 dynamic];
+NameCaseBuiltin:               [ 1n8 dynamic];
+NameCaseLocal:                 [ 2n8 dynamic];
+NameCaseFromModule:            [ 3n8 dynamic];
+NameCaseCapture:               [ 4n8 dynamic];
 
-MemberCaseToObjectCase:        [2n8 +] func;
-MemberCaseToObjectCaptureCase: [4n8 +] func;
+NameCaseSelfMember:            [ 5n8 dynamic];
+NameCaseClosureMember:         [ 6n8 dynamic];
+NameCaseSelfObject:            [ 7n8 dynamic];
+NameCaseClosureObject:         [ 8n8 dynamic];
+NameCaseSelfObjectCapture:     [ 9n8 dynamic];
+NameCaseClosureObjectCapture:  [10n8 dynamic];
 
-ShadowReasonNo:      [0n8 dynamic] func;
-ShadowReasonCapture: [1n8 dynamic] func;
-ShadowReasonInput:   [2n8 dynamic] func;
-ShadowReasonField:   [3n8 dynamic] func;
-ShadowReasonPointee: [4n8 dynamic] func;
+MemberCaseToObjectCase:        [2n8 +];
+MemberCaseToObjectCaptureCase: [4n8 +];
+
+ShadowReasonNo:      [0n8 dynamic];
+ShadowReasonCapture: [1n8 dynamic];
+ShadowReasonInput:   [2n8 dynamic];
+ShadowReasonField:   [3n8 dynamic];
+ShadowReasonPointee: [4n8 dynamic];
 
 RefToVar: [{
   virtual REF_TO_VAR: ();
   varId: -1 dynamic;
   hostId: -1 dynamic;
   mutable: TRUE dynamic;
-}] func;
+}];
 
 =: ["REF_TO_VAR" has] [
   refsAreEqual
@@ -48,50 +52,54 @@ hash: ["REF_TO_VAR" has] [
   refToVar.hostId 0n32 cast 67n32 * refToVar.varId 0n32 cast 17n32 * +
 ] pfunc;
 
+=: ["CODE_NODE_INFO" has] [
+  l:r:;;
+  l.index r.index =
+] pfunc;
 NameInfoEntry: [{
   refToVar: RefToVar;
   startPoint: -1 dynamic; # id of node
   nameCase: NameCaseInvalid;
-}] func;
+}];
 
-Overload: [NameInfoEntry Array] func;
+Overload: [NameInfoEntry Array];
 
 makeNameInfo: [{
   name: copy;
   stack: Overload Array;
-}] func;
+}];
 
-NameInfo: [String makeNameInfo] func;
+NameInfo: [String makeNameInfo];
 
-VarInvalid: [ 0 static] func;
-VarCond:    [ 1 static] func;
-VarNat8:    [ 2 static] func;
-VarNat16:   [ 3 static] func;
-VarNat32:   [ 4 static] func;
-VarNat64:   [ 5 static] func;
-VarNatX:    [ 6 static] func;
-VarInt8:    [ 7 static] func;
-VarInt16:   [ 8 static] func;
-VarInt32:   [ 9 static] func;
-VarInt64:   [10 static] func;
-VarIntX:    [11 static] func;
-VarReal32:  [12 static] func;
-VarReal64:  [13 static] func;
-VarCode:    [14 static] func;
-VarBuiltin: [15 static] func;
-VarImport:  [16 static] func;
-VarString:  [17 static] func;
-VarRef:     [18 static] func;
-VarStruct:  [19 static] func;
-VarEnd:     [20 static] func;
+VarInvalid: [ 0 static];
+VarCond:    [ 1 static];
+VarNat8:    [ 2 static];
+VarNat16:   [ 3 static];
+VarNat32:   [ 4 static];
+VarNat64:   [ 5 static];
+VarNatX:    [ 6 static];
+VarInt8:    [ 7 static];
+VarInt16:   [ 8 static];
+VarInt32:   [ 9 static];
+VarInt64:   [10 static];
+VarIntX:    [11 static];
+VarReal32:  [12 static];
+VarReal64:  [13 static];
+VarCode:    [14 static];
+VarBuiltin: [15 static];
+VarImport:  [16 static];
+VarString:  [17 static];
+VarRef:     [18 static];
+VarStruct:  [19 static];
+VarEnd:     [20 static];
 
 Field: [{
   nameInfo: -1 dynamic; # NameInfo id
   nameOverload: -1 dynamic;
   refToVar: RefToVar;
-}] func;
+}];
 
-FieldArray: [Field Array] func;
+FieldArray: [Field Array];
 
 Struct: [{
   fullVirtual:   FALSE dynamic;
@@ -102,10 +110,19 @@ Struct: [{
   forgotten:     TRUE  dynamic;
   realFieldIndexes: Int32 Array;
   fields: FieldArray;
-  structName: NameWithOverload; # for overloads
   structStorageSize: 0nx dynamic;
   structAlignment: 0nx dynamic;
-}] func; #IDs of pointee vars
+}]; #IDs of pointee vars
+
+CodeNodeInfo: [{
+  CODE_NODE_INFO: ();
+
+  moduleId: Int32;
+  offset: Int32;
+  line: Int32;
+  column: Int32;
+  index: Int32;
+}];
 
 Variable: [{
   VARIABLE: ();
@@ -114,12 +131,14 @@ Variable: [{
   irNameId: -1 dynamic;
   mplTypeId: -1 dynamic;
   irTypeId: -1 dynamic;
+  dbgTypeId: -1 dynamic;
   storageStaticness: Static;
   staticness: Static;
   global: FALSE dynamic;
   temporary: TRUE dynamic;
   usedInHeader: FALSE dynamic;
   capturedAsMutable: FALSE dynamic;
+  capturedAsRealValue: FALSE dynamic;
   tref: TRUE dynamic;
   shadowReason: ShadowReasonNo;
   globalId: -1 dynamic;
@@ -148,7 +167,7 @@ Variable: [{
     Int64            #VarIntX
     Real64           #VarReal32
     Real64           #VarReal64
-    Int32            #VarCode; id of node
+    CodeNodeInfo     #VarCode; id of node
     Int32            #VarBuiltin
     Int32            #VarImport
     String           #VarString
@@ -158,13 +177,176 @@ Variable: [{
 
   INIT: [];
   DIE: [];
-}] func;
+}];
+
+compilable: [processorResult.success copy];
+
+callBuiltin:           [multiParserResult @currentNode indexOfNode @processor @processorResult callBuiltinImpl];
+processFuncPtr:        [multiParserResult @currentNode indexOfNode @processor @processorResult processFuncPtrImpl];
+processPre:            [multiParserResult @currentNode indexOfNode @processor @processorResult processPreImpl];
+processCall:           [multiParserResult @currentNode indexOfNode @processor @processorResult processCallImpl];
+processExportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processExportFunctionImpl];
+processImportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processImportFunctionImpl];
+compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode indexOfNode @processor @processorResult compareEntriesRecImpl];
+makeVariableType:      [multiParserResult @currentNode indexOfNode @processor @processorResult makeVariableTypeImpl];
+compilerError:         [makeStringView multiParserResult @currentNode indexOfNode @processor @processorResult compilerErrorImpl];
+
+{
+  signature: CFunctionSignature Cref;
+  compilerPositionInfo: CompilerPositionInfo Cref;
+  multiParserResult: MultiParserResult Cref;
+  indexArray: IndexArray Cref;
+  processor: Processor Ref;
+  processorResult: ProcessorResult Ref;
+  nodeCase: NodeCaseCode;
+  parentIndex: 0;
+  functionName: StringView Cref;
+} 0 {convention: cdecl;} "astNodeToCodeNode" importFunction
+
+{
+  signature: CFunctionSignature Cref;
+  compilerPositionInfo: CompilerPositionInfo Cref;
+  multiParserResult: MultiParserResult Cref;
+  processor: Processor Ref;
+  processorResult: ProcessorResult Ref;
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} "createDtorForGlobalVar" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  positionInfo: CompilerPositionInfo Cref;
+  name: StringView Cref;
+  nodeCase: NodeCaseCode;
+  indexArray: IndexArray Cref;
+} () {convention: cdecl;} "processCallByIndexArrayImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  index: Int32;
+} () {convention: cdecl;} "callBuiltinImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} "processFuncPtrImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  preAstNodeIndex: Int32;
+} Cond {convention: cdecl;} "processPreImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  name: StringView Cref;
+  callAstNodeIndex: Int32;
+} () {convention: cdecl;} "processCallImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  asLambda: Cond;
+  name: StringView Cref;
+  astNode: AstNode Cref;
+  signature: CFunctionSignature Cref;
+} Int32 {convention: cdecl;} "processExportFunctionImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  asCodeRef: Cond;
+  name: StringView Cref;
+  signature: CFunctionSignature Cref;
+} Int32 {convention: cdecl;} "processImportFunctionImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+
+  comparingMessage: String Ref;
+  curToNested: RefToVarTable Ref;
+  nestedToCur: RefToVarTable Ref;
+  currentMatchingNodeIndex: Int32;
+  cacheEntry: RefToVar Cref;
+  stackEntry: RefToVar Cref;
+} Cond {convention: cdecl;} "compareEntriesRecImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} "makeVariableTypeImpl" importFunction
+
+{
+  forMatching: Cond;
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  result: RefToVar Ref;
+} () {convention: cdecl;} "popImpl" importFunction
+
+{
+  dynamicStoraged: Cond;
+
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+
+  reason: Nat8;
+  end: RefToVar Ref;
+  begin: RefToVar Ref;
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} "makeShadowsImpl" importFunction
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  message: StringView Cref;
+} () {convention: cdecl;} "compilerErrorImpl" importFunction
 
 # these functions require capture "processor"
 variableIsDeleted: [
   refToVar:;
   refToVar.varId refToVar.hostId @processor.@nodes.at.get.@variables.at.assigned not
-] func;
+];
 
 getVar: [
   refToVar:;
@@ -191,13 +373,30 @@ getVar: [
   ] "Wrong refToVar!" assert
 
   refToVar.varId refToVar.hostId @processor.@nodes.at.get.@variables.at.get
-] func;
+];
 
-getNameById: [processor.nameBuffer.at makeStringView] func;
-getMplName: [getVar.mplNameId getNameById] func;
-getIrName: [getVar.irNameId getNameById] func;
-getMplType: [getVar.mplTypeId getNameById] func;
-getIrType: [getVar.irTypeId getNameById] func;
+getNameById: [processor.nameBuffer.at makeStringView];
+getMplName:  [getVar.mplNameId getNameById];
+getIrName:   [getVar.irNameId getNameById];
+getMplType:  [getVar.mplTypeId getNameById];
+getIrType:   [getVar.irTypeId getNameById];
+getDbgType:  [getVar.dbgTypeId getNameById];
+
+getDebugType: [
+  dbgType: getDbgType;
+  splitted: dbgType.split;
+  splitted.success [
+    splitted.chars.getSize 1024 > [
+      1024 @splitted.@chars.shrink
+      "..." makeStringView @splitted.@chars.pushBack
+    ] when
+  ] [
+    ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString compilerError
+  ] if
+  result: (dbgType hash ".") assembleString;
+  splitted.chars @result.catMany
+  @result
+];
 
 deepPrintVar: [
   refToVar:;
@@ -231,32 +430,31 @@ deepPrintVar: [
       ] &&
     ] loop
   ] when
-] func;
+];
 
 staticnessOfVar: [
   refToVar:;
   var: refToVar getVar;
   var.staticness copy
-] func;
+];
 
 maxStaticness: [
   copy s1:;
   copy s2:;
   s1 s2 > [s1 copy][s2 copy] if
-] func;
+];
 
 refsAreEqual: [
   refToVar1:;
   refToVar2:;
   refToVar1.hostId refToVar2.hostId = [refToVar1.varId refToVar2.varId =] &&
-] func;
+];
 
 variablesAreSame: [
   refToVar1:;
   refToVar2:;
-  #refToVar1 getVar.mplType makeStringView refToVar2 getVar.mplType makeStringView stringCompare
   refToVar1 getVar.mplTypeId refToVar2 getVar.mplTypeId = # id compare better than string compare!
-] func;
+];
 
 isInt: [
   var: getVar;
@@ -265,7 +463,7 @@ isInt: [
   [var.data.getTag VarInt32 =] ||
   [var.data.getTag VarInt64 =] ||
   [var.data.getTag VarIntX =] ||
-] func;
+];
 
 isNat: [
   var: getVar;
@@ -274,25 +472,25 @@ isNat: [
   [var.data.getTag VarNat32 =] ||
   [var.data.getTag VarNat64 =] ||
   [var.data.getTag VarNatX =] ||
-] func;
+];
 
 isAnyInt: [
   refToVar:;
   refToVar isInt
   [ refToVar isNat ] ||
-] func;
+];
 
 isReal: [
   var: getVar;
   var.data.getTag VarReal32 =
   [var.data.getTag VarReal64 =] ||
-] func;
+];
 
 isNumber: [
   refToVar:;
   refToVar isReal
   [refToVar isAnyInt] ||
-] func;
+];
 
 isPlain: [
   refToVar:;
@@ -300,7 +498,7 @@ isPlain: [
     var: refToVar getVar;
     var.data.getTag VarCond =
   ] ||
-] func;
+];
 
 isTinyArg: [
   refToVar:;
@@ -309,35 +507,71 @@ isTinyArg: [
     var.data.getTag VarRef =
     [var.data.getTag VarString =] ||
   ] ||
-] func;
+];
 
 isStruct: [
   var: getVar;
   var.data.getTag VarStruct =
-] func;
+];
 
 isAutoStruct: [
   refToVar:;
   var: refToVar getVar;
   var.data.getTag VarStruct =
   [VarStruct var.data.get.get.hasDestructor copy] &&
-] func;
+];
 
 markAsUnableToDie: [
   refToVar:;
   var: refToVar getVar;
   var.data.getTag VarStruct = [TRUE VarStruct @var.@data.get.get.@unableToDie set] when
-] func;
+];
 
 markAsAbleToDie: [
   refToVar:;
   var: refToVar getVar;
   var.data.getTag VarStruct = [FALSE VarStruct @var.@data.get.get.@unableToDie set] when
-] func;
+];
 
 isSingle: [
   isStruct not
-] func;
+];
+
+isStaticData: [
+  refToVar:;
+  var: refToVar getVar;
+  refToVar isVirtual not [var.data.getTag VarStruct =] && [
+    unfinished: RefToVar Array;
+    refToVar @unfinished.pushBack
+    result: TRUE dynamic;
+    [
+      result [unfinished.getSize 0 >] && [
+        current: unfinished.last copy;
+        @unfinished.popBack
+        current isVirtual [
+        ] [
+          current isPlain [
+            current staticnessOfVar Weak < [
+              FALSE dynamic @result set
+            ] when
+          ] [
+            curVar: current getVar;
+            curVar.data.getTag VarStruct = [
+              struct: VarStruct curVar.data.get.get;
+              struct.fields [.value.refToVar @unfinished.pushBack] each
+            ] [
+              FALSE dynamic @result set
+            ] if
+          ] if
+        ] if
+        TRUE
+      ] &&
+    ] loop
+    result
+  ] [
+    FALSE
+  ] if
+];
 
 getSingleDataStorageSize: [
   var: getVar;
@@ -363,7 +597,7 @@ getSingleDataStorageSize: [
     ]
     [0nx]
   ) case
-] func;
+];
 
 isNonrecursiveType: [
   refToVar:;
@@ -374,7 +608,7 @@ isNonrecursiveType: [
     [var.data.getTag VarBuiltin =] ||
     [var.data.getTag VarImport =] ||
   ] ||
-] func;
+];
 
 isSemiplainNonrecursiveType: [
   refToVar:;
@@ -384,7 +618,7 @@ isSemiplainNonrecursiveType: [
     [var.data.getTag VarBuiltin =] ||
     [var.data.getTag VarImport =] ||
   ] ||
-] func;
+];
 
 getPlainDataIRType: [
   var: getVar;
@@ -422,9 +656,10 @@ getPlainDataIRType: [
   ) case
 
   @result
-] func;
+];
 
 getPlainDataMPLType: [
+  compileOnce
   var: getVar;
   result: String;
   var.data.getTag (
@@ -448,9 +683,10 @@ getPlainDataMPLType: [
   ) case
 
   @result
-] func;
+];
 
 getNonrecursiveDataIRType: [
+  compileOnce
   refToVar:;
   refToVar isPlain [
     refToVar getPlainDataIRType
@@ -472,9 +708,10 @@ getNonrecursiveDataIRType: [
     ] if
     @result
   ] if
-] func;
+];
 
 getNonrecursiveDataMPLType: [
+  compileOnce
   refToVar:;
   refToVar isPlain [
     refToVar getPlainDataMPLType
@@ -500,14 +737,43 @@ getNonrecursiveDataMPLType: [
     ] if
     @result
   ] if
-] func;
+];
+
+getNonrecursiveDataDBGType: [
+  compileOnce
+  refToVar:;
+  refToVar isPlain [
+    refToVar getPlainDataMPLType
+  ] [
+    result: String;
+    var: refToVar getVar;
+    var.data.getTag VarString = [
+      "s" toString @result set
+    ] [
+      var.data.getTag VarCode = [
+        "c" toString @result set
+      ] [
+        var.data.getTag VarBuiltin = [
+          "b" toString @result set
+        ] [
+          var.data.getTag VarImport = [
+            ("F" VarImport var.data.get getFuncDbgType) assembleString @result set
+          ] [
+            "Unknown nonrecursive struct" makeStringView compilerError
+          ] if
+        ] if
+      ] if
+    ] if
+    @result
+  ] if
+];
 
 getStructStorageSize: [
   refToVar:;
   var: refToVar getVar;
   struct: VarStruct var.data.get.get;
   struct.structStorageSize copy
-] func;
+];
 
 makeStructStorageSize: [
   refToVar:;
@@ -539,7 +805,7 @@ makeStructStorageSize: [
   @result set
 
   result @struct.@structStorageSize set
-] func;
+];
 
 getStorageSize: [
   refToVar:;
@@ -548,14 +814,14 @@ getStorageSize: [
   ] [
     refToVar getStructStorageSize
   ] if
-] func;
+];
 
 getStructAlignment: [
   refToVar:;
   var: refToVar getVar;
   struct: VarStruct var.data.get.get;
   struct.structAlignment copy
-] func;
+];
 
 makeStructAlignment: [
   refToVar:;
@@ -575,7 +841,7 @@ makeStructAlignment: [
     ] &&
   ] loop
   result @struct.@structAlignment set
-] func;
+];
 
 getAlignment: [
   refToVar:;
@@ -584,13 +850,13 @@ getAlignment: [
   ] [
     refToVar getStructAlignment
   ] if
-] func;
+];
 
 isGlobal: [
   refToVar:;
   var: refToVar getVar;
   var.global copy
-] func;
+];
 
 unglobalize: [
   refToVar:;
@@ -600,13 +866,13 @@ unglobalize: [
     -1 dynamic @var.@globalId set
     refToVar makeVariableIRName
   ] when
-] func;
+];
 
 untemporize: [
   refToVar:;
   var: refToVar getVar;
   FALSE @var.@temporary set
-] func;
+];
 
 fullUntemporize: [
   refToVar:;
@@ -615,24 +881,23 @@ fullUntemporize: [
   var.data.getTag VarStruct = [
     FALSE VarStruct @var.@data.get.get.@forgotten set
   ] when
-] func;
+];
 
 isVirtualRef: [
   refToVar:;
   var: refToVar getVar;
   var.data.getTag VarRef = [var.staticness Virtual =] &&
-] func;
+];
 
 isVirtualType: [
   refToVar:;
 
   var: refToVar getVar;
   var.data.getTag VarBuiltin =
-  #[var.data.getTag VarImport =] ||
   [var.data.getTag VarCode =] ||
   [var.data.getTag VarStruct = [VarStruct var.data.get.get.fullVirtual copy] &&] ||
   [refToVar isVirtualRef] ||
-] func;
+];
 
 isVirtual: [
   refToVar:;
@@ -640,13 +905,12 @@ isVirtual: [
   var: refToVar getVar;
   var.staticness Virtual =
   [refToVar isVirtualType] ||
-] func;
+];
 
 noMatterToCopy: [
   refToVar:;
   refToVar isVirtual [refToVar isAutoStruct not] &&
-  #ref r:; FALSE
-] func;
+];
 
 isVirtualField: [
   refToVar:;
@@ -654,7 +918,7 @@ isVirtualField: [
   var: refToVar getVar;
   var.staticness Virtual =
   [refToVar isVirtualType] ||
-] func;
+];
 
 isForgotten: [
   refToVar:;
@@ -664,7 +928,7 @@ isForgotten: [
   ] [
     FALSE
   ] if
-] func;
+];
 
 getVirtualValue: [
   refToVar:;
@@ -684,8 +948,14 @@ getVirtualValue: [
       "}" @result.cat
     ]
 
-    VarString  [VarString var.data.get makeStringView getStringImplementation @result set]
-    VarCode    [VarCode    var.data.get @result.cat]
+    VarString  [
+      string: VarString var.data.get;
+      (string textSize "_" string getStringImplementation) @result.catMany
+    ]
+    VarCode    [
+      info: VarCode    var.data.get;
+      ("\"" info.moduleId processor.options.fileNames.at getStringImplementation "\"/" info.line ":" info.column) @result.catMany
+    ]
     VarImport  [VarImport  var.data.get @result.cat]
     VarBuiltin [VarBuiltin var.data.get @result.cat]
     VarRef     ["."                     @result.cat]
@@ -700,7 +970,7 @@ getVirtualValue: [
   ) case
 
   result
-] func;
+];
 
 makeStringId: [
   string:;
@@ -713,7 +983,7 @@ makeStringId: [
     @string move @processor.@nameBuffer.pushBack
     result
   ] if
-] func;
+];
 
 makeTypeAliasId: [
   irTypeName:;
@@ -735,14 +1005,14 @@ makeTypeAliasId: [
   ] [
     @irTypeName makeStringId
   ] if
-] func;
+];
 
 getFuncIrType: [
   funcIndex:;
   node: funcIndex processor.nodes.at.get;
   resultId: node.signature toString makeStringId;
   resultId getNameById
-] func;
+];
 
 getFuncMplType: [
   funcIndex:;
@@ -755,10 +1025,9 @@ getFuncMplType: [
     "[" @result.cat
     i: 0;
     [
-      i args.dataSize < [
-        current: i args.at.refToVar;
+      i args.getSize < [
+        current: i args.at;
         current getMplType                                            @result.cat
-        #current.mutable ["R" makeStringView]["C" makeStringView] if   @result.cat
         i 1 + args.getSize < [
           ","                                                         @result.cat
         ] when
@@ -766,14 +1035,48 @@ getFuncMplType: [
       ] &&
     ] loop
     "]" @result.cat
-  ] func;
+  ];
 
-  node.matchingInfo.inputs catData
-  node.outputs catData
+  "-"                @result.cat
+  node.mplConvention @result.cat
+  node.csignature.inputs catData
+  node.csignature.outputs catData
 
   resultId: @result makeStringId;
   resultId getNameById
-] func;
+];
+
+getFuncDbgType: [
+ Index:;
+  result: String;
+  node:Index processor.nodes.at.get;
+
+  catData: [
+    args:;
+
+    "[" @result.cat
+    i: 0;
+    [
+      i args.getSize < [
+        current: i args.at;
+        current getDbgType                                            @result.cat
+        i 1 + args.getSize < [
+          ","                                                         @result.cat
+        ] when
+        i 1 + @i set TRUE
+      ] &&
+    ] loop
+    "]" @result.cat
+  ];
+
+  "-"                @result.cat
+  node.mplConvention @result.cat
+  node.csignature.inputs catData
+  node.csignature.outputs catData
+
+  resultId: @result makeStringId;
+  resultId getNameById
+];
 
 makeDbgTypeId: [
   refToVar:;
@@ -785,9 +1088,81 @@ makeDbgTypeId: [
       var.mplTypeId refToVar getTypeDebugDeclaration @processor.@debugInfo.@typeIdToDbgId.insert
     ] when
   ] when
-] func;
+];
 
-makeVariableType: [
+bitView: [
+  copy f:;
+  buffer: f storageAddress (0n8 0n8 0n8 0n8 0n8 0n8 0n8 0n8) addressToReference;
+  result: String;
+  "0x" @result.cat
+  hexToStr: (
+    "0" makeStringView "1" makeStringView "2" makeStringView "3" makeStringView "4" makeStringView
+    "5" makeStringView "6" makeStringView "7" makeStringView "8" makeStringView "9" makeStringView
+    "A" makeStringView "B" makeStringView "C" makeStringView "D" makeStringView "E" makeStringView "F" makeStringView);
+  i: 0 dynamic;
+  [
+    i 0ix cast 0nx cast f storageSize < [
+      d: f storageSize 0ix cast 0 cast i - 1 - buffer @ 0n32 cast;
+      d 4n32 rshift 0 cast @hexToStr @ @result.cat
+      d 15n32 and 0 cast @hexToStr @ @result.cat
+      i 1 + @i set TRUE
+    ] &&
+  ] loop
+
+  result
+];
+
+getPlainConstantIR: [
+  var: getVar;
+  result: String;
+  var.data.getTag VarCond = [
+    VarCond var.data.get ["true" toString] ["false" toString] if @result set
+  ] [
+    var.data.getTag VarInt8 = [VarInt8 var.data.get toString @result set] [
+      var.data.getTag VarInt16 = [VarInt16 var.data.get toString @result set] [
+        var.data.getTag VarInt32 = [VarInt32 var.data.get toString @result set] [
+          var.data.getTag VarInt64 = [VarInt64 var.data.get toString @result set] [
+            var.data.getTag VarIntX = [VarIntX var.data.get toString @result set] [
+              var.data.getTag VarNat8 = [VarNat8 var.data.get toString @result set] [
+                var.data.getTag VarNat16 = [VarNat16 var.data.get toString @result set] [
+                  var.data.getTag VarNat32 = [VarNat32 var.data.get toString @result set] [
+                    var.data.getTag VarNat64 = [VarNat64 var.data.get toString @result set] [
+                      var.data.getTag VarNatX = [VarNatX var.data.get toString @result set] [
+                        var.data.getTag VarReal32 = [VarReal32 var.data.get 0.0r32 cast 0.0r64 cast bitView @result set] [
+                          var.data.getTag VarReal64 = [VarReal64 var.data.get bitView @result set] [
+                            ("Tag = " makeStringView var.data.getTag 0 cast) addLog
+                            [FALSE] "Unknown plain struct while getting IR value" assert
+                          ] if
+                        ] if
+                      ] if
+                    ] if
+                  ] if
+                ] if
+              ] if
+            ] if
+          ] if
+        ] if
+      ] if
+    ] if
+  ] if
+
+  result
+];
+
+{
+  processorResult: ProcessorResult Ref;
+  processor: Processor Ref;
+  indexOfNode: Int32;
+  currentNode: CodeNode Ref;
+  multiParserResult: MultiParserResult Cref;
+  refToVar: RefToVar Cref;
+} () {} [
+  processorResult:;
+  processor:;
+  copy indexOfNode:;
+  currentNode:;
+  multiParserResult:;
+  failProc: @failProcForProcessor;
   refToVar:;
 
   #fill info:
@@ -807,10 +1182,12 @@ makeVariableType: [
 
   resultIR: String;
   resultMPL: String;
+  resultDBG: String;
 
   refToVar isNonrecursiveType [
-    refToVar getNonrecursiveDataIRType @resultIR set
+    refToVar getNonrecursiveDataIRType  @resultIR set
     refToVar getNonrecursiveDataMPLType @resultMPL set
+    refToVar getNonrecursiveDataDBGType @resultDBG set
   ] [
     var.data.getTag VarRef = [
       branch: VarRef var.data.get;
@@ -825,6 +1202,9 @@ makeVariableType: [
       ] [
         "C" @resultMPL.cat
       ] if
+
+      branch getDbgType @resultDBG.cat
+      "*"  @resultDBG.cat
     ] [
       var.data.getTag VarStruct = [
         branch: VarStruct @var.@data.get.get;
@@ -873,7 +1253,6 @@ makeVariableType: [
             ("[" branch.fields.dataSize " x " 0 branch.fields.at.refToVar getIrType "]") assembleString @resultIR.cat
           ] [
             "{" @resultIR.cat
-
             firstGood: TRUE;
             i: 0 dynamic;
             [
@@ -891,7 +1270,23 @@ makeVariableType: [
             ] loop
             "}" @resultIR.cat
           ] if
-          #@resultIR makeTypeAlias
+
+          "{" @resultDBG.cat
+          i: 0 dynamic;
+          [
+            i branch.fields.dataSize < [
+              curField: i branch.fields.at;
+              curField.refToVar isVirtual not [
+                (
+                  curField.nameInfo processor.nameInfos.at.name ":"
+                  curField.refToVar getDbgType ";") @resultDBG.catMany
+              ] [
+                (curField.nameInfo processor.nameInfos.at.name ".") @resultDBG.catMany
+              ] if
+              i 1 + @i set TRUE
+            ] &&
+          ] loop
+          "}" @resultDBG.cat
         ] if
 
         "{" @resultMPL.cat
@@ -927,31 +1322,10 @@ makeVariableType: [
     @resultIR makeStringId @var.@irTypeId set
   ] if
 
+  @resultDBG makeStringId @var.@dbgTypeId set
   @resultMPL makeStringId @var.@mplTypeId set
   processor.options.debug [refToVar makeDbgTypeId] when
-] func;
-
-bitView: [
-  copy f:;
-  buffer: f storageAddress (0n8 0n8 0n8 0n8 0n8 0n8 0n8 0n8) addressToReference;
-  result: String;
-  "0x" @result.cat
-  hexToStr: (
-    "0" makeStringView "1" makeStringView "2" makeStringView "3" makeStringView "4" makeStringView
-    "5" makeStringView "6" makeStringView "7" makeStringView "8" makeStringView "9" makeStringView
-    "A" makeStringView "B" makeStringView "C" makeStringView "D" makeStringView "E" makeStringView "F" makeStringView);
-  i: 0 dynamic;
-  [
-    i 0ix cast 0nx cast f storageSize < [
-      d: f storageSize 0ix cast 0 cast i - 1 - buffer @ 0n32 cast;
-      d 4n32 rshift 0 cast @hexToStr @ @result.cat
-      d 15n32 and 0 cast @hexToStr @ @result.cat
-      i 1 + @i set TRUE
-    ] &&
-  ] loop
-
-  result
-] func;
+] "makeVariableTypeImpl" exportFunction
 
 cutValue: [
   copy tag:;
@@ -967,7 +1341,7 @@ cutValue: [
     VarIntX  [value processor.options.pointerSize 32nx = [0i32 cast 0i64 cast][copy] if]
     [@value copy]
   ) case
-] func;
+];
 
 checkValue: [
   copy tag:;
@@ -984,7 +1358,7 @@ checkValue: [
     [FALSE]
   ) case ["number constant overflow" compilerError] when
   @value
-] func;
+];
 
 zeroValue: [
   copy tag:;
@@ -1016,44 +1390,65 @@ zeroValue: [
       ] if
     ] if
   ] if
-] func;
+];
 
-getPlainConstantIR: [
-  var: getVar;
+getStaticStructIR: [
+  refToVar:;
   result: String;
-  var.data.getTag VarCond = [
-    VarCond var.data.get ["true" toString] ["false" toString] if @result set
-  ] [
-    var.data.getTag VarInt8 = [VarInt8 var.data.get toString @result set] [
-      var.data.getTag VarInt16 = [VarInt16 var.data.get toString @result set] [
-        var.data.getTag VarInt32 = [VarInt32 var.data.get toString @result set] [
-          var.data.getTag VarInt64 = [VarInt64 var.data.get toString @result set] [
-            var.data.getTag VarIntX = [VarIntX var.data.get toString @result set] [
-              var.data.getTag VarNat8 = [VarNat8 var.data.get toString @result set] [
-                var.data.getTag VarNat16 = [VarNat16 var.data.get toString @result set] [
-                  var.data.getTag VarNat32 = [VarNat32 var.data.get toString @result set] [
-                    var.data.getTag VarNat64 = [VarNat64 var.data.get toString @result set] [
-                      var.data.getTag VarNatX = [VarNatX var.data.get toString @result set] [
-                        var.data.getTag VarReal32 = [VarReal32 var.data.get 0.0r32 cast 0.0r64 cast bitView @result set] [
-                          var.data.getTag VarReal64 = [VarReal64 var.data.get bitView @result set] [
-                            ("Tag = " makeStringView var.data.getTag 0 cast) addLog
-                            [FALSE] "Unknown plain struct while getting IR value" assert
-                          ] if
-                        ] if
-                      ] if
-                    ] if
-                  ] if
+  unfinishedVars: RefToVar Array;
+  unfinishedTerminators: StringView Array;
+  refToVar @unfinishedVars.pushBack
+  ", " makeStringView @unfinishedTerminators.pushBack
+  [
+    unfinishedVars.getSize 0 > [
+      current: unfinishedVars.last copy;
+      @unfinishedVars.popBack
+
+      current isVirtual [
+        [FALSE] "Virtual field cannot be processed in static array constant!" assert
+      ] [
+        current isPlain [
+          (current getIrType " " current getPlainConstantIR) @result.catMany
+          [
+            currentTerminator: unfinishedTerminators.last;
+            currentTerminator @result.cat
+            currentTerminator ", " = not
+            @unfinishedTerminators.popBack
+          ] loop
+        ] [
+          curVar: current getVar;
+          curVar.data.getTag VarStruct = [
+            (current getIrType " ") @result.catMany
+            struct: VarStruct curVar.data.get.get;
+            struct.homogeneous ["[" makeStringView] ["{" makeStringView] if @result.cat
+            first: TRUE dynamic;
+            struct.fields [
+              index: .index copy;
+              current: struct.fields.getSize 1 - index - struct.fields.at.refToVar;
+              current isVirtual not [
+                current @unfinishedVars.pushBack
+                first [
+                  struct.homogeneous ["]" makeStringView] ["}" makeStringView] if @unfinishedTerminators.pushBack
+                  FALSE dynamic @first set
+                ] [
+                  ", " makeStringView @unfinishedTerminators.pushBack
                 ] if
-              ] if
-            ] if
+              ] when
+            ] each
+          ] [
+            [FALSE] "Unknown type in static struct!" assert
           ] if
         ] if
       ] if
-    ] if
-  ] if
 
+      TRUE
+    ] &&
+  ] loop
+
+  result.getTextSize 2 - @result.@chars.shrink
+  @result.makeZ
   result
-] func;
+];
 
 # require captures "processor" and "codeNode"
 generateVariableIRNameWith: [
@@ -1067,17 +1462,17 @@ generateVariableIRNameWith: [
     ("%var." hostNode.lastVarName) assembleString makeStringId
     hostNode.lastVarName 1 + @hostNode.@lastVarName set
   ] if
-] func;
+];
 
-generateVariableIRName: [FALSE generateVariableIRNameWith] func;
-generateRegisterIRName: [indexOfNode TRUE generateVariableIRNameWith] func;
+generateVariableIRName: [FALSE generateVariableIRNameWith];
+generateRegisterIRName: [indexOfNode TRUE generateVariableIRNameWith];
 
 makeVariableIRName: [
   refToVar:;
   var: refToVar getVar;
 
   refToVar.hostId refToVar isGlobal not generateVariableIRNameWith @var.@irNameId set
-] func;
+];
 
 findFieldWithOverloadShift: [
   copy overloadShift:;
@@ -1118,6 +1513,6 @@ findFieldWithOverloadShift: [
   ] if
 
   result
-] func;
+];
 
-findField: [0 dynamic findFieldWithOverloadShift] func;
+findField: [0 dynamic findFieldWithOverloadShift];

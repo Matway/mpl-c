@@ -1,6 +1,25 @@
 "builtinImpl" module
 "control" includeModule
 
+"codeNode" includeModule
+"processSubNodes" includeModule
+"defaultImpl" includeModule
+
+declareBuiltin: [
+  virtual declareBuiltinName:;
+  virtual declareBuiltinBody:;
+
+  {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;} () {} [
+    processorResult:;
+    processor:;
+    copy indexOfNode:;
+    currentNode:;
+    multiParserResult:;
+    failProc: @failProcForProcessor;
+    @declareBuiltinBody ucall
+  ] declareBuiltinName exportFunction
+];
+
 staticnessOfBinResult: [
   s1:; s2:;
   s1 Dynamic > not s2 Dynamic > not or [
@@ -12,7 +31,7 @@ staticnessOfBinResult: [
       Static
     ] if
   ] if
-] func;
+];
 
 mplNumberBinaryOp: [
   exValidator:;
@@ -54,6 +73,8 @@ mplNumberBinaryOp: [
           ] when
         ] staticCall
       ] [
+        arg1 makeVarRealCaptured
+        arg2 makeVarRealCaptured
         opName: arg1 arg2 @getOpName call;
         var1.data.getTag firstTag lastTag [
           copy tag:;
@@ -69,35 +90,35 @@ mplNumberBinaryOp: [
       ] if
     ] when
   ] when
-] func;
+];
 
-mplBuiltinAdd: [
+[
   VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fadd" makeStringView]["add" makeStringView] if] [+] [copy] [y:; x:;] mplNumberBinaryOp
-] func;
+] "mplBuiltinAdd" @declareBuiltin ucall
 
-mplBuiltinSub: [
+[
   VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fsub" makeStringView]["sub" makeStringView] if] [-] [copy] [y:; x:;] mplNumberBinaryOp
-] func;
+] "mplBuiltinSub" @declareBuiltin ucall
 
-mplBuiltinMul: [
+[
   VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fmul" makeStringView]["mul" makeStringView] if] [*] [copy] [y:; x:;] mplNumberBinaryOp
-] func;
+] "mplBuiltinMul" @declareBuiltin ucall
 
-mplBuiltinDiv: [
+[
   VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fdiv" makeStringView][a2 isNat ["udiv" makeStringView] ["sdiv" makeStringView] if] if] [/] [copy] [
     y:; x:;
     y y - y = ["division by zero" compilerError] when
   ] mplNumberBinaryOp
-] func;
+] "mplBuiltinDiv" @declareBuiltin ucall
 
-mplBuiltinMod: [
+[
   VarNat8 VarIntX 1 + [a2:; a1:; a2 isNat ["urem" makeStringView] ["srem" makeStringView] if] [mod] [copy] [
     y:; x:;
     y y - y = ["division by zero" compilerError] when
   ] mplNumberBinaryOp
-] func;
+] "mplBuiltinMod" @declareBuiltin ucall
 
-mplBuiltinEqual: [
+[
   arg2: pop;
   arg1: pop;
 
@@ -105,7 +126,7 @@ mplBuiltinEqual: [
     comparable: [
       arg:;
       arg isPlain [arg getVar.data.getTag VarString =] ||
-    ] func;
+    ];
 
     var1: arg1 getVar;
     var2: arg2 getVar;
@@ -138,6 +159,9 @@ mplBuiltinEqual: [
           ] staticCall
         ] if
       ] [
+        arg1 makeVarRealCaptured
+        arg2 makeVarRealCaptured
+
         var1.data.getTag VarString = [
           result: FALSE VarCond createVariable Dynamic makeStaticness createAllocIR;
           "icmp eq" makeStringView createBinaryOperation
@@ -162,19 +186,19 @@ mplBuiltinEqual: [
       ] if
     ] when
   ] when
-] func;
+] "mplBuiltinEqual" @declareBuiltin ucall
 
-mplBuiltinLess: [
+[
   VarNat8 VarReal64 1 + [
     a2:; a1:; a2 isReal ["fcmp olt" makeStringView][a2 isNat ["icmp ult" makeStringView] ["icmp slt" makeStringView] if] if
   ] [<] [t:; VarCond] [y:; x:;] mplNumberBinaryOp
-] func;
+] "mplBuiltinLess" @declareBuiltin ucall
 
-mplBuiltinGreater: [
+[
   VarNat8 VarReal64 1 + [
     a2:; a1:; a2 isReal ["fcmp ogt" makeStringView][a2 isNat ["icmp ugt" makeStringView] ["icmp sgt" makeStringView] if] if
   ] [>] [t:; VarCond] [y:; x:;] mplNumberBinaryOp
-] func;
+] "mplBuiltinGreater" @declareBuiltin ucall
 
 mplNumberUnaryOp: [
   exValidator:;
@@ -204,6 +228,7 @@ mplNumberUnaryOp: [
           ] when
         ] staticCall
       ] [
+        arg makeVarRealCaptured
         opName: arg @getOpName call;
         mopName: arg @getMidOpName call;
         var.data.getTag firstTag lastTag [
@@ -219,46 +244,46 @@ mplNumberUnaryOp: [
       ] if
     ] when
   ] when
-] func;
+];
 
-mplBuiltinNot: [
+[
   VarCond VarNatX 1 + [a:; "xor" makeStringView] [
     a:; a getVar.data.getTag VarCond = ["true, " makeStringView]["-1, " makeStringView] if
   ] [not] [x:;] mplNumberUnaryOp
-] func;
+] "mplBuiltinNot" @declareBuiltin ucall
 
-mplBuiltinXor: [
+[
   VarCond VarNatX 1 + [a2:; a1:; "xor" makeStringView] [xor] [copy] [y:; x:;] mplNumberBinaryOp
-] func;
+] "mplBuiltinXor" @declareBuiltin ucall
 
-mplBuiltinAnd: [
+[
   VarCond VarNatX 1 + [a2:; a1:; "and" makeStringView] [and] [copy] [y:; x:;] mplNumberBinaryOp
-] func;
+] "mplBuiltinAnd" @declareBuiltin ucall
 
-mplBuiltinOr: [
+[
   VarCond VarNatX 1 + [a2:; a1:; "or" makeStringView] [or] [copy] [y:; x:;] mplNumberBinaryOp
-] func;
+] "mplBuiltinOr" @declareBuiltin ucall
 
-mplBuiltinTrue: [
+[
   TRUE VarCond createVariable createPlainIR push
-] func;
+] "mplBuiltinTrue" @declareBuiltin ucall
 
-mplBuiltinFalse: [
+[
   FALSE VarCond createVariable createPlainIR push
-] func;
+] "mplBuiltinFalse" @declareBuiltin ucall
 
-mplBuiltinLF: [
+[
   s: LF toString;
   s VarString createVariable createStringIR push
-] func;
+] "mplBuiltinLF" @declareBuiltin ucall
 
-mplBuiltinNeg: [
+[
   VarInt8 VarReal64 1 + [
     a:; a isAnyInt ["sub" makeStringView]["fsub" makeStringView] if
   ] [
     a:; a isAnyInt ["0, " makeStringView]["0x0000000000000000, " makeStringView] if
   ] [neg] [x:;] mplNumberUnaryOp
-] func;
+] "mplBuiltinNeg" @declareBuiltin ucall
 
 mplNumberBuiltinOp: [
   exValidator:;
@@ -285,6 +310,7 @@ mplNumberBuiltinOp: [
           ] when
         ] staticCall
       ] [
+        arg makeVarRealCaptured
         opName: arg @getOpName call;
         var.data.getTag VarReal32 VarReal64 1 + [
           copy tag:;
@@ -302,7 +328,7 @@ mplNumberBuiltinOp: [
           FALSE @irarg.@byRef set
           irarg @args.pushBack
 
-          result args @opName createCallIR retName:;
+          result args String @opName createCallIR retName:;
 
           retName result createStoreFromRegister
 
@@ -311,51 +337,51 @@ mplNumberBuiltinOp: [
       ] if
     ] when
   ] when
-] func;
+];
 
-mplBuiltinSin: [
+[
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.sin.f32" makeStringView]["@llvm.sin.f64" makeStringView] if
   ] [sin] [x:;] mplNumberBuiltinOp
-] func;
+] "mplBuiltinSin" @declareBuiltin ucall
 
-mplBuiltinCos: [
+[
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.cos.f32" makeStringView]["@llvm.cos.f64" makeStringView] if
   ] [cos] [x:;] mplNumberBuiltinOp
-] func;
+] "mplBuiltinCos" @declareBuiltin ucall
 
-mplBuiltinSqrt: [
+[
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.sqrt.f32" makeStringView]["@llvm.sqrt.f64" makeStringView] if
   ] [sqrt] [x:;] mplNumberBuiltinOp
-] func;
+] "mplBuiltinSqrt" @declareBuiltin ucall
 
-mplBuiltinCeil: [
+[
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.ceil.f32" makeStringView]["@llvm.ceil.f64" makeStringView] if
   ] [ceil] [x:;] mplNumberBuiltinOp
-] func;
+] "mplBuiltinCeil" @declareBuiltin ucall
 
-mplBuiltinFloor: [
+[
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.floor.f32" makeStringView]["@llvm.floor.f64" makeStringView] if
   ] [floor] [x:;] mplNumberBuiltinOp
-] func;
+] "mplBuiltinFloor" @declareBuiltin ucall
 
-mplBuiltinLog: [
+[
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.log.f32" makeStringView]["@llvm.log.f64" makeStringView] if
   ] [log] [x:;] mplNumberBuiltinOp
-] func;
+] "mplBuiltinLog" @declareBuiltin ucall
 
-mplBuiltinLog10: [
+[
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.log10.f32" makeStringView]["@llvm.log10.f64" makeStringView] if
   ] [log10] [x:;] mplNumberBuiltinOp
-] func;
+] "mplBuiltinLog10" @declareBuiltin ucall
 
-mplBuiltinPow: [
+[
   TRUE dynamic @processor.@usedFloatBuiltins set
   arg2: pop;
   arg1: pop;
@@ -389,6 +415,9 @@ mplBuiltinPow: [
           ] when
         ] staticCall
       ] [
+        arg1 makeVarRealCaptured
+        arg2 makeVarRealCaptured
+
         var1.data.getTag VarReal32 VarReal64 1 + [
           copy tag:;
           resultType: tag copy;
@@ -407,7 +436,7 @@ mplBuiltinPow: [
           var2.irTypeId @irarg.@irTypeId set
           irarg @args.pushBack
 
-          result args tag VarReal32 = ["@llvm.pow.f32" makeStringView] ["@llvm.pow.f64" makeStringView] if createCallIR retName:;
+          result args String tag VarReal32 = ["@llvm.pow.f32" makeStringView] ["@llvm.pow.f64" makeStringView] if createCallIR retName:;
 
           @retName result createStoreFromRegister
 
@@ -416,7 +445,7 @@ mplBuiltinPow: [
       ] if
     ] when
   ] when
-] func;
+] "mplBuiltinPow" @declareBuiltin ucall
 
 mplShiftBinaryOp: [
   opFunc:;
@@ -454,6 +483,9 @@ mplShiftBinaryOp: [
           ] staticCall
         ] staticCall
       ] [
+        arg1 makeVarRealCaptured
+        arg2 makeVarRealCaptured
+
         opName: arg1 arg2 @getOpName call;
         var1.data.getTag VarNat8 VarIntX 1 + [
           copy tag:;
@@ -472,65 +504,21 @@ mplShiftBinaryOp: [
       ] if
     ] when
   ] when
-] func;
+];
 
-mplBuiltinLShift: [
+[
   [t2:; t1:; "shl" makeStringView][lshift] mplShiftBinaryOp
-] func;
+] "mplBuiltinLShift" @declareBuiltin ucall
 
-mplBuiltinRShift: [
+[
   [t2:; t1:; t1 isNat ["lshr" makeStringView]["ashr" makeStringView] if][rshift] mplShiftBinaryOp
-] func;
+] "mplBuiltinRShift" @declareBuiltin ucall
 
-createRef: [
-  mutable:;
-  refToVar:;
-  refToVar isVirtual [
-    refToVar untemporize
-    refToVar copy #for dropping or getting callables for example
-  ] [
-    var: refToVar getVar;
-    #var.temporary [var.data.getTag VarRef = not] && [
-    #  "getting ref to temporary var" compilerError
-    #] [
-    refToVar staticnessOfVar Weak = [Dynamic @var.@staticness set] when
-    refToVar fullUntemporize
+[TRUE defaultRef] "mplBuiltinRef" @declareBuiltin ucall
+[FALSE defaultRef] "mplBuiltinCref" @declareBuiltin ucall
+[TRUE defaultMakeConstWith] "mplBuiltinConst" @declareBuiltin ucall
 
-    newRefToVar: refToVar VarRef createVariable;
-    mutable refToVar.mutable and @newRefToVar.@mutable set
-    refToVar newRefToVar createRefOperation
-    newRefToVar
-    #] if
-  ] if
-] func;
-
-mplProcessRef: [
-  copy mutable:;
-  refToVar: pop;
-  compilable [
-    refToVar mutable createRef push
-  ] when
-] func;
-
-mplBuiltinRef: [TRUE mplProcessRef] func;
-mplBuiltinCref: [FALSE mplProcessRef] func;
-
-mplBuiltinConstWith: [
-  copy check:;
-  refToVar: pop;
-  compilable [
-    check [refToVar getVar.temporary copy] && [
-      "temporary objects cannot be set const" compilerError
-    ] [
-      FALSE @refToVar.@mutable set
-      refToVar push
-    ] if
-  ] when
-] func;
-
-mplBuiltinConst: [TRUE mplBuiltinConstWith] func;
-
-mplBuiltinDeref: [
+[
   refToVar: pop;
   compilable [
     refToVar getVar.data.getTag VarRef = [
@@ -543,101 +531,57 @@ mplBuiltinDeref: [
       "not a reference" makeStringView compilerError
     ] if
   ] when
-] func;
+] "mplBuiltinDeref" @declareBuiltin ucall
 
-mplBuiltinCall: [
-  refToVar: pop;
-  compilable [
-    var: refToVar getVar;
-    var.data.getTag VarCode = [
-      VarCode var.data.get "call" makeStringView processCall
-    ] [
-      var.data.getTag VarImport = [
-        refToVar processFuncPtr
-      ] [
-        refToVar isCallable [
-          RefToVar refToVar "call" makeStringView callCallableStruct # call struct with INVALID object
-        ] [
-          "not callable" makeStringView compilerError
-        ] if
-      ] if
-    ] if
-  ] when
-] func;
+[
+  defaultCall
+] "mplBuiltinCall" @declareBuiltin ucall
 
-mplBuiltinUcall: [
+[
   code: pop;
 
   compilable [
     varCode: code getVar;
 
-    varCode.data.getTag VarCode = not ["branch else must be a [CODE]" makeStringView compilerError] when
+    varCode.data.getTag VarCode = not ["branch else must be a [CODE]" compilerError] when
 
     compilable [
-      codeIndex: VarCode varCode.data.get copy;
+      codeIndex: VarCode varCode.data.get.index copy;
       astNode: codeIndex @multiParserResult.@memory.at;
       [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
+      currentNode.countOfUCall 1 + @currentNode.@countOfUCall set
+      currentNode.countOfUCall 65535 > ["ucall limit exceeded" compilerError] when
       indexArray: AstNodeType.Code astNode.data.get;
       indexArray addIndexArrayToProcess
     ] when
   ] when
-] func;
+] "mplBuiltinUcall" @declareBuiltin ucall
 
-mplBuiltinDynamic: [
+[
   refToVar: pop;
   compilable [
     refToVar makeVarTreeDynamic
     refToVar push
   ] when
-] func;
+] "mplBuiltinDynamic" @declareBuiltin ucall
 
-mplBuiltinDirty: [
+[
   refToVar: pop;
   compilable [
     refToVar makeVarTreeDirty
     refToVar push
   ] when
-] func;
+] "mplBuiltinDirty" @declareBuiltin ucall
 
-mplBuiltinStatic: [
+[
   refToVar: pop;
   compilable [
     refToVar staticnessOfVar Weak = [refToVar Static makeStaticness @refToVar set] when
     refToVar push
   ] when
-] func;
+] "mplBuiltinStatic" @declareBuiltin ucall
 
-mplBuiltinSet: [
-  refToDst: pop;
-  refToSrc: pop;
-
-  compilable [
-    refToDst refToSrc variablesAreSame [
-      refToSrc getVar.data.getTag VarImport = [
-        "functions cannot be copied" compilerError
-      ] [
-        refToDst.mutable [
-          [refToDst staticnessOfVar Weak = not] "Destination is weak!" assert
-          refToSrc refToDst createCopyToExists
-        ] [
-          "destination is immutable" compilerError
-        ] if
-      ] if
-    ] [
-      refToDst.mutable not [
-        "destination is immutable" compilerError
-      ] [
-        lambdaCastResult: refToSrc refToDst tryImplicitLambdaCast;
-        lambdaCastResult.success [
-          newSrc: lambdaCastResult.refToVar TRUE createRef;
-          newSrc refToDst createCopyToExists
-        ] [
-          ("types mismatch, src is " refToSrc getMplType "," LF "dst is " refToDst getMplType) assembleString compilerError
-        ] if
-      ] if
-    ] if
-  ] when
-] func;
+[defaultSet] "mplBuiltinSet" @declareBuiltin ucall
 
 mplBuiltinProcessAtList: [
   refToStruct: pop;
@@ -659,7 +603,7 @@ mplBuiltinProcessAtList: [
           pointeeVar: pointee getVar;
           pointeeVar.data.getTag VarStruct = not ["not a combined" compilerError] when
         ]
-        [ indexVar.data.getTag VarInt32 = not ["index must be Int32" compilerError] when ]
+        [indexVar.data.getTag VarInt32 = not ["index must be Int32" compilerError] when ]
         [refToIndex staticnessOfVar Weak < [ "index must be static" compilerError] when ]
         [
           index: VarInt32 indexVar.data.get 0 cast;
@@ -690,15 +634,16 @@ mplBuiltinProcessAtList: [
                   "can't get dynamic index in virtual struct" compilerError
                 ] when
 
-                fieldRef: 0 realStruct.fields.at.refToVar copy;
-                fieldRef.hostId indexOfNode = not [
+                refToIndex makeVarRealCaptured
+                firstField: 0 realStruct.fields.at.refToVar;
+                fieldRef: firstField copyVarFromParent;
+                firstField.hostId indexOfNode = not [
                   fBegin: RefToVar;
                   fEnd: RefToVar;
                   fieldRef @fBegin @fEnd ShadowReasonField makeShadowsDynamic
                   fEnd @fieldRef set
                 ] when
 
-                fieldRef copyVar @fieldRef set
                 refToStruct.mutable @fieldRef.@mutable set
                 fieldRef fullUntemporize
                 fieldRef staticnessOfVar Virtual = [
@@ -731,23 +676,23 @@ mplBuiltinProcessAtList: [
   ] when
 
   result
-] func;
+];
 
-mplBuiltinAt: [
+[
   field: mplBuiltinProcessAtList;
   compilable [
     field derefAndPush
   ] when
-] func;
+] "mplBuiltinAt" @declareBuiltin ucall
 
-mplBuiltinExclamation: [
+[
   field: mplBuiltinProcessAtList;
   compilable [
     field setRef
   ] when
-] func;
+] "mplBuiltinExclamation" @declareBuiltin ucall
 
-mplBuiltinIf: [
+[
   else: pop;
   then: pop;
   condition: pop;
@@ -765,21 +710,21 @@ mplBuiltinIf: [
       condition staticnessOfVar Weak > [
         value: VarCond varCond.data.get copy;
         value [
-          VarCode varThen.data.get "staticIfThen" makeStringView processCall
+          VarCode varThen.data.get.index "staticIfThen" makeStringView processCall
         ] [
-          VarCode varElse.data.get "staticIfElse" makeStringView processCall
+          VarCode varElse.data.get.index "staticIfElse" makeStringView processCall
         ] if
       ] [
         condition
-        VarCode varThen.data.get @multiParserResult.@memory.at
-        VarCode varElse.data.get @multiParserResult.@memory.at
+        VarCode varThen.data.get.index @multiParserResult.@memory.at
+        VarCode varElse.data.get.index @multiParserResult.@memory.at
         processIf
       ] if
     ] when
   ] when
-] func;
+] "mplBuiltinIf" @declareBuiltin ucall
 
-mplBuiltinUif: [
+[
   else: pop;
   then: pop;
   condition: pop;
@@ -796,9 +741,11 @@ mplBuiltinUif: [
     compilable [
       condition staticnessOfVar Weak > [
         value: VarCond varCond.data.get copy;
-        codeIndex: value [VarCode varThen.data.get copy] [VarCode varElse.data.get copy] if;
+        codeIndex: value [VarCode varThen.data.get.index copy] [VarCode varElse.data.get.index copy] if;
         astNode: codeIndex @multiParserResult.@memory.at;
         [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
+        currentNode.countOfUCall 1 + @currentNode.@countOfUCall set
+        currentNode.countOfUCall 65535 > ["ucall limit exceeded" compilerError] when
         indexArray: AstNodeType.Code astNode.data.get;
         indexArray addIndexArrayToProcess
       ] [
@@ -806,9 +753,9 @@ mplBuiltinUif: [
       ] if
     ] when
   ] when
-] func;
+] "mplBuiltinUif" @declareBuiltin ucall
 
-mplBuiltinLoop: [
+[
   body: pop;
 
   (
@@ -817,11 +764,11 @@ mplBuiltinLoop: [
       varBody: body getVar;
       varBody.data.getTag VarCode = not ["body must be [CODE]" compilerError] when
     ] [
-      astNode: VarCode varBody.data.get @multiParserResult.@memory.at;
+      astNode: VarCode varBody.data.get.index @multiParserResult.@memory.at;
       astNode processLoop
     ]
   ) sequence
-] func;
+] "mplBuiltinLoop" @declareBuiltin ucall
 
 parseFieldToSignatureCaptureArray: [
   refToStruct:;
@@ -838,20 +785,19 @@ parseFieldToSignatureCaptureArray: [
   ] when
 
   result
-] func;
+];
 
 parseSignature: [
   result: CFunctionSignature;
   (
     [compilable]
     [options: pop;]
-    [return: pop;]
-    [arguments: pop;]
     [
       optionsVar: options getVar;
       optionsVar.data.getTag VarStruct = not ["options must be a struct" compilerError] when
     ] [
       optionsStruct: VarStruct optionsVar.data.get.get;
+      hasConvention: FALSE dynamic;
       optionsStruct.fields [
         f: .value;
         f.nameInfo (
@@ -864,41 +810,64 @@ parseSignature: [
               [variadicRefToVar staticnessOfVar Weak < ["value must be Static" compilerError] when]
               [VarCond variadicVar.data.get @result.@variadic set]
             ) sequence
+          ]
+          processor.conventionNameInfo [
+            conventionRefToVar: f.refToVar;
+            conventionVar: conventionRefToVar getVar;
+            (
+              [compilable]
+              [conventionVar.data.getTag VarString = not ["value must be String" compilerError] when]
+              [conventionRefToVar staticnessOfVar Weak < ["value must be Static" compilerError] when]
+              [
+                string: VarString conventionVar.data.get;
+                string @result.@convention set
+                TRUE @hasConvention set
+              ]
+            ) sequence
           ] [
             ("unknown option: " f.nameInfo processor.nameInfos.at.name) assembleString compilerError
           ]
         ) case
       ] each
-    ] [
-      return isVirtual [
-        returnVar: return getVar;
-        returnVar.data.getTag VarStruct = not [(return getMplType " can not be a return type") assembleString compilerError] when
-        TRUE @result.@void set
-      ] [
-        #todo: detect temporality
-        returnVar: return getVar;
-        returnVar.temporary [
-          return @result.@output set
+    ]
+    [
+      hasConvention not [
+        String @result.@convention set
+      ] when
+
+      return: pop;
+      compilable [
+        return isVirtual [
+          returnVar: return getVar;
+          returnVar.data.getTag VarStruct = not [(return getMplType " can not be a return type") assembleString compilerError] when
         ] [
-          return return.mutable createRef @result.@output set
+          #todo: detect temporality
+          returnVar: return getVar;
+          returnVar.temporary [
+            return @result.@outputs.pushBack
+          ] [
+            return return.mutable createRef @result.@outputs.pushBack
+          ] if
         ] if
-      ] if
-    ] [
+      ] when
+    ]
+    [arguments: pop;]
+    [
       arguments parseFieldToSignatureCaptureArray @result.@inputs set
     ]
   ) sequence
   result
-] func;
+];
 
-mplBuiltinExportFunction: [
+[
   (
     [compilable]
-    [currentNode.parent 0 = not ["import must be global" compilerError] when]
+    [currentNode.parent 0 = not ["export must be global" compilerError] when]
     [refToName: pop;]
     [refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" compilerError] when
+      varName.data.getTag VarString = not ["function name must be static string" compilerError] when
     ]
     [refToBody: pop;]
     [
@@ -907,60 +876,57 @@ mplBuiltinExportFunction: [
     ]
     [signature: parseSignature;]
     [
-      astNode: VarCode varBody.data.get @multiParserResult.@memory.at;
+      astNode: VarCode varBody.data.get.index @multiParserResult.@memory.at;
       index: signature astNode VarString varName.data.get makeStringView FALSE dynamic processExportFunction;
     ]
   ) sequence
-] func;
+] "mplBuiltinExportFunction" @declareBuiltin ucall
 
-mplBuiltinExportVariable: [
+[
   (
     [compilable]
-    [currentNode.parent 0 = not ["import must be global" compilerError] when]
+    [currentNode.parent 0 = not ["export must be global" compilerError] when]
     [refToName: pop;]
     [refToVar: pop;]
-    [refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when]
+    [refToName staticnessOfVar Weak < ["variable name must be static string" compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" compilerError] when
+      varName.data.getTag VarString = not ["variable name must be static string" compilerError] when
     ] [
-      varBody: refToVar getVar;
-      varBody.data.getTag VarCode = ["cannot export code" compilerError] when
+      refToVar isVirtual ["cannot export virtual var" compilerError] when
     ] [
-      #oops, it is not a code, its a simple global var
-      refToType: @refToVar;
-      varType: @varBody;
-      varType.temporary not ["export var must be temporary" compilerError] when
+      refToVar getVar.temporary not [
+        refToVar refToVar.mutable createRef @refToVar set
+      ] when
+      var: refToVar getVar;
+      FALSE @var.@temporary set
     ] [
       name: VarString varName.data.get;
-      newRefToVar: @refToType;
-      newVar: @varType;
-
-      oldIrNameId: newVar.irNameId copy;
-      oldInstructionIndex: newVar.globalDeclarationInstructionIndex copy;
-      ("@" name) assembleString makeStringId @newVar.@irNameId set
-      instruction: newVar.globalDeclarationInstructionIndex @processor.@prolog.at;
-      newRefToVar createVarExportIR @newRefToVar set
+      oldIrNameId: var.irNameId copy;
+      oldInstructionIndex: var.globalDeclarationInstructionIndex copy;
+      ("@" name) assembleString makeStringId @var.@irNameId set
+      instruction: var.globalDeclarationInstructionIndex @processor.@prolog.at;
+      refToVar createVarExportIR drop
       @processor.@prolog.last move @instruction set
       @processor.@prolog.popBack
-      TRUE @newRefToVar.@mutable set
-      oldIrNameId newVar.irNameId newVar.irTypeId createGlobalAliasIR
-      oldInstructionIndex @newVar.@globalDeclarationInstructionIndex set
+      TRUE @refToVar.@mutable set
+      oldIrNameId var.irNameId var.irTypeId createGlobalAliasIR
+      oldInstructionIndex @var.@globalDeclarationInstructionIndex set
 
       nameInfo: name findNameInfo;
-      nameInfo newRefToVar addOverloadForPre
-      nameInfo newRefToVar NameCaseLocal addNameInfo
-      processor.options.debug [newRefToVar isVirtual not] && [
-        d: nameInfo newRefToVar addGlobalVariableDebugInfo;
-        globalInstruction: newVar.globalDeclarationInstructionIndex @processor.@prolog.at;
+      nameInfo refToVar addOverloadForPre
+      nameInfo refToVar NameCaseLocal addNameInfo
+      processor.options.debug [
+        d: nameInfo refToVar addGlobalVariableDebugInfo;
+        globalInstruction: var.globalDeclarationInstructionIndex @processor.@prolog.at;
         ", !dbg !"   @globalInstruction.cat
         d            @globalInstruction.cat
       ] when
     ]
   ) sequence
-] func;
+] "mplBuiltinExportVariable" @declareBuiltin ucall
 
-mplBuiltinImportFunction: [
+[
   (
     [compilable]
     [currentNode.parent 0 = not ["import must be global" compilerError] when]
@@ -968,14 +934,14 @@ mplBuiltinImportFunction: [
     [refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" compilerError] when
+      varName.data.getTag VarString = not ["function name must be static string" compilerError] when
     ]
     [signature: parseSignature;]
     [index: signature VarString varName.data.get makeStringView FALSE dynamic processImportFunction;]
   ) sequence
-] func;
+] "mplBuiltinImportFunction" @declareBuiltin ucall
 
-mplBuiltinCodeRef: [
+[
   (
     [compilable]
     [signature: parseSignature;]
@@ -984,40 +950,40 @@ mplBuiltinCodeRef: [
       index: signature name makeStringView TRUE dynamic processImportFunction;
     ]
     [
-      #refToVar: index processor.nodes.at.get.refToVar;
       nullNode: index processor.nodes.at.get;
-      gnr: nullNode.varName getName;
+      gnr: nullNode.varNameInfo getName;
       cnr: gnr captureName;
       refToVar: cnr.refToVar copy;
-      #("coderef captured var=" refToVar.hostId ":" refToVar.varId " g=" refToVar isGlobal) addLog
 
       refToVar push
     ]
   ) sequence
-] func;
+] "mplBuiltinCodeRef" @declareBuiltin ucall
 
-mplBuiltinImportVariable: [
+[
   currentNode.parent 0 = not ["import must be global" compilerError] when
   compilable [
     refToName: pop;
-    refToOutputs: pop;
+    refToType: pop;
     compilable [
-      refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when
+      refToName staticnessOfVar Weak < ["variable name must be static string" compilerError] when
       compilable [
         varName: refToName getVar;
-        varOutputs: refToOutputs getVar;
-        varName.data.getTag VarString = not ["name must be static string" compilerError] when
+        varName.data.getTag VarString = not ["variable name must be static string" compilerError] when
         compilable [
-          varOutputs.data.getTag VarCode = [
-            "variable cant be a code" compilerError
+          varType: refToType getVar;
+          refToType isVirtual [
+            "variable cant be virtual" compilerError
           ] [
-            refToType: @refToOutputs;
-            varType: @varOutputs;
-            name: VarString varName.data.get;
+            varType.temporary not [
+              refToType refToType.mutable createRef @refToType set
+            ] when
 
+            name: VarString varName.data.get;
             newRefToVar: refToType copyVar;
             newVar: newRefToVar getVar;
             TRUE @newRefToVar.@mutable set
+            FALSE @newVar.@temporary set
             ("@" name) assembleString makeStringId @newVar.@irNameId set
             newRefToVar createVarImportIR makeVarTreeDynamic
 
@@ -1035,11 +1001,13 @@ mplBuiltinImportVariable: [
       ] when
     ] when
   ] when
-] func;
+] "mplBuiltinImportVariable" @declareBuiltin ucall
 
-mplBuiltinCopy: [
+[
   refToVar: pop;
   compilable [
+    refToVar isVirtual not [refToVar makeVarRealCaptured] when
+
     refToVar getVar.temporary [
       "temporary objects cannot be copied" compilerError
     ] [
@@ -1058,9 +1026,9 @@ mplBuiltinCopy: [
       ] if
     ] if
   ] when
-] func;
+] "mplBuiltinCopy" @declareBuiltin ucall
 
-mplBuiltinNewVarOfTheSameType: [
+[
   refToVar: pop;
   compilable [
     result: refToVar copyVarToNew;
@@ -1071,18 +1039,23 @@ mplBuiltinNewVarOfTheSameType: [
 
     result push
   ] when
-] func;
+] "mplBuiltinNewVarOfTheSameType" @declareBuiltin ucall
 
-mplBuiltinCast: [
+[
   refToSchema: pop;
   refToVar: pop;
 
   compilable [
+    varSrc: refToVar getVar;
+    varSchema: refToSchema getVar;
+    varSchema.data.getTag VarRef = [refToSchema isVirtual] && [
+      VarRef varSchema.data.get copyVarFromChild @refToSchema set
+      refToSchema getVar !varSchema
+    ] when
+
     refToVar isNumber refToSchema isNumber and [
       compilable [
         refToVar staticnessOfVar Dynamic > [
-          varSrc: refToVar getVar;
-          varSchema: refToSchema getVar;
           refToDst: RefToVar;
 
           varSrc.data.getTag VarNat8 VarReal64 1 + [
@@ -1164,15 +1137,16 @@ mplBuiltinCast: [
       "can cast only numbers" compilerError
     ] if
   ] when
-] func;
+] "mplBuiltinCast" @declareBuiltin ucall
 
-mplBuiltinStorageAddress: [
+[
   (
     [compilable]
     [refToVar: pop;]
     [refToVar isVirtual ["variable is virtual, cannot get address" compilerError] when]
     [
       TRUE refToVar getVar.@capturedAsMutable set #we need ref
+      refToVar makeVarRealCaptured
       refToVar makeVarTreeDirty
       refToDst: 0n64 VarNatX createVariable;
       Dynamic @refToDst getVar.@staticness set
@@ -1185,9 +1159,9 @@ mplBuiltinStorageAddress: [
       refToDst push
     ]
   ) sequence
-] func;
+] "mplBuiltinStorageAddress" @declareBuiltin ucall
 
-mplBuiltinAddressToReference: [
+[
   refToSchema: pop;
   refToVar: pop;
 
@@ -1199,7 +1173,7 @@ mplBuiltinAddressToReference: [
       varSchema: refToSchema getVar;
       varSchema.data.getTag VarString = [
         refToDst: String VarString createVariable;
-        Dynamic @refToDst getVar.@staticness set
+        Dirty @refToDst getVar.@staticness set
 
         refToVar refToDst "inttoptr" makeStringView createCastCopyToNew
         refToDst push
@@ -1226,9 +1200,9 @@ mplBuiltinAddressToReference: [
             "pointee is virtual, cannot cast" compilerError
           ] [
             refToDst: schemaOfResult VarRef createVariable;
-            Dynamic refToDst getVar.@staticness set
+            Dirty refToDst getVar.@staticness set
             refToVar refToDst "inttoptr" makeStringView createCastCopyToNew
-            refToDst derefAndPush
+            refToDst getPointee derefAndPush
           ] if
         ] if
       ] if
@@ -1236,25 +1210,25 @@ mplBuiltinAddressToReference: [
       "address must be a NatX" compilerError
     ] if
   ] when
-] func;
+] "mplBuiltinAddressToReference" @declareBuiltin ucall
 
-mplBuiltinConstVar: [
+[
   currentNode.nextLabelIsConst ["duplicate virtual specifier" compilerError] when
   TRUE @currentNode.@nextLabelIsConst set
-] func;
+] "mplBuiltinConstVar" @declareBuiltin ucall
 
-mplBuiltinVirtual: [
+[
   currentNode.nextLabelIsVirtual ["duplicate virtual specifier" compilerError] when
   TRUE @currentNode.@nextLabelIsVirtual set
-] func;
+] "mplBuiltinVirtual" @declareBuiltin ucall
 
-mplBuiltinSchema: [
+[
   currentNode.nextLabelIsSchema ["duplicate schema specifier" compilerError] when
   TRUE @currentNode.@nextLabelIsSchema set
-] func;
+] "mplBuiltinSchema" @declareBuiltin ucall
 
-mplBuiltinModule: [
-  parentIndex 0 = not [
+[
+  currentNode.parent 0 = not [
     "module can be declared only in top node" makeStringView compilerError
   ] [
     refToName: pop;
@@ -1286,95 +1260,15 @@ mplBuiltinModule: [
       ] when
     ] when
   ] if
-] func;
+] "mplBuiltinModule" @declareBuiltin ucall
 
-addNamesFromModule: [
-  copy moduleId:;
+[TRUE dynamic defaultUseOrIncludeModule] "mplBuiltinUseModule" @declareBuiltin ucall
+[FALSE dynamic defaultUseOrIncludeModule] "mplBuiltinIncludeModule" @declareBuiltin ucall
 
-  fru: current currentNode.usedOrIncludedModulesTable.find;
-  fru.success not [
-    moduleId TRUE @currentNode.@usedOrIncludedModulesTable.insert
-
-    moduleNode: moduleId processor.nodes.at.get;
-    moduleNode.labelNames [
-      current: .value;
-      current.nameInfo current.refToVar addOverloadForPre
-      indexOfNode: moduleId copy; # suppress assert
-      current.nameInfo current.refToVar NameCaseFromModule addNameInfo #it is not own local variable
-    ] each
-  ] when
-] func;
-
-processUseModule: [
-  copy asUse:;
-  copy moduleId:;
-
-  currentModule: moduleId processor.nodes.at.get;
-  moduleList: currentModule.includedModules copy;
-  moduleId @moduleList.pushBack
-
-  moduleList [
-    pair:;
-    current: pair.value;
-    #("try include module with id " current " name " current processor.nodes.at.get.moduleName) addLog
-    last: pair.index moduleList.getSize 1 - =;
-
-    asUse [last copy] && [
-      current {used: FALSE dynamic; position: currentNode.position copy;} @currentNode.@usedModulesTable.insert
-      current TRUE @currentNode.@directlyIncludedModulesTable.insert
-      current addNamesFromModule
-    ] [
-      fr: current currentNode.includedModulesTable.find;
-      fr.success not [
-        last [
-          current TRUE @currentNode.@directlyIncludedModulesTable.insert
-        ] when
-        current @currentNode.@includedModules.pushBack
-        current {used: FALSE dynamic; position: currentNode.position copy;} @currentNode.@includedModulesTable.insert
-        current addNamesFromModule
-      ] when
-    ] if
-  ] each
-] func;
-
-mplBuiltinUseOrIncludeModule: [
-  copy asUse:;
-  (
-    [compilable]
-    [parentIndex 0 = not ["module can be used only in top node" compilerError] when]
-    [refToName: pop;]
-    [refToName staticnessOfVar Weak < ["name must be static string" compilerError] when]
-    [
-      varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" compilerError] when
-    ] [
-      string: VarString varName.data.get;
-      fr: string makeStringView processor.modules.find;
-      fr.success [fr.value 0 < not] && [
-        frn: fr.value currentNode.usedModulesTable.find;
-        frn2: fr.value currentNode.directlyIncludedModulesTable.find;
-        frn.success frn2.success or [
-          ("duplicate use module: " string) assembleString compilerError
-        ] [
-          fr.value asUse processUseModule
-        ] if
-      ] [
-        TRUE dynamic @processorResult.@findModuleFail set
-        string @processorResult.@errorInfo.@missedModule set
-        ("module not found: " string) assembleString compilerError
-      ] if
-    ]
-  ) sequence
-] func;
-
-mplBuiltinUseModule: [TRUE dynamic mplBuiltinUseOrIncludeModule] func;
-mplBuiltinIncludeModule: [FALSE dynamic mplBuiltinUseOrIncludeModule] func;
-
-mplBuiltinTextSize: [
+[
   refToName: pop;
   compilable [
     refToName staticnessOfVar Weak < [
-      #"name must be static" compilerError
       result: 0n64 VarNatX createVariable Dynamic makeStaticness createAllocIR;
       refToName result createGetTextSizeIR
       result push
@@ -1387,9 +1281,9 @@ mplBuiltinTextSize: [
       ] when
     ] if
   ] when
-] func;
+] "mplBuiltinTextSize" @declareBuiltin ucall
 
-mplBuiltinStrCat: [
+[
   (
     [compilable]
     [refToStr2: pop;]
@@ -1406,9 +1300,9 @@ mplBuiltinStrCat: [
     ]
     [(VarString varStr1.data.get VarString varStr2.data.get) assembleString VarString createVariable createStringIR push]
   ) sequence
-] func;
+] "mplBuiltinStrCat" @declareBuiltin ucall
 
-mplBuiltinTextSplit: [
+[
   refToName: pop;
   compilable [
     refToName staticnessOfVar Weak < ["name must be static string" makeStringView compilerError] when
@@ -1421,8 +1315,7 @@ mplBuiltinTextSplit: [
 
         fields: RefToVar Array;
 
-        string.chars.dataSize 0 > [
-
+        string.chars.dataSize 0 < not [
           splitted: string makeStringView.split;
           splitted.success [
             splitted.chars [
@@ -1468,9 +1361,9 @@ mplBuiltinTextSplit: [
       ] when
     ] when
   ] when
-] func;
+] "mplBuiltinTextSplit" @declareBuiltin ucall
 
-mplBuiltinHas: [
+[
   (
     [compilable]
     [refToName: pop;]
@@ -1494,9 +1387,9 @@ mplBuiltinHas: [
       ] if
     ]
   ) sequence
-] func;
+] "mplBuiltinHas" @declareBuiltin ucall
 
-mplBuiltinFieldIndex: [
+[
   (
     [compilable]
     [refToName: pop;]
@@ -1519,9 +1412,9 @@ mplBuiltinFieldIndex: [
       fr.index Int64 cast VarInt32 createVariable Static makeStaticness createPlainIR push
     ]
   ) sequence
-] func;
+] "mplBuiltinFieldIndex" @declareBuiltin ucall
 
-mplBuiltinDef: [
+[
   (
     [compilable]
     [refToName: pop;]
@@ -1536,9 +1429,9 @@ mplBuiltinDef: [
       VarString varName.data.get findNameInfo pop createNamedVariable
     ]
   ) sequence
-] func;
+] "mplBuiltinDef" @declareBuiltin ucall
 
-mplBuiltinStorageSize: [
+[
   refToVar: pop;
   compilable [
     refToVar isVirtual [
@@ -1558,9 +1451,9 @@ mplBuiltinStorageSize: [
 
     0n64 cast VarNatX createVariable Static makeStaticness createPlainIR push
   ] when
-] func;
+] "mplBuiltinStorageSize" @declareBuiltin ucall
 
-mplBuiltinAlignment: [
+[
   refToVar: pop;
   compilable [
     refToVar isVirtual [
@@ -1580,9 +1473,9 @@ mplBuiltinAlignment: [
 
     0n64 cast VarNatX createVariable Static makeStaticness createPlainIR push
   ] when
-] func;
+] "mplBuiltinAlignment" @declareBuiltin ucall
 
-mplBuiltinPrintCompilerMessage: [
+[
   refToName: pop;
   compilable [
     refToName staticnessOfVar Weak < ["name must be static string" makeStringView compilerError] when
@@ -1594,57 +1487,31 @@ mplBuiltinPrintCompilerMessage: [
       ] when
     ] when
   ] when
-] func;
+] "mplBuiltinPrintCompilerMessage" @declareBuiltin ucall
 
-mplBuiltinPrintVariableCount: [
+[
   compilable [
     ("var count=" processor.varCount LF) printList
   ] when
-] func;
+] "mplBuiltinPrintVariableCount" @declareBuiltin ucall
 
-mplBuiltinPrintStack: [
-  ("stack:" LF "depth=" getStackDepth LF) printList
+[
+  defaultPrintStack
+] "mplBuiltinPrintStack" @declareBuiltin ucall
 
-  i: 0 dynamic;
-  [
-    i getStackDepth < [
-      entry: i getStackEntryUnchecked;
-      (i getStackEntryUnchecked getMplType entry.mutable ["R" makeStringView]["C" makeStringView] if LF) printList
-      i 1 + @i set TRUE
-    ] &&
-  ] loop
-] func;
+[
+  defaultPrintStackTrace
+] "mplBuiltinPrintStackTrace" @declareBuiltin ucall
 
-mplBuiltinPrintStackTrace: [
-  nodeIndex: indexOfNode copy;
-  [
-    node: nodeIndex processor.nodes.at.get;
-    node.root [
-      FALSE
-    ] [
-      ("at filename: "  node.position.filename processor.options.fileNames.at
-        ", token: "      node.position.token
-        ", nodeIndex: "  nodeIndex
-        ", line: "       node.position.line
-        ", column: "     node.position.column LF) printList
-
-      node.parent @nodeIndex set
-      TRUE
-    ] if
-  ] loop
-
-  mplBuiltinPrintStack
-] func;
-
-mplBuiltinSame: [
+[
   refToVar1: pop;
   refToVar2: pop;
   compilable [
     refToVar1 refToVar2 variablesAreSame VarCond createVariable Static makeStaticness createPlainIR push
   ] when
-] func;
+] "mplBuiltinSame" @declareBuiltin ucall
 
-mplBuiltinIs: [
+[
   refToVar1: pop;
   refToVar2: pop;
   compilable [
@@ -1660,6 +1527,7 @@ mplBuiltinIs: [
           -1 @cmpResult set
         ] if
       ] if
+
       cmpResult 0 = [
         result: FALSE VarCond createVariable Dynamic makeStaticness createAllocIR;
         refToVar1 refToVar2 result "icmp eq" makeStringView createDirectBinaryOperation
@@ -1671,31 +1539,31 @@ mplBuiltinIs: [
       FALSE VarCond createVariable Static makeStaticness createPlainIR push
     ] if
   ] when
-] func;
+] "mplBuiltinIs" @declareBuiltin ucall
 
-mplBuiltinIsConst: [
+[
   refToVar: pop;
   compilable [
     refToVar.mutable not VarCond createVariable Static makeStaticness createPlainIR push
   ] when
-] func;
+] "mplBuiltinIsConst" @declareBuiltin ucall
 
-mplBuiltinIsCombined: [
+[
   refToVar: pop;
   compilable [
     refToVar getVar.data.getTag VarStruct = VarCond createVariable Static makeStaticness createPlainIR push
   ] when
-] func;
+] "mplBuiltinIsCombined" @declareBuiltin ucall
 
-mplBuiltinDebug: [
+[
   processor.options.debug VarCond createVariable Static makeStaticness createPlainIR push
-] func;
+] "mplBuiltinDebug" @declareBuiltin ucall
 
-mplBuiltinHasLogs: [
+[
   processor.options.logs VarCond createVariable Static makeStaticness createPlainIR push
-] func;
+] "mplBuiltinHasLogs" @declareBuiltin ucall
 
-mplBuiltinFieldCount: [
+[
   refToVar: pop;
   compilable [
     var: refToVar getVar;
@@ -1713,9 +1581,9 @@ mplBuiltinFieldCount: [
       ] when
     ] if
   ] when
-] func;
+] "mplBuiltinFieldCount" @declareBuiltin ucall
 
-mplBuiltinFieldName: [
+[
   refToCount: pop;
   refToVar: pop;
   compilable [
@@ -1746,13 +1614,13 @@ mplBuiltinFieldName: [
       ] when
     ] when
   ] when
-] func;
+] "mplBuiltinFieldName" @declareBuiltin ucall
 
-mplBuiltinCompilerVersion: [
+[
   COMPILER_SOURCE_VERSION 0i64 cast VarInt32 createVariable Static makeStaticness createPlainIR push
-] func;
+] "mplBuiltinCompilerVersion" @declareBuiltin ucall
 
-mplBuiltinArray: [
+[
   refToCount: pop;
   refToElement: pop;
   compilable [
@@ -1813,21 +1681,9 @@ mplBuiltinArray: [
       ] when
     ] when
   ] when
-] func;
+] "mplBuiltinArray" @declareBuiltin ucall
 
-mplBuiltinNew: [
-  TRUE dynamic @processor.@usedHeapBuiltins set
-  refToVar: pop;
-  refToVar createNew push mplBuiltinRef
-] func;
-
-mplBuiltinDelete: [
-  TRUE dynamic @processor.@usedHeapBuiltins set
-  refToVar: pop;
-  refToVar createDelete
-] func;
-
-mplBuiltinMove: [
+[
   refToVar: pop;
   compilable [
     refToVar.mutable [
@@ -1845,9 +1701,9 @@ mplBuiltinMove: [
       "moved can be only mutable variables" makeStringView compilerError
     ] if
   ] when
-] func;
+] "mplBuiltinMove" @declareBuiltin ucall
 
-mplBuiltinMoveIf: [
+[
   refToCond: pop;
   compilable [
     condVar: refToCond getVar;
@@ -1876,39 +1732,39 @@ mplBuiltinMoveIf: [
       ] when
     ] when
   ] when
-] func;
+] "mplBuiltinMoveIf" @declareBuiltin ucall
 
-mplBuiltinIsMoved: [
+[
   refToVar: pop;
   compilable [
     refToVar push
     refToVar isForgotten
     VarCond createVariable Static makeStaticness createPlainIR push
   ] when
-] func;
+] "mplBuiltinIsMoved" @declareBuiltin ucall
 
-mplBuiltinManuallyInitVariable: [
+[
   refToVar: pop;
   compilable [
     refToVar isAutoStruct [refToVar callInit] when
   ] when
-] func;
+] "mplBuiltinManuallyInitVariable" @declareBuiltin ucall
 
-mplBuiltinManuallyDestroyVariable: [
+[
   refToVar: pop;
   compilable [
     refToVar isAutoStruct [refToVar callDie] when
   ] when
-] func;
+] "mplBuiltinManuallyDestroyVariable" @declareBuiltin ucall
 
-mplBuiltinCompileOnce: [
+[
   TRUE dynamic @currentNode.@nodeCompileOnce set
-] func;
+] "mplBuiltinCompileOnce" @declareBuiltin ucall
 
-mplBuiltinRecursive: [
+[
   TRUE dynamic @currentNode.@nodeIsRecursive set
-] func;
+] "mplBuiltinRecursive" @declareBuiltin ucall
 
-mplBuiltinFailProc: [
-  text: pop;
-] func;
+[
+  defaultFailProc
+] "mplBuiltinFailProc" @declareBuiltin ucall

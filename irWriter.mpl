@@ -1,27 +1,28 @@
 "irWriter" module
-"control" useModule
+
+"control" includeModule
+"defaultImpl" includeModule
 
 IRArgument: [{
   irTypeId: 0;
   irNameId: 0;
   byRef: TRUE;
-}] func;
+}];
 
 createDerefTo: [
   derefNameId:;
   refToVar:;
   ("  " @derefNameId getNameById " = load " refToVar getIrType ", " refToVar getIrType "* " refToVar getIrName) assembleString makeInstruction @currentNode.@program.pushBack
-] func;
+];
 
 createDerefToRegister: [
   derefName: generateRegisterIRName;
   derefName createDerefTo
   derefName
-] func;
+];
 
 createAllocIR: [
   refToVar:;
-
   var: refToVar getVar;
 
   currentNode.parent 0 = [
@@ -34,7 +35,16 @@ createAllocIR: [
   ] if
 
   refToVar copy
-] func;
+];
+
+createStaticInitIR: [
+  refToVar:;
+  var: refToVar getVar;
+  [currentNode.parent 0 =] "Can be used only with global vars!" assert
+  (refToVar getIrName " = local_unnamed_addr global " refToVar getStaticStructIR) assembleString @processor.@prolog.pushBack
+  processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
+  refToVar copy
+];
 
 createVarImportIR: [
   refToVar:;
@@ -45,7 +55,7 @@ createVarImportIR: [
   processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
 
   refToVar copy
-] func;
+];
 
 createVarExportIR: [
   refToVar:;
@@ -56,21 +66,28 @@ createVarExportIR: [
   processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
 
   refToVar copy
-] func;
+];
 
 createAliasIR: [
   aliaseeType:;
   aliasee:;
   alias:;
   ("  " alias getNameById " = alias " aliaseeType getNameById ", " aliaseeType getNameById "* " aliasee getNameById) assembleString makeInstruction @currentNode.@program.pushBack
-] func;
+];
 
 createGlobalAliasIR: [
   aliaseeType:;
   aliasee:;
   alias:;
   (alias getNameById " = alias " aliaseeType getNameById ", " aliaseeType getNameById "* " aliasee getNameById) assembleString @processor.@prolog.pushBack
-] func;
+];
+
+createFuncAliasIR: [
+  aliaseeType:;
+  aliasee:;
+  alias:;
+  (alias " = ifunc " aliaseeType ", " aliaseeType "* " aliasee) assembleString
+];
 
 createStoreConstant: [
   refToDst:;
@@ -78,14 +95,14 @@ createStoreConstant: [
 
   s: refWithValue getPlainConstantIR;
   ("  store " refToDst getIrType " " s ", " refToDst getIrType "* " refToDst getIrName) assembleString makeInstruction @currentNode.@program.pushBack
-] func;
+];
 
 createPlainIR: [
   refToVar:;
   [refToVar isPlain] "Var is not plain" assert
   refToVar refToVar createAllocIR createStoreConstant
   refToVar copy
-] func;
+];
 
 getStringImplementation: [
   stringView: makeStringView;
@@ -94,7 +111,7 @@ getStringImplementation: [
     i: 0 dynamic;
     [
       i stringView.dataSize < [
-        codeRef: stringView.dataBegin storageAddress i 0ix cast 0nx cast + Nat8 addressToReference;
+        codeRef: stringView.dataBegin storageAddress i Natx cast + Nat8 addressToReference;
         code: codeRef copy;
         code 32n8 < not [code 127n8 <] && [code 34n8 = not] && [code 92n8 = not] && [  # exclude " and \
           code 0n32 cast @result.catSymbolCode
@@ -108,17 +125,17 @@ getStringImplementation: [
     ] loop
     result
   ] call
-] func;
+];
 
 createStringTypeByStringName: [
   stringName: makeStringView;
   stringNameNoFirst: stringName.getTextSize 1 - stringName.dataBegin storageAddress 1nx + Nat8 addressToReference makeStringViewRaw;
   ("%type." stringNameNoFirst) assembleString
-] func;
+];
 
-createStringIR: [
+createStringIRNoAlloc: [
   refToVar:;
-  var: refToVar createAllocIR getVar;
+  var: refToVar getVar;
   varValue: VarString var.data.get;
   stringSizeWithZero: varValue.chars.dataSize 0 = [1][varValue.chars.dataSize 0 cast] if;
 
@@ -150,7 +167,11 @@ createStringIR: [
   ) assembleString makeInstruction @currentNode.@program.pushBack
 
   refToVar copy
-] func;
+];
+
+createStringIR: [
+  createAllocIR createStringIRNoAlloc
+];
 
 createGetTextSizeIR: [
   refToDst:;
@@ -188,13 +209,13 @@ createGetTextSizeIR: [
     1 createJump
     createLabel
   ] when
-] func;
+];
 
 createTypeDeclaration: [
   irType:;
   alias:;
   (@alias " = type " @irType) assembleString @processor.@prolog.pushBack
-] func;
+];
 
 createStaticGEP: [
   structRefToVar:;
@@ -205,7 +226,7 @@ createStaticGEP: [
   realIndex: index VarStruct struct.data.get.get.realFieldIndexes.at;
   ("  " resultRefToVar getIrName " = getelementptr " structRefToVar getIrType ", " structRefToVar getIrType "* " structRefToVar getIrName ", i32 0, i32 " realIndex
   ) assembleString makeInstruction @currentNode.@program.pushBack
-] func;
+];
 
 createFailWithMessage: [
   message:;
@@ -217,12 +238,12 @@ createFailWithMessage: [
 
   failProcRefToVar getVar.data.getTag VarBuiltin = [
     #no overload
-    mplBuiltinFailProc
+    defaultFailProc
   ] [
     failProcRefToVar derefAndPush
-    mplBuiltinCall
+    defaultCall
   ] if
-] func;
+];
 
 createDynamicGEP: [
   structRefToVar:;
@@ -248,7 +269,7 @@ createDynamicGEP: [
   ("  " resultRefToVar getIrName " = getelementptr " structRefToVar getIrType ", " structRefToVar getIrType "* " structRefToVar  getIrName ", i32 0, i32 " indexRegister getNameById
   ) assembleString makeInstruction @currentNode.@program.pushBack
 
-] func;
+];
 
 createGEPInsteadOfAlloc: [
   struct:;
@@ -267,7 +288,7 @@ createGEPInsteadOfAlloc: [
 
   dstVar.allocationInstructionIndex @dstVar.@getInstructionIndex set
   -1 @dstVar.@allocationInstructionIndex set
-] func;
+];
 
 createStoreFromRegister: [
   destRefToVar:;
@@ -275,7 +296,7 @@ createStoreFromRegister: [
 
   resultVar: destRefToVar getVar;
   ("  store " destRefToVar getIrType " " @regName getNameById ", " destRefToVar getIrType "* " destRefToVar getIrName) assembleString makeInstruction @currentNode.@program.pushBack
-] func;
+];
 
 createBinaryOperation: [
   opName:;
@@ -285,7 +306,7 @@ createBinaryOperation: [
   resultReg: generateRegisterIRName;
   ("  " resultReg getNameById " = " @opName " " arg1 getIrType " " var1p getNameById ", " var2p getNameById) assembleString makeInstruction @currentNode.@program.pushBack
   resultReg result createStoreFromRegister
-] func;
+];
 
 createBinaryOperationDiffTypes: [
   opName:;
@@ -304,7 +325,7 @@ createBinaryOperationDiffTypes: [
   resultReg: generateRegisterIRName;
   ("  " resultReg getNameById " = " opName " " arg1 getIrType " " var1p getNameById ", " castedReg getNameById) assembleString makeInstruction @currentNode.@program.pushBack
   resultReg result createStoreFromRegister
-] func;
+];
 
 createDirectBinaryOperation: [
   opName:;
@@ -314,7 +335,7 @@ createDirectBinaryOperation: [
   resultReg: generateRegisterIRName;
   ("  " resultReg getNameById " = " opName " " arg1 getIrType "* " arg1 getIrName ", " arg2 getIrName) assembleString makeInstruction @currentNode.@program.pushBack
   resultReg result createStoreFromRegister
-] func;
+];
 
 createUnaryOperation: [
   mopName:;
@@ -324,7 +345,7 @@ createUnaryOperation: [
   resultReg: generateRegisterIRName;
   ("  " resultReg getNameById " = " opName " " arg getIrType " " mopName varp getNameById) assembleString makeInstruction @currentNode.@program.pushBack
   resultReg result createStoreFromRegister
-] func;
+];
 
 createMemset: [
   dstRef:;
@@ -334,7 +355,7 @@ createMemset: [
     loadReg: srcRef createDerefToRegister;
     loadReg dstRef createStoreFromRegister
   ] when
-] func;
+];
 
 createCheckedCopyToNewWith: [
   copy doDie:;
@@ -370,10 +391,10 @@ createCheckedCopyToNewWith: [
     loadReg: srcRef createDerefToRegister;
     loadReg dstRef createStoreFromRegister
   ] if
-] func;
+];
 
-createCheckedCopyToNew: [TRUE dynamic createCheckedCopyToNewWith] func;
-createCheckedCopyToNewNoDie: [FALSE dynamic createCheckedCopyToNewWith] func;
+createCheckedCopyToNew: [TRUE dynamic createCheckedCopyToNewWith];
+createCheckedCopyToNewNoDie: [FALSE dynamic createCheckedCopyToNewWith];
 
 createCopyToNew: [
   newRefToVar:;
@@ -383,7 +404,7 @@ createCopyToNew: [
   ] [
     newRefToVar createAllocIR createCheckedCopyToNew
   ] if
-] func;
+];
 
 createCastCopyToNew: [
   castName:;
@@ -395,7 +416,7 @@ createCastCopyToNew: [
   ("  " castedReg getNameById " = " @castName " " srcRef getIrType " " loadReg getNameById " to " dstRef getIrType) assembleString makeInstruction @currentNode.@program.pushBack
 
   castedReg dstRef createStoreFromRegister
-] func;
+];
 
 createCastCopyPtrToNew: [
   castName:;
@@ -406,7 +427,7 @@ createCastCopyPtrToNew: [
   ("  " castedReg getNameById " = " @castName " " srcRef getIrType "* " srcRef getIrName " to " dstRef getIrType) assembleString makeInstruction @currentNode.@program.pushBack
 
   castedReg dstRef createStoreFromRegister
-] func;
+];
 
 createCopyToExists: [
   dstRef:;
@@ -438,22 +459,23 @@ createCopyToExists: [
   ] [
     srcRef dstRef createMemset
   ] if
-] func;
+];
 
 createRefOperation: [
   dstRef: createAllocIR;
   srcRef:;
   srcRef getVar.irNameId dstRef createStoreFromRegister
-] func;
+];
 
 createRetValue: [
   refToVar:;
   getReg: refToVar createDerefToRegister;
   ("  ret " refToVar getIrType " " getReg getNameById) assembleString makeInstruction @currentNode.@program.pushBack
-] func;
+];
 
 createCallIR: [
   funcName:;
+  conventionName:;
   argList:;
   refToRet:;
 
@@ -465,9 +487,9 @@ createCallIR: [
   haveRet [
     generateRegisterIRName @retName set
 
-    ("  " @retName getNameById " = call " refToRet getIrType " ") @operation.catMany
+    ("  " @retName getNameById " = call " conventionName refToRet getIrType " ") @operation.catMany
   ] [
-    "  call void " @operation.cat
+    ("  call " conventionName "void ") @operation.catMany
   ] if
 
   @funcName @operation.cat
@@ -493,12 +515,12 @@ createCallIR: [
   addDebugLocationForLastInstruction
 
   retName
-] func;
+];
 
 createLabel: [
   ("label" currentNode.lastBrLabelName ":") assembleString makeInstruction @currentNode.@program.pushBack
   currentNode.lastBrLabelName 1 + @currentNode.@lastBrLabelName set
-] func;
+];
 
 createBranch: [
   refToCond:;
@@ -507,13 +529,13 @@ createBranch: [
   condReg: refToCond createDerefToRegister;
   ("  br i1 " condReg getNameById ", label %label" currentNode.lastBrLabelName timeShift - ", label %label" currentNode.lastBrLabelName timeShift - 1 +
   ) assembleString makeInstruction @currentNode.@program.pushBack
-] func;
+];
 
 createJump: [
   copy timeShift:;
 
   ("  br label %label" currentNode.lastBrLabelName timeShift - 1 +) assembleString makeInstruction @currentNode.@program.pushBack
-] func;
+];
 
 createPhiNode: [
   copy shift:;
@@ -524,7 +546,7 @@ createPhiNode: [
 
   ("  " @varName " = phi " @varType " [ " @thenName ", %label" currentNode.lastBrLabelName 3 - shift + " ], [ " @elseName ", %label" currentNode.lastBrLabelName 2 - shift + " ]"
   ) assembleString makeInstruction @currentNode.@program.pushBack
-] func;
+];
 
 createComent: [
   coment: makeStringView;
@@ -532,54 +554,11 @@ createComent: [
     compileOnce
     (" ;" coment) assembleString makeInstruction @currentNode.@program.pushBack
   ] call
-] func;
+];
 
 addStrToProlog: [
   toString @processor.@prolog.pushBack
-] func;
-
-createNew: [
-  refToVar:;
-
-  addrName: generateRegisterIRName;
-  processor.options.pointerSize 64nx = [
-    ("  " addrName getNameById " = call i64 @malloc(i64 " refToVar getStorageSize ")") assembleString makeInstruction @currentNode.@program.pushBack
-  ] [
-    ("  " addrName getNameById " = call i32 @malloc(i32 " refToVar getStorageSize ")") assembleString makeInstruction @currentNode.@program.pushBack
-  ] if
-
-  ptrVar: refToVar copyVar;
-  TRUE @ptrVar.@mutable set
-  currentNode.program.dataSize ptrVar getVar.@getInstructionIndex set
-
-  processor.options.pointerSize 64nx = [
-    ("  " ptrVar getIrName " = inttoptr i64 " addrName getNameById " to " ptrVar getIrType "*") assembleString makeInstruction @currentNode.@program.pushBack
-  ] [
-    ("  " ptrVar getIrName " = inttoptr i32 " addrName getNameById " to " ptrVar getIrType "*") assembleString makeInstruction @currentNode.@program.pushBack
-  ] if
-
-  refToVar ptrVar createCheckedCopyToNew
-
-  ptrVar markAsUnableToDie
-  ptrVar
-] func;
-
-createDelete: [
-  refToVar:;
-
-  refToVar callDie
-
-  ptrName: generateRegisterIRName;
-  castOp: String;
-
-  processor.options.pointerSize 64nx = [
-    ("  " ptrName getNameById " = ptrtoint " refToVar getIrType "* " refToVar getIrName  " to i64") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  call void @free(i64 " ptrName getNameById ")" ) assembleString makeInstruction @currentNode.@program.pushBack
-  ] [
-    ("  " ptrName getNameById " = ptrtoint " refToVar getIrType "* " refToVar getIrName  " to i32") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  call void @free(i32 " ptrName getNameById ")" ) assembleString makeInstruction @currentNode.@program.pushBack
-  ] if
-] func;
+];
 
 createFloatBuiltins: [
   "declare float @llvm.sin.f32(float)"           addStrToProlog
@@ -598,25 +577,7 @@ createFloatBuiltins: [
   "declare double @llvm.log10.f64(double)"       addStrToProlog
   "declare float @llvm.pow.f32(float, float)"    addStrToProlog
   "declare double @llvm.pow.f64(double, double)" addStrToProlog
-] func;
-
-createHeapBuiltins: [
-  "malloc" @processor.@namedFunctions.find.success not [
-    processor.options.pointerSize 64nx = [
-      "declare i64 @malloc(i64)" addStrToProlog
-    ] [
-      "declare i32 @malloc(i32)" addStrToProlog
-    ] if
-  ] when
-
-  "free" @processor.@namedFunctions.find.success not [
-    processor.options.pointerSize 64nx = [
-      "declare void @free(i64)" addStrToProlog
-    ] [
-      "declare void @free(i32)" addStrToProlog
-    ] if
-  ] when
-] func;
+];
 
 createCtors: [
   "" addStrToProlog
@@ -629,7 +590,7 @@ createCtors: [
   ] each
   "  ret void" addStrToProlog
   "}" addStrToProlog
-] func;
+];
 
 createDtors: [
   "" addStrToProlog
@@ -642,7 +603,7 @@ createDtors: [
   ] each
   "  ret void" addStrToProlog
   "}" addStrToProlog
-] func;
+];
 
 sortInstructions: [
   allocs:             Instruction Array;
@@ -671,4 +632,15 @@ sortInstructions: [
   @fakePointersAllocs [.@value move @currentNode.@program.pushBack] each
   @fakePointers       [.@value move @currentNode.@program.pushBack] each
   @noallocs           [.@value move @currentNode.@program.pushBack] each
-] func;
+];
+
+addAliasesForUsedNodes: [
+  String @processor.@prolog.pushBack
+  "; Func aliases" toString @processor.@prolog.pushBack
+  @processor.@nodes [
+    currentNode: .@value.get;
+    currentNode nodeHasCode [
+      @currentNode.@aliases [.@value move @processor.@prolog.pushBack] each
+    ] when
+  ] each
+];

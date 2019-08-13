@@ -20,7 +20,7 @@ extractClearPath: [
       String
     ] if
   ] call
-] func;
+];
 
 simplifyPath: [
   splittedPath: makeStringView.split;
@@ -35,8 +35,8 @@ simplifyPath: [
         fragments: String Array;
         String @fragments.pushBack
 
-        isCurrent: ["." =] func;
-        isBack: [".." =] func;
+        isCurrent: ["." =];
+        isBack: [".." =];
 
         splittedPath.chars [
           pair:;
@@ -79,4 +79,4 @@ simplifyPath: [
       String String
     ] if
   ] call
-] func;
+];

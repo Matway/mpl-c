@@ -1,13 +1,16 @@
 "parser" module
-"control" useModule
+"control" includeModule
+"ascii" includeModule
+"String" includeModule
+"astNodeType" includeModule
 
 fillPositionInfo: [
   astNode:;
   lastPosition.offset @astNode.@offset set
   lastPosition.line @astNode.@line set
   lastPosition.column @astNode.@column set
-  currentFileName @astNode.@filename set
-] func;
+  currentFileNumber @astNode.@fileNumber set
+];
 
 makeLabelNode: [
   children:;
@@ -20,7 +23,7 @@ makeLabelNode: [
   children @branch.@children set
   name @branch.@name set
   @result
-] func;
+];
 
 makeCodeNode: [
   children:;
@@ -31,7 +34,7 @@ makeCodeNode: [
   branch: AstNodeType.Code @result.@data.get;
   children @branch set
   @result
-] func;
+];
 
 makeObjectNode: [
   children:;
@@ -42,7 +45,7 @@ makeObjectNode: [
   branch: AstNodeType.Object @result.@data.get;
   children @branch set
   @result
-] func;
+];
 
 makeListNode: [
   children:;
@@ -53,7 +56,7 @@ makeListNode: [
   branch: AstNodeType.List @result.@data.get;
   children @branch set
   @result
-] func;
+];
 
 makeNameNode: [
   name:;
@@ -64,7 +67,7 @@ makeNameNode: [
   branch: AstNodeType.Name @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeNameReadNode: [
   name:;
@@ -75,7 +78,7 @@ makeNameReadNode: [
   branch: AstNodeType.NameRead @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeNameWriteNode: [
   name:;
@@ -86,7 +89,7 @@ makeNameWriteNode: [
   branch: AstNodeType.NameWrite @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeNameMemberNode: [
   name:;
@@ -97,7 +100,7 @@ makeNameMemberNode: [
   branch: AstNodeType.NameMember @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeNameReadMemberNode: [
   name:;
@@ -108,7 +111,7 @@ makeNameReadMemberNode: [
   branch: AstNodeType.NameReadMember @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeNameWriteMemberNode: [
   name:;
@@ -119,7 +122,7 @@ makeNameWriteMemberNode: [
   branch: AstNodeType.NameWriteMember @result.@data.get;
   name toString @branch.@name set
   @result
-] func;
+];
 
 makeStringNode: [
   value:;
@@ -130,7 +133,7 @@ makeStringNode: [
   branch: AstNodeType.String @result.@data.get;
   value @branch set
   @result
-] func;
+];
 
 makeNumberi8Node: [
   token:;
@@ -142,7 +145,7 @@ makeNumberi8Node: [
   branch: AstNodeType.Numberi8 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumberi16Node: [
   token:;
@@ -154,7 +157,7 @@ makeNumberi16Node: [
   branch: AstNodeType.Numberi16 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumberi32Node: [
   token:;
@@ -166,7 +169,7 @@ makeNumberi32Node: [
   branch: AstNodeType.Numberi32 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumberi64Node: [
   token:;
@@ -178,7 +181,7 @@ makeNumberi64Node: [
   branch: AstNodeType.Numberi64 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumberixNode: [
   token:;
@@ -190,7 +193,7 @@ makeNumberixNode: [
   branch: AstNodeType.Numberix @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumbern8Node: [
   token:;
@@ -202,7 +205,7 @@ makeNumbern8Node: [
   branch: AstNodeType.Numbern8 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumbern16Node: [
   token:;
@@ -214,7 +217,7 @@ makeNumbern16Node: [
   branch: AstNodeType.Numbern16 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumbern32Node: [
   token:;
@@ -226,7 +229,7 @@ makeNumbern32Node: [
   branch: AstNodeType.Numbern32 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumbern64Node: [
   token:;
@@ -238,7 +241,7 @@ makeNumbern64Node: [
   branch: AstNodeType.Numbern64 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeNumbernxNode: [
   token:;
@@ -250,7 +253,7 @@ makeNumbernxNode: [
   branch: AstNodeType.Numbernx @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeReal32Node: [
   token:;
@@ -262,7 +265,7 @@ makeReal32Node: [
   branch: AstNodeType.Real32 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeReal64Node: [
   token:;
@@ -274,41 +277,11 @@ makeReal64Node: [
   branch: AstNodeType.Real64 @result.@data.get;
   number @branch set
   @result
-] func;
+];
 
 makeParserConstants: [{
-  eof:        [  0n32] func;
+  eof:        [  0n32];
 
-  cr:         [ 13n32] func;
-  lf:         [ 10n32] func;
-  space:      [ 32n32] func;
-  exclamation:[ 33n32] func;
-  quote:      [ 34n32] func;
-  grid:       [ 35n32] func;
-  openRBr:    [ 40n32] func;
-  closeRBr:   [ 41n32] func;
-  openSBr:    [ 91n32] func;
-  closeSBr:   [ 93n32] func;
-  openFBr:    [123n32] func;
-  closeFBr:   [125n32] func;
-  plus:       [ 43n32] func;
-  comma:      [ 44n32] func;
-  minus:      [ 45n32] func;
-  dot:        [ 46n32] func;
-  zero:       [ 48n32] func;
-  colon:      [ 58n32] func;
-  semicolon:  [ 59n32] func;
-  dog:        [ 64n32] func;
-  backSlash:  [ 92n32] func;
-  # it is for numbers
-  aCode:      [ 97n32] func;
-  aCodeBig:   [ 65n32] func;
-  eCode:      [101n32] func;
-  eCodeBig:   [ 69n32] func;
-  iCode:      [105n32] func;
-  nCode:      [110n32] func;
-  rCode:      [114n32] func;
-  xCode:      [120n32] func;
 
   makeLookupTable: [
     av:;
@@ -321,7 +294,7 @@ makeParserConstants: [{
     ] each
 
     result
-  ] func;
+  ];
 
   joinLookupTables: [
     right:;
@@ -336,39 +309,39 @@ makeParserConstants: [{
     ] each
 
     result
-  ] func;
+  ];
 
-  starters: (openRBr openSBr openFBr) makeLookupTable;
-  terminators: (eof closeRBr closeSBr closeFBr semicolon) makeLookupTable;
-  digits: (zero zero 1n32 + zero 2n32 + zero 3n32 + zero 4n32 + zero 5n32 + zero 6n32 + zero 7n32 + zero 8n32 + zero 9n32 +) makeLookupTable;
-  numberSigns: (plus minus) makeLookupTable;
-  specials: (space cr lf colon grid) makeLookupTable starters joinLookupTables terminators joinLookupTables;
-  begExp: (eCode eCodeBig) makeLookupTable;
-  endNumbers: specials (comma) makeLookupTable joinLookupTables;
+  starters: (ascii.openRBr ascii.openSBr ascii.openFBr) makeLookupTable;
+  terminators: (ascii.null ascii.closeRBr ascii.closeSBr ascii.closeFBr ascii.semicolon) makeLookupTable;
+  digits: (ascii.zero ascii.one ascii.two ascii.three ascii.four ascii.five ascii.six ascii.seven ascii.eight ascii.nine) makeLookupTable;
+  numberSigns: (ascii.plus ascii.minus) makeLookupTable;
+  specials: (ascii.space ascii.cr ascii.lf ascii.colon ascii.grid) makeLookupTable starters joinLookupTables terminators joinLookupTables;
+  begExp: (ascii.eCode ascii.eCodeBig) makeLookupTable;
+  endNumbers: specials (ascii.comma) makeLookupTable joinLookupTables;
   endNames: specials copy;
 
   hexDigits: (
-    zero zero 1n32 + zero 2n32 + zero 3n32 + zero 4n32 + zero 5n32 + zero 6n32 + zero 7n32 + zero 8n32 + zero 9n32 +
-    aCode aCode 1n32 + aCode 2n32 + aCode 3n32 + aCode 4n32 + aCode 5n32 +
-    aCodeBig aCodeBig 1n32 + aCodeBig 2n32 + aCodeBig 3n32 + aCodeBig 4n32 + aCodeBig 5n32 +
+    ascii.zero ascii.one ascii.two ascii.three ascii.four ascii.five ascii.six ascii.seven ascii.eight ascii.nine
+    ascii.aCode ascii.bCode ascii.cCode ascii.dCode ascii.eCode ascii.fCode
+    ascii.aCodeBig ascii.bCodeBig ascii.cCodeBig ascii.dCodeBig ascii.eCodeBig ascii.fCodeBig
   ) makeLookupTable;
 
   hexToInt: [
     result: Nat32 Array;
     256 @result.resize
 
-    10n32 [i 0n32 cast zero 0 cast i + @result.at set] times
-    6n32  [i 10 + 0n32 cast aCode    0 cast i + @result.at set] times
-    6n32  [i 10 + 0n32 cast aCodeBig 0 cast i + @result.at set] times
+    10 [i      0n32 cast ascii.zero     0 cast i + @result.at set] times
+    6  [i 10 + 0n32 cast ascii.aCode    0 cast i + @result.at set] times
+    6  [i 10 + 0n32 cast ascii.aCodeBig 0 cast i + @result.at set] times
     result
   ] call;
-}] func;
+}];
 
 inArray: [
   where:;
   copy code:;
   code 256n32 < [code 0 cast where.at copy] &&
-] func;
+];
 
 undo: [
   mainResult.success [
@@ -378,16 +351,16 @@ undo: [
       currentSymbol stringMemory Nat8 addressToReference Nat32 cast @currentCode set
     ] [
       StringView @currentSymbol set
-      pc.eof @currentCode set
+      ascii.null @currentCode set
     ] if
   ] when
-] func;
+];
 
 iterate: [
   mainResult.success [
     currentPosition @prevPosition set
 
-    currentCode pc.lf = [
+    currentCode ascii.lf = [
       0 dynamic @currentPosition.@column set
       currentPosition.line 1 + @currentPosition.@line set
     ] when
@@ -400,16 +373,16 @@ iterate: [
       currentSymbol stringMemory Nat8 addressToReference Nat32 cast @currentCode set
     ] [
       StringView @currentSymbol set
-      pc.eof @currentCode set
+      ascii.null @currentCode set
     ] if
   ] when
-] func;
+];
 
 lexicalError: [
   toString @mainResult.@errorInfo.@message set
   currentPosition @mainResult.@errorInfo.@position set
   FALSE @mainResult.@success set
-] func;
+];
 
 parseStringConstant: [
   nameSymbols: StringView Array;
@@ -417,7 +390,7 @@ parseStringConstant: [
   iterate
 
   [
-    currentCode pc.backSlash = [
+    currentCode ascii.backSlash = [
       slashed [
         currentSymbol @nameSymbols.pushBack
         FALSE @slashed set
@@ -426,7 +399,7 @@ parseStringConstant: [
       ] if
       TRUE
     ] [
-      currentCode pc.quote = [
+      currentCode ascii.quote = [
         slashed [
           currentSymbol @nameSymbols.pushBack
           TRUE
@@ -435,7 +408,7 @@ parseStringConstant: [
         ] if
         FALSE @slashed set
       ] [
-        currentCode pc.eof = [
+        currentCode ascii.null = [
           "unterminated string" lexicalError
           FALSE
         ] [
@@ -451,7 +424,7 @@ parseStringConstant: [
 
   nameSymbols assembleString makeStringNode @mainResult.@memory.pushBack
   TRUE
-] func;
+];
 
 tryParseNumberAfterSign: [
   currentCode pc.digits inArray [
@@ -459,24 +432,25 @@ tryParseNumberAfterSign: [
   ] [
     undo parseName
   ] if
-] func;
+];
 
-dCheck: [currentCode pc.digits inArray not ["wrong number constant" lexicalError] when ] func;
+dCheck: [currentCode pc.digits inArray not ["wrong number constant" lexicalError] when];
+
 xCheck: [
   currentCode pc.digits inArray not [
-    currentCode pc.xCode = [
+    currentCode ascii.xCode = [
       -2 @currentArray.pushBack
       iterate
     ] [
       "wrong number constant" lexicalError
     ] if
   ] when
-] func;
+];
 
 parseDecNumber: [
   copy hasMinus:;
 
-  IntArray: [Int32 Array] func;
+  IntArray: [Int32 Array];
   beforeDot: IntArray;
   afterDot: IntArray;
   afterE: IntArray;
@@ -496,10 +470,10 @@ parseDecNumber: [
 
   [
     currentCode pc.digits inArray [
-      currentCode pc.zero - 0 cast @currentArray.pushBack
+      currentCode ascii.zero - 0 cast @currentArray.pushBack
       iterate TRUE
     ] [
-      currentCode pc.dot = [
+      currentCode ascii.dot = [
         stage 0 = not [
           FALSE
         ] [
@@ -514,7 +488,7 @@ parseDecNumber: [
           ] if
         ] if
       ] [
-        currentCode pc.nCode = [
+        currentCode ascii.nCode = [
           stage 0 = not ["wrong number constant" lexicalError] when
           3 @stage set
           iterate TRUE
@@ -522,14 +496,14 @@ parseDecNumber: [
           xCheck
           1 @typeClass set
         ] [
-          currentCode pc.iCode = [
+          currentCode ascii.iCode = [
             stage 0 = not ["wrong number constant" lexicalError] when
             3 @stage set
             iterate TRUE
             @afterT !currentArray
             xCheck
           ] [
-            currentCode pc.rCode = [
+            currentCode ascii.rCode = [
               stage 1 = stage 2 = or not ["wrong number constant" lexicalError] when
               3 @stage set
               iterate TRUE
@@ -541,7 +515,7 @@ parseDecNumber: [
                 iterate TRUE
                 @afterE !currentArray
                 currentCode pc.numberSigns inArray [
-                  currentCode pc.minus = @hasEMinus set
+                  currentCode ascii.minus = @hasEMinus set
                   iterate
                 ] when
                 dCheck
@@ -560,33 +534,32 @@ parseDecNumber: [
     ] if
 
     p:;
-    p [ currentPosition.offset @tokenEnd set ] when
+    p [currentPosition.offset @tokenEnd set] when
     p mainResult.success and
   ] loop
 
   token: tokenBegin tokenEnd splittedString.chars makeSubRange assembleString;
 
-  afterT.dataSize 2 > [ "error in number constant" lexicalError ] when
+  afterT.getSize 2 > [ "error in number constant" lexicalError ] when
 
   typeName: 0 dynamic;
-  afterT.dataSize [typeName 100 * i afterT.at + 1 + @typeName set] times
-
+  afterT.getSize [typeName 100 * i afterT.at + 1 + @typeName set] times
 
   typeClass 2 = [
     type: 0.0r64 dynamic;
     ten: 10.0r64 dynamic;
     result: 0.0r64 dynamic;
-    beforeDot.dataSize [result 10.0r64 * i beforeDot.at type cast + @result set] times
+    beforeDot.getSize [result 10.0r64 * i beforeDot.at type cast + @result set] times
     tenRcp: 0.1r64 dynamic;
     fracPartFactor: tenRcp copy;
-    afterDot.dataSize [
+    afterDot.getSize [
       digit: i afterDot.at type cast;
       digit  fracPartFactor * result + @result set
       fracPartFactor tenRcp * @fracPartFactor set
     ] times
 
     decOrder: 0.0r64 dynamic;
-    afterE.dataSize [decOrder 10.0r64 * i afterE.at type cast + @decOrder set] times
+    afterE.getSize [decOrder 10.0r64 * i afterE.at type cast + @decOrder set] times
     hasEMinus [decOrder neg @decOrder set] when
     hasMinus [result neg @result set] when
     result 10.0r64 decOrder ^ * @result set
@@ -606,7 +579,7 @@ parseDecNumber: [
       type: 0n64 dynamic;
       ten: 10n64 dynamic;
       result: 0n64 dynamic;
-      beforeDot.dataSize [result 10n64 * i beforeDot.at 0i64 cast type cast + @result set] times
+      beforeDot.getSize [result 10n64 * i beforeDot.at 0i64 cast type cast + @result set] times
       typeName 705 = [
         result token makeNumbern64Node @mainResult.@memory.pushBack
       ] [
@@ -632,7 +605,7 @@ parseDecNumber: [
       type: 0i64 dynamic;
       ten: 10i64 dynamic;
       result: 0i64 dynamic;
-      beforeDot.dataSize [result 10i64 * i beforeDot.at type cast + @result set] times
+      beforeDot.getSize [result 10i64 * i beforeDot.at type cast + @result set] times
       hasMinus [result neg @result set] when
       typeName 705 = [
         result token makeNumberi64Node @mainResult.@memory.pushBack
@@ -659,11 +632,11 @@ parseDecNumber: [
   ] if
 
   mainResult.success copy
-] func;
+];
 
 parseHexNumber: [
   copy hasMinus:;
-  IntArray: [Int32 Array] func;
+  IntArray: [Int32 Array];
   beforeT: IntArray;
   afterT: IntArray;
   currentArray: @beforeT;
@@ -681,10 +654,10 @@ parseHexNumber: [
       currentCode 0 cast pc.hexToInt.at 0 cast @currentArray.pushBack
       iterate TRUE
     ] [
-      currentCode pc.dot = [
+      currentCode ascii.dot = [
         FALSE
       ] [
-        currentCode pc.nCode = [
+        currentCode ascii.nCode = [
           stage 0 = not ["wrong number constant" lexicalError] when
           3 @stage set
           iterate TRUE
@@ -692,7 +665,7 @@ parseHexNumber: [
           xCheck
           1 @typeClass set
         ] [
-          currentCode pc.iCode = [
+          currentCode ascii.iCode = [
             stage 0 = not ["wrong number constant" lexicalError] when
             3 @stage set
             iterate TRUE
@@ -716,17 +689,18 @@ parseHexNumber: [
   ] loop
 
   token: tokenBegin tokenEnd splittedString.chars makeSubRange assembleString;
-  afterT.dataSize 2 > [ "error in number constant" lexicalError ] when
+  afterT.getSize 2 > [ "error in number constant" lexicalError ] when
 
   typeName: 0 dynamic;
-  afterT.dataSize [typeName 100 * i afterT.at + 1 + @typeName set] times
+  afterT.getSize [typeName 100 * i afterT.at + 1 + @typeName set] times
   hasMinus ["negative hex constants not allowed" lexicalError] when
 
   typeClass 1 = [
     type: 0n64;
     ten: 10n64;
     result: 0n64;
-    beforeT.dataSize [result 16n64 * i beforeT.at 0i64 cast type cast + @result set] times
+    beforeT.getSize 0 = ["empty hex constant" lexicalError] when
+    beforeT.getSize [result 16n64 * i beforeT.at 0i64 cast type cast + @result set] times
     typeName 705 = [
       result token makeNumbern64Node @mainResult.@memory.pushBack
     ] [
@@ -752,7 +726,8 @@ parseHexNumber: [
     type: 0i64 dynamic;
     ten: 10i64 dynamic;
     result: 0i64 dynamic;
-    beforeT.dataSize [result 16i64 * i beforeT.at type cast + @result set] times
+    beforeT.getSize 0 = ["empty hex constant" lexicalError] when
+    beforeT.getSize [result 16i64 * i beforeT.at type cast + @result set] times
     typeName 705 = [
       result token makeNumberi64Node @mainResult.@memory.pushBack
     ] [
@@ -777,23 +752,23 @@ parseHexNumber: [
   ] if
 
   mainResult.success copy
-] func;
+];
 
 parseNumber: [
   hasMinus: FALSE dynamic;
-  currentCode pc.minus = [
+  currentCode ascii.minus = [
     TRUE dynamic @hasMinus set
     iterate
   ] [
-    currentCode pc.plus = [iterate] when
+    currentCode ascii.plus = [iterate] when
   ] if
 
-  currentCode pc.zero = [
+  currentCode ascii.zero = [
     iterate
-    currentCode pc.xCode = [
+    currentCode ascii.xCode = [
       iterate hasMinus parseHexNumber
     ] [
-      currentCode pc.iCode = currentCode pc.nCode = or currentCode pc.dot = or currentCode pc.endNumbers inArray or [
+      currentCode ascii.iCode = currentCode ascii.nCode = or currentCode ascii.dot = or currentCode pc.endNumbers inArray or [
         undo hasMinus parseDecNumber
       ] [
         "lead zeros in number are not allowed" lexicalError
@@ -803,23 +778,31 @@ parseNumber: [
   ] [
     hasMinus parseDecNumber
   ] if
-] func;
+];
 
 makeLabel: [
   name:;
   lastPosition @unfinishedPositions.pushBack
-  pc.semicolon @unfinishedTerminators.pushBack
+  ascii.semicolon @unfinishedTerminators.pushBack
   name toString @unfinishedLabelNames.pushBack
   IndexArray @unfinishedNodes.pushBack
-] func;
+];
 
 parseName: [
-  member: FALSE dynamic;
+  DotState: (
+    "UNKNOWN"
+    "MULTI_DOT"
+    "NOT_A_MEMBER"
+    "WAS_FIRST_DOT"
+    "MEMBER"
+  ) Int32 enum;
+
+  dotState: DotState.UNKNOWN dynamic;
   read: FALSE dynamic;
   write: FALSE dynamic;
   label: FALSE dynamic;
   checkOffset: currentPosition.offset copy;
-  checkFirst: [currentPosition.offset checkOffset > ["invalid identifier" lexicalError] when] func;
+  checkFirst: [currentPosition.offset checkOffset > ["invalid identifier" lexicalError] when];
   nameSymbols: StringView Array;
   first: TRUE dynamic;
 
@@ -828,42 +811,78 @@ parseName: [
       "idendifiers can't begin from number" lexicalError
       FALSE
     ] [
-      currentCode pc.quote = [
+      currentCode ascii.quote = [
         "quote cannot be part of identifier" lexicalError
         FALSE
       ] [
-        currentCode pc.dot = [
-          nameSymbols.dataSize 0 > [
-            FALSE
-          ] [
-            checkFirst
-            checkOffset 1 + @checkOffset set
-            TRUE @member set
-            iterate
-            TRUE
-          ] if
+        currentCode ascii.dot = [
+          dotState (
+            DotState.MULTI_DOT [
+              currentSymbol @nameSymbols.pushBack
+              iterate TRUE
+            ]
+            DotState.NOT_A_MEMBER [
+              currentSymbol @nameSymbols.pushBack
+              DotState.MULTI_DOT @dotState set
+              iterate TRUE
+            ]
+            DotState.WAS_FIRST_DOT [
+              currentSymbol @nameSymbols.pushBack
+              DotState.MULTI_DOT @dotState set
+              iterate TRUE
+            ]
+            [
+              nameSymbols.getSize 0 > [
+                FALSE
+              ] [
+                checkFirst
+                checkOffset 1 + @checkOffset set
+                currentSymbol @nameSymbols.pushBack
+                DotState.WAS_FIRST_DOT @dotState set
+                iterate TRUE
+              ] if
+            ]
+          ) case
         ] [
-          currentCode pc.dog = [
+          currentCode ascii.at = [
             checkFirst
+            dotState DotState.UNKNOWN = [DotState.NOT_A_MEMBER @dotState set] when
             TRUE @read set
             iterate TRUE
           ] [
-            currentCode pc.exclamation = [
+            currentCode ascii.exclamation = [
               checkFirst
+              dotState DotState.UNKNOWN = [DotState.NOT_A_MEMBER @dotState set] when
               TRUE @write set
               iterate TRUE
             ] [
-              currentCode pc.comma = nameSymbols.dataSize 0 > and [
+              currentCode ascii.comma = nameSymbols.getSize 0 > and [
                 FALSE
               ] [
                 currentCode pc.endNames inArray [
-                  currentCode pc.colon = [
+                  currentCode ascii.colon = [
                     TRUE @label set
                     iterate
                   ] when
                   FALSE
                 ] [
-                  nameSymbols.dataSize 1 > [0 nameSymbols.at "," =] && [
+                  dotState
+                  (
+                    DotState.MULTI_DOT [
+                      "identifier cannot start from many dots" lexicalError
+                    ]
+                    DotState.WAS_FIRST_DOT [
+                      DotState.MEMBER @dotState set
+                      @nameSymbols.clear
+                    ]
+                    DotState.MEMBER [
+                    ]
+                    [
+                      DotState.UNKNOWN @dotState set
+                    ]
+                  ) case
+
+                  nameSymbols.getSize 1 > [0 nameSymbols.at "," =] && [
                     "identifier cannot start from comma" lexicalError
                   ] when
                   currentSymbol @nameSymbols.pushBack
@@ -884,31 +903,25 @@ parseName: [
   mainResult.success [
     read write and ["wrong identifier" lexicalError] when
 
-    nameSymbols.dataSize 0 = [
-      member [
-        read write or [undo "wrong identifier" lexicalError] when
-        "." makeNameNode @mainResult.@memory.pushBack
-        TRUE
+    nameSymbols.getSize 0 = [
+      read [
+        label ["@" makeLabel FALSE]["@" makeNameNode @mainResult.@memory.pushBack TRUE] if
       ] [
-        read [
-          label ["@" makeLabel FALSE]["@" makeNameNode @mainResult.@memory.pushBack TRUE] if
+        write [
+          label ["!" makeLabel FALSE]["!" makeNameNode @mainResult.@memory.pushBack TRUE] if
         ] [
-          write [
-            label ["!" makeLabel FALSE]["!" makeNameNode @mainResult.@memory.pushBack TRUE] if
-          ] [
-            "empty name" lexicalError
-            FALSE
-          ] if
+          "empty name" lexicalError
+          FALSE
         ] if
       ] if
     ] [
       name: nameSymbols assembleString;
 
       label [
-        member read write or or ["label declaration must be without . @ ! modifiers" lexicalError] when
+        dotState DotState.MEMBER = read write or or ["label declaration must be without . @ ! modifiers" lexicalError] when
         name makeLabel FALSE
       ] [
-        member [
+        dotState DotState.MEMBER = [
           read [
             name makeNameReadMemberNode @mainResult.@memory.pushBack TRUE
           ] [
@@ -934,12 +947,12 @@ parseName: [
   ] [
     FALSE
   ] if
-] func;
+];
 
 parseIdentifier: [
   compileOnce
 
-  currentCode pc.quote = [
+  currentCode ascii.quote = [
     parseStringConstant
   ] [
     currentCode pc.digits inArray [
@@ -952,27 +965,27 @@ parseIdentifier: [
       ] if
     ] if
   ] if
-] func;
+];
 
 parseComment: [
   [
     iterate
-    currentCode pc.eof = currentCode pc.lf = or not
+    currentCode ascii.null = currentCode ascii.lf = or not
   ] loop
-] func;
+];
 
 addNestedNode: [
   currentPosition @unfinishedPositions.pushBack
 
   IndexArray @unfinishedNodes.pushBack
-  currentCode pc.openRBr = [
-    pc.closeRBr @unfinishedTerminators.pushBack
+  currentCode ascii.openRBr = [
+    ascii.closeRBr @unfinishedTerminators.pushBack
   ] [
-    currentCode pc.openFBr = [
-      pc.closeFBr @unfinishedTerminators.pushBack
+    currentCode ascii.openFBr = [
+      ascii.closeFBr @unfinishedTerminators.pushBack
     ] [
-      currentCode pc.openSBr = [
-        pc.closeSBr @unfinishedTerminators.pushBack
+      currentCode ascii.openSBr = [
+        ascii.closeSBr @unfinishedTerminators.pushBack
       ] [
         "unknown starter for nested node" lexicalError
       ] if
@@ -980,17 +993,17 @@ addNestedNode: [
   ] if
 
   iterate
-] func;
+];
 
 addToLastUnfinished: [
   @mainResult.@memory.pushBack
-  mainResult.memory.dataSize 1 - @unfinishedNodes.last.pushBack
-] func;
+  mainResult.memory.getSize 1 - @unfinishedNodes.last.pushBack
+];
 
 parseNode: [
   [
     currentCode pc.specials inArray [
-      currentCode pc.space = [
+      currentCode ascii.space = [
         iterate
       ] [
         currentCode pc.starters inArray [
@@ -1002,40 +1015,40 @@ parseNode: [
 
             currentCode goodTerminator = not [
               ("wrong terminator of block started at (" lastPosition.line ":" lastPosition.column
-                "), expected \"" goodTerminator pc.eof = ["END" toString] [goodTerminator codepointToString] if
-                "\", but found \"" currentCode pc.eof = ["END" toString] [currentCode codepointToString] if
+                "), expected \"" goodTerminator ascii.null = ["END" toString] [goodTerminator codepointToString] if
+                "\", but found \"" currentCode ascii.null = ["END" toString] [currentCode codepointToString] if
                 "\"") assembleString lexicalError
             ] [
 
               @unfinishedPositions.popBack
 
-              currentCode pc.closeRBr = [
+              currentCode ascii.closeRBr = [
                 @unfinishedNodes.last makeListNode
                 @unfinishedNodes.popBack
                 @unfinishedTerminators.popBack
                 addToLastUnfinished
               ] [
-                currentCode pc.closeSBr = [
+                currentCode ascii.closeSBr = [
                   @unfinishedNodes.last makeCodeNode
                   @unfinishedNodes.popBack
                   @unfinishedTerminators.popBack
                   addToLastUnfinished
                 ] [
-                  currentCode pc.closeFBr = [
+                  currentCode ascii.closeFBr = [
                     @unfinishedNodes.last makeObjectNode
                     @unfinishedNodes.popBack
                     @unfinishedTerminators.popBack
                     addToLastUnfinished
                   ] [
-                    currentCode pc.eof = [
-                      unfinishedNodes.dataSize 1 = not [
+                    currentCode ascii.null = [
+                      unfinishedNodes.getSize 1 = not [
                         "unexpected end of the file!" makeStringView lexicalError
                       ] when
                       0 @unfinishedNodes.at @mainResult.@nodes set
                       @unfinishedNodes.popBack
                       @unfinishedTerminators.popBack
                     ] [
-                      currentCode pc.semicolon = [
+                      currentCode ascii.semicolon = [
                         @unfinishedLabelNames.last @unfinishedNodes.last makeLabelNode
                         @unfinishedNodes.popBack
                         @unfinishedTerminators.popBack
@@ -1052,21 +1065,21 @@ parseNode: [
             iterate
 
             currentCode pc.specials inArray not
-            [currentCode pc.comma = not] &&
-            [currentCode pc.dot = not] && [
+            [currentCode ascii.comma = not] &&
+            [currentCode ascii.dot = not] && [
               "wrong symbol after terminator" lexicalError
             ] when
           ] [
-            currentCode pc.cr = [
+            currentCode ascii.cr = [
               iterate
             ] [
-              currentCode pc.lf = [
+              currentCode ascii.lf = [
                 iterate
               ] [
-                currentCode pc.grid = [
+                currentCode ascii.grid = [
                   parseComment
                 ] [
-                  currentCode pc.colon = [
+                  currentCode ascii.colon = [
                     "separated \":\"" lexicalError
                   ] [
                     "unknown symbol" lexicalError
@@ -1080,20 +1093,23 @@ parseNode: [
     ] [
       lastPosition: currentPosition copy;
       parseIdentifier [
-        mainResult.memory.dataSize 1 -   # if made label, dont do it
+        mainResult.memory.getSize 1 -   # if made label, dont do it
         @unfinishedNodes.last.pushBack
       ] when
     ] if
 
-    unfinishedNodes.dataSize 0 > [mainResult.success copy] &&
+    unfinishedNodes.getSize 0 > [mainResult.success copy] &&
   ] loop
-] func;
+];
 
-parseString: [
-  compileOnce
-  copy currentFileName:;
-  splittedString: makeStringView.split;
-  mainResult: ParserResult;
+{
+  currentFileNumber: Int32;
+  text: StringView Cref;
+  mainResult: ParserResult Ref;
+} () {convention: cdecl;} [
+  copy currentFileNumber:;
+  splittedString: .split;
+  mainResult:;
   splittedString.success [
     currentPosition: PositionInfo;
     prevPosition: PositionInfo;
@@ -1110,7 +1126,7 @@ parseString: [
 
     currentPosition @unfinishedPositions.pushBack
     IndexArray @unfinishedNodes.pushBack
-    pc.eof @unfinishedTerminators.pushBack
+    ascii.null @unfinishedTerminators.pushBack
 
     iterate parseNode
   ] [
@@ -1120,6 +1136,4 @@ parseString: [
     0 @mainResult.@errorInfo.@position.@line set
     splittedString.errorOffset 0 cast @mainResult.@errorInfo.@position.@column set
   ] if
-
-  @mainResult
-] func;
+] "parseString" exportFunction

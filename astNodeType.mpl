@@ -6,53 +6,53 @@
 "Variant"   includeModule
 
 AstNodeType: {
-  Empty:           [ 0 static] func;
-  Label:           [ 1 static] func;
-  Code:            [ 2 static] func;
-  Object:          [ 3 static] func;
-  List:            [ 4 static] func;
-  Name:            [ 5 static] func;
-  NameRead:        [ 6 static] func;
-  NameWrite:       [ 7 static] func;
-  NameMember:      [ 8 static] func;
-  NameReadMember:  [ 9 static] func;
-  NameWriteMember: [10 static] func;
-  String:          [11 static] func;
-  Numberi8:        [12 static] func;
-  Numberi16:       [13 static] func;
-  Numberi32:       [14 static] func;
-  Numberi64:       [15 static] func;
-  Numberix:        [16 static] func;
-  Numbern8:        [17 static] func;
-  Numbern16:       [18 static] func;
-  Numbern32:       [19 static] func;
-  Numbern64:       [20 static] func;
-  Numbernx:        [21 static] func;
-  Real32:          [22 static] func;
-  Real64:          [23 static] func;
+  Empty:           [ 0 static];
+  Label:           [ 1 static];
+  Code:            [ 2 static];
+  Object:          [ 3 static];
+  List:            [ 4 static];
+  Name:            [ 5 static];
+  NameRead:        [ 6 static];
+  NameWrite:       [ 7 static];
+  NameMember:      [ 8 static];
+  NameReadMember:  [ 9 static];
+  NameWriteMember: [10 static];
+  String:          [11 static];
+  Numberi8:        [12 static];
+  Numberi16:       [13 static];
+  Numberi32:       [14 static];
+  Numberi64:       [15 static];
+  Numberix:        [16 static];
+  Numbern8:        [17 static];
+  Numbern16:       [18 static];
+  Numbern32:       [19 static];
+  Numbern64:       [20 static];
+  Numbernx:        [21 static];
+  Real32:          [22 static];
+  Real64:          [23 static];
 };
 
 #AST Nodes
-IndexArray: [Int32 Array] func;
+IndexArray: [Int32 Array];
 
 NamedRecursiveBranch:[{
   children: IndexArray; # Array of Index
   name: String; # dynamic String
   nameInfo: 0 dynamic; #index in NameInfo pool
-}] func;
+}];
 
 NamedBranch: [{
   name: String; # dynamic String
   nameInfo: 0 dynamic; #index in NameInfo pool
-}] func;
+}];
 
 AstNode: [{
   virtual AST_NODE: ();
-  token: String;
-  column: -1 dynamic;
-  line: -1 dynamic;
-  offset: -1 dynamic;
-  filename: 0 dynamic;
+  token:     String;
+  column:    -1 dynamic;
+  line:      -1 dynamic;
+  offset:    -1 dynamic;
+  fileNumber: 0 dynamic;
   data: (
     Cond                 #EmptyNode:
     NamedRecursiveBranch #LabelNode:
@@ -81,15 +81,15 @@ AstNode: [{
   ) Variant;
 
   INIT: []; DIE: []; # default life control, and ban uneffective copy, because object is too big
-}] func;
+}];
 
 makePositionInfo: [{
   column: copy;
   line: copy;
   offset: copy;
-}] func;
+}];
 
-PositionInfo: [-1 dynamic 1 dynamic 0 dynamic makePositionInfo] func;
+PositionInfo: [-1 dynamic 1 dynamic 0 dynamic makePositionInfo];
 
 ParserResult: [{
   virtual PARSER_RESULT: ();
@@ -102,9 +102,9 @@ ParserResult: [{
   nodes: IndexArray;
 
   INIT: []; DIE: []; # default life control, and ban uneffective copy, because object is too big
-}] func;
+}];
 
-ParserResults: [ParserResult Array] func;
+ParserResults: [ParserResult Array];
 
 MultiParserResult: [{
   names: String Int32 HashTable;
@@ -112,4 +112,4 @@ MultiParserResult: [{
   nodes: IndexArray Array; # order of going is not defined before compiling
 
   INIT: []; DIE: []; # default life control, and ban uneffective copy, because object is too big
-}] func;
+}];

@@ -9,6 +9,7 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG=TRUE -ndebug -o mp
  ../builtins.mpl^
  ../codeNode.mpl^
  ../debugWriter.mpl^
+ ../defaultImpl.mpl^
  ../irWriter.mpl^
  ../main.mpl^
  ../parser.mpl^
@@ -19,8 +20,10 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG=TRUE -ndebug -o mp
  ../processSubNodes.mpl^
  ../staticCall.mpl^
  ../variable.mpl^
+ ../sl/ascii.mpl^
  ../sl/Array.mpl^
  ../sl/control.mpl^
+ ../sl/conventions.mpl^
  ../sl/file.mpl^
  ../sl/HashTable.mpl^
  ../sl/memory.mpl^

@@ -10,7 +10,7 @@ optimizeLabelsInCurrentNode: [
     IndexArray @processedNodes.pushBack
     @recData AsRef @unfinishedNodes.pushBack
     0 @unfinishedIndexes.pushBack
-  ] func;
+  ];
 
   node.data.getTag AstNodeType.Label = [
     AstNodeType.Label @node.@data.get.@children TRUE addDataToProcess
@@ -29,7 +29,7 @@ optimizeLabelsInCurrentNode: [
       ] if
     ] if
   ] if
-] func;
+];
 
 optimizeLabels: [
   parserResult:;
@@ -81,7 +81,7 @@ optimizeLabels: [
       unfinishedNodes.getSize 0 >
     ] if
   ] loop
-] func;
+];
 
 optimizeNamesInCurrentNode: [
   node:;
@@ -95,13 +95,13 @@ optimizeNamesInCurrentNode: [
       ids.dataSize @nameWithInfo.@nameInfo set
       nameWithInfo.name ids.dataSize @ids.insert # copy string here
     ] if
-  ] func;
+  ];
 
   addToProcess: [
     data:;
     @data AsRef @unfinishedNodes.pushBack
     0 @unfinishedIndexes.pushBack
-  ] func;
+  ];
 
   node.data.getTag AstNodeType.Name < [
     node.data.getTag AstNodeType.Label = [
@@ -148,7 +148,7 @@ optimizeNamesInCurrentNode: [
       ] if
     ] if
   ] if
-] func;
+];
 
 optimizeNames: [
   multiParserResult:;
@@ -186,7 +186,7 @@ optimizeNames: [
       i 1 + @i set TRUE
     ] &&
   ] loop
-] func;
+];
 
 concatParserResults: [
   mresult:;
@@ -200,7 +200,7 @@ concatParserResults: [
       cur: .@value;
       cur shift + @cur set
     ] each
-  ] func;
+  ];
 
   r: @results makeArrayRange;
 
@@ -229,4 +229,4 @@ concatParserResults: [
     shift current.memory.dataSize + @shift set
   ] each
 
-] func;
+];

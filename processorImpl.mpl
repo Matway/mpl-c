@@ -11,40 +11,12 @@
 "processor" useModule
 "irWriter" useModule
 
-failProcForProcessor: [
-  failProc: [stringMemory printAddr " - fail while handling fail" stringMemory printAddr] func;
-  copy message:;
-  "ASSERTION FAILED!!!" print LF print
-  message print LF print
-  "While compiling:" print LF print
-  mplBuiltinPrintStackTrace
-
-  "Terminating..." print LF print
-  2 exit
-] func;
-
 {
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
-  multiParserResult: MultiParserResult Cref;
-  indexArray: IndexArray Cref;
-  processor: Processor Ref;
   processorResult: ProcessorResult Ref;
-  nodeCase: NodeCaseCode;
-  parentIndex: 0;
-  functionName: StringView Cref;
-} 0 {} "astNodeToCodeNode" importFunction
-
-{
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
+  unitId: 0;
+  options: ProcessorOptions Cref;
   multiParserResult: MultiParserResult Cref;
-  processor: Processor Ref;
-  processorResult: ProcessorResult Ref;
-  refToVar: RefToVar Cref;
-} () {} "createDtorForGlobalVar" importFunction
-
-processImpl: [
+} () {convention: cdecl;} [
   processorResult:;
   copy unitId:;
   options:;
@@ -64,19 +36,20 @@ processImpl: [
     key id @processor.@nameInfos.at.@name set
   ] each
 
-  ""         findNameInfo @processor.@emptyNameInfo set
-  "CALL"     findNameInfo @processor.@callNameInfo set
-  "PRE"      findNameInfo @processor.@preNameInfo set
-  "DIE"      findNameInfo @processor.@dieNameInfo set
-  "INIT"     findNameInfo @processor.@initNameInfo set
-  "ASSIGN"   findNameInfo @processor.@assignNameInfo set
-  "self"     findNameInfo @processor.@selfNameInfo set
-  "closure"  findNameInfo @processor.@closureNameInfo set
-  "inputs"   findNameInfo @processor.@inputsNameInfo set
-  "outputs"  findNameInfo @processor.@outputsNameInfo set
-  "captures" findNameInfo @processor.@capturesNameInfo set
-  "variadic" findNameInfo @processor.@variadicNameInfo set
-  "failProc" findNameInfo @processor.@failProcNameInfo set
+  ""           findNameInfo @processor.@emptyNameInfo set
+  "CALL"       findNameInfo @processor.@callNameInfo set
+  "PRE"        findNameInfo @processor.@preNameInfo set
+  "DIE"        findNameInfo @processor.@dieNameInfo set
+  "INIT"       findNameInfo @processor.@initNameInfo set
+  "ASSIGN"     findNameInfo @processor.@assignNameInfo set
+  "self"       findNameInfo @processor.@selfNameInfo set
+  "closure"    findNameInfo @processor.@closureNameInfo set
+  "inputs"     findNameInfo @processor.@inputsNameInfo set
+  "outputs"    findNameInfo @processor.@outputsNameInfo set
+  "captures"   findNameInfo @processor.@capturesNameInfo set
+  "variadic"   findNameInfo @processor.@variadicNameInfo set
+  "failProc"   findNameInfo @processor.@failProcNameInfo set
+  "convention" findNameInfo @processor.@conventionNameInfo set
 
   addCodeNode
   TRUE dynamic @processor.@nodes.last.get.@root set
@@ -111,29 +84,25 @@ processImpl: [
     ] loop
   ] when
 
-  #("compiled file " makeStringView n processor.options.fileNames.at makeStringView) addLog
-
   lastFile: 0 dynamic;
 
   multiParserResult.nodes.dataSize 0 > [
 
     dependedFiles: String IndexArray HashTable; # string -> array of indexes of dependent files
-
-    clearProcessorResult: [
-      ProcessorResult @processorResult set
-    ] func;
+    cachedGlobalErrorInfoSize: 0;
 
     runFile: [
       copy n:;
       n @lastFile set
-      fileNodes:  n multiParserResult.nodes.at;
+      fileNode: n multiParserResult.nodes.at;
       rootPositionInfo: CompilerPositionInfo;
       1 dynamic @rootPositionInfo.@column set
       1 dynamic @rootPositionInfo.@line set
       0 dynamic @rootPositionInfo.@offset set
-      n dynamic @rootPositionInfo.@filename set
+      n dynamic @rootPositionInfo.@fileNumber set
 
-      topNodeIndex: StringView 0 NodeCaseCode @processorResult @processor fileNodes multiParserResult rootPositionInfo CFunctionSignature astNodeToCodeNode;
+      processorResult.globalErrorInfo.getSize @cachedGlobalErrorInfoSize set
+      topNodeIndex: StringView 0 NodeCaseCode @processorResult @processor fileNode multiParserResult rootPositionInfo CFunctionSignature astNodeToCodeNode;
 
       processorResult.findModuleFail [
         # cant compile this file now, add him to queue
@@ -146,7 +115,7 @@ processImpl: [
           @processorResult.@errorInfo.@missedModule @a move @dependedFiles.insert
         ] if
 
-        clearProcessorResult
+        cachedGlobalErrorInfoSize clearProcessorResult
       ] [
         ("compiled file " n processor.options.fileNames.at) addLog
         # call files which depends from this module
@@ -168,7 +137,7 @@ processImpl: [
 
         ] when
       ] if
-    ] func;
+    ];
 
     unfinishedFiles: IndexArray;
     n: 0 dynamic;
@@ -188,12 +157,20 @@ processImpl: [
       ] &&
     ] loop
 
+    processorResult.success not [
+      @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
+    ] when
+
+    processorResult.globalErrorInfo.getSize 0 > [
+      FALSE @processorResult.@success set
+    ] when
+
     processorResult.success [
       processor.options.debug [
         lastFile correctUnitInfo
       ] when
 
-      clearProcessorResult
+      0 clearProcessorResult
 
       dependedFiles.getSize 0 > [
         hasError: FALSE dynamic;
@@ -215,6 +192,7 @@ processImpl: [
         hasError [hasErrorMessage not] && [
           String @processorResult.@errorInfo.@message set
           "problem with finding modules" @processorResult.@errorInfo.@message.cat
+
           LF @processorResult.@errorInfo.@message.cat
           dependedFiles [
             # queue is empty, but has uncompiled files
@@ -224,42 +202,29 @@ processImpl: [
             ] when
           ] each
         ] when
+
+        processorResult.success not [
+          @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
+        ] when
       ] when
     ] when
   ] when
 
 
   ("all nodes generated" makeStringView) addLog
-
-  [processor.recursiveNodesStack.getSize 0 =] "Recursive stack is not empty!" assert
+  [compilable not [processor.recursiveNodesStack.getSize 0 =] ||] "Recursive stack is not empty!" assert
 
   processorResult.success [
-    #("; total used="           memoryUsed
-    # "; varCount="             processor.varCount
-    # "; structureVarCount="    processor.structureVarCount
-    # "; fieldVarCount="        processor.fieldVarCount
-    # "; nodeCount="            processor.nodeCount
-    # "; varSize="              Variable storageSize
-    # "; fieldSize="            Field storageSize
-    # "; structureSize="        Struct   storageSize
-    # "; refToVarSize="         RefToVar storageSize
-    # "; nodeSize="             CodeNode storageSize
-    # "; used in nodes="        processor.nodes getHeapUsedSize
-    # "; memoryCounterMalloc="  memoryCounterMalloc
-    # "; memoryCounterFree="    memoryCounterFree
-    # "; deletedVarCount="      processor.deletedVarCount
-    # "; deletedNodeCount="     processor.deletedNodeCount) addLog
-
     ("nameCount=" processor.nameInfos.dataSize
       "; irNameCount=" processor.nameBuffer.dataSize) addLog
 
     ("max depth of recursion=" processor.maxDepthOfRecursion) addLog
 
     processor.usedFloatBuiltins [createFloatBuiltins] when
-    processor.usedHeapBuiltins  [createHeapBuiltins] when
     createCtors
     createDtors
     clearUnusedDebugInfo
+    addAliasesForUsedNodes
 
     i: 0 dynamic;
     [
@@ -274,8 +239,7 @@ processImpl: [
     [
       i processor.nodes.dataSize < [
         currentNode: i @processor.@nodes.at.get;
-
-        currentNode.emptyDeclaration not [currentNode.empty not] && [currentNode.deleted not] && [currentNode.nodeCase NodeCaseCodeRefDeclaration = not] && [
+        currentNode nodeHasCode [
           LF makeStringView @processorResult.@program.cat
 
           currentNode.header makeStringView @processorResult.@program.cat
@@ -292,9 +256,6 @@ processImpl: [
                 curInstruction.code makeStringView @processorResult.@program.cat
                 LF @processorResult.@program.cat
               ] [
-                #" ; -> disabled: " makeStringView @processorResult.@program.cat
-                #curInstruction.code makeStringView @processorResult.@program.cat
-                #LF makeStringView @processorResult.@program.cat
               ] if
             ] each
             "}" @processorResult.@program.cat
@@ -315,57 +276,16 @@ processImpl: [
       ] when
     ] each
   ] when
-] func;
-
-{
-  processorResult: ProcessorResult Ref;
-  unitId: 0;
-  options: ProcessorOptions Cref;
-  multiParserResult: MultiParserResult Cref;
-} () {} [
-  processorResult:;
-  unitId:;
-  options:;
-  multiParserResult:;
-  multiParserResult
-  options
-  unitId
-  @processorResult processImpl
 ] "process" exportFunction
 
 {
   signature: CFunctionSignature Cref;
   compilerPositionInfo: CompilerPositionInfo Cref;
   multiParserResult: MultiParserResult Cref;
-  indexArray: IndexArray Cref;
   processor: Processor Ref;
   processorResult: ProcessorResult Ref;
-  nodeCase: NodeCaseCode;
-  parentIndex: 0;
-  functionName: StringView Cref;
-} 0 {}  [
-  signature:;
-  compilerPositionInfo:;
-  multiParserResult:;
-  indexArray:;
-  processor:;
-  processorResult:;
-  nodeCase:;
-  parentIndex:;
-  functionName:;
-
-  functionName
-  parentIndex
-  nodeCase
-  @processorResult
-  @processor
-  indexArray
-  multiParserResult
-  compilerPositionInfo
-  signature astNodeToCodeNodeImpl
-] "astNodeToCodeNode" exportFunction
-
-createDtorForGlobalVarImpl: [
+  refToVar: RefToVar Cref;
+} () {convention: cdecl;} [
   forcedSignature:;
   compilerPositionInfo:;
   multiParserResult:;
@@ -399,21 +319,4 @@ createDtorForGlobalVarImpl: [
   dtorName: ("dtor." refToVar getVar.globalId) assembleString;
   dtorNameStringView: dtorName makeStringView;
   dtorNameStringView finalizeCodeNode
-] func;
-
-{
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
-  multiParserResult: MultiParserResult Cref;
-  processor: Processor Ref;
-  processorResult: ProcessorResult Ref;
-  refToVar: RefToVar Cref;
-} () {} [
-  forcedSignature:;
-  compilerPositionInfo:;
-  multiParserResult:;
-  processor:;
-  processorResult:;
-  refToVar:;
-  refToVar @processorResult @processor multiParserResult compilerPositionInfo forcedSignature createDtorForGlobalVarImpl
 ] "createDtorForGlobalVar" exportFunction
