@@ -93,10 +93,7 @@ variablesAreEqual: [
 
 variableIsUnused: [
   refToVar:;
-  #refToVar variableIsDeleted [
   refToVar.hostId currentMatchingNodeIndex = not [refToVar noMatterToCopy not] &&
-  #] ||
-  #] ||
 ];
 
 compareOnePair: [
@@ -560,9 +557,6 @@ fixRef: [
   pointeeVar: pointee getVar;
   pointeeIsLocal: pointeeVar.capturedHead.hostId currentChangesNodeIndex =;
 
-  #("fix " refToVar.hostId ":" refToVar.varId "; to " pointee.hostId ":" pointee.varId) addLog
-  #pointee: refToVar getPointeeNoDerefIR;
-
   fixed: pointee copy;
   pointeeIsLocal not [ # has shadow - captured from top
     fr: pointeeVar.shadowBegin appliedVars.nestedToCur.find;
@@ -579,22 +573,10 @@ fixRef: [
     var.staticness Static = [pointeeVar.storageStaticness Static =] && ["returning pointer to local variable" compilerError] when
     pointee copyVarFromChild @fixed set
     TRUE dynamic @makeDynamic set
-
-    #todo: make it good
-    #var.shadowBegin.hostId processor.nodes.dataSize < [
-    #  refShadowBegin: var.shadowBegin;
-    #  shadowBeginPointee: VarRef refShadowBegin getVar.@data.get;
-    #  shadowBeginPointee.hostId processor.nodes.dataSize < not [
-    #    pointee copyVarFromChild @shadowBeginPointee set
-    #  ] when
-    #  shadowBeginPointee pointee getVar.@shadowBegin set
-    #  pointee shadowBeginPointee getVar.@shadowEnd set
-    #] when
   ] if
 
   fixed.hostId @pointee.@hostId set
   fixed.varId  @pointee.@varId  set
-  #("/fix " refToVar.hostId ":" refToVar.varId "; to " pointee.hostId ":" pointee.varId) addLog
 
   wasVirtual [refToVar Virtual makeStaticness @refToVar set] [
     makeDynamic [
@@ -607,10 +589,6 @@ fixRef: [
 applyOnePair: [
   cacheEntry:;
   stackEntry:;
-
-  #("aop, type=" cacheEntry getMplType
-  #  "; ce=" cacheEntry.hostId ":" cacheEntry.varId ":" cacheEntry isGlobal
-  #  "; se=" stackEntry.hostId ":" stackEntry.varId ":" stackEntry isGlobal) addLog
 
   [
     cacheEntry stackEntry variablesAreSame [TRUE] [
@@ -754,7 +732,6 @@ fixOutputRefsRec: [
         stackPointee: VarRef @stackEntryVar.@data.get;
         stackPointee.hostId currentChangesNodeIndex = [
           fixed: currentFromStack fixRef getPointeeNoDerefIR;
-          #("fix ref output, fixed=" fixed.hostId ":" fixed.varId " g=" fixed isGlobal) addLog
           fixed @unfinishedStack.pushBack
         ] when
       ] [
@@ -925,9 +902,6 @@ applyNodeChanges: [
       overload: currentCapture getOverload;
 
       stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
-      #("capture; name=" currentCapture.nameInfo processor.nameInfos.at.name "; ctype=" cacheEntry getMplType "; stype=" stackEntry getMplType) addLog
-      #("capture; se=" stackEntry.hostId ":" stackEntry.varId ":" stackEntry staticnessOfVar) addLog
-      #("capture; ce=" cacheEntry.hostId ":" cacheEntry.varId ":" cacheEntry staticnessOfVar) addLog
       stackEntry cacheEntry applyEntriesRec
       i 1 + @i set compilable
     ] &&
@@ -945,18 +919,6 @@ applyNodeChanges: [
       i 1 + @i set compilable
     ] &&
   ] loop
-
-  #("curToNested") addLog
-  #appliedVars.curToNested [
-  #  pair:;
-  #  (pair.key.hostId ":" pair.key.varId " s " pair.key staticnessOfVar " <-> " pair.value.hostId ":" pair.value.varId " s " pair.value staticnessOfVar " t" pair.key getMplType) addLog
-  #] each
-
-  #("nestedToCur") addLog
-  #appliedVars.nestedToCur [
-  #  pair:;
-  #  (pair.key.hostId ":" pair.key.varId " s " pair.key staticnessOfVar " <-> " pair.value.hostId ":" pair.value.varId " s " pair.value staticnessOfVar " t" pair.key getMplType) addLog
-  #] each
 
   i: 0 dynamic;
   [
@@ -1272,30 +1234,7 @@ processCallByNode: [
     CFunctionSignature
     astNodeToCodeNode @newNodeIndex set
 
-    #newNodeIndex @processor.@nodes.at.get.irName @forcedNameString set
   ] [
-    #newNode: newNodeIndex @processor.@nodes.at.get;
-    #newNode.state NodeStateCompiled = [
-    #  "@alias_" toString @forcedNameString set
-    #  splitted: name.split;
-    #  splitted.success [
-    #    splitted.chars [
-    #      symbol: .value;
-    #      codePoint: symbol stringMemory Nat8 addressToReference;
-    #      codePoint 48n8 < not [codePoint 57n8 > not] &&         #0..9
-    #      [codePoint 65n8 < not [codePoint 90n8 > not] &&] ||    #A..Z
-    #      [codePoint 97n8 < not [codePoint 122n8 > not] &&] || [ #a..z
-    #        symbol @forcedNameString.cat
-    #      ] when
-    #    ] each
-    #  ] when
-
-    #  ("." processor.funcAliasCount) @forcedNameString.catMany
-    #  processor.funcAliasCount 1 + @processor.@funcAliasCount set
-    #  forcedNameString newNode.irName newNodeIndex getFuncIrType createFuncAliasIR @newNode.@aliases.pushBack
-    #] [
-    #  newNodeIndex @processor.@nodes.at.get.irName @forcedNameString set
-    #] if
   ] if
 
   compilable [
@@ -1764,7 +1703,6 @@ processLoop: [
       ] [
         newNode.state NodeStateHasOutput = [NodeStateHasOutput @currentNode.@state set] when
         appliedVars: newNodeIndex applyNodeChanges;
-        #newNode usePreCaptures
 
         appliedVars.fixedOutputs.getSize 0 = ["loop body must return Cond" makeStringView compilerError] when
         compilable [
@@ -1855,9 +1793,6 @@ processDynamicLoop: [
         appliedVars.curToNested [
           pair:;
 
-          #("loop checking; key=" pair.key.hostId ":" pair.key.varId " g=" pair.key isGlobal ":" pair.key getVar.globalId " s=" pair.key staticnessOfVar
-          #  "; value=" pair.value.hostId ":" pair.value.varId " g=" pair.value isGlobal ":" pair.value getVar.globalId " s=" pair.value staticnessOfVar
-          #  "; type=" pair.key getMplType) addLog
           pair.key pair.value checkToRecompile [
             pair.value staticnessOfVar Dirty = [
               pair.key makeVarDirty
@@ -2055,16 +1990,10 @@ nSwap: [
       newNode.captureNames [
         currentCaptureName: .value;
         currentCaptureName.startPoint indexOfNode = not [
-          #("use cap from module " currentCaptureName.startPoint " while get name " currentCaptureName.nameInfo processor.nameInfos.at.name " type " refToVar getMplType) addLog
           fr: currentCaptureName.startPoint @currentNode.@usedModulesTable.find;
           fr.success [TRUE @fr.@value.@used set] when
         ] when
       ] each
-
-      #newNode.matchingInfo.captures [
-      #  capture: .value;
-      #  ("capture; name=" capture.nameInfo processor.nameInfos.at.name "; ctype=" capture.refToVar getMplType) addLog
-      #] each
 
       signature.outputs [
         pair:;
@@ -2122,8 +2051,6 @@ nSwap: [
     FALSE @r.@mutable set
     r push
   ] each
-
-  #signature.inputs.getSize nSwap
 
   [
     curPosition: currentNode.position;
@@ -2208,35 +2135,6 @@ callImportWith: [
           ]
         ) sequence
       ] when
-    ] [
-      #i: 0 dynamic;
-      #[
-      #  i declarationNode.matchingInfo.captures.dataSize < [
-      #    currentCapture: i declarationNode.matchingInfo.captures.at;
-      #    currentCapture.refToVar isVirtual not [
-      #      (
-      #        [compilable]
-      #        [
-      #          overload: currentCapture getOverload;
-      #          stackEntry: currentCapture.nameInfo currentCapture.refToVar overload getNameForMatchingWithOverload.refToVar;
-      #          stackEntry.hostId 0 < [
-      #            ("cant call import, capture " currentCapture.nameInfo processor.nameInfos.at.name " not found") assembleString compilerError
-      #          ] when
-
-      #        ] [
-      #          nodeEntry: currentCapture.refToVar;
-      #          stackEntry nodeEntry variablesAreSame not [
-      #            ("cant call import, capture " currentCapture.nameInfo processor.nameInfos.at.name " types are incorrect, expected " nodeEntry getMplType ";" LF "but found " stackEntry getMplType) assembleString compilerError
-      #          ] when
-      #        ] [
-      #          stackEntry makeVarTreeDynamic
-      #          #dont need pushBack to captures, it will find it itself
-      #        ]
-      #      ) sequence
-      #    ] when
-      #    i 1 + @i set compilable
-      #  ] &&
-      #] loop
     ] [
       i: 0 dynamic;
       [

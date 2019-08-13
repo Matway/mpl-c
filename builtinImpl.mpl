@@ -950,12 +950,10 @@ parseSignature: [
       index: signature name makeStringView TRUE dynamic processImportFunction;
     ]
     [
-      #refToVar: index processor.nodes.at.get.refToVar;
       nullNode: index processor.nodes.at.get;
       gnr: nullNode.varNameInfo getName;
       cnr: gnr captureName;
       refToVar: cnr.refToVar copy;
-      #("coderef captured var=" refToVar.hostId ":" refToVar.varId " s=" refToVar staticnessOfVar) addLog
 
       refToVar push
     ]
@@ -1271,7 +1269,6 @@ parseSignature: [
   refToName: pop;
   compilable [
     refToName staticnessOfVar Weak < [
-      #"name must be static" compilerError
       result: 0n64 VarNatX createVariable Dynamic makeStaticness createAllocIR;
       refToName result createGetTextSizeIR
       result push

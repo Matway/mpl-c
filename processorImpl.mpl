@@ -84,8 +84,6 @@
     ] loop
   ] when
 
-  #("compiled file " makeStringView n processor.options.fileNames.at makeStringView) addLog
-
   lastFile: 0 dynamic;
 
   multiParserResult.nodes.dataSize 0 > [
@@ -217,22 +215,6 @@
   [compilable not [processor.recursiveNodesStack.getSize 0 =] ||] "Recursive stack is not empty!" assert
 
   processorResult.success [
-    #("; total used="           memoryUsed
-    # "; varCount="             processor.varCount
-    # "; structureVarCount="    processor.structureVarCount
-    # "; fieldVarCount="        processor.fieldVarCount
-    # "; nodeCount="            processor.nodeCount
-    # "; varSize="              Variable storageSize
-    # "; fieldSize="            Field storageSize
-    # "; structureSize="        Struct   storageSize
-    # "; refToVarSize="         RefToVar storageSize
-    # "; nodeSize="             CodeNode storageSize
-    # "; used in nodes="        processor.nodes getHeapUsedSize
-    # "; memoryCounterMalloc="  memoryCounterMalloc
-    # "; memoryCounterFree="    memoryCounterFree
-    # "; deletedVarCount="      processor.deletedVarCount
-    # "; deletedNodeCount="     processor.deletedNodeCount) addLog
-
     ("nameCount=" processor.nameInfos.dataSize
       "; irNameCount=" processor.nameBuffer.dataSize) addLog
 
@@ -274,9 +256,6 @@
                 curInstruction.code makeStringView @processorResult.@program.cat
                 LF @processorResult.@program.cat
               ] [
-                #" ; -> disabled: " makeStringView @processorResult.@program.cat
-                #curInstruction.code makeStringView @processorResult.@program.cat
-                #LF makeStringView @processorResult.@program.cat
               ] if
             ] each
             "}" @processorResult.@program.cat

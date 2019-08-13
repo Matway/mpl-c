@@ -453,7 +453,6 @@ refsAreEqual: [
 variablesAreSame: [
   refToVar1:;
   refToVar2:;
-  #refToVar1 getVar.mplType makeStringView refToVar2 getVar.mplType makeStringView stringCompare
   refToVar1 getVar.mplTypeId refToVar2 getVar.mplTypeId = # id compare better than string compare!
 ];
 
@@ -895,7 +894,6 @@ isVirtualType: [
 
   var: refToVar getVar;
   var.data.getTag VarBuiltin =
-  #[var.data.getTag VarImport =] ||
   [var.data.getTag VarCode =] ||
   [var.data.getTag VarStruct = [VarStruct var.data.get.get.fullVirtual copy] &&] ||
   [refToVar isVirtualRef] ||
@@ -912,7 +910,6 @@ isVirtual: [
 noMatterToCopy: [
   refToVar:;
   refToVar isVirtual [refToVar isAutoStruct not] &&
-  #ref r:; FALSE
 ];
 
 isVirtualField: [
