@@ -127,30 +127,30 @@ CodeNodeInfo: [{
 Variable: [{
   VARIABLE: ();
 
-  mplNameId: -1 dynamic;
-  irNameId: -1 dynamic;
-  mplTypeId: -1 dynamic;
-  irTypeId: -1 dynamic;
-  dbgTypeId: -1 dynamic;
-  storageStaticness: Static;
-  staticness: Static;
-  global: FALSE dynamic;
-  temporary: TRUE dynamic;
-  usedInHeader: FALSE dynamic;
-  capturedAsMutable: FALSE dynamic;
-  capturedAsRealValue: FALSE dynamic;
-  tref: TRUE dynamic;
-  shadowReason: ShadowReasonNo;
-  globalId: -1 dynamic;
-  shadowBegin: RefToVar;
-  shadowEnd: RefToVar;
-  capturedHead: RefToVar;
-  capturedTail: RefToVar;
-  capturedPrev: RefToVar;
-  realValue: RefToVar;
+  mplNameId:                         -1 dynamic;
+  irNameId:                          -1 dynamic;
+  mplTypeId:                         -1 dynamic;
+  irTypeId:                          -1 dynamic;
+  dbgTypeId:                         -1 dynamic;
+  storageStaticness:                 Static;
+  staticness:                        Static;
+  global:                            FALSE dynamic;
+  temporary:                         TRUE dynamic;
+  usedInHeader:                      FALSE dynamic;
+  capturedAsMutable:                 FALSE dynamic;
+  capturedAsRealValue:               FALSE dynamic;
+  tref:                              TRUE dynamic;
+  shadowReason:                      ShadowReasonNo;
+  globalId:                          -1 dynamic;
+  shadowBegin:                       RefToVar;
+  shadowEnd:                         RefToVar;
+  capturedHead:                      RefToVar;
+  capturedTail:                      RefToVar;
+  capturedPrev:                      RefToVar;
+  realValue:                         RefToVar;
   globalDeclarationInstructionIndex: -1 dynamic;
-  allocationInstructionIndex: -1 dynamic;
-  getInstructionIndex: -1 dynamic;
+  allocationInstructionIndex:        -1 dynamic;
+  getInstructionIndex:               -1 dynamic;
 
   data: (
     Nat8             #VarInvalid
