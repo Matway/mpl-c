@@ -1197,6 +1197,7 @@ getNameForMatchingWithOverload: [
 
 captureName: [
   getNameResult:;
+  compileOnce
 
   result: {
     refToVar: RefToVar;
