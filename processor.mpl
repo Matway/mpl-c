@@ -273,7 +273,7 @@ Processor: [{
   globalVarId:        0 dynamic;
   globalInitializer: -1 dynamic; # index of func for calling all initializers
   globalDestructibleVars: RefToVar Array;
-  processingExport: 0 dynamic;
+  exportDepth:            0 dynamic;
 
   stringNames: String String HashTable;        #for string constants
   typeNames: String Int32 HashTable;           #mplType->irAliasId

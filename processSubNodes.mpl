@@ -787,8 +787,8 @@ usePreCaptures: [
   currentChangesNodeIndex 0 < not [
     currentChangesNode: currentChangesNodeIndex processor.nodes.at.get;
 
-    oldSuccess: processorResult.success copy;
-    TRUE @processorResult.@success set
+    oldSuccess: @processorResult move copy;
+    -1 clearProcessorResult
 
     i: 0 dynamic;
     [
@@ -853,7 +853,7 @@ usePreCaptures: [
       ] &&
     ] loop
 
-    oldSuccess @processorResult.@success set
+    @oldSuccess move @processorResult set
   ] when
 ];
 
@@ -1970,10 +1970,10 @@ nSwap: [
   newNodeIndex: @indexArray tryMatchAllNodesForRealFunction;
   newNodeIndex 0 < [compilable] && [
     nodeCase: asLambda [NodeCaseLambda][NodeCaseExport] if;
-    processor.processingExport 1 + @processor.@processingExport set
+    processor.exportDepth 1 + @processor.@exportDepth set
     name indexOfNode nodeCase @processorResult @processor indexArray multiParserResult positionInfo signature astNodeToCodeNode @newNodeIndex set
 
-    processor.processingExport 1 - @processor.@processingExport set
+    processor.exportDepth 1 - @processor.@exportDepth set
   ] when
 
   newNodeIndex usePreCaptures

@@ -1023,19 +1023,22 @@ processListNode: [
 
     compilable [
       FALSE dynamic @processorResult.@success set
-      message toString @processorResult.@errorInfo.@message set
-      nodeIndex: indexOfNode copy;
 
-      [
-        node: nodeIndex processor.nodes.at.get;
-        node.root [
-          FALSE
-        ] [
-          node.position @processorResult.@errorInfo.@position.pushBack
-          node.parent @nodeIndex set
-          TRUE
-        ] if
-      ] loop
+      processor.depthOfPre 0 = [
+        message toString @processorResult.@errorInfo.@message set
+        nodeIndex: indexOfNode copy;
+
+        [
+          node: nodeIndex processor.nodes.at.get;
+          node.root [
+            FALSE
+          ] [
+            node.position @processorResult.@errorInfo.@position.pushBack
+            node.parent @nodeIndex set
+            TRUE
+          ] if
+        ] loop
+      ] when
     ] when
   ] call
 ] "compilerErrorImpl" exportFunction
@@ -1201,6 +1204,8 @@ captureName: [
   };
 
   compilable [
+    captureError: FALSE dynamic;
+
     captureRefToVar: [
       copy captureCase:;
       refToVar:;
@@ -1269,6 +1274,11 @@ captureName: [
           captureCase  @newCapture.@captureCase set
 
           refToVar isVirtual [ArgVirtual] [refToVar isGlobal [ArgGlobal] [ArgRef] if ] if @newCapture.@argCase set
+          realCapture: newCapture.argCase ArgRef =;
+
+          realCapture [currentNode.exportDepth refToVar.hostId processor.nodes.at.get.exportDepth = not] && [
+            TRUE !captureError
+          ] when
 
           newCapture @currentNode.@buildingMatchingInfo.@captures.pushBack
           currentNode.state NodeStateNew = [
@@ -1357,6 +1367,10 @@ captureName: [
         getNameResult.nameInfo result.refToVar NameCaseCapture getNameResult.startPoint getNameResult.nameOverload addNameInfoOverloaded
       ] when
     ] if
+
+    captureError [
+      "real function can not have real local capture" compilerError
+    ] when
   ] [
     getNameResult.refToVar @result.@refToVar set
   ] if
@@ -3609,6 +3623,7 @@ nodeHasCode: [
   @compilerPositionInfo           @codeNode.@position set
   getStackDepth                   @codeNode.@minStackDepth set
   processor.varCount              @codeNode.@variableCountDelta set
+  processor.exportDepth           @codeNode.@exportDepth set
 
   processor.depthOfRecursion 1 + @processor.@depthOfRecursion set
   processor.depthOfRecursion processor.maxDepthOfRecursion > [
