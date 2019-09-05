@@ -2202,7 +2202,12 @@ addCodeNode: [
 
 argAbleToCopy: [
   arg:;
-  arg.mutable not [arg isTinyArg] &&
+  arg isTinyArg
+];
+
+argRecommendedToCopy: [
+  arg:;
+  arg.mutable not [arg argAbleToCopy] && [arg getVar.capturedAsMutable not] &&
 ];
 
 callInit: [
@@ -3122,7 +3127,7 @@ makeCompilerPosition: [
             needToCopy: hasForcedSignature [
               i forcedSignature.inputs.at getVar.data.getTag VarRef = not
             ] [
-              current.refToVar argAbleToCopy [current.refToVar getVar.capturedAsMutable not] &&
+              current.refToVar argRecommendedToCopy
             ] if;
 
             needToCopy [current.refToVar argAbleToCopy not] && [isRealFunction copy] && [

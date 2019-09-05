@@ -1955,8 +1955,12 @@ nSwap: [
     r makeVarTreeDynamic
     r unglobalize
     r fullUntemporize
-    FALSE @r.@mutable set
-    r push
+    r getVar.data.getTag VarRef = [
+      r getPointeeNoDerefIR push
+    ] [
+      FALSE @r.@mutable set
+      r push
+    ] if
   ] each
 
 
