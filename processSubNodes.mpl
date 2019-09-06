@@ -1926,10 +1926,10 @@ processDynamicLoop: [
   positionInfo: astNode makeCompilerPosition;
   compileOnce
 
-
   signature.variadic [
     "export function cannot be variadic" compilerError
   ] when
+
   ("process export: " makeStringView name makeStringView) addLog
 
   # we dont know count of used in export entites
@@ -1947,7 +1947,6 @@ processDynamicLoop: [
     ] if
   ] each
 
-
   oldSuccess: compilable;
   oldRecursiveNodesStackSize: processor.recursiveNodesStack.getSize;
 
@@ -1956,7 +1955,6 @@ processDynamicLoop: [
     nodeCase: asLambda [NodeCaseLambda][NodeCaseExport] if;
     processor.exportDepth 1 + @processor.@exportDepth set
     name indexOfNode nodeCase @processorResult @processor indexArray multiParserResult positionInfo signature astNodeToCodeNode @newNodeIndex set
-
     processor.exportDepth 1 - @processor.@exportDepth set
   ] when
 
