@@ -1908,22 +1908,6 @@ processDynamicLoop: [
   ] loop
 ];
 
-nSwap: [
-  copy n:;
-  [n currentNode.stask.getSize > not] "Swap count too big!" assert
-  i: 0;
-  j: n 1 -;
-  [i j <] [
-    e1: i getStackEntry;
-    e2: j getStackEntry;
-    tmp: e1 move;
-    e2 move @e1 set
-    tmp moce @e2 set
-    i 1 + @i set
-    j 1 - @j set
-  ] while
-];
-
 {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
   asLambda: Cond; name: StringView Cref; astNode: AstNode Cref; signature: CFunctionSignature Cref;} Int32 {convention: cdecl;} [
   processorResult:;
