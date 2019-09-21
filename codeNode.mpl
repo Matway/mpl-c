@@ -3698,6 +3698,7 @@ nodeHasCode: [
     @currentNode.@labelNames.clear
     @currentNode.@fromModuleNames.clear
     @currentNode.@captureNames.clear
+    @currentNode.@unprocessedAstNodes.clear
 
     processor.options.debug [
       addDebugReserve @currentNode.@funcDbgIndex set
