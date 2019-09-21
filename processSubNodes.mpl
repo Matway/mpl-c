@@ -620,13 +620,6 @@ applyOnePair: [
         ] [
           ("match fail, type=" makeStringView cacheEntry getMplType makeStringView
             "; st=" makeStringView cacheEntry staticnessOfVar stackEntry staticnessOfVar) addLog
-
-          cg: cacheEntry isGlobal;
-          sg: stackEntry isGlobal;
-          cg sg = not [
-            ("globality fail cache " cacheEntry.hostId ":" cacheEntry.varId " g=" cg [1][0] if
-              "; stack " stackEntry.hostId ":" stackEntry.varId " g=" sg [1][0] if) addLog
-          ] when
           FALSE
         ] if
       ] "Applying var has wrong value!" assert
