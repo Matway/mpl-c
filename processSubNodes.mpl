@@ -551,7 +551,7 @@ fixRef: [
   copy refToVar:;
 
   var: refToVar getVar;
-  wasVirtual: refToVar isVirtualRef;
+  wasVirtual: refToVar isSchema;
   makeDynamic: FALSE dynamic;
   pointee: VarRef @var.@data.get;
   pointeeVar: pointee getVar;
@@ -578,7 +578,7 @@ fixRef: [
   fixed.hostId @pointee.@hostId set
   fixed.varId  @pointee.@varId  set
 
-  wasVirtual [refToVar Virtual makeStaticness @refToVar set] [
+  wasVirtual [refToVar Schema makeStaticness @refToVar set] [
     makeDynamic [
       refToVar Dynamic makeStaticness @refToVar set
     ] when

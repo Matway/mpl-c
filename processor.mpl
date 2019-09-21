@@ -276,7 +276,7 @@ Processor: [{
   globalDestructibleVars: RefToVar Array;
   exportDepth:            0 dynamic;
 
-  stringNames: String String HashTable;        #for string constants
+  stringNames: String RefToVar HashTable;        #for string constants
   typeNames:   String Int32 HashTable;           #mplType->irAliasId
 
   nameBuffer:  String Array;

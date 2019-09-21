@@ -13,6 +13,7 @@ Dynamic:         [1n8 dynamic];
 Weak:            [2n8 dynamic];
 Static:          [3n8 dynamic];
 Virtual:         [4n8 dynamic];
+Schema:          [5n8 dynamic];
 
 NameCaseInvalid:               [ 0n8 dynamic];
 NameCaseBuiltin:               [ 1n8 dynamic];
@@ -376,7 +377,7 @@ getVar: [
 ];
 
 getNameById: [processor.nameBuffer.at makeStringView];
-getMplName:  [getVar.mplNameId getNameById];
+getMplName:  [getVar.mplNameId processor.nameInfos.at.name makeStringView];
 getIrName:   [getVar.irNameId getNameById];
 getMplType:  [getVar.mplTypeId getNameById];
 getIrType:   [getVar.irTypeId getNameById];
@@ -477,7 +478,7 @@ isNat: [
 isAnyInt: [
   refToVar:;
   refToVar isInt
-  [ refToVar isNat ] ||
+  [refToVar isNat] ||
 ];
 
 isReal: [
@@ -505,8 +506,13 @@ isTinyArg: [
   refToVar isPlain [
     var: refToVar getVar;
     var.data.getTag VarRef =
-    [var.data.getTag VarString =] ||
   ] ||
+];
+
+isUnallocable: [
+  var: getVar;
+  var.data.getTag VarString =
+  [var.data.getTag VarImport =] ||
 ];
 
 isStruct: [
@@ -590,7 +596,10 @@ getSingleDataStorageSize: [
     VarReal32  [4nx]
     VarReal64  [8nx]
     VarRef     [processor.options.pointerSize 8nx /]
-    VarString  [processor.options.pointerSize 8nx /]
+    VarString  [
+      "strings dont have storageSize and alignment" compilerError
+      0nx
+    ]
     VarImport  [
       "functions dont have storageSize and alignment" compilerError
       0nx
@@ -694,7 +703,7 @@ getNonrecursiveDataIRType: [
     result: String;
     var: refToVar getVar;
     var.data.getTag VarString = [
-      "i8*" toString @result set
+      "i8" toString @result set
     ] [
       var.data.getTag VarImport = [
         VarImport var.data.get getFuncIrType toString @result set
@@ -883,10 +892,10 @@ fullUntemporize: [
   ] when
 ];
 
-isVirtualRef: [
+isSchema: [
   refToVar:;
   var: refToVar getVar;
-  var.data.getTag VarRef = [var.staticness Virtual =] &&
+  var.data.getTag VarRef = [var.staticness Schema =] &&
 ];
 
 isVirtualType: [
@@ -896,14 +905,14 @@ isVirtualType: [
   var.data.getTag VarBuiltin =
   [var.data.getTag VarCode =] ||
   [var.data.getTag VarStruct = [VarStruct var.data.get.get.fullVirtual copy] &&] ||
-  [refToVar isVirtualRef] ||
+  [refToVar isSchema] ||
 ];
 
 isVirtual: [
   refToVar:;
 
   var: refToVar getVar;
-  var.staticness Virtual =
+  var.staticness Virtual < not
   [refToVar isVirtualType] ||
 ];
 
@@ -916,7 +925,7 @@ isVirtualField: [
   refToVar:;
 
   var: refToVar getVar;
-  var.staticness Virtual =
+  var.staticness Virtual < not
   [refToVar isVirtualType] ||
 ];
 
@@ -947,18 +956,27 @@ getVirtualValue: [
       ] each
       "}" @result.cat
     ]
-
-    VarString  [
-      string: VarString var.data.get;
-      (string textSize "_" string getStringImplementation) @result.catMany
-    ]
     VarCode    [
       info: VarCode    var.data.get;
       ("\"" info.moduleId processor.options.fileNames.at getStringImplementation "\"/" info.line ":" info.column) @result.catMany
     ]
-    VarImport  [VarImport  var.data.get @result.cat]
     VarBuiltin [VarBuiltin var.data.get @result.cat]
-    VarRef     ["."                     @result.cat]
+    VarRef     [
+      pointee: VarRef var.data.get;
+      pointeeVar: pointee getVar;
+      var.staticness Schema = [
+        "." @result.cat
+      ] [
+        pointeeVar.data.getTag (
+          VarString  [
+            string: VarString pointeeVar.data.get;
+            (string textSize "_" string getStringImplementation) @result.catMany
+          ]
+          VarImport  [VarImport  pointeeVar.data.get @result.cat]
+          [[FALSE] "Wrong type for virtual reference!" assert]
+        ) case
+      ] if
+    ]
     [
       refToVar isPlain [
         refToVar getPlainConstantIR @result.cat
