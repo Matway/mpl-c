@@ -682,6 +682,7 @@ makeVirtualVarReal: [
       @result makeVariableType
       refToVar @unfinishedSrc.pushBack
       result createAllocIR @unfinishedDst.pushBack
+
       [
         unfinishedSrc.dataSize 0 > [
           lastSrc: unfinishedSrc.last copy;
