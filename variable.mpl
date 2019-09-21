@@ -57,10 +57,12 @@ hash: ["REF_TO_VAR" has] [
   l:r:;;
   l.index r.index =
 ] pfunc;
+
 NameInfoEntry: [{
   refToVar: RefToVar;
   startPoint: -1 dynamic; # id of node
   nameCase: NameCaseInvalid;
+  index: -1 dynamic; # for NameCaseSelfMember
 }];
 
 Overload: [NameInfoEntry Array];

@@ -25,6 +25,7 @@ getOverloadCount: [
 ];
 
 addNameInfoWith: [
+  copy index:;
   copy reg:;
   copy overload:;
   copy startPoint:;
@@ -83,6 +84,7 @@ addNameInfoWith: [
       refToVar    @nameInfoEntry.@refToVar set
       addNameCase @nameInfoEntry.@nameCase set
       startPoint  @nameInfoEntry.@startPoint set
+      index       @nameInfoEntry.@index set
       cur: overload @currentNameInfo.@stack.at;
       nameInfoEntry @cur.pushBack
 
@@ -97,9 +99,14 @@ addNameInfoWith: [
   ] if
 ];
 
-addNameInfo: [indexOfNode copy -1 dynamic TRUE addNameInfoWith];
-addNameInfoOverloaded: [TRUE addNameInfoWith];
-addNameInfoNoReg: [indexOfNode copy -1 dynamic FALSE addNameInfoWith];
+addNameInfo: [indexOfNode copy -1 dynamic TRUE -1 dynamic addNameInfoWith];
+addNameInfoOverloaded: [TRUE -1 dynamic addNameInfoWith];
+addNameInfoNoReg: [indexOfNode copy -1 dynamic FALSE -1 dynamic addNameInfoWith];
+
+addNameInfoFieldNoReg: [
+  index: copy;
+  indexOfNode copy -1 dynamic FALSE index addNameInfoWith
+];
 
 getNameLastIndexInfo: [
   nameInfo:;
@@ -1164,14 +1171,14 @@ getNameAs: [
         nameCase NameCaseSelfMember = [nameCase NameCaseClosureMember =] || [
           object: nameInfoEntry.refToVar;
           overloadShift: curNameInfo.stack.dataSize 1 - overload -;
-          fr: nameInfo object overloadShift findFieldWithOverloadShift;
-          fr.success [
+          fields: VarStruct object getVar.data.get.get.fields;
+          nameInfoEntry.index 0 < not [nameInfoEntry.index fields.getSize <] && [nameInfoEntry.index fields.at.nameInfo nameInfo =] && [
             object nameCase MemberCaseToObjectCase findLocalObject @result.@object set
-            fr.index @result.@mplFieldIndex set
-            fr.index VarStruct object getVar.data.get .get .fields.at .refToVar @result.@refToVar set
+            nameInfoEntry.index @result.@mplFieldIndex set
+            nameInfoEntry.index fields.at.refToVar @result.@refToVar set
             object.mutable @result.@refToVar.@mutable set
           ] [
-            unknownName
+            ("Internal error, mismatch structures for name:" name) assembleString compilerError
           ] if
         ] [
           nameCase NameCaseSelfObject = [nameCase NameCaseClosureObject =] || [
@@ -1441,7 +1448,7 @@ addFieldsNameInfos: [
       currentField: i struct.fields.at;
       [currentField.nameInfo processor.emptyNameInfo = not] "Closured list!" assert
       currentField.nameInfo currentField.refToVar addOverloadForPre
-      currentField.nameInfo refToVar addNameCase addNameInfoNoReg # name info pointing to the struct, not to a field!
+      currentField.nameInfo refToVar addNameCase i addNameInfoFieldNoReg # name info pointing to the struct, not to a field!
       i 1 + @i set TRUE
     ] &&
   ] loop
