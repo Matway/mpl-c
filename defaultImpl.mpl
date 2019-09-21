@@ -3,7 +3,7 @@
 
 failProcForProcessor: [
   failProc: [stringMemory printAddr " - fail while handling fail" stringMemory printAddr];
-  copy message:;
+  message:;
   "ASSERTION FAILED!!!" print LF print
   message print LF print
   "While compiling:" print LF print

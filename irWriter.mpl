@@ -133,56 +133,41 @@ createStringTypeByStringName: [
   ("%type." stringNameNoFirst) assembleString
 ];
 
-createStringIRNoAlloc: [
-  refToVar:;
-  var: refToVar getVar;
-  varValue: VarString var.data.get;
-  stringSizeWithZero: varValue.chars.dataSize 0 = [1][varValue.chars.dataSize 0 cast] if;
-
-  stringName: String;
-  stringType: String;
-
-  fr: varValue makeStringView @processor.@stringNames.find;
-  fr.success [
-    fr.value @stringName set
-    stringName createStringTypeByStringName @stringType set
-  ] [
-    stringId: processor.lastStringId copy;
-    ("@string." processor.lastStringId) assembleString @stringName set
-    stringName createStringTypeByStringName @stringType set
-    varValue stringName @processor.@stringNames.insert
-    processor.lastStringId 1 + @processor.@lastStringId set
-
-    valueImplementation: varValue makeStringView getStringImplementation;
-    stringSize: stringSizeWithZero 1 -;
-    stringSizeCheck: stringSize Nat32 cast 0xDEADBEEFn32 xor;
-
-    (stringType " = type {i32, i32, [" stringSizeWithZero " x i8]}"
-    ) assembleString @processor.@prolog.pushBack
-    (stringName " = private unnamed_addr constant " stringType " {i32 " stringSizeCheck ", i32 " stringSize ", [" stringSizeWithZero " x i8] c\"" valueImplementation "\\00\"}"
-    ) assembleString @processor.@prolog.pushBack
-  ] if
-
-  ("  store i8* getelementptr inbounds (" stringType ", " stringType "* " stringName ", i32 0, i32 2, i32 0), i8** " refToVar getIrName
-  ) assembleString makeInstruction @currentNode.@program.pushBack
-
-  refToVar copy
-];
-
 createStringIR: [
-  createAllocIR createStringIRNoAlloc
+  refToVar:;
+  string:;
+
+  stringId: processor.lastStringId copy;
+  stringName: ("@string." processor.lastStringId) assembleString;
+  stringType: stringName createStringTypeByStringName;
+
+  processor.lastStringId 1 + @processor.@lastStringId set
+
+  var: refToVar getVar;
+  @stringName findNameInfo @var.@mplNameId set
+  ("getelementptr inbounds (" stringType ", " stringType "* " stringName ", i32 0, i32 2, i32 0)") assembleString makeStringId @var.@irNameId set
+
+  valueImplementation: string makeStringView getStringImplementation;
+
+  stringSizeWithZero: string.chars.getSize 0 = [1][string.chars.getSize 0 cast] if;
+  stringSize: stringSizeWithZero 1 -;
+  stringSizeCheck: stringSize Nat32 cast 0xDEADBEEFn32 xor;
+
+  (stringType " = type {i32, i32, [" stringSizeWithZero " x i8]}"
+  ) assembleString @processor.@prolog.pushBack
+  (stringName " = private unnamed_addr constant " stringType " {i32 " stringSizeCheck ", i32 " stringSize ", [" stringSizeWithZero " x i8] c\"" valueImplementation "\\00\"}"
+  ) assembleString @processor.@prolog.pushBack
 ];
 
 createGetTextSizeIR: [
   refToDst:;
   refToName:;
-  int8PtrRegister:   refToName createDerefToRegister;
   int32PtrRegister:  generateRegisterIRName;
   ptrRegister:       generateRegisterIRName;
   int32SizeRegister: generateRegisterIRName;
   int64SizeRegister: generateRegisterIRName;
 
-  ("  " int32PtrRegister getNameById " = bitcast i8* " int8PtrRegister getNameById " to i32*") assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " int32PtrRegister getNameById " = bitcast i8* " refToName getIrName " to i32*") assembleString makeInstruction @currentNode.@program.pushBack
   ("  " ptrRegister getNameById " = getelementptr i32, i32* " int32PtrRegister getNameById ", i32 -1") assembleString makeInstruction @currentNode.@program.pushBack
   ("  " int32SizeRegister getNameById " = load i32, i32* " ptrRegister getNameById) assembleString makeInstruction @currentNode.@program.pushBack
 
@@ -234,7 +219,7 @@ createFailWithMessage: [
   gnr: processor.failProcNameInfo getName;
   cnr: gnr captureName;
   failProcRefToVar: cnr.refToVar copy;
-  message toString VarString createVariable createStringIR push
+  message toString makeVarString push
 
   failProcRefToVar getVar.data.getTag VarBuiltin = [
     #no overload

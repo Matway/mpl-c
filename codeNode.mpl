@@ -143,7 +143,7 @@ makeStaticness: [
     var: refToVar getVar;
     staticness @var.@staticness set
 
-    staticness Virtual = [
+    staticness Virtual < not [
       refToVar makeVariableType
     ] when
   ] when
@@ -163,11 +163,12 @@ makeStorageStaticness: [
 ];
 
 createVariable: [
-  FALSE dynamic TRUE dynamic createVariableWithVirtual
+  FALSE dynamic FALSE dynamic TRUE dynamic createVariableWithVirtual
 ];
 
 createVariableWithVirtual: [
   copy makeType:;
+  copy makeSchema:;
   copy makeVirtual:;
   copy tag:;
   dataIsMoved: isMoved;
@@ -194,7 +195,7 @@ createVariableWithVirtual: [
   indexOfNode @result.@hostId set
 
   makeVirtual [
-    Virtual result getVar.@staticness set
+    makeSchema [Schema][Virtual] if result getVar.@staticness set
   ] [
     result isPlain [processor.options.staticLiterals not] && [
       Weak result getVar.@staticness set
@@ -236,8 +237,6 @@ getStackEntryForPreInput: [
 ];
 
 makeVarCode:   [VarCode   createVariable];
-makeVarString: [VarString createVariable createStringIR];
-
 makeVarInt8:   [VarInt8   checkValue VarInt8   createVariable createPlainIR];
 makeVarInt16:  [VarInt16  checkValue VarInt16  createVariable createPlainIR];
 makeVarInt32:  [VarInt32  checkValue VarInt32  createVariable createPlainIR];
@@ -250,6 +249,39 @@ makeVarNat64:  [VarNat64  checkValue VarNat64  createVariable createPlainIR];
 makeVarNatX:   [VarNatX   checkValue VarNatX   createVariable createPlainIR];
 makeVarReal32: [VarReal32 checkValue VarReal32 createVariable createPlainIR];
 makeVarReal64: [VarReal64 checkValue VarReal64 createVariable createPlainIR];
+
+makeVarString: [
+  string:;
+
+  refToVar: RefToVar;
+
+  fr: string @processor.@stringNames.find;
+  fr.success [
+    fr.value @refToVar set
+  ] [
+    topIndex: indexOfNode copy;
+    topNode: @currentNode;
+    [topIndex 0 = not] [
+      topNode.parent @topIndex set
+      topIndex @processor.@nodes.at.get !topNode
+    ] while
+
+    indexOfNode: topIndex copy;
+    currentNode: @topNode;
+
+    string VarString createVariable @refToVar set
+    string refToVar createStringIR
+    string refToVar @processor.@stringNames.insert
+
+    refToVar fullUntemporize
+    refToVar getVar.mplNameId refToVar NameCaseLocal addNameInfo
+  ] if
+
+  gnr: refToVar getVar.mplNameId getName;
+  cnr: gnr captureName;
+
+  cnr.refToVar copy
+];
 
 makeConst: [
   var:;
@@ -681,11 +713,7 @@ makeVirtualVarReal: [
               ] [
                 lastSrc isPlain [
                   lastSrc lastDst createStoreConstant
-                ] [
-                  varSrc.data.getTag VarString = [
-                    lastDst createStringIRNoAlloc drop
-                  ] when
-                ] if
+                ] when
               ] if
             ] when
           ] if
@@ -700,6 +728,11 @@ makeVirtualVarReal: [
 
     realValue copy
   ] if
+];
+
+makeVarSchema: [
+  refToVar:;
+  refToVar Schema makeStaticness drop
 ];
 
 makeVarVirtual: [
@@ -729,6 +762,10 @@ makeVarVirtual: [
         ] if
       ] [
         curVar.data.getTag VarRef = [
+          VarRef curVar.data.get isUnallocable [
+          ] [
+            "can not virtualize reference to local variable" makeStringView compilerError
+          ] if
         ] [
           cur staticnessOfVar Weak < [
             "can not virtualize dynamic value" makeStringView compilerError
@@ -740,7 +777,7 @@ makeVarVirtual: [
   ] loop
 
   compilable [
-    msr: refToVar Virtual makeStaticness;
+    refToVar Virtual makeStaticness drop
   ] when
 ];
 
@@ -785,7 +822,7 @@ makeVarTreeDirty: [
           ] when
         ] if
 
-        var.data.getTag VarImport = not [
+        var.data.getTag VarImport = not var.data.getTag VarString = not and [
           lastRefToVar Dirty makeStaticness @lastRefToVar set
         ] when
       ] when
@@ -896,10 +933,6 @@ createNamedVariable: [
         staticness Dynamic > not ["value for virtual label must be static" makeStringView compilerError] when
         staticness Weak    =     [Static @var.@staticness set] when
       ] when
-
-      var.data.getTag VarImport = [
-        "funcPtr is always pointer, cannot make it virtual" makeStringView compilerError
-      ] when
     ] when
 
     isGlobalLabel: [
@@ -916,7 +949,7 @@ createNamedVariable: [
       staticness @var.@staticness set
       staticness Weak    = [Dynamic @var.@staticness set] when
     ] [
-      newRefToVar noMatterToCopy currentNode.nextLabelIsVirtual or [
+      newRefToVar noMatterToCopy currentNode.nextLabelIsVirtual or newRefToVar isUnallocable not and [
         refToVar copyVarToNew @newRefToVar set
       ] [
         TRUE @var.@capturedAsMutable set #we need ref
@@ -933,7 +966,7 @@ createNamedVariable: [
 
     currentNode.nextLabelIsVirtual currentNode.nextLabelIsSchema or [
       newRefToVar makeVariableType
-      newRefToVar makeVarVirtual
+      currentNode.nextLabelIsSchema [newRefToVar makeVarSchema][newRefToVar makeVarVirtual] if
       FALSE @currentNode.@nextLabelIsVirtual set
       FALSE @currentNode.@nextLabelIsSchema set
     ] when
@@ -957,6 +990,8 @@ createNamedVariable: [
 
       newField @currentNode.@struct.@fields.pushBack
     ] when
+
+    nameInfo newRefToVar getVar.@mplNameId set
   ] when
 ];
 
@@ -1679,7 +1714,7 @@ setRef: [
   refToVar:; # destination
   var: refToVar getVar;
   var.data.getTag VarRef = [
-    refToVar isVirtualRef [
+    refToVar isSchema [
       "can not write to virtual" makeStringView compilerError
     ] [
       pointee: VarRef var.data.get;
@@ -1735,7 +1770,7 @@ copyOneVarWith: [
     # manually copy only nececcary fields
     dstStruct: Struct;
     srcStruct.fields          @dstStruct.@fields set
-    @dstStruct move owner VarStruct src isVirtualField FALSE dynamic createVariableWithVirtual
+    @dstStruct move owner VarStruct src isVirtualField src isSchema FALSE dynamic createVariableWithVirtual
     src checkedStaticnessOfVar makeStaticness @dst set
     dstStructAc: VarStruct dst getVar.@data.get.get;
     srcStruct.homogeneous       @dstStructAc.@homogeneous set
@@ -1749,7 +1784,7 @@ copyOneVarWith: [
     srcVar.data.getTag VarInvalid VarEnd [
       copy tag:;
       tag VarStruct = not [
-        tag srcVar.data.get tag src isVirtualField FALSE dynamic createVariableWithVirtual
+        tag srcVar.data.get tag src isVirtualField src isSchema FALSE dynamic createVariableWithVirtual
         src checkedStaticnessOfVar makeStaticness
         @dst set
       ] when
@@ -2129,52 +2164,47 @@ processMember: [
   data:;
 
   compilable [
-    virtualRef: FALSE;
-
     fieldError: [
       (refToStruct getMplType " has no field " data.name) assembleString compilerError
     ];
 
-    refToStruct getVar.data.getTag VarRef = [
-      refToStruct isVirtualRef [
-        TRUE @virtualRef set
-        read -1 = [
-          "can not write to field of struct virtual reference" makeStringView compilerError
-        ] [
-          structVar: refToStruct getVar;
-          pointee: VarRef structVar.data.get;
-          pointeeVar: pointee getVar;
-          pointeeVar.data.getTag VarStruct = [
-            fr: data.nameInfo pointee findField;
-            fr.success [
-              index: fr.index copy;
-              field: index 0 cast VarStruct pointeeVar.data.get.get.fields.at.refToVar;
-              result: field VarRef TRUE dynamic TRUE dynamic createVariableWithVirtual;
-              result fullUntemporize
-              read 1 = result.mutable and @result.@mutable set
-              result push
-            ] [
-              fieldError
-            ] if
+    refToStruct isSchema [
+      read -1 = [
+        "can not write to field of struct schema" makeStringView compilerError
+      ] [
+        structVar: refToStruct getVar;
+        pointee: VarRef structVar.data.get;
+        pointeeVar: pointee getVar;
+        pointeeVar.data.getTag VarStruct = [
+          fr: data.nameInfo pointee findField;
+          fr.success [
+            index: fr.index copy;
+            field: index 0 cast VarStruct pointeeVar.data.get.get.fields.at.refToVar;
+            result: field VarRef TRUE dynamic TRUE dynamic TRUE dynamic createVariableWithVirtual;
+            result fullUntemporize
+            read 1 = result.mutable and @result.@mutable set
+            result push
           ] [
-            "not a combined" makeStringView compilerError
+            fieldError
           ] if
+        ] [
+          "not a combined" makeStringView compilerError
+        ] if
+      ] if
+    ] [
+      refToStruct getVar.data.getTag VarStruct = [
+        fr: data.nameInfo refToStruct findField;
+        fr.success [
+          index: fr.index copy;
+          fieldRef: index refToStruct processStaticAt;
+          refToStruct fieldRef read data.nameInfo pushName # let it be marker about field
+        ] [
+          fieldError
         ] if
       ] [
-        refToStruct getPointee @refToStruct set
+        "not a combined" makeStringView compilerError
       ] if
-    ] when
-
-    virtualRef not [
-      fr: data.nameInfo refToStruct findField;
-      fr.success [
-        index: fr.index copy;
-        fieldRef: index refToStruct processStaticAt;
-        refToStruct fieldRef read data.nameInfo pushName # let it be marker about field
-      ] [
-        fieldError
-      ] if
-    ] when
+    ] if
   ] when
 ];
 
@@ -2588,7 +2618,7 @@ finalizeObjectNode: [
   ] loop
 
   refToStruct isVirtual not [
-    refToStruct createAllocIR @refToStruct set
+    refToStruct createAllocIR drop
     i: 0 dynamic;
     [
       i structInfo.fields.dataSize < [
@@ -3400,6 +3430,7 @@ makeCompilerPosition: [
 
     refToVar @declarationNode.@refToVar set
     FALSE refToVar getVar.@temporary set
+
     declarationNode.nodeCase NodeCaseCodeRefDeclaration = [
       "null" toString makeStringId refToVar getVar.@irNameId set
       "null" toString @declarationNode.@irName set
