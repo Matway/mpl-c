@@ -1156,12 +1156,11 @@ getNameAs: [
 
   nameInfo 0 < not [
     curNameInfo: nameInfo processor.nameInfos.at;
-
     curNameInfo.name name = [
-      overload 0 < [curNameInfo.stack.dataSize 1 - @overload set] when
+      overload 0 < [curNameInfo.stack.getSize 1 - @overload set] when
 
-      curNameInfo.stack.dataSize 0 > [overload curNameInfo.stack.at.dataSize 0 >] && [
-        [curNameInfo.stack.dataSize 0 >] "Name info data not initialised!" assert
+      curNameInfo.stack.getSize 0 > [overload curNameInfo.stack.at.getSize 0 >] && [
+        [curNameInfo.stack.getSize 0 >] "Name info data not initialised!" assert
         nameInfoEntry: overload curNameInfo.stack.at.last;
         overload @result.@nameOverload set
         nameInfoEntry.nameCase   @result.@nameCase set
