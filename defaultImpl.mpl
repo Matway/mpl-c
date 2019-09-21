@@ -105,6 +105,8 @@ defaultUseOrIncludeModule: [
       varName.data.getTag VarString = not ["name must be static string" compilerError] when
     ] [
       string: VarString varName.data.get;
+      ("use or include module " string) addLog
+
       fr: string makeStringView processor.modules.find;
       fr.success [fr.value 0 < not] && [
         frn: fr.value currentNode.usedModulesTable.find;
