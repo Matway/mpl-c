@@ -1574,7 +1574,7 @@ callCallableStructWithPre: [
         findInside [
           fr: nameInfo object overloadShift findFieldWithOverloadShift;
           fr.success [
-            fr.index object getField @refToVar set
+            fr.index object processStaticAt @refToVar set
           ] [
             0 @overloadShift set
             FALSE @findInside set
