@@ -99,7 +99,7 @@ createDefinition: [
     "*definitions" toString @options.@fileNames.pushBack
 
     argc 1 = [
-      printInfo
+      FALSE @success set
     ] [
       argc [
         i 0 = [
@@ -111,12 +111,12 @@ createDefinition: [
 
           option textSize 0nx = [
             "Error, argument cannot be empty" print LF print
-            printInfo
+            FALSE @success set
           ] [
             splittedOption: option.split;
             splittedOption.success not [
               "Invalid argument encoding: " print option print LF print
-              printInfo
+              FALSE @success set
             ] [
               nextOption (
                 optAny [
@@ -137,7 +137,7 @@ createDefinition: [
                     [
                       0 splittedOption.chars.at "-" = [
                         "Invalid argument: " print option print LF print
-                        printInfo
+                        FALSE @success set
                       ] [
                         option toString @options.@fileNames.pushBack
                       ] if
@@ -162,7 +162,7 @@ createDefinition: [
                     "1"   [1 @forceArrayChecks set]
                     [
                       "Invalid argument value: " print option print LF print
-                      printInfo
+                      FALSE @success set
                     ]
                   ) case
                   optAny !nextOption
@@ -177,8 +177,29 @@ createDefinition: [
 
     nextOption optAny = not [
       "Value expected" print LF print
-      printInfo
       FALSE @success set
+    ] when
+
+    outputFileName "" = [
+      "No output file" print LF print
+      FALSE @success set
+    ] when
+
+    options.fileNames.getSize 1 = [
+      hasVersion [
+        DEBUG [
+          ("MPL compiler version " COMPILER_SOURCE_VERSION " debug" LF) printList
+        ] [
+          ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
+        ] if
+      ] [
+        "No input files" print LF print
+        FALSE @success set
+      ] if
+    ] when
+
+    success not [
+      printInfo
     ] [
       forceArrayChecks (
         0 [FALSE]
@@ -186,94 +207,76 @@ createDefinition: [
         [options.debug copy]
       ) case @options.@arrayChecks set
 
-      options.fileNames.getSize 1 = [
-        hasVersion [
-          DEBUG [
-            ("MPL compiler version " COMPILER_SOURCE_VERSION " debug" LF) printList
-          ] [
-            ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
-          ] if
-        ] [
-          "No input files" print LF print
-        ] if
+      hasVersion [
+        ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
+        "Input files ignored" print LF print
       ] [
-        hasVersion [
-          ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
-          "Input files ignored" print LF print
-        ] [
-          outputFileName "" = [
-            "No output file" print LF print
-            printInfo
-            FALSE @success set
+        options.fileNames [
+          pair:;
+          filename: pair.value;
+
+          pair.index 0 = [
+            filename pair.index definitions addToProcess
           ] [
-            options.fileNames [
-              pair:;
-              filename: pair.value;
-
-              pair.index 0 = [
-                filename pair.index definitions addToProcess
-              ] [
-                loadStringResult: filename loadString;
-                loadStringResult.success [
-                  ("Loaded string from " filename) addLog
-                  ("HASH=" loadStringResult.data hash) addLog
-                  filename pair.index loadStringResult.data addToProcess
-                ] [
-                  "Unable to load string:" print filename print LF print
-                  FALSE @success set
-                ] if
-              ] if
-            ] each
-
-            success [
-              multiParserResult: MultiParserResult;
-              @parserResults @multiParserResult concatParserResults
-              ("trees concated" makeStringView) addLog
-              @multiParserResult optimizeNames
-              ("names optimized" makeStringView) addLog
-
-              ("filenames:" makeStringView) addLog
-              options.fileNames [(.value) addLog] each
-
-              processorResult: ProcessorResult;
-              multiParserResult options 0 @processorResult process
-              processorResult.success [
-                outputFileName @processorResult.@program saveString [
-                  ("program written to " outputFileName) addLog
-                ] [
-                  ("failed to save program" LF) printList
-                  FALSE @success set
-                ] if
-              ] when
-
-              processorResult.success not [
-                processorResult.globalErrorInfo [
-                  pair:;
-                  current: pair.value;
-                  pair.index 0 > [LF print] when
-                  current.position.getSize 0 = [
-                    ("error, "  current.message) printList LF print
-                  ] [
-                    current.position [
-                      pair:;
-                      i: pair.index;
-                      nodePosition: pair.value;
-                      (nodePosition.fileNumber options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
-
-                      i 0 = [
-                        ("error, [" nodePosition.token "], " current.message LF) printList
-                      ] [
-                        ("[" nodePosition.token "], called from here" LF) printList
-                      ] if
-                    ] each
-                  ] if
-
-                  FALSE @success set
-                ] each
-              ] when
-            ] when
+            loadStringResult: filename loadString;
+            loadStringResult.success [
+              ("Loaded string from " filename) addLog
+              ("HASH=" loadStringResult.data hash) addLog
+              filename pair.index loadStringResult.data addToProcess
+            ] [
+              "Unable to load string:" print filename print LF print
+              FALSE @success set
+            ] if
           ] if
-        ] if
+        ] each
+
+        success [
+          multiParserResult: MultiParserResult;
+          @parserResults @multiParserResult concatParserResults
+          ("trees concated" makeStringView) addLog
+          @multiParserResult optimizeNames
+          ("names optimized" makeStringView) addLog
+
+          ("filenames:" makeStringView) addLog
+          options.fileNames [(.value) addLog] each
+
+          processorResult: ProcessorResult;
+          multiParserResult options 0 @processorResult process
+          processorResult.success [
+            outputFileName @processorResult.@program saveString [
+              ("program written to " outputFileName) addLog
+            ] [
+              ("failed to save program" LF) printList
+              FALSE @success set
+            ] if
+          ] when
+
+          processorResult.success not [
+            processorResult.globalErrorInfo [
+              pair:;
+              current: pair.value;
+              pair.index 0 > [LF print] when
+              current.position.getSize 0 = [
+                ("error, "  current.message) printList LF print
+              ] [
+                current.position [
+                  pair:;
+                  i: pair.index;
+                  nodePosition: pair.value;
+                  (nodePosition.fileNumber options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
+
+                  i 0 = [
+                    ("error, [" nodePosition.token "], " current.message LF) printList
+                  ] [
+                    ("[" nodePosition.token "], called from here" LF) printList
+                  ] if
+                ] each
+              ] if
+
+              FALSE @success set
+            ] each
+          ] when
+        ] when
       ] if
     ] if
 
