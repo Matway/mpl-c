@@ -276,7 +276,8 @@ tryMatchNode: [
   comparingMessage: String;
 
   canMatch: currentMatchingNode.deleted not [
-    currentMatchingNode.state NodeStateCompiled = [
+    currentMatchingNode.state NodeStateCompiled = 
+    currentMatchingNode.state NodeStateFailed = or [
       #recursive condition
       currentMatchingNode.nodeIsRecursive
       [currentMatchingNode.recursionState NodeRecursionStateFail = not] &&
@@ -287,7 +288,15 @@ tryMatchNode: [
       ] &&
     ] ||
     [getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + < not] &&
+    [currentMatchingNode.matchingInfo.hasStackUnderflow not 
+      [getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + > not] ||
+    ] &&
   ] &&;
+
+  # matching node has 0 inputs and underflow, current node has 0 inputs - TRUE
+  # matching node has 0 inputs and underflow, current node has 1 inputs - FALSE
+  # matching node has 0 inputs, current node has 0 inputs - TRUE
+  # matching node has 0 inputs, current node has 1 inputs - TRUE
 
   goodReality:
   forceRealFunction not [
@@ -338,7 +347,7 @@ tryMatchNode: [
     success: TRUE;
     i: 0 dynamic;
     [
-      i currentMatchingNode.matchingInfo.inputs.dataSize < [
+      i currentMatchingNode.matchingInfo.inputs.getSize < [
         stackEntry: i getStackEntry;
         cacheEntry: i currentMatchingNode.matchingInfo.inputs.at.refToVar;
 
@@ -445,27 +454,52 @@ tryMatchNode: [
   indexArrayAddr: indexArrayOfSubNode storageAddress;
   fr: indexArrayAddr @processor.@matchingNodes.find;
   fr.success [
-    matchingNodes: fr.value;
-    result: -1 dynamic;
-    i: 0 dynamic;
-    [
-      i matchingNodes.dataSize < [
-        currentMatchingNodeIndex: i matchingNodes.at;
-        currentMatchingNode: currentMatchingNodeIndex processor.nodes.at.get;
+    fr.value.entries 1 + @fr.@value.@entries set
 
-        currentMatchingNode tryMatchNode [
-          currentMatchingNodeIndex @result set
-          FALSE
-        ] [
-          i 1 + @i set compilable
-        ] if
-      ] &&
-    ] loop
+    findInIndexArray: [
+      where:;
+
+      result: -1 dynamic;
+      i: 0 dynamic;
+      [
+        i where.dataSize < [
+          fr.value.tries 1 + @fr.@value.@tries set
+          currentMatchingNodeIndex: i where.at;
+          currentMatchingNode: currentMatchingNodeIndex processor.nodes.at.get;
+
+          currentMatchingNode tryMatchNode [
+            currentMatchingNodeIndex @result set
+            currentMatchingNode.uncompilable ["nested node error" compilerError] when
+
+            FALSE
+          ] [
+            i 1 + @i set compilable
+          ] if
+        ] &&
+      ] loop
+
+      result
+    ];
+
+    result: -1 dynamic;
+
+    getStackDepth 0 > [
+      byType: 0 dynamic getStackEntry getVar.mplTypeId fr.value.byMplType.find;
+
+      byType.success [
+        byType.value findInIndexArray @result set
+      ] when
+    ] when
+
+    result 0 < [
+      fr.value.unknownMplType findInIndexArray @result set
+    ] when
 
     result
   ] [
     -1 dynamic
   ] if
+
 ] "tryMatchAllNodesWith" exportFunction
 
 tryMatchAllNodes: [
@@ -985,6 +1019,17 @@ usePreInputs: [
   ] when
 ];
 
+useFailedInputsAndCaptures: [
+  newNodeIndex:;
+  newNodeIndex 0 < not [
+    newNode: newNodeIndex processor.nodes.at.get;
+
+    newNode.matchingInfo.hasStackUnderflow [
+      addStackUnderflowInfo
+    ] when
+  ] when
+];
+
 pushOutput: [push];
 
 isImplicitDeref: [
@@ -1226,9 +1271,7 @@ processCallByNode: [
     positionInfo
     CFunctionSignature
     astNodeToCodeNode @newNodeIndex set
-
-  ] [
-  ] if
+  ] when
 
   compilable [
     newNode: newNodeIndex @processor.@nodes.at.get;
@@ -1293,23 +1336,22 @@ processCallByNode: [
     positionInfo: astNode makeCompilerPosition;
     indexArray: AstNodeType.Code @astNode.@data.get;
 
+    oldSuccess: compilable;
+    oldGlobalErrorCount: processorResult.globalErrorInfo.getSize;
+
     newNodeIndex: indexArray tryMatchAllNodes;
     newNodeIndex 0 < [compilable] && [
-      oldSuccess: compilable;
-      oldGlobalErrorCount: processorResult.globalErrorInfo.getSize;
-
       processor.depthOfPre 1 + @processor.@depthOfPre set
       "PRE" makeStringView indexOfNode NodeCaseCode  @processorResult @processor indexArray multiParserResult positionInfo CFunctionSignature astNodeToCodeNode @newNodeIndex set
       processor.depthOfPre 1 - @processor.@depthOfPre set
-
-      oldGlobalErrorCount @processorResult.@globalErrorInfo.shrink
-
-      oldSuccess [
-        processorResult.maxDepthExceeded not [-1 clearProcessorResult] when
-      ] [
-        [FALSE] "Has compilerError before trying compiling pre!" assert
-      ] if
     ] when
+
+    oldGlobalErrorCount @processorResult.@globalErrorInfo.shrink
+    oldSuccess [
+      processorResult.maxDepthExceeded not [-1 clearProcessorResult] when
+    ] [
+      [FALSE] "Has compilerError before trying compiling pre!" assert
+    ] if
 
     newNode: newNodeIndex processor.nodes.at.get;
     newNodeIndex usePreInputs
@@ -1639,12 +1681,14 @@ processIf: [
                 result
               ];
 
+              wasNestedCall: currentNode.hasNestedCall copy;
               0 refToCond createBranch
               createLabel
               inputsThen outputsThen newNodeThen makeCallInstruction
               storesThen: newNodeThen outputsThen createStores;
               0 createJump
               createLabel
+              wasNestedCall @currentNode.@hasNestedCall set
               inputsElse outputsElse newNodeElse makeCallInstruction
               storesElse: newNodeElse outputsElse createStores;
               1 createJump

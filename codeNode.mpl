@@ -1991,6 +1991,13 @@ makeShadowsDynamic: [
   TRUE  makeShadowsImpl
 ];
 
+addStackUnderflowInfo: [
+  TRUE @currentNode.@buildingMatchingInfo.@hasStackUnderflow set
+  currentNode.state NodeStateNew = [
+    TRUE @currentNode.@matchingInfo.@hasStackUnderflow set
+  ] when
+];
+
 {
   forMatching: Cond;
   processorResult: ProcessorResult Ref;
@@ -2058,8 +2065,9 @@ makeShadowsDynamic: [
         ] when
         newInput @currentNode.@matchingInfo.@inputs.pushBack
       ] when
-
-    ] when
+    ] [
+      addStackUnderflowInfo
+    ] if
   ] [
     currentNode.stack.last @result set
     @currentNode.@stack.popBack
@@ -2691,12 +2699,87 @@ checkPreStackDepth: [
   ] loop
 ];
 
+addMatchingNode: [
+  copy indexOfNode:;
+  copy addr:;
+
+  node: indexOfNode @processor.@nodes.at.get;
+  addr @node.@indexArrayAddress set
+
+  fr: addr @processor.@matchingNodes.find;
+  fr.success [
+    fr.value.unknownMplType.getSize @currentNode.@matchingInfoIndex set
+    fr.value.size 1 + @fr.@value.@size set
+    indexOfNode @fr.@value.@unknownMplType.pushBack
+  ] [
+    tableValue: MatchingNode;
+    compilerPositionInfo @tableValue.@compilerPositionInfo set
+    1 @tableValue.@size set
+    0 @tableValue.@tries set
+    0 @tableValue.@entries set
+    0 @currentNode.@matchingInfoIndex set
+    indexOfNode @tableValue.@unknownMplType.pushBack
+    addr @tableValue move @processor.@matchingNodes.insert
+  ] if
+];
+
+deleteMatchingNode: [
+  copy indexOfNode:;
+
+  node: indexOfNode @processor.@nodes.at.get;
+  node.matchingInfoIndex 0 < not [
+    addr: node.indexArrayAddress copy;
+    info: addr @processor.@matchingNodes.find.@value;
+    indexArray: @info.@unknownMplType;
+    info.size 1 - @info.@size set
+
+    [node.matchingInfoIndex indexArray.at indexOfNode =] "Current node: matchingInfo table is incorrect!" assert
+    indexArray.getSize 1 - node.matchingInfoIndex = not [
+      [indexArray.last processor.nodes.at.get.matchingInfoIndex indexArray.getSize 1 - =] "Last node: matchingInfo table is incorrect!" assert
+
+      node.matchingInfoIndex indexArray.last @processor.@nodes.at.get.@matchingInfoIndex set
+      indexArray.last node.matchingInfoIndex @indexArray.at set
+    ] when
+
+    -1 @node.@matchingInfoIndex set
+    @indexArray.popBack
+  ] when
+];
+
+concreteMatchingNode: [
+  copy indexOfNode:;
+  node: indexOfNode @processor.@nodes.at.get;
+
+  node.matchingInfo.inputs.getSize 0 = not [
+    indexOfNode deleteMatchingNode
+
+    addr: node.indexArrayAddress copy;
+    info: addr @processor.@matchingNodes.find.@value;
+    info.size 1 + @info.@size set #return it back
+
+    byMplType: info.@byMplType;
+
+    key: 0 node.matchingInfo.inputs.at.refToVar getVar.mplTypeId copy;
+
+    fr: key @info.@byMplType.find;
+    fr.success [
+      indexOfNode @fr.@value.pushBack
+    ] [
+      newBranch: IndexArray;
+      indexOfNode @newBranch.pushBack
+      key @newBranch move @info.@byMplType.insert
+    ] if
+  ] when
+];
+
 deleteNode: [
   copy nodeIndex:;
   node: nodeIndex @processor.@nodes.at.get;
   TRUE dynamic @node.@empty   set
   TRUE dynamic @node.@deleted set
   @node.@program.release
+
+  nodeIndex deleteMatchingNode
 
   processor.deletedNodeCount 1 + @processor.@deletedNodeCount set
 ];
@@ -3609,23 +3692,9 @@ addIndexArrayToProcess: [
   ] loop
 ];
 
-addMatchingNode: [
-  copy indexOfNode:;
-  copy addr:;
-
-  fr: addr @processor.@matchingNodes.find;
-  fr.success [
-    indexOfNode @fr.@value.pushBack
-  ] [
-    tableValue: IndexArray;
-    indexOfNode @tableValue.pushBack
-    addr @tableValue move @processor.@matchingNodes.insert
-  ] if
-];
-
 nodeHasCode: [
   node:;
-  node.emptyDeclaration not [node.empty not] && [node.deleted not] && [node.nodeCase NodeCaseCodeRefDeclaration = not] &&
+  node.emptyDeclaration not [node.uncompilable not] && [node.empty not] && [node.deleted not] && [node.nodeCase NodeCaseCodeRefDeclaration = not] &&
 ];
 
 {
@@ -3682,10 +3751,9 @@ nodeHasCode: [
     ("max depth of PRE recursion (" maxDepthOfPre ") exceeded") assembleString compilerError
     TRUE dynamic @processorResult.@maxDepthExceeded set
   ] when
-
-  addr: indexArray storageAddress;
+  
   #add to match table
-  addr indexOfNode addMatchingNode
+  indexArray storageAddress indexOfNode addMatchingNode
 
   currentNode.parent 0 = [indexOfNode 1 >] && [
     1 dynamic TRUE dynamic processUseModule #definitions
@@ -3727,6 +3795,7 @@ nodeHasCode: [
       unregCodeNodeNames
       indexOfNode deleteNode
       clearRecursionStack
+      NodeStateFailed @currentNode.@state set
       TRUE @currentNode.@uncompilable set
     ] if
 
@@ -3737,6 +3806,10 @@ nodeHasCode: [
       currentNode.recursionState NodeRecursionStateNo > [currentNode.state NodeStateCompiled = not] &&
     ] &&
   ] loop
+
+  compilable [currentNode.state NodeStateCompiled =] && [
+    indexOfNode concreteMatchingNode
+  ] when
 
   processor.varCount codeNode.variableCountDelta - @codeNode.@variableCountDelta set
 
