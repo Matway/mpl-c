@@ -980,7 +980,7 @@ createNamedVariable: [
     ] when
 
     nameInfo newRefToVar NameCaseLocal addNameInfo
-    processor.options.debug [newRefToVar isVirtual not] && [
+    compilable [processor.options.debug copy] && [newRefToVar isVirtual not] && [
       newRefToVar isGlobal [
         d: nameInfo newRefToVar addGlobalVariableDebugInfo;
         globalInstruction: newRefToVar getVar.globalDeclarationInstructionIndex @processor.@prolog.at;
