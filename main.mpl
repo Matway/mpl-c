@@ -15,6 +15,7 @@ printInfo: [
   "  -D <name[ =value]>  Define global name with value, default value is ()" print LF print
   "  -array_checks 0|1   Turn off/on array index checks, by default it is on in debug mode and off in release mode" print LF print
   "  -auto_recursion     Make all code block recursive-by-default" print LF print
+  "  -call_trace         Generate information about call trace" print LF print
   "  -dynalit            Number literals are dynamic constants, which are not used in analysis; default mode is static literals" print LF print
   "  -linker_option      Add linker option for LLVM" print LF print
   "  -logs               Value of \"HAS_LOGS\" constant in code turn to TRUE" print LF print
@@ -85,6 +86,7 @@ createDefinition: [
     OPT_LINKER_OPTION:      [3 dynamic];
     OPT_DEFINITION:         [4 dynamic];
     OPT_ARRAY_CHECK:        [5 dynamic];
+    OPT_CALL_TRACE:         [6 dynamic];
     nextOption: OPT_ANY;
 
     options: ProcessorOptions;
@@ -95,6 +97,7 @@ createDefinition: [
     outputFileName: "mpl.ll" toString;
 
     forceArrayChecks: -1 dynamic;
+    forceCallTrace: -1 dynamic;
 
     "*definitions" toString @options.@fileNames.pushBack
 
@@ -134,6 +137,7 @@ createDefinition: [
                     "-o"              [OPT_OUTPUT_FILE_NAME !nextOption]
                     "-D"              [OPT_DEFINITION       !nextOption]
                     "-array_checks"   [OPT_ARRAY_CHECK      !nextOption]
+                    "-call_trace"     [OPT_CALL_TRACE       !nextOption]
                     [
                       0 splittedOption.chars.at "-" = [
                         "Invalid argument: " print option print LF print
@@ -167,6 +171,16 @@ createDefinition: [
                   ) case
                   OPT_ANY !nextOption
                 ]
+                OPT_CALL_TRACE     [
+                  option (
+                    "0"   [0 @forceCallTrace set]
+                    "1"   [1 @forceCallTrace set]
+                    [
+                      "Invalid argument value: " print option print LF print
+                      FALSE @success set
+                    ]
+                  ) case
+                  OPT_ANY !nextOption
                 ]
                 []
               ) case
@@ -207,6 +221,12 @@ createDefinition: [
         1 [TRUE]
         [options.debug copy]
       ) case @options.@arrayChecks set
+
+      forceCallTrace (
+        0 [FALSE]
+        1 [TRUE]
+        [options.debug copy]
+      ) case @options.@callTrace set
 
       hasVersion [
         ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList

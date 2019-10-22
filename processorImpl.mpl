@@ -69,6 +69,8 @@
   "" makeStringView addStrToProlog
   ("mainPath is \"" makeStringView processor.options.mainPath makeStringView "\"" makeStringView) addLog
 
+  processor.options.callTrace [createCallTraceData] when
+
   addLinkerOptionsDebugInfo
 
   processor.options.debug [

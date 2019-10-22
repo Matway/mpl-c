@@ -1671,6 +1671,60 @@ parseSignature: [
 ] "mplBuiltinArray" @declareBuiltin ucall
 
 [
+  varPrev:   0n64 VarNatX createVariable;
+  varNext:   0n64 VarNatX createVariable;
+  varName:   String makeVarString TRUE dynamic createRefNoOp;
+  varLine:   0i64 VarInt32 createVariable;
+  varColumn: 0i64 VarInt32 createVariable;
+
+  varPrev   makeVarDirty
+  varNext   makeVarDirty
+  varName   makeVarDirty
+  varLine   makeVarDirty
+  varColumn makeVarDirty
+
+  struct: Struct;
+  5 @struct.@fields.resize
+
+  varPrev             0 @struct.@fields.at.@refToVar set
+  "prev" findNameInfo 0 @struct.@fields.at.@nameInfo set
+
+  varNext             1 @struct.@fields.at.@refToVar set
+  "next" findNameInfo 1 @struct.@fields.at.@nameInfo set
+
+  varName             2 @struct.@fields.at.@refToVar set
+  "name" findNameInfo 2 @struct.@fields.at.@nameInfo set
+
+  varLine             3 @struct.@fields.at.@refToVar set
+  "line" findNameInfo 3 @struct.@fields.at.@nameInfo set
+  
+  varColumn             4 @struct.@fields.at.@refToVar set
+  "column" findNameInfo 4 @struct.@fields.at.@nameInfo set
+
+  first: @struct move owner VarStruct createVariable;
+  last: first copyVar;
+
+  firstRef: first FALSE dynamic createRefNoOp;
+  lastRef:  last  FALSE dynamic createRefNoOp;
+
+  firstRef makeVarDirty
+  lastRef  makeVarDirty
+
+  resultStruct: Struct;
+  2 @resultStruct.@fields.resize
+
+  firstRef             0 @resultStruct.@fields.at.@refToVar set
+  "first" findNameInfo 0 @resultStruct.@fields.at.@nameInfo set
+
+  lastRef             1 @resultStruct.@fields.at.@refToVar set
+  "last" findNameInfo 1 @resultStruct.@fields.at.@nameInfo set
+
+  result: @resultStruct move owner VarStruct createVariable createAllocIR;
+  first getIrType result getIrType result createGetCallTrace
+  result push
+] "mplBuiltinGetCallTrace" @declareBuiltin ucall
+
+[
   refToVar: pop;
   compilable [
     refToVar.mutable [
