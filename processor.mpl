@@ -22,6 +22,7 @@ ProcessorOptions: [{
   autoRecursion:  FALSE dynamic;
   logs:           FALSE dynamic;
   verboseIR:      FALSE dynamic;
+  callTrace:      FALSE dynamic;
   linkerOptions:  String Array;
 }];
 
@@ -205,6 +206,7 @@ CodeNode: [{
   emptyDeclaration:   FALSE dynamic;
   uncompilable:       FALSE dynamic;
   variadic:           FALSE dynamic;
+  hasNestedCall:      FALSE dynamic;
 
   countOfUCall:         0 dynamic;
   declarationRefs:      Cond Array;
