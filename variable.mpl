@@ -946,6 +946,7 @@ getVirtualValue: [
   recursive
   var: refToVar getVar;
   result: String;
+
   var.data.getTag (
     VarStruct [
       "{" @result.cat
@@ -954,7 +955,9 @@ getVirtualValue: [
       struct.fields [
         pair:;
         pair.index 0 > ["," @result.cat] when
-        pair.value.refToVar getVirtualValue @result.cat
+        pair.value.refToVar isVirtualField not [
+          pair.value.refToVar getVirtualValue @result.cat
+        ] when
       ] each
       "}" @result.cat
     ]
