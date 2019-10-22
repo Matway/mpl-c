@@ -1814,7 +1814,7 @@ copyVarImpl: [
   copy fromChildToParent:;
   refToVar:;
 
-  fromChildToParent toNew or [refToVar noMatterToCopy] && [
+  fromChildToParent toNew or [refToVar noMatterToCopy refToVar isUnallocable or] && [
     refToVar copy
   ] [
     result: RefToVar;

@@ -49,11 +49,15 @@ defaultSet: [
       refToSrc getVar.data.getTag VarImport = [
         "functions cannot be copied" compilerError
       ] [
-        refToDst.mutable [
-          [refToDst staticnessOfVar Weak = not] "Destination is weak!" assert
-          refToSrc refToDst createCopyToExists
+        refToSrc getVar.data.getTag VarString = [
+          "builtin-strings cannot be copied" compilerError
         ] [
-          "destination is immutable" compilerError
+          refToDst.mutable [
+            [refToDst staticnessOfVar Weak = not] "Destination is weak!" assert
+            refToSrc refToDst createCopyToExists
+          ] [
+            "destination is immutable" compilerError
+          ] if
         ] if
       ] if
     ] [

@@ -1041,7 +1041,7 @@ parseSignature: [
   refToVar: pop;
   compilable [
     result: refToVar copyVarToNew;
-    result isVirtual not [
+    result isVirtual not [result isUnallocable not] && [
       TRUE @result.@mutable set
       result createAllocIR callInit
     ] when
