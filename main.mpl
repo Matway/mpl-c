@@ -211,93 +211,93 @@ createDefinition: [
         "No input files" print LF print
         FALSE @success set
       ] if
-    ] when
-
-    success not [
-      printInfo
     ] [
-      forceArrayChecks (
-        0 [FALSE]
-        1 [TRUE]
-        [options.debug copy]
-      ) case @options.@arrayChecks set
-
-      forceCallTrace (
-        0 [FALSE]
-        1 [TRUE]
-        [options.debug copy]
-      ) case @options.@callTrace set
-
-      hasVersion [
-        ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
-        "Input files ignored" print LF print
+      success not [
+        printInfo
       ] [
-        options.fileNames [
-          pair:;
-          filename: pair.value;
+        forceArrayChecks (
+          0 [FALSE]
+          1 [TRUE]
+          [options.debug copy]
+        ) case @options.@arrayChecks set
 
-          pair.index 0 = [
-            filename pair.index definitions addToProcess
-          ] [
-            loadStringResult: filename loadString;
-            loadStringResult.success [
-              ("Loaded string from " filename) addLog
-              ("HASH=" loadStringResult.data hash) addLog
-              filename pair.index loadStringResult.data addToProcess
+        forceCallTrace (
+          0 [FALSE]
+          1 [TRUE]
+          [options.debug copy]
+        ) case @options.@callTrace set
+
+        hasVersion [
+          ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
+          "Input files ignored" print LF print
+        ] [
+          options.fileNames [
+            pair:;
+            filename: pair.value;
+
+            pair.index 0 = [
+              filename pair.index definitions addToProcess
             ] [
-              "Unable to load string:" print filename print LF print
-              FALSE @success set
-            ] if
-          ] if
-        ] each
-
-        success [
-          multiParserResult: MultiParserResult;
-          @parserResults @multiParserResult concatParserResults
-          ("trees concated" makeStringView) addLog
-          @multiParserResult optimizeNames
-          ("names optimized" makeStringView) addLog
-
-          ("filenames:" makeStringView) addLog
-          options.fileNames [(.value) addLog] each
-
-          processorResult: ProcessorResult;
-          multiParserResult options 0 @processorResult process
-          processorResult.success [
-            outputFileName @processorResult.@program saveString [
-              ("program written to " outputFileName) addLog
-            ] [
-              ("failed to save program" LF) printList
-              FALSE @success set
-            ] if
-          ] when
-
-          processorResult.success not [
-            processorResult.globalErrorInfo [
-              pair:;
-              current: pair.value;
-              pair.index 0 > [LF print] when
-              current.position.getSize 0 = [
-                ("error, "  current.message) printList LF print
+              loadStringResult: filename loadString;
+              loadStringResult.success [
+                ("Loaded string from " filename) addLog
+                ("HASH=" loadStringResult.data hash) addLog
+                filename pair.index loadStringResult.data addToProcess
               ] [
-                current.position [
-                  pair:;
-                  i: pair.index;
-                  nodePosition: pair.value;
-                  (nodePosition.fileNumber options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
-
-                  i 0 = [
-                    ("error, [" nodePosition.token "], " current.message LF) printList
-                  ] [
-                    ("[" nodePosition.token "], called from here" LF) printList
-                  ] if
-                ] each
+                "Unable to load string:" print filename print LF print
+                FALSE @success set
               ] if
+            ] if
+          ] each
 
-              FALSE @success set
-            ] each
+          success [
+            multiParserResult: MultiParserResult;
+            @parserResults @multiParserResult concatParserResults
+            ("trees concated" makeStringView) addLog
+            @multiParserResult optimizeNames
+            ("names optimized" makeStringView) addLog
+
+            ("filenames:" makeStringView) addLog
+            options.fileNames [(.value) addLog] each
+
+            processorResult: ProcessorResult;
+            multiParserResult options 0 @processorResult process
+            processorResult.success [
+              outputFileName @processorResult.@program saveString [
+                ("program written to " outputFileName) addLog
+              ] [
+                ("failed to save program" LF) printList
+                FALSE @success set
+              ] if
+            ] when
+
+            processorResult.success not [
+              processorResult.globalErrorInfo [
+                pair:;
+                current: pair.value;
+                pair.index 0 > [LF print] when
+                current.position.getSize 0 = [
+                  ("error, "  current.message) printList LF print
+                ] [
+                  current.position [
+                    pair:;
+                    i: pair.index;
+                    nodePosition: pair.value;
+                    (nodePosition.fileNumber options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
+
+                    i 0 = [
+                      ("error, [" nodePosition.token "], " current.message LF) printList
+                    ] [
+                      ("[" nodePosition.token "], called from here" LF) printList
+                    ] if
+                  ] each
+                ] if
+
+                FALSE @success set
+              ] each
+            ] when
           ] when
-        ] when
+        ] if
       ] if
     ] if
 
