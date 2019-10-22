@@ -80,12 +80,12 @@ createDefinition: [
 
     success: TRUE dynamic;
 
-    optAny:            [0 dynamic];
-    optOutputFileName: [1 dynamic];
-    optLinkerOption:   [3 dynamic];
-    optDefinition:     [4 dynamic];
-    optArrayCheck:     [5 dynamic];
-    nextOption: optAny;
+    OPT_ANY:                [0 dynamic];
+    OPT_OUTPUT_FILE_NAME:   [1 dynamic];
+    OPT_LINKER_OPTION:      [3 dynamic];
+    OPT_DEFINITION:         [4 dynamic];
+    OPT_ARRAY_CHECK:        [5 dynamic];
+    nextOption: OPT_ANY;
 
     options: ProcessorOptions;
     hasVersion: FALSE dynamic;
@@ -119,7 +119,7 @@ createDefinition: [
               FALSE @success set
             ] [
               nextOption (
-                optAny [
+                OPT_ANY [
                   option (
                     "-auto_recursion" [TRUE              @options.!autoRecursion]
                     "-ndebug"         [FALSE             @options.!debug]
@@ -129,11 +129,11 @@ createDefinition: [
                     "-32bits"         [32nx              @options.!pointerSize]
                     "-64bits"         [64nx              @options.!pointerSize]
                     "-verbose_ir"     [TRUE              @options.!verboseIR]
-                    "-version"        [TRUE              !hasVersion]
-                    "-linker_option"  [optLinkerOption   !nextOption]
-                    "-o"              [optOutputFileName !nextOption]
-                    "-D"              [optDefinition     !nextOption]
-                    "-array_checks"   [optArrayCheck     !nextOption]
+                    "-version"        [TRUE                 !hasVersion]
+                    "-linker_option"  [OPT_LINKER_OPTION    !nextOption]
+                    "-o"              [OPT_OUTPUT_FILE_NAME !nextOption]
+                    "-D"              [OPT_DEFINITION       !nextOption]
+                    "-array_checks"   [OPT_ARRAY_CHECK      !nextOption]
                     [
                       0 splittedOption.chars.at "-" = [
                         "Invalid argument: " print option print LF print
@@ -144,19 +144,19 @@ createDefinition: [
                     ]
                   ) case
                 ]
-                optOutputFileName [
+                OPT_OUTPUT_FILE_NAME [
                   option toString @outputFileName set
-                  optAny !nextOption
+                  OPT_ANY !nextOption
                 ]
-                optLinkerOption   [
+                OPT_LINKER_OPTION   [
                   option toString @options.@linkerOptions.pushBack
-                  optAny !nextOption
+                  OPT_ANY !nextOption
                 ]
-                optDefinition     [
+                OPT_DEFINITION     [
                   splittedOption createDefinition
-                  optAny !nextOption
+                  OPT_ANY !nextOption
                 ]
-                optArrayCheck     [
+                OPT_ARRAY_CHECK     [
                   option (
                     "0"   [0 @forceArrayChecks set]
                     "1"   [1 @forceArrayChecks set]
@@ -165,7 +165,8 @@ createDefinition: [
                       FALSE @success set
                     ]
                   ) case
-                  optAny !nextOption
+                  OPT_ANY !nextOption
+                ]
                 ]
                 []
               ) case
@@ -175,7 +176,7 @@ createDefinition: [
       ] times
     ] if
 
-    nextOption optAny = not [
+    nextOption OPT_ANY = not [
       "Value expected" print LF print
       FALSE @success set
     ] when
