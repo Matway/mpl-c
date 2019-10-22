@@ -105,6 +105,7 @@ NodeStateNew:         [0n8 dynamic];
 NodeStateNoOutput:    [1n8 dynamic]; #after calling NodeStateNew recursion with unknown output, node is uncompilable
 NodeStateHasOutput:   [2n8 dynamic]; #after merging "if" with output and without output, node can be compiled
 NodeStateCompiled:    [3n8 dynamic]; #node finished
+NodeStateFailed:      [4n8 dynamic]; #node finished
 
 NodeRecursionStateNo:       [0n8 dynamic];
 NodeRecursionStateFail:     [1n8 dynamic];
@@ -159,6 +160,8 @@ MatchingInfo: [{
   preInputs: RefToVar Array;
   captures: Capture Array;
   fieldCaptures: FieldCapture Array;
+  hasStackUnderflow: FALSE dynamic;
+  unfoundedNames: Int32 Cond HashTable; #nameInfos
 }];
 
 CFunctionSignature: [{
@@ -231,9 +234,11 @@ CodeNode: [{
   usedModulesTable:             Int32 UsedModuleInfo HashTable; # moduleID, hasUsedVars
   usedOrIncludedModulesTable:   Int32 Cond HashTable; # moduleID, hasUsedVars
 
-  refToVar:           RefToVar; #refToVar of this node
+  refToVar:           RefToVar; #refToVar of function with compiled node
   varNameInfo:        -1 dynamic; #variable name of imported function
   moduleId:           -1 dynamic;
+  indexArrayAddress:  0nx dynamic;
+  matchingInfoIndex:  -1 dynamic;
   exportDepth:        0 dynamic;
   namedFunctions:     String Int32 HashTable; # name -> node ID
   capturedVars:       RefToVar Array;
@@ -246,11 +251,21 @@ CodeNode: [{
   DIE: [];
 }];
 
+MatchingNode: [{
+  unknownMplType: IndexArray;
+  byMplType: Int32 IndexArray HashTable; #first input MPL type
+
+  compilerPositionInfo: CompilerPositionInfo;
+  entries: Int32;
+  tries: Int32;
+  size: Int32;
+}];
+
 Processor: [{
   options: ProcessorOptions;
 
   nodes:               CodeNode Owner Array;
-  matchingNodes:       Natx IndexArray HashTable;
+  matchingNodes:       Natx MatchingNode HashTable;
   recursiveNodesStack: Int32 Array;
   nameInfos:           NameInfo Array;
   modules:             String Int32 HashTable; # -1 no module, or Id of codeNode
