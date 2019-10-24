@@ -473,7 +473,6 @@ createCallIR: [
 
   haveRet [
     generateRegisterIRName @retName set
-
     ("  " @retName getNameById " = call " conventionName refToRet getIrType " ") @operation.catMany
   ] [
     ("  call " conventionName "void ") @operation.catMany
