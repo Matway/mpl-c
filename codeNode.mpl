@@ -214,7 +214,7 @@ createVariableWithVirtual: [
   result result getVar.@capturedHead set
   result result getVar.@capturedTail set
 
-  result isNonrecursiveType not @result.@mutable set
+  result isNonrecursiveType not [result isUnallocable not] && @result.@mutable set
 
   makeType [result makeVariableType] when
   result makeVariableIRName
