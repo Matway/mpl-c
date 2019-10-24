@@ -591,13 +591,14 @@ createRefWith: [
     refToVar untemporize
     refToVar copy #for dropping or getting callables for example
   ] [
-    var: refToVar getVar;
-    refToVar staticnessOfVar Weak = [Dynamic @var.@staticness set] when
-    refToVar fullUntemporize
+    pointee: refToVar copy;
+    var: pointee getVar;
+    pointee staticnessOfVar Weak = [Dynamic @var.@staticness set] when
+    pointee fullUntemporize
 
-    newRefToVar: refToVar VarRef createVariable;
-    mutable refToVar.mutable and @newRefToVar.@mutable set
-    createOperation [refToVar newRefToVar createRefOperation] when
+    pointee.mutable [mutable copy] && @pointee.@mutable set
+    newRefToVar: pointee VarRef createVariable;
+    createOperation [pointee newRefToVar createRefOperation] when
     newRefToVar
   ] if
 ];
@@ -2570,7 +2571,7 @@ finalizeListNode: [
         curRef getVar.temporary [
           curRef @newField.@refToVar set
         ] [
-          curRef FALSE createRef @newField.@refToVar set
+          curRef TRUE dynamic createRef @newField.@refToVar set
         ] if
 
         newField @struct.@fields.pushBack

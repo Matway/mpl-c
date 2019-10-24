@@ -851,7 +851,7 @@ parseSignature: [
           returnVar.temporary [
             return @result.@outputs.pushBack
           ] [
-            return return.mutable createRef @result.@outputs.pushBack
+            return TRUE dynamic createRef @result.@outputs.pushBack
           ] if
         ] if
       ] when
@@ -901,7 +901,7 @@ parseSignature: [
       refToVar isVirtual ["cannot export virtual var" compilerError] when
     ] [
       refToVar getVar.temporary not [
-        refToVar refToVar.mutable createRef @refToVar set
+        refToVar TRUE dynamic createRef @refToVar set
       ] when
       var: refToVar getVar;
       FALSE @var.@temporary set
@@ -981,7 +981,7 @@ parseSignature: [
             "variable cant be virtual" compilerError
           ] [
             varType.temporary not [
-              refToType refToType.mutable createRef @refToType set
+              refToType TRUE dynamic createRef @refToType set
             ] when
 
             name: VarString varName.data.get;
