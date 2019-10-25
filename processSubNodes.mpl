@@ -588,7 +588,7 @@ fixRef: [
   copy refToVar:;
 
   var: refToVar getVar;
-  wasVirtual: refToVar isSchema;
+  wasVirtual: refToVar isVirtual;
   makeDynamic: FALSE dynamic;
   pointee: VarRef @var.@data.get;
   pointeeVar: pointee getVar;
@@ -615,7 +615,7 @@ fixRef: [
   fixed.hostId @pointee.@hostId set
   fixed.varId  @pointee.@varId  set
 
-  wasVirtual [refToVar Schema makeStaticness @refToVar set] [
+  wasVirtual [refToVar Virtual makeStaticness @refToVar set] [
     makeDynamic [
       refToVar Dynamic makeStaticness @refToVar set
     ] when
@@ -759,10 +759,12 @@ fixOutputRefsRec: [
       stackEntryVar: currentFromStack getVar;
 
       stackEntryVar.data.getTag VarRef = [
-        stackPointee: VarRef @stackEntryVar.@data.get;
-        stackPointee.hostId currentChangesNodeIndex = [
-          fixed: currentFromStack fixRef getPointeeNoDerefIR;
-          fixed @unfinishedStack.pushBack
+        currentFromStack isSchema not [
+          stackPointee: VarRef @stackEntryVar.@data.get;
+          stackPointee.hostId currentChangesNodeIndex = [
+            fixed: currentFromStack fixRef getPointeeNoDerefIR;
+            fixed @unfinishedStack.pushBack
+          ] when
         ] when
       ] [
         stackEntryVar.data.getTag VarStruct = [
