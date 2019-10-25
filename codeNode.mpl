@@ -235,12 +235,16 @@ push: [
 
 getStackEntryForPreInput: [
   copy depth:;
-  entry: depth getStackEntry;
-  [entry.hostId indexOfNode = not] "Pre input is just in inputs!" assert
-  shadowBegin: RefToVar;
-  shadowEnd: RefToVar;
-  entry @shadowBegin @shadowEnd ShadowReasonInput makeShadows
-  shadowEnd
+  depth getStackDepth < [
+    entry: depth getStackEntry;
+    [entry.hostId indexOfNode = not] "Pre input is just in inputs!" assert
+    shadowBegin: RefToVar;
+    shadowEnd: RefToVar;
+    entry @shadowBegin @shadowEnd ShadowReasonInput makeShadows
+    shadowEnd
+  ] [
+    RefToVar
+  ] if
 ];
 
 makeVarCode:   [VarCode   createVariable];
@@ -2115,9 +2119,29 @@ pushName: [
   ] if
 ];
 
+addUnfoundedName: [
+  copy nameInfo:;
+  fr: nameInfo currentNode.matchingInfo.unfoundedNames.find;
+  fr.success not [nameInfo TRUE @currentNode.@matchingInfo.@unfoundedNames.insert] when
+  currentNode.state NodeStateNew = [
+    fr: nameInfo currentNode.buildingMatchingInfo.unfoundedNames.find;
+    fr.success not [nameInfo TRUE @currentNode.@buildingMatchingInfo.@unfoundedNames.insert] when
+  ] when
+];
+
+checkFailedName: [
+  gnr:;
+  copy nameInfo:;
+
+  gnr.refToVar.hostId 0 < [
+    nameInfo addUnfoundedName
+  ] when
+];
+
 processNameNode: [
   data:;
   gnr: data.nameInfo getName;
+  data.nameInfo gnr checkFailedName
   cnr: gnr captureName;
   refToVar: cnr.refToVar copy;
 
@@ -2129,6 +2153,7 @@ processNameNode: [
 processNameReadNode: [
   data:;
   gnr: data.nameInfo getName;
+  data.nameInfo gnr checkFailedName
   cnr: gnr captureName;
   refToVar: cnr.refToVar;
 
@@ -2149,7 +2174,9 @@ processNameReadNode: [
 processNameWriteNode: [
   data:;
 
-  cnr: data.nameInfo getName captureName;
+  gnr: data.nameInfo getName;
+  data.nameInfo gnr checkFailedName
+  cnr: gnr captureName;
   refToVar: cnr.refToVar;
 
   compilable [refToVar setRef] when
@@ -2695,8 +2722,10 @@ checkPreStackDepth: [
     i newMinStackDepth < [
       preInputDepth: i preCountedStackDepth - currentNode.stack.dataSize +;
       preInput: preInputDepth getStackEntryForPreInput;
-      preInput noMatterToCopy not [preInput getVar.shadowBegin @preInput set] when
-      [preInput.hostId 0 < not] "Invalid preInput!" assert
+      preInput.hostId 0 < not [
+        preInput noMatterToCopy not [preInput getVar.shadowBegin @preInput set] when
+        [preInput.hostId 0 < not] "Invalid preInput!" assert
+      ] when
       preInput @currentNode.@buildingMatchingInfo.@preInputs.pushBack
       i 1 + @i set TRUE
     ] &&
@@ -3357,19 +3386,21 @@ makeCompilerPosition: [
   [
     i currentNode.buildingMatchingInfo.captures.dataSize < [
       current: i currentNode.buildingMatchingInfo.captures.at;
-      current.argCase ArgRef = [
-        isRealFunction [
-          ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name "; type=" current.refToVar getMplType) assembleString compilerError
-        ] when
+      current.refToVar.hostId 0 < not [
+        current.argCase ArgRef = [
+          isRealFunction [
+            ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name "; type=" current.refToVar getMplType) assembleString compilerError
+          ] when
 
-        current.refToVar FALSE addRefArg
-      ] [
-        current.argCase ArgGlobal = [
-          TRUE @hasEffect set
-        ] when
-      ] if
+          current.refToVar FALSE addRefArg
+        ] [
+          current.argCase ArgGlobal = [
+            TRUE @hasEffect set
+          ] when
+        ] if
 
-      current.refToVar getVar.data.getTag VarImport = [TRUE @hasImport set] when
+        current.refToVar getVar.data.getTag VarImport = [TRUE @hasImport set] when
+      ] when
       i 1 + @i set compilable
     ] &&
   ] loop
@@ -3425,7 +3456,7 @@ makeCompilerPosition: [
   fixArrShadows: [
     [
       current: .@value;
-      current.refToVar noMatterToCopy not [current.refToVar getVar.shadowBegin @current.@refToVar set] when
+      current.refToVar.hostId 0 < not [current.refToVar noMatterToCopy not] && [current.refToVar getVar.shadowBegin @current.@refToVar set] when
     ] each
   ];
 
