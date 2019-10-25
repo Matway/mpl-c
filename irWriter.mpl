@@ -568,14 +568,22 @@ createFloatBuiltins: [
 ];
 
 createCtors: [
+  copy createTlsInit:;
+
   "" addStrToProlog
   "@llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 65535, void ()* @global.ctors, i8* null }]" addStrToProlog
   "" addStrToProlog
   "define internal void @global.ctors() {" addStrToProlog
+
+  createTlsInit [
+    "  call void @__tls_init()" toString addStrToProlog
+  ] when
+
   processor.moduleFunctions [
     cur: .value processor.nodes.at.get.irName copy;
     ("  call void " cur "()") assembleString addStrToProlog
   ] each
+
   "  ret void" addStrToProlog
   "}" addStrToProlog
 ];
@@ -636,8 +644,23 @@ addAliasesForUsedNodes: [
 createCallTraceData: [
   callTraceDataType: "[65536 x %type.callTraceInfo]" toString;
   "%type.callTraceInfo = type {%type.callTraceInfo*, %type.callTraceInfo*, i8*, i32, i32}" toString @processor.@prolog.pushBack
-  ("@debug.callTrace = local_unnamed_addr global " callTraceDataType " zeroinitializer") assembleString @processor.@prolog.pushBack
-  ("@debug.callTracePtr = local_unnamed_addr global %type.callTraceInfo* getelementptr inbounds (" callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0)") assembleString @processor.@prolog.pushBack
+  ("@debug.callTrace = thread_local unnamed_addr global " callTraceDataType " zeroinitializer") assembleString @processor.@prolog.pushBack
+  ("@debug.callTracePtr = thread_local unnamed_addr global %type.callTraceInfo* getelementptr inbounds (" callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0)") assembleString @processor.@prolog.pushBack
+  String @processor.@prolog.pushBack
+  "@\"__tls_init$initializer$\" = internal constant void ()* @__tls_init, section \".CRT$XDU\"" toString @processor.@prolog.pushBack
+  "@llvm.used = appending global [1 x i8*] [i8* bitcast (void ()** @\"__tls_init$initializer$\" to i8*)], section \"llvm.metadata\"" toString @processor.@prolog.pushBack
+  String @processor.@prolog.pushBack
+  "define internal void @__tls_init() {" toString @processor.@prolog.pushBack
+  ("  store %type.callTraceInfo* getelementptr inbounds (" callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0), %type.callTraceInfo** @debug.callTracePtr") assembleString @processor.@prolog.pushBack
+  "  ret void" toString @processor.@prolog.pushBack
+  "}" toString @processor.@prolog.pushBack
+  String @processor.@prolog.pushBack
+
+  processor.options.pointerSize 64nx = [
+    "/include:__dyn_tls_init" toString @processor.@options.@linkerOptions.pushBack
+  ] [
+    "/include:___dyn_tls_init@12" toString @processor.@options.@linkerOptions.pushBack
+  ] if
 ];
 
 createCallTraceProlog: [
