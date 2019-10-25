@@ -343,9 +343,12 @@ getPointeeWith: [
     ] [
       pointeeGDI: pointee getVar.globalDeclarationInstructionIndex;
       fromParent [ # capture or argument
-        [var.shadowBegin.hostId 0 < not] "Ref got from parent, but dont have shadow!" assert
-        varShadow: var.shadowBegin getVar;
-        pointeeOfShadow: VarRef @varShadow.@data.get;
+        varShadow: refToVar copy;
+        refToVar noMatterToCopy not [
+          [var.shadowBegin.hostId 0 < not] "Ref got from parent, but dont have shadow!" assert
+          var.shadowBegin @varShadow set
+        ] when
+        pointeeOfShadow: VarRef @varShadow getVar.@data.get;
 
         pointeeOfShadow.hostId indexOfNode = [ # just made deref from another place
           pointeeOfShadowVar: pointeeOfShadow getVar;
