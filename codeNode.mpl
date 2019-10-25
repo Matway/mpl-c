@@ -807,6 +807,7 @@ makeVarTreeDirty: [
 
       var: lastRefToVar getVar;
       lastRefToVar staticnessOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
+      lastRefToVar staticnessOfVar Schema = ["can't dynamize schema" makeStringView compilerError] when
 
       compilable [
         var.data.getTag VarStruct = [
