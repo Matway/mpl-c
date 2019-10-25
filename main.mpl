@@ -175,6 +175,7 @@ createDefinition: [
                   option (
                     "0"   [0 @forceCallTrace set]
                     "1"   [1 @forceCallTrace set]
+                    "2"   [2 @forceCallTrace set]
                     [
                       "Invalid argument value: " print option print LF print
                       FALSE @success set
@@ -225,8 +226,11 @@ createDefinition: [
         forceCallTrace (
           0 [FALSE]
           1 [TRUE]
+          2 [TRUE]
           [options.debug copy]
         ) case @options.@callTrace set
+
+        forceCallTrace 2 = [1 @options.@threadModel set] when
 
         hasVersion [
           ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList

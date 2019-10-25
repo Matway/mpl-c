@@ -223,7 +223,7 @@
     ("max depth of recursion=" processor.maxDepthOfRecursion) addLog
 
     processor.usedFloatBuiltins [createFloatBuiltins] when
-    processor.options.callTrace createCtors
+    processor.options.callTrace processor.options.threadModel 1 = and createCtors
     createDtors
     clearUnusedDebugInfo
     addAliasesForUsedNodes
