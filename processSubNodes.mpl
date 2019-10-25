@@ -372,7 +372,8 @@ tryMatchNode: [
         i currentMatchingNode.matchingInfo.preInputs.dataSize < [
           stackEntry: i currentMatchingNode.matchingInfo.inputs.dataSize + getStackEntry copy;
           cacheEntry: i currentMatchingNode.matchingInfo.preInputs.at;
-          stackEntry cacheEntry compareEntriesRec [
+
+          cacheEntry.hostId 0 < not [stackEntry cacheEntry compareEntriesRec] && [
             i 1 + @i set
           ] [
             currentMatchingNode.nodeCompileOnce [
@@ -393,10 +394,12 @@ tryMatchNode: [
         i currentMatchingNode.matchingInfo.captures.dataSize < [
           currentCapture: i currentMatchingNode.matchingInfo.captures.at;
           cacheEntry: currentCapture.refToVar;
-          overload: currentCapture getOverload;
+          overload: currentCapture.refToVar.hostId 0 < [-1][currentCapture getOverload] if;
           stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload.refToVar;
 
-          stackEntry.hostId 0 < not [stackEntry cacheEntry compareEntriesRec] && [
+          stackEntry.hostId 0 < cacheEntry.hostId 0 < and [
+            stackEntry.hostId 0 < not cacheEntry.hostId 0 < not and [stackEntry cacheEntry compareEntriesRec] &&
+          ] || [
             i 1 + @i set
           ] [
             currentMatchingNode.nodeCompileOnce [
@@ -808,8 +811,9 @@ fixCaptureRef: [
   result
 ];
 
-usePreCaptures: [
+usePreCapturesWith: [
   compileOnce
+  copy exitPre:;
   currentChangesNodeIndex:;
   currentChangesNodeIndex 0 < not [
     currentChangesNode: currentChangesNodeIndex processor.nodes.at.get;
@@ -822,48 +826,53 @@ usePreCaptures: [
       i currentChangesNode.matchingInfo.captures.dataSize < [
         currentCapture: i currentChangesNode.matchingInfo.captures.at;
         cacheEntry: currentCapture.refToVar;
-        overload: currentCapture getOverload;
-        stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
+        overload: currentCapture.refToVar.hostId 0 < [-1] [currentCapture getOverload] if;
+        gnr: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload;
+        gnr.refToVar.hostId 0 < [
+          # it is failed capture
+        ] [
+          stackEntry: gnr captureName.refToVar;
 
-        unfinishedStack: RefToVar Array;
-        unfinishedCache: RefToVar Array;
-        cacheEntry @unfinishedCache.pushBack
-        stackEntry @unfinishedStack.pushBack
-        i2: 0 dynamic;
-        [
-          i2 unfinishedCache.getSize < [
-            currentFromCache: i2 unfinishedCache.at copy;
-            currentFromStack: i2 unfinishedStack.at copy;
-            cacheEntryVar: currentFromCache getVar;
-            stackEntryVar: currentFromStack getVar;
+          unfinishedStack: RefToVar Array;
+          unfinishedCache: RefToVar Array;
+          cacheEntry @unfinishedCache.pushBack
+          stackEntry @unfinishedStack.pushBack
+          i2: 0 dynamic;
+          [
+            i2 unfinishedCache.getSize < [
+              currentFromCache: i2 unfinishedCache.at copy;
+              currentFromStack: i2 unfinishedStack.at copy;
+              cacheEntryVar: currentFromCache getVar;
+              stackEntryVar: currentFromStack getVar;
 
-            cacheEntryVar.data.getTag VarRef = [currentFromCache staticnessOfVar Virtual <] && [currentFromCache staticnessOfVar Dynamic >] && [
-              clearPointee: VarRef cacheEntryVar.data.get copy; # if captured, host index will be currentChangesNodeIndex
-              clearPointee.hostId currentChangesNodeIndex = [ # we captured it
-                clearPointee                         @unfinishedCache.pushBack
-                currentFromStack getPointeeNoDerefIR @unfinishedStack.pushBack
-              ] when
-            ] [
-              cacheEntryVar.data.getTag VarStruct = [
-                cacheStruct: VarStruct cacheEntryVar.data.get.get;
+              cacheEntryVar.data.getTag VarRef = [currentFromCache staticnessOfVar Virtual <] && [currentFromCache staticnessOfVar Dynamic >] && [
+                clearPointee: VarRef cacheEntryVar.data.get copy; # if captured, host index will be currentChangesNodeIndex
+                clearPointee.hostId currentChangesNodeIndex = [ # we captured it
+                  clearPointee                         @unfinishedCache.pushBack
+                  currentFromStack getPointeeNoDerefIR @unfinishedStack.pushBack
+                ] when
+              ] [
+                cacheEntryVar.data.getTag VarStruct = [
+                  cacheStruct: VarStruct cacheEntryVar.data.get.get;
 
-                j: 0 dynamic;
-                [
-                  j cacheStruct.fields.dataSize < [
-                    cacheFieldRef: j currentFromCache getFieldForMatching;
-                    cacheFieldRef.hostId currentChangesNodeIndex = [ # we captured it
-                      cacheFieldRef @unfinishedCache.pushBack
-                      j currentFromStack getField @unfinishedStack.pushBack
-                    ] when
-                    j 1 + @j set compilable
-                  ] &&
-                ] loop
-              ] when
-            ] if
+                  j: 0 dynamic;
+                  [
+                    j cacheStruct.fields.dataSize < [
+                      cacheFieldRef: j currentFromCache getFieldForMatching;
+                      cacheFieldRef.hostId currentChangesNodeIndex = [ # we captured it
+                        cacheFieldRef @unfinishedCache.pushBack
+                        j currentFromStack getField @unfinishedStack.pushBack
+                      ] when
+                      j 1 + @j set compilable
+                    ] &&
+                  ] loop
+                ] when
+              ] if
 
-            i2 1 + @i2 set compilable
-          ] &&
-        ] loop
+              i2 1 + @i2 set compilable
+            ] &&
+          ] loop
+        ] if
 
         i 1 + @i set compilable
       ] &&
@@ -880,7 +889,25 @@ usePreCaptures: [
       ] &&
     ] loop
 
+    exitPre not [
+      currentChangesNode.matchingInfo.unfoundedNames [
+        .key addUnfoundedName
+      ] each
+    ] when
+
     @oldSuccess move @processorResult set
+  ] when
+];
+
+usePreCaptures: [FALSE dynamic usePreCapturesWith];
+
+addFailedCapture: [
+  nameInfo:;
+  newCapture: Capture;
+  nameInfo @newCapture.@nameInfo set
+  newCapture @currentNode.@matchingInfo.@captures.pushBack
+  currentNode.state NodeStateNew = [
+    newCapture @currentNode.@buildingMatchingInfo.@captures.pushBack
   ] when
 ];
 
@@ -926,10 +953,14 @@ applyNodeChanges: [
       currentCapture: i currentChangesNode.matchingInfo.captures.at;
 
       cacheEntry: currentCapture.refToVar;
-      overload: currentCapture getOverload;
+      cacheEntry.hostId 0 < [
+        currentCapture.nameInfo addFailedCapture
+      ] [
+        overload: currentCapture getOverload;
+        stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
+        stackEntry cacheEntry applyEntriesRec
+      ] if
 
-      stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
-      stackEntry cacheEntry applyEntriesRec
       i 1 + @i set compilable
     ] &&
   ] loop
@@ -1007,7 +1038,8 @@ changeVarValue: [
   ] when
 ];
 
-usePreInputs: [
+usePreInputsWith: [
+  copy exitPre:;
   newNodeIndex:;
   newNodeIndex 0 < not [
     newNode: newNodeIndex processor.nodes.at.get;
@@ -1016,19 +1048,16 @@ usePreInputs: [
     newMinStackDepth currentNode.minStackDepth < [
       newMinStackDepth @currentNode.@minStackDepth set
     ] when
-  ] when
-];
 
-useFailedInputsAndCaptures: [
-  newNodeIndex:;
-  newNodeIndex 0 < not [
-    newNode: newNodeIndex processor.nodes.at.get;
-
-    newNode.matchingInfo.hasStackUnderflow [
-      addStackUnderflowInfo
+    exitPre not [
+      newNode.matchingInfo.hasStackUnderflow [
+        addStackUnderflowInfo
+      ] when
     ] when
   ] when
 ];
+
+usePreInputs: [FALSE dynamic usePreInputsWith];
 
 pushOutput: [push];
 
@@ -1176,18 +1205,20 @@ makeCallInstructionWith: [
     i newNode.matchingInfo.captures.dataSize < [
       currentCapture: i newNode.matchingInfo.captures.at;
 
-      currentCapture.argCase ArgRef = [
-        overload: currentCapture getOverload;
-        refToVar: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
-        [currentCapture.refToVar refToVar variablesAreSame] "invalid capture type while generating arg list!" assert
+      currentCapture.refToVar.hostId 0 < not [
+        currentCapture.argCase ArgRef = [
+          overload: currentCapture getOverload;
+          refToVar: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
+          [currentCapture.refToVar refToVar variablesAreSame] "invalid capture type while generating arg list!" assert
 
-        arg: IRArgument;
-        refToVar getVar.irNameId @arg.@irNameId set
-        refToVar getVar.irTypeId @arg.@irTypeId set
-        TRUE @arg.@byRef set
-        TRUE @arg.@byRef set
+          arg: IRArgument;
+          refToVar getVar.irNameId @arg.@irNameId set
+          refToVar getVar.irTypeId @arg.@irTypeId set
+          TRUE @arg.@byRef set
+          TRUE @arg.@byRef set
 
-        arg @argList.pushBack
+          arg @argList.pushBack
+        ] when
       ] when
 
       i 1 + @i set TRUE
@@ -1354,8 +1385,16 @@ processCallByNode: [
     ] if
 
     newNode: newNodeIndex processor.nodes.at.get;
-    newNodeIndex usePreInputs
-    newNodeIndex usePreCaptures
+    newNodeIndex TRUE dynamic usePreInputsWith
+    newNodeIndex TRUE dynamic usePreCapturesWith
+
+    newNode.matchingInfo.hasStackUnderflow [
+      currentNode.minStackDepth 1 - @currentNode.@minStackDepth set
+    ] when
+
+    newNode.matchingInfo.unfoundedNames [
+      .key copy addFailedCapture
+    ] each
 
     newNode.uncompilable not
     [newNode.outputs.dataSize 0 >] &&
