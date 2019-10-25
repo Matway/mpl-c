@@ -210,6 +210,7 @@ createDefinition: [
       ] [
         "No input files" print LF print
         FALSE @success set
+        printInfo
       ] if
     ] [
       success not [
