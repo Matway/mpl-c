@@ -23,6 +23,7 @@ ProcessorOptions: [{
   logs:           FALSE dynamic;
   verboseIR:      FALSE dynamic;
   callTrace:      FALSE dynamic;
+  threadModel:    0 dynamic;
   linkerOptions:  String Array;
 }];
 
