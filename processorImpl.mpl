@@ -69,6 +69,8 @@
   "" makeStringView addStrToProlog
   ("mainPath is \"" makeStringView processor.options.mainPath makeStringView "\"" makeStringView) addLog
 
+  processor.options.callTrace [createCallTraceData] when
+
   addLinkerOptionsDebugInfo
 
   processor.options.debug [
@@ -221,7 +223,7 @@
     ("max depth of recursion=" processor.maxDepthOfRecursion) addLog
 
     processor.usedFloatBuiltins [createFloatBuiltins] when
-    createCtors
+    processor.options.callTrace processor.options.threadModel 1 = and createCtors
     createDtors
     clearUnusedDebugInfo
     addAliasesForUsedNodes

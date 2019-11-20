@@ -6,7 +6,7 @@ This repository contains a self-hosted MPL compiler.
 ## Building
 
 Because the MPL Compiler is self-hosted, you cannot build it without MPL Compiler.
-To help with bootstrapping, we provide precompiled `mplc.ll` files, see releases.
+To help with bootstrapping, we provide precompiled `mplc.ll` files, see [releases](https://github.com/Matway/mpl-c/releases).
 
 ### Prerequisites
 

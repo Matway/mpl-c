@@ -133,56 +133,41 @@ createStringTypeByStringName: [
   ("%type." stringNameNoFirst) assembleString
 ];
 
-createStringIRNoAlloc: [
-  refToVar:;
-  var: refToVar getVar;
-  varValue: VarString var.data.get;
-  stringSizeWithZero: varValue.chars.dataSize 0 = [1][varValue.chars.dataSize 0 cast] if;
-
-  stringName: String;
-  stringType: String;
-
-  fr: varValue makeStringView @processor.@stringNames.find;
-  fr.success [
-    fr.value @stringName set
-    stringName createStringTypeByStringName @stringType set
-  ] [
-    stringId: processor.lastStringId copy;
-    ("@string." processor.lastStringId) assembleString @stringName set
-    stringName createStringTypeByStringName @stringType set
-    varValue stringName @processor.@stringNames.insert
-    processor.lastStringId 1 + @processor.@lastStringId set
-
-    valueImplementation: varValue makeStringView getStringImplementation;
-    stringSize: stringSizeWithZero 1 -;
-    stringSizeCheck: stringSize Nat32 cast 0xDEADBEEFn32 xor;
-
-    (stringType " = type {i32, i32, [" stringSizeWithZero " x i8]}"
-    ) assembleString @processor.@prolog.pushBack
-    (stringName " = private unnamed_addr constant " stringType " {i32 " stringSizeCheck ", i32 " stringSize ", [" stringSizeWithZero " x i8] c\"" valueImplementation "\\00\"}"
-    ) assembleString @processor.@prolog.pushBack
-  ] if
-
-  ("  store i8* getelementptr inbounds (" stringType ", " stringType "* " stringName ", i32 0, i32 2, i32 0), i8** " refToVar getIrName
-  ) assembleString makeInstruction @currentNode.@program.pushBack
-
-  refToVar copy
-];
-
 createStringIR: [
-  createAllocIR createStringIRNoAlloc
+  refToVar:;
+  string:;
+
+  stringId: processor.lastStringId copy;
+  stringName: ("@string." processor.lastStringId) assembleString;
+  stringType: stringName createStringTypeByStringName;
+
+  processor.lastStringId 1 + @processor.@lastStringId set
+
+  var: refToVar getVar;
+  @stringName findNameInfo @var.@mplNameId set
+  ("getelementptr inbounds (" stringType ", " stringType "* " stringName ", i32 0, i32 2, i32 0)") assembleString makeStringId @var.@irNameId set
+
+  valueImplementation: string makeStringView getStringImplementation;
+
+  stringSizeWithZero: string.chars.getSize 0 = [1][string.chars.getSize 0 cast] if;
+  stringSize: stringSizeWithZero 1 -;
+  stringSizeCheck: stringSize Nat32 cast 0xDEADBEEFn32 xor;
+
+  (stringType " = type {i32, i32, [" stringSizeWithZero " x i8]}"
+  ) assembleString @processor.@prolog.pushBack
+  (stringName " = private unnamed_addr constant " stringType " {i32 " stringSizeCheck ", i32 " stringSize ", [" stringSizeWithZero " x i8] c\"" valueImplementation "\\00\"}"
+  ) assembleString @processor.@prolog.pushBack
 ];
 
 createGetTextSizeIR: [
   refToDst:;
   refToName:;
-  int8PtrRegister:   refToName createDerefToRegister;
   int32PtrRegister:  generateRegisterIRName;
   ptrRegister:       generateRegisterIRName;
   int32SizeRegister: generateRegisterIRName;
   int64SizeRegister: generateRegisterIRName;
 
-  ("  " int32PtrRegister getNameById " = bitcast i8* " int8PtrRegister getNameById " to i32*") assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " int32PtrRegister getNameById " = bitcast i8* " refToName getIrName " to i32*") assembleString makeInstruction @currentNode.@program.pushBack
   ("  " ptrRegister getNameById " = getelementptr i32, i32* " int32PtrRegister getNameById ", i32 -1") assembleString makeInstruction @currentNode.@program.pushBack
   ("  " int32SizeRegister getNameById " = load i32, i32* " ptrRegister getNameById) assembleString makeInstruction @currentNode.@program.pushBack
 
@@ -234,7 +219,7 @@ createFailWithMessage: [
   gnr: processor.failProcNameInfo getName;
   cnr: gnr captureName;
   failProcRefToVar: cnr.refToVar copy;
-  message toString VarString createVariable createStringIR push
+  message toString makeVarString push
 
   failProcRefToVar getVar.data.getTag VarBuiltin = [
     #no overload
@@ -484,9 +469,10 @@ createCallIR: [
   operation: String;
   retName: 0;
 
+  processor.options.callTrace [createCallTraceProlog] when
+
   haveRet [
     generateRegisterIRName @retName set
-
     ("  " @retName getNameById " = call " conventionName refToRet getIrType " ") @operation.catMany
   ] [
     ("  call " conventionName "void ") @operation.catMany
@@ -513,6 +499,8 @@ createCallIR: [
 
   operation makeInstruction @currentNode.@program.pushBack
   addDebugLocationForLastInstruction
+
+  processor.options.callTrace [createCallTraceEpilog] when
 
   retName
 ];
@@ -580,14 +568,22 @@ createFloatBuiltins: [
 ];
 
 createCtors: [
+  copy createTlsInit:;
+
   "" addStrToProlog
   "@llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 65535, void ()* @global.ctors, i8* null }]" addStrToProlog
   "" addStrToProlog
   "define internal void @global.ctors() {" addStrToProlog
+
+  createTlsInit [
+    "  call void @__tls_init()" toString addStrToProlog
+  ] when
+
   processor.moduleFunctions [
     cur: .value processor.nodes.at.get.irName copy;
     ("  call void " cur "()") assembleString addStrToProlog
   ] each
+
   "  ret void" addStrToProlog
   "}" addStrToProlog
 ];
@@ -643,4 +639,114 @@ addAliasesForUsedNodes: [
       @currentNode.@aliases [.@value move @processor.@prolog.pushBack] each
     ] when
   ] each
+];
+
+createCallTraceData: [
+  tlPrefix: processor.options.threadModel 1 = ["thread_local "] [""] if;
+
+  callTraceDataType: "[65536 x %type.callTraceInfo]" toString;
+  "%type.callTraceInfo = type {%type.callTraceInfo*, %type.callTraceInfo*, i8*, i32, i32}" toString @processor.@prolog.pushBack
+  ("@debug.callTrace = " tlPrefix "unnamed_addr global " callTraceDataType " zeroinitializer") assembleString @processor.@prolog.pushBack
+  ("@debug.callTracePtr = " tlPrefix "unnamed_addr global %type.callTraceInfo* getelementptr inbounds (" callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0)") assembleString @processor.@prolog.pushBack
+
+  processor.options.threadModel 1 = [
+    String @processor.@prolog.pushBack
+    "@\"__tls_init$initializer$\" = internal constant void ()* @__tls_init, section \".CRT$XDU\"" toString @processor.@prolog.pushBack
+    "@llvm.used = appending global [1 x i8*] [i8* bitcast (void ()** @\"__tls_init$initializer$\" to i8*)], section \"llvm.metadata\"" toString @processor.@prolog.pushBack
+    String @processor.@prolog.pushBack
+    "define internal void @__tls_init() {" toString @processor.@prolog.pushBack
+    ("  store %type.callTraceInfo* getelementptr inbounds (" callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0), %type.callTraceInfo** @debug.callTracePtr") assembleString @processor.@prolog.pushBack
+    "  ret void" toString @processor.@prolog.pushBack
+    "}" toString @processor.@prolog.pushBack
+    String @processor.@prolog.pushBack
+
+    processor.options.pointerSize 64nx = [
+      "/include:__dyn_tls_init" toString @processor.@options.@linkerOptions.pushBack
+    ] [
+      "/include:___dyn_tls_init@12" toString @processor.@options.@linkerOptions.pushBack
+    ] if
+  ] when
+];
+
+createCallTraceProlog: [
+
+  ptr: generateRegisterIRName;
+  ptrNext: generateRegisterIRName;
+
+  ("  " ptr getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " ptrNext getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 1") assembleString makeInstruction @currentNode.@program.pushBack
+  ("  store %type.callTraceInfo* " ptrNext getNameById ", %type.callTraceInfo** @debug.callTracePtr") assembleString makeInstruction @currentNode.@program.pushBack
+
+  currentNode.hasNestedCall not [
+    #ptr->next = ptrNext
+    ptrDotNext: generateRegisterIRName;
+    ("  " ptrDotNext getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 0, i32 1") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  store %type.callTraceInfo* " ptrNext getNameById ", %type.callTraceInfo** " ptrDotNext getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+
+    #ptrNext->prev = ptr
+    ptrNextDotPrev: generateRegisterIRName;
+    ("  " ptrNextDotPrev getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 0") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  store %type.callTraceInfo* " ptr getNameById ", %type.callTraceInfo** " ptrNextDotPrev getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+
+    #ptrNext->fileName = fileName
+    fileNameVar: currentNode.position.fileNumber processor.options.fileNames.at makeVarString;
+    ptrNextDotName: generateRegisterIRName;
+    ("  " ptrNextDotName getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 2") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  store i8* " fileNameVar getIrName ", i8** " ptrNextDotName getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+
+    TRUE @currentNode.@hasNestedCall set
+  ] when
+
+  #ptrNext->line = line
+  ptrNextDotLine: generateRegisterIRName;
+  ("  " ptrNextDotLine getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 3") assembleString makeInstruction @currentNode.@program.pushBack
+  ("  store i32 " currentNode.position.line ", i32* " ptrNextDotLine getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+
+  #ptrNext->column = column
+  ptrNextDotColumn: generateRegisterIRName;
+  ("  " ptrNextDotColumn getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 4") assembleString makeInstruction @currentNode.@program.pushBack
+  ("  store i32 " currentNode.position.column ", i32* " ptrNextDotColumn getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+];
+
+createCallTraceEpilog: [
+  ptr: generateRegisterIRName;
+  ptrPrev: generateRegisterIRName;
+
+  ("  " ptr getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " ptrPrev getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 -1") assembleString makeInstruction @currentNode.@program.pushBack
+  ("  store %type.callTraceInfo* " ptrPrev getNameById ", %type.callTraceInfo** @debug.callTracePtr") assembleString makeInstruction @currentNode.@program.pushBack
+];
+
+createGetCallTrace: [
+  variable:;
+  copy variableIrType:;
+  copy infoIrType:;
+
+  processor.options.callTrace [
+    callTraceDataType: "[65536 x %type.callTraceInfo]" toString;
+
+    ptrFirstSrc: generateRegisterIRName;
+    ptrFirstCast: generateRegisterIRName;
+    ptrFirstDst: generateRegisterIRName;
+    ("  " ptrFirstSrc getNameById " = getelementptr inbounds " callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrFirstDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 0") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrFirstCast getNameById " = bitcast %type.callTraceInfo* " ptrFirstSrc getNameById " to " infoIrType "*") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  store " infoIrType "* " ptrFirstCast getNameById ", " infoIrType "** " ptrFirstDst getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+
+    ptrLastSrc: generateRegisterIRName;
+    ptrLastCast: generateRegisterIRName;
+    ptrLastDst: generateRegisterIRName;
+    ("  " ptrLastSrc getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrLastDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 1") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrLastCast getNameById " = bitcast %type.callTraceInfo* " ptrLastSrc getNameById " to " infoIrType "*") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  store " infoIrType "* " ptrLastCast getNameById ", " infoIrType "** " ptrLastDst getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+  ] [
+    ptrFirstDst: generateRegisterIRName;
+    ("  " ptrFirstDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 0") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  store " infoIrType "* null, " infoIrType "** " ptrFirstDst getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+
+    ptrLastDst: generateRegisterIRName;
+    ("  " ptrLastDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 1") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  store " infoIrType "* null, " infoIrType "** " ptrLastDst getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+  ] if
 ];

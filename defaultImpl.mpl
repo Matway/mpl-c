@@ -3,7 +3,7 @@
 
 failProcForProcessor: [
   failProc: [stringMemory printAddr " - fail while handling fail" stringMemory printAddr];
-  copy message:;
+  message:;
   "ASSERTION FAILED!!!" print LF print
   message print LF print
   "While compiling:" print LF print
@@ -49,11 +49,15 @@ defaultSet: [
       refToSrc getVar.data.getTag VarImport = [
         "functions cannot be copied" compilerError
       ] [
-        refToDst.mutable [
-          [refToDst staticnessOfVar Weak = not] "Destination is weak!" assert
-          refToSrc refToDst createCopyToExists
+        refToSrc getVar.data.getTag VarString = [
+          "builtin-strings cannot be copied" compilerError
         ] [
-          "destination is immutable" compilerError
+          refToDst.mutable [
+            [refToDst staticnessOfVar Weak = not] "Destination is weak!" assert
+            refToSrc refToDst createCopyToExists
+          ] [
+            "destination is immutable" compilerError
+          ] if
         ] if
       ] if
     ] [
@@ -105,6 +109,8 @@ defaultUseOrIncludeModule: [
       varName.data.getTag VarString = not ["name must be static string" compilerError] when
     ] [
       string: VarString varName.data.get;
+      ("use or include module " string) addLog
+
       fr: string makeStringView processor.modules.find;
       fr.success [fr.value 0 < not] && [
         frn: fr.value currentNode.usedModulesTable.find;
