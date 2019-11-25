@@ -25,6 +25,7 @@ getOverloadCount: [
 ];
 
 addNameInfoWith: [
+  copy index:;
   copy reg:;
   copy overload:;
   copy startPoint:;
@@ -83,6 +84,7 @@ addNameInfoWith: [
       refToVar    @nameInfoEntry.@refToVar set
       addNameCase @nameInfoEntry.@nameCase set
       startPoint  @nameInfoEntry.@startPoint set
+      index       @nameInfoEntry.@index set
       cur: overload @currentNameInfo.@stack.at;
       nameInfoEntry @cur.pushBack
 
@@ -97,9 +99,14 @@ addNameInfoWith: [
   ] if
 ];
 
-addNameInfo: [indexOfNode copy -1 dynamic TRUE addNameInfoWith];
-addNameInfoOverloaded: [TRUE addNameInfoWith];
-addNameInfoNoReg: [indexOfNode copy -1 dynamic FALSE addNameInfoWith];
+addNameInfo: [indexOfNode copy -1 dynamic TRUE -1 dynamic addNameInfoWith];
+addNameInfoOverloaded: [TRUE -1 dynamic addNameInfoWith];
+addNameInfoNoReg: [indexOfNode copy -1 dynamic FALSE -1 dynamic addNameInfoWith];
+
+addNameInfoFieldNoReg: [
+  index: copy;
+  indexOfNode copy -1 dynamic FALSE index addNameInfoWith
+];
 
 getNameLastIndexInfo: [
   nameInfo:;
@@ -143,7 +150,7 @@ makeStaticness: [
     var: refToVar getVar;
     staticness @var.@staticness set
 
-    staticness Virtual = [
+    staticness Virtual < not [
       refToVar makeVariableType
     ] when
   ] when
@@ -163,11 +170,12 @@ makeStorageStaticness: [
 ];
 
 createVariable: [
-  FALSE dynamic TRUE dynamic createVariableWithVirtual
+  FALSE dynamic FALSE dynamic TRUE dynamic createVariableWithVirtual
 ];
 
 createVariableWithVirtual: [
   copy makeType:;
+  copy makeSchema:;
   copy makeVirtual:;
   copy tag:;
   dataIsMoved: isMoved;
@@ -194,7 +202,7 @@ createVariableWithVirtual: [
   indexOfNode @result.@hostId set
 
   makeVirtual [
-    Virtual result getVar.@staticness set
+    makeSchema [Schema][Virtual] if result getVar.@staticness set
   ] [
     result isPlain [processor.options.staticLiterals not] && [
       Weak result getVar.@staticness set
@@ -206,7 +214,7 @@ createVariableWithVirtual: [
   result result getVar.@capturedHead set
   result result getVar.@capturedTail set
 
-  result isNonrecursiveType not @result.@mutable set
+  result isNonrecursiveType not [result isUnallocable not] && @result.@mutable set
 
   makeType [result makeVariableType] when
   result makeVariableIRName
@@ -227,17 +235,19 @@ push: [
 
 getStackEntryForPreInput: [
   copy depth:;
-  entry: depth getStackEntry;
-  [entry.hostId indexOfNode = not] "Pre input is just in inputs!" assert
-  shadowBegin: RefToVar;
-  shadowEnd: RefToVar;
-  entry @shadowBegin @shadowEnd ShadowReasonInput makeShadows
-  shadowEnd
+  depth getStackDepth < [
+    entry: depth getStackEntry;
+    [entry.hostId indexOfNode = not] "Pre input is just in inputs!" assert
+    shadowBegin: RefToVar;
+    shadowEnd: RefToVar;
+    entry @shadowBegin @shadowEnd ShadowReasonInput makeShadows
+    shadowEnd
+  ] [
+    RefToVar
+  ] if
 ];
 
 makeVarCode:   [VarCode   createVariable];
-makeVarString: [VarString createVariable createStringIR];
-
 makeVarInt8:   [VarInt8   checkValue VarInt8   createVariable createPlainIR];
 makeVarInt16:  [VarInt16  checkValue VarInt16  createVariable createPlainIR];
 makeVarInt32:  [VarInt32  checkValue VarInt32  createVariable createPlainIR];
@@ -250,6 +260,39 @@ makeVarNat64:  [VarNat64  checkValue VarNat64  createVariable createPlainIR];
 makeVarNatX:   [VarNatX   checkValue VarNatX   createVariable createPlainIR];
 makeVarReal32: [VarReal32 checkValue VarReal32 createVariable createPlainIR];
 makeVarReal64: [VarReal64 checkValue VarReal64 createVariable createPlainIR];
+
+makeVarString: [
+  string:;
+
+  refToVar: RefToVar;
+
+  fr: string @processor.@stringNames.find;
+  fr.success [
+    fr.value @refToVar set
+  ] [
+    topIndex: indexOfNode copy;
+    topNode: @currentNode;
+    [topIndex 0 = not] [
+      topNode.parent @topIndex set
+      topIndex @processor.@nodes.at.get !topNode
+    ] while
+
+    indexOfNode: topIndex copy;
+    currentNode: @topNode;
+
+    string VarString createVariable @refToVar set
+    string refToVar createStringIR
+    string refToVar @processor.@stringNames.insert
+
+    refToVar fullUntemporize
+    refToVar getVar.mplNameId refToVar NameCaseLocal addNameInfo
+  ] if
+
+  gnr: refToVar getVar.mplNameId getName;
+  cnr: gnr captureName;
+
+  cnr.refToVar copy
+];
 
 makeConst: [
   var:;
@@ -304,9 +347,12 @@ getPointeeWith: [
     ] [
       pointeeGDI: pointee getVar.globalDeclarationInstructionIndex;
       fromParent [ # capture or argument
-        [var.shadowBegin.hostId 0 < not] "Ref got from parent, but dont have shadow!" assert
-        varShadow: var.shadowBegin getVar;
-        pointeeOfShadow: VarRef @varShadow.@data.get;
+        varShadow: refToVar copy;
+        refToVar noMatterToCopy not [
+          [var.shadowBegin.hostId 0 < not] "Ref got from parent, but dont have shadow!" assert
+          var.shadowBegin @varShadow set
+        ] when
+        pointeeOfShadow: VarRef @varShadow getVar.@data.get;
 
         pointeeOfShadow.hostId indexOfNode = [ # just made deref from another place
           pointeeOfShadowVar: pointeeOfShadow getVar;
@@ -552,13 +598,14 @@ createRefWith: [
     refToVar untemporize
     refToVar copy #for dropping or getting callables for example
   ] [
-    var: refToVar getVar;
-    refToVar staticnessOfVar Weak = [Dynamic @var.@staticness set] when
-    refToVar fullUntemporize
+    pointee: refToVar copy;
+    var: pointee getVar;
+    pointee staticnessOfVar Weak = [Dynamic @var.@staticness set] when
+    pointee fullUntemporize
 
-    newRefToVar: refToVar VarRef createVariable;
-    mutable refToVar.mutable and @newRefToVar.@mutable set
-    createOperation [refToVar newRefToVar createRefOperation] when
+    pointee.mutable [mutable copy] && @pointee.@mutable set
+    newRefToVar: pointee VarRef createVariable;
+    createOperation [pointee newRefToVar createRefOperation] when
     newRefToVar
   ] if
 ];
@@ -650,6 +697,7 @@ makeVirtualVarReal: [
       @result makeVariableType
       refToVar @unfinishedSrc.pushBack
       result createAllocIR @unfinishedDst.pushBack
+
       [
         unfinishedSrc.dataSize 0 > [
           lastSrc: unfinishedSrc.last copy;
@@ -681,11 +729,7 @@ makeVirtualVarReal: [
               ] [
                 lastSrc isPlain [
                   lastSrc lastDst createStoreConstant
-                ] [
-                  varSrc.data.getTag VarString = [
-                    lastDst createStringIRNoAlloc drop
-                  ] when
-                ] if
+                ] when
               ] if
             ] when
           ] if
@@ -700,6 +744,11 @@ makeVirtualVarReal: [
 
     realValue copy
   ] if
+];
+
+makeVarSchema: [
+  refToVar:;
+  refToVar Schema makeStaticness drop
 ];
 
 makeVarVirtual: [
@@ -729,6 +778,10 @@ makeVarVirtual: [
         ] if
       ] [
         curVar.data.getTag VarRef = [
+          VarRef curVar.data.get isUnallocable [
+          ] [
+            "can not virtualize reference to local variable" makeStringView compilerError
+          ] if
         ] [
           cur staticnessOfVar Weak < [
             "can not virtualize dynamic value" makeStringView compilerError
@@ -740,7 +793,7 @@ makeVarVirtual: [
   ] loop
 
   compilable [
-    msr: refToVar Virtual makeStaticness;
+    refToVar Virtual makeStaticness drop
   ] when
 ];
 
@@ -761,6 +814,7 @@ makeVarTreeDirty: [
 
       var: lastRefToVar getVar;
       lastRefToVar staticnessOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
+      lastRefToVar staticnessOfVar Schema = ["can't dynamize schema" makeStringView compilerError] when
 
       compilable [
         var.data.getTag VarStruct = [
@@ -785,7 +839,7 @@ makeVarTreeDirty: [
           ] when
         ] if
 
-        var.data.getTag VarImport = not [
+        var.data.getTag VarImport = not var.data.getTag VarString = not and [
           lastRefToVar Dirty makeStaticness @lastRefToVar set
         ] when
       ] when
@@ -896,10 +950,6 @@ createNamedVariable: [
         staticness Dynamic > not ["value for virtual label must be static" makeStringView compilerError] when
         staticness Weak    =     [Static @var.@staticness set] when
       ] when
-
-      var.data.getTag VarImport = [
-        "funcPtr is always pointer, cannot make it virtual" makeStringView compilerError
-      ] when
     ] when
 
     isGlobalLabel: [
@@ -916,7 +966,7 @@ createNamedVariable: [
       staticness @var.@staticness set
       staticness Weak    = [Dynamic @var.@staticness set] when
     ] [
-      newRefToVar noMatterToCopy currentNode.nextLabelIsVirtual or [
+      newRefToVar noMatterToCopy currentNode.nextLabelIsVirtual or newRefToVar isUnallocable not and [
         refToVar copyVarToNew @newRefToVar set
       ] [
         TRUE @var.@capturedAsMutable set #we need ref
@@ -933,13 +983,13 @@ createNamedVariable: [
 
     currentNode.nextLabelIsVirtual currentNode.nextLabelIsSchema or [
       newRefToVar makeVariableType
-      newRefToVar makeVarVirtual
+      currentNode.nextLabelIsSchema [newRefToVar makeVarSchema][newRefToVar makeVarVirtual] if
       FALSE @currentNode.@nextLabelIsVirtual set
       FALSE @currentNode.@nextLabelIsSchema set
     ] when
 
     nameInfo newRefToVar NameCaseLocal addNameInfo
-    processor.options.debug [newRefToVar isVirtual not] && [
+    compilable [processor.options.debug copy] && [newRefToVar isVirtual not] && [
       newRefToVar isGlobal [
         d: nameInfo newRefToVar addGlobalVariableDebugInfo;
         globalInstruction: newRefToVar getVar.globalDeclarationInstructionIndex @processor.@prolog.at;
@@ -957,6 +1007,8 @@ createNamedVariable: [
 
       newField @currentNode.@struct.@fields.pushBack
     ] when
+
+    nameInfo newRefToVar getVar.@mplNameId set
   ] when
 ];
 
@@ -1023,19 +1075,22 @@ processListNode: [
 
     compilable [
       FALSE dynamic @processorResult.@success set
-      message toString @processorResult.@errorInfo.@message set
-      nodeIndex: indexOfNode copy;
 
-      [
-        node: nodeIndex processor.nodes.at.get;
-        node.root [
-          FALSE
-        ] [
-          node.position @processorResult.@errorInfo.@position.pushBack
-          node.parent @nodeIndex set
-          TRUE
-        ] if
-      ] loop
+      processor.depthOfPre 0 = [
+        message toString @processorResult.@errorInfo.@message set
+        nodeIndex: indexOfNode copy;
+
+        [
+          node: nodeIndex processor.nodes.at.get;
+          node.root [
+            FALSE
+          ] [
+            node.position @processorResult.@errorInfo.@position.pushBack
+            node.parent @nodeIndex set
+            TRUE
+          ] if
+        ] loop
+      ] when
     ] when
   ] call
 ] "compilerErrorImpl" exportFunction
@@ -1110,12 +1165,11 @@ getNameAs: [
 
   nameInfo 0 < not [
     curNameInfo: nameInfo processor.nameInfos.at;
-
     curNameInfo.name name = [
-      overload 0 < [curNameInfo.stack.dataSize 1 - @overload set] when
+      overload 0 < [curNameInfo.stack.getSize 1 - @overload set] when
 
-      curNameInfo.stack.dataSize 0 > [overload curNameInfo.stack.at.dataSize 0 >] && [
-        [curNameInfo.stack.dataSize 0 >] "Name info data not initialised!" assert
+      curNameInfo.stack.getSize 0 > [overload curNameInfo.stack.at.getSize 0 >] && [
+        [curNameInfo.stack.getSize 0 >] "Name info data not initialised!" assert
         nameInfoEntry: overload curNameInfo.stack.at.last;
         overload @result.@nameOverload set
         nameInfoEntry.nameCase   @result.@nameCase set
@@ -1125,14 +1179,14 @@ getNameAs: [
         nameCase NameCaseSelfMember = [nameCase NameCaseClosureMember =] || [
           object: nameInfoEntry.refToVar;
           overloadShift: curNameInfo.stack.dataSize 1 - overload -;
-          fr: nameInfo object overloadShift findFieldWithOverloadShift;
-          fr.success [
+          fields: VarStruct object getVar.data.get.get.fields;
+          nameInfoEntry.index 0 < not [nameInfoEntry.index fields.getSize <] && [nameInfoEntry.index fields.at.nameInfo nameInfo =] && [
             object nameCase MemberCaseToObjectCase findLocalObject @result.@object set
-            fr.index @result.@mplFieldIndex set
-            fr.index VarStruct object getVar.data.get .get .fields.at .refToVar @result.@refToVar set
+            nameInfoEntry.index @result.@mplFieldIndex set
+            nameInfoEntry.index fields.at.refToVar @result.@refToVar set
             object.mutable @result.@refToVar.@mutable set
           ] [
-            unknownName
+            ("Internal error, mismatch structures for name:" name) assembleString compilerError
           ] if
         ] [
           nameCase NameCaseSelfObject = [nameCase NameCaseClosureObject =] || [
@@ -1194,6 +1248,7 @@ getNameForMatchingWithOverload: [
 
 captureName: [
   getNameResult:;
+  compileOnce
 
   result: {
     refToVar: RefToVar;
@@ -1201,6 +1256,8 @@ captureName: [
   };
 
   compilable [
+    captureError: FALSE dynamic;
+
     captureRefToVar: [
       copy captureCase:;
       refToVar:;
@@ -1269,6 +1326,11 @@ captureName: [
           captureCase  @newCapture.@captureCase set
 
           refToVar isVirtual [ArgVirtual] [refToVar isGlobal [ArgGlobal] [ArgRef] if ] if @newCapture.@argCase set
+          realCapture: newCapture.argCase ArgRef =;
+
+          realCapture [currentNode.exportDepth refToVar.hostId processor.nodes.at.get.exportDepth = not] && [
+            TRUE !captureError
+          ] when
 
           newCapture @currentNode.@buildingMatchingInfo.@captures.pushBack
           currentNode.state NodeStateNew = [
@@ -1357,6 +1419,10 @@ captureName: [
         getNameResult.nameInfo result.refToVar NameCaseCapture getNameResult.startPoint getNameResult.nameOverload addNameInfoOverloaded
       ] when
     ] if
+
+    captureError [
+      "real function can not have real local capture" compilerError
+    ] when
   ] [
     getNameResult.refToVar @result.@refToVar set
   ] if
@@ -1390,7 +1456,7 @@ addFieldsNameInfos: [
       currentField: i struct.fields.at;
       [currentField.nameInfo processor.emptyNameInfo = not] "Closured list!" assert
       currentField.nameInfo currentField.refToVar addOverloadForPre
-      currentField.nameInfo refToVar addNameCase addNameInfoNoReg # name info pointing to the struct, not to a field!
+      currentField.nameInfo refToVar addNameCase i addNameInfoFieldNoReg # name info pointing to the struct, not to a field!
       i 1 + @i set TRUE
     ] &&
   ] loop
@@ -1523,7 +1589,7 @@ callCallableStructWithPre: [
         findInside [
           fr: nameInfo object overloadShift findFieldWithOverloadShift;
           fr.success [
-            fr.index object getField @refToVar set
+            fr.index object processStaticAt @refToVar set
           ] [
             0 @overloadShift set
             FALSE @findInside set
@@ -1664,7 +1730,7 @@ setRef: [
   refToVar:; # destination
   var: refToVar getVar;
   var.data.getTag VarRef = [
-    refToVar isVirtualRef [
+    refToVar isSchema [
       "can not write to virtual" makeStringView compilerError
     ] [
       pointee: VarRef var.data.get;
@@ -1720,7 +1786,7 @@ copyOneVarWith: [
     # manually copy only nececcary fields
     dstStruct: Struct;
     srcStruct.fields          @dstStruct.@fields set
-    @dstStruct move owner VarStruct src isVirtualField FALSE dynamic createVariableWithVirtual
+    @dstStruct move owner VarStruct src isVirtualField src isSchema FALSE dynamic createVariableWithVirtual
     src checkedStaticnessOfVar makeStaticness @dst set
     dstStructAc: VarStruct dst getVar.@data.get.get;
     srcStruct.homogeneous       @dstStructAc.@homogeneous set
@@ -1734,7 +1800,7 @@ copyOneVarWith: [
     srcVar.data.getTag VarInvalid VarEnd [
       copy tag:;
       tag VarStruct = not [
-        tag srcVar.data.get tag src isVirtualField FALSE dynamic createVariableWithVirtual
+        tag srcVar.data.get tag src isVirtualField src isSchema FALSE dynamic createVariableWithVirtual
         src checkedStaticnessOfVar makeStaticness
         @dst set
       ] when
@@ -1757,7 +1823,7 @@ copyVarImpl: [
   copy fromChildToParent:;
   refToVar:;
 
-  fromChildToParent toNew or [refToVar noMatterToCopy] && [
+  fromChildToParent toNew or [refToVar noMatterToCopy refToVar isUnallocable or] && [
     refToVar copy
   ] [
     result: RefToVar;
@@ -1933,6 +1999,13 @@ makeShadowsDynamic: [
   TRUE  makeShadowsImpl
 ];
 
+addStackUnderflowInfo: [
+  TRUE @currentNode.@buildingMatchingInfo.@hasStackUnderflow set
+  currentNode.state NodeStateNew = [
+    TRUE @currentNode.@matchingInfo.@hasStackUnderflow set
+  ] when
+];
+
 {
   forMatching: Cond;
   processorResult: ProcessorResult Ref;
@@ -2000,8 +2073,9 @@ makeShadowsDynamic: [
         ] when
         newInput @currentNode.@matchingInfo.@inputs.pushBack
       ] when
-
-    ] when
+    ] [
+      addStackUnderflowInfo
+    ] if
   ] [
     currentNode.stack.last @result set
     @currentNode.@stack.popBack
@@ -2045,9 +2119,29 @@ pushName: [
   ] if
 ];
 
+addUnfoundedName: [
+  copy nameInfo:;
+  fr: nameInfo currentNode.matchingInfo.unfoundedNames.find;
+  fr.success not [nameInfo TRUE @currentNode.@matchingInfo.@unfoundedNames.insert] when
+  currentNode.state NodeStateNew = [
+    fr: nameInfo currentNode.buildingMatchingInfo.unfoundedNames.find;
+    fr.success not [nameInfo TRUE @currentNode.@buildingMatchingInfo.@unfoundedNames.insert] when
+  ] when
+];
+
+checkFailedName: [
+  gnr:;
+  copy nameInfo:;
+
+  gnr.refToVar.hostId 0 < [
+    nameInfo addUnfoundedName
+  ] when
+];
+
 processNameNode: [
   data:;
   gnr: data.nameInfo getName;
+  data.nameInfo gnr checkFailedName
   cnr: gnr captureName;
   refToVar: cnr.refToVar copy;
 
@@ -2059,6 +2153,7 @@ processNameNode: [
 processNameReadNode: [
   data:;
   gnr: data.nameInfo getName;
+  data.nameInfo gnr checkFailedName
   cnr: gnr captureName;
   refToVar: cnr.refToVar;
 
@@ -2079,7 +2174,9 @@ processNameReadNode: [
 processNameWriteNode: [
   data:;
 
-  cnr: data.nameInfo getName captureName;
+  gnr: data.nameInfo getName;
+  data.nameInfo gnr checkFailedName
+  cnr: gnr captureName;
   refToVar: cnr.refToVar;
 
   compilable [refToVar setRef] when
@@ -2114,52 +2211,47 @@ processMember: [
   data:;
 
   compilable [
-    virtualRef: FALSE;
-
     fieldError: [
       (refToStruct getMplType " has no field " data.name) assembleString compilerError
     ];
 
-    refToStruct getVar.data.getTag VarRef = [
-      refToStruct isVirtualRef [
-        TRUE @virtualRef set
-        read -1 = [
-          "can not write to field of struct virtual reference" makeStringView compilerError
-        ] [
-          structVar: refToStruct getVar;
-          pointee: VarRef structVar.data.get;
-          pointeeVar: pointee getVar;
-          pointeeVar.data.getTag VarStruct = [
-            fr: data.nameInfo pointee findField;
-            fr.success [
-              index: fr.index copy;
-              field: index 0 cast VarStruct pointeeVar.data.get.get.fields.at.refToVar;
-              result: field VarRef TRUE dynamic TRUE dynamic createVariableWithVirtual;
-              result fullUntemporize
-              read 1 = result.mutable and @result.@mutable set
-              result push
-            ] [
-              fieldError
-            ] if
+    refToStruct isSchema [
+      read -1 = [
+        "can not write to field of struct schema" makeStringView compilerError
+      ] [
+        structVar: refToStruct getVar;
+        pointee: VarRef structVar.data.get;
+        pointeeVar: pointee getVar;
+        pointeeVar.data.getTag VarStruct = [
+          fr: data.nameInfo pointee findField;
+          fr.success [
+            index: fr.index copy;
+            field: index 0 cast VarStruct pointeeVar.data.get.get.fields.at.refToVar;
+            result: field VarRef TRUE dynamic TRUE dynamic TRUE dynamic createVariableWithVirtual;
+            result fullUntemporize
+            read 1 = result.mutable and @result.@mutable set
+            result push
           ] [
-            "not a combined" makeStringView compilerError
+            fieldError
           ] if
+        ] [
+          "not a combined" makeStringView compilerError
+        ] if
+      ] if
+    ] [
+      refToStruct getVar.data.getTag VarStruct = [
+        fr: data.nameInfo refToStruct findField;
+        fr.success [
+          index: fr.index copy;
+          fieldRef: index refToStruct processStaticAt;
+          refToStruct fieldRef read data.nameInfo pushName # let it be marker about field
+        ] [
+          fieldError
         ] if
       ] [
-        refToStruct getPointee @refToStruct set
+        "not a combined" makeStringView compilerError
       ] if
-    ] when
-
-    virtualRef not [
-      fr: data.nameInfo refToStruct findField;
-      fr.success [
-        index: fr.index copy;
-        fieldRef: index refToStruct processStaticAt;
-        refToStruct fieldRef read data.nameInfo pushName # let it be marker about field
-      ] [
-        fieldError
-      ] if
-    ] when
+    ] if
   ] when
 ];
 
@@ -2202,7 +2294,12 @@ addCodeNode: [
 
 argAbleToCopy: [
   arg:;
-  arg.mutable not [arg isTinyArg] &&
+  arg isTinyArg
+];
+
+argRecommendedToCopy: [
+  arg:;
+  arg.mutable not [arg argAbleToCopy] && [arg getVar.capturedAsMutable not] &&
 ];
 
 callInit: [
@@ -2513,7 +2610,7 @@ finalizeListNode: [
         curRef getVar.temporary [
           curRef @newField.@refToVar set
         ] [
-          curRef FALSE createRef @newField.@refToVar set
+          curRef TRUE dynamic createRef @newField.@refToVar set
         ] if
 
         newField @struct.@fields.pushBack
@@ -2568,7 +2665,7 @@ finalizeObjectNode: [
   ] loop
 
   refToStruct isVirtual not [
-    refToStruct createAllocIR @refToStruct set
+    refToStruct createAllocIR drop
     i: 0 dynamic;
     [
       i structInfo.fields.dataSize < [
@@ -2625,12 +2722,87 @@ checkPreStackDepth: [
     i newMinStackDepth < [
       preInputDepth: i preCountedStackDepth - currentNode.stack.dataSize +;
       preInput: preInputDepth getStackEntryForPreInput;
-      preInput noMatterToCopy not [preInput getVar.shadowBegin @preInput set] when
-      [preInput.hostId 0 < not] "Invalid preInput!" assert
+      preInput.hostId 0 < not [
+        preInput noMatterToCopy not [preInput getVar.shadowBegin @preInput set] when
+        [preInput.hostId 0 < not] "Invalid preInput!" assert
+      ] when
       preInput @currentNode.@buildingMatchingInfo.@preInputs.pushBack
       i 1 + @i set TRUE
     ] &&
   ] loop
+];
+
+addMatchingNode: [
+  copy indexOfNode:;
+  copy addr:;
+
+  node: indexOfNode @processor.@nodes.at.get;
+  addr @node.@indexArrayAddress set
+
+  fr: addr @processor.@matchingNodes.find;
+  fr.success [
+    fr.value.unknownMplType.getSize @currentNode.@matchingInfoIndex set
+    fr.value.size 1 + @fr.@value.@size set
+    indexOfNode @fr.@value.@unknownMplType.pushBack
+  ] [
+    tableValue: MatchingNode;
+    compilerPositionInfo @tableValue.@compilerPositionInfo set
+    1 @tableValue.@size set
+    0 @tableValue.@tries set
+    0 @tableValue.@entries set
+    0 @currentNode.@matchingInfoIndex set
+    indexOfNode @tableValue.@unknownMplType.pushBack
+    addr @tableValue move @processor.@matchingNodes.insert
+  ] if
+];
+
+deleteMatchingNode: [
+  copy indexOfNode:;
+
+  node: indexOfNode @processor.@nodes.at.get;
+  node.matchingInfoIndex 0 < not [
+    addr: node.indexArrayAddress copy;
+    info: addr @processor.@matchingNodes.find.@value;
+    indexArray: @info.@unknownMplType;
+    info.size 1 - @info.@size set
+
+    [node.matchingInfoIndex indexArray.at indexOfNode =] "Current node: matchingInfo table is incorrect!" assert
+    indexArray.getSize 1 - node.matchingInfoIndex = not [
+      [indexArray.last processor.nodes.at.get.matchingInfoIndex indexArray.getSize 1 - =] "Last node: matchingInfo table is incorrect!" assert
+
+      node.matchingInfoIndex indexArray.last @processor.@nodes.at.get.@matchingInfoIndex set
+      indexArray.last node.matchingInfoIndex @indexArray.at set
+    ] when
+
+    -1 @node.@matchingInfoIndex set
+    @indexArray.popBack
+  ] when
+];
+
+concreteMatchingNode: [
+  copy indexOfNode:;
+  node: indexOfNode @processor.@nodes.at.get;
+
+  node.matchingInfo.inputs.getSize 0 = not [
+    indexOfNode deleteMatchingNode
+
+    addr: node.indexArrayAddress copy;
+    info: addr @processor.@matchingNodes.find.@value;
+    info.size 1 + @info.@size set #return it back
+
+    byMplType: info.@byMplType;
+
+    key: 0 node.matchingInfo.inputs.at.refToVar getVar.mplTypeId copy;
+
+    fr: key @info.@byMplType.find;
+    fr.success [
+      indexOfNode @fr.@value.pushBack
+    ] [
+      newBranch: IndexArray;
+      indexOfNode @newBranch.pushBack
+      key @newBranch move @info.@byMplType.insert
+    ] if
+  ] when
 ];
 
 deleteNode: [
@@ -2639,6 +2811,8 @@ deleteNode: [
   TRUE dynamic @node.@empty   set
   TRUE dynamic @node.@deleted set
   @node.@program.release
+
+  nodeIndex deleteMatchingNode
 
   processor.deletedNodeCount 1 + @processor.@deletedNodeCount set
 ];
@@ -3122,7 +3296,7 @@ makeCompilerPosition: [
             needToCopy: hasForcedSignature [
               i forcedSignature.inputs.at getVar.data.getTag VarRef = not
             ] [
-              current.refToVar argAbleToCopy [current.refToVar getVar.capturedAsMutable not] &&
+              current.refToVar argRecommendedToCopy
             ] if;
 
             needToCopy [current.refToVar argAbleToCopy not] && [isRealFunction copy] && [
@@ -3212,19 +3386,21 @@ makeCompilerPosition: [
   [
     i currentNode.buildingMatchingInfo.captures.dataSize < [
       current: i currentNode.buildingMatchingInfo.captures.at;
-      current.argCase ArgRef = [
-        isRealFunction [
-          ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name "; type=" current.refToVar getMplType) assembleString compilerError
-        ] when
+      current.refToVar.hostId 0 < not [
+        current.argCase ArgRef = [
+          isRealFunction [
+            ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name "; type=" current.refToVar getMplType) assembleString compilerError
+          ] when
 
-        current.refToVar FALSE addRefArg
-      ] [
-        current.argCase ArgGlobal = [
-          TRUE @hasEffect set
-        ] when
-      ] if
+          current.refToVar FALSE addRefArg
+        ] [
+          current.argCase ArgGlobal = [
+            TRUE @hasEffect set
+          ] when
+        ] if
 
-      current.refToVar getVar.data.getTag VarImport = [TRUE @hasImport set] when
+        current.refToVar getVar.data.getTag VarImport = [TRUE @hasImport set] when
+      ] when
       i 1 + @i set compilable
     ] &&
   ] loop
@@ -3280,7 +3456,7 @@ makeCompilerPosition: [
   fixArrShadows: [
     [
       current: .@value;
-      current.refToVar noMatterToCopy not [current.refToVar getVar.shadowBegin @current.@refToVar set] when
+      current.refToVar.hostId 0 < not [current.refToVar noMatterToCopy not] && [current.refToVar getVar.shadowBegin @current.@refToVar set] when
     ] each
   ];
 
@@ -3380,6 +3556,7 @@ makeCompilerPosition: [
 
     refToVar @declarationNode.@refToVar set
     FALSE refToVar getVar.@temporary set
+
     declarationNode.nodeCase NodeCaseCodeRefDeclaration = [
       "null" toString makeStringId refToVar getVar.@irNameId set
       "null" toString @declarationNode.@irName set
@@ -3550,23 +3727,9 @@ addIndexArrayToProcess: [
   ] loop
 ];
 
-addMatchingNode: [
-  copy indexOfNode:;
-  copy addr:;
-
-  fr: addr @processor.@matchingNodes.find;
-  fr.success [
-    indexOfNode @fr.@value.pushBack
-  ] [
-    tableValue: IndexArray;
-    indexOfNode @tableValue.pushBack
-    addr @tableValue move @processor.@matchingNodes.insert
-  ] if
-];
-
 nodeHasCode: [
   node:;
-  node.emptyDeclaration not [node.empty not] && [node.deleted not] && [node.nodeCase NodeCaseCodeRefDeclaration = not] &&
+  node.emptyDeclaration not [node.uncompilable not] && [node.empty not] && [node.deleted not] && [node.nodeCase NodeCaseCodeRefDeclaration = not] &&
 ];
 
 {
@@ -3604,6 +3767,7 @@ nodeHasCode: [
   @compilerPositionInfo           @codeNode.@position set
   getStackDepth                   @codeNode.@minStackDepth set
   processor.varCount              @codeNode.@variableCountDelta set
+  processor.exportDepth           @codeNode.@exportDepth set
 
   processor.depthOfRecursion 1 + @processor.@depthOfRecursion set
   processor.depthOfRecursion processor.maxDepthOfRecursion > [
@@ -3622,10 +3786,9 @@ nodeHasCode: [
     ("max depth of PRE recursion (" maxDepthOfPre ") exceeded") assembleString compilerError
     TRUE dynamic @processorResult.@maxDepthExceeded set
   ] when
-
-  addr: indexArray storageAddress;
+  
   #add to match table
-  addr indexOfNode addMatchingNode
+  indexArray storageAddress indexOfNode addMatchingNode
 
   currentNode.parent 0 = [indexOfNode 1 >] && [
     1 dynamic TRUE dynamic processUseModule #definitions
@@ -3639,6 +3802,7 @@ nodeHasCode: [
     @currentNode.@labelNames.clear
     @currentNode.@fromModuleNames.clear
     @currentNode.@captureNames.clear
+    @currentNode.@unprocessedAstNodes.clear
 
     processor.options.debug [
       addDebugReserve @currentNode.@funcDbgIndex set
@@ -3666,6 +3830,7 @@ nodeHasCode: [
       unregCodeNodeNames
       indexOfNode deleteNode
       clearRecursionStack
+      NodeStateFailed @currentNode.@state set
       TRUE @currentNode.@uncompilable set
     ] if
 
@@ -3676,6 +3841,10 @@ nodeHasCode: [
       currentNode.recursionState NodeRecursionStateNo > [currentNode.state NodeStateCompiled = not] &&
     ] &&
   ] loop
+
+  compilable [currentNode.state NodeStateCompiled =] && [
+    indexOfNode concreteMatchingNode
+  ] when
 
   processor.varCount codeNode.variableCountDelta - @codeNode.@variableCountDelta set
 
