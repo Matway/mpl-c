@@ -37,7 +37,7 @@ ProcessorErrorInfo: [{
 ProcessorResult: [{
   success: TRUE dynamic;
   findModuleFail: FALSE dynamic;
-  maxDepthExceeded: FALSE dynamic;
+  passErrorThroughPRE: FALSE dynamic;
   program: String;
   errorInfo: ProcessorErrorInfo;
   globalErrorInfo: ProcessorErrorInfo Array;

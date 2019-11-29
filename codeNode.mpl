@@ -1076,7 +1076,7 @@ processListNode: [
     compilable [
       FALSE dynamic @processorResult.@success set
 
-      processor.depthOfPre 0 = [
+      processor.depthOfPre 0 = [processorResult.passErrorThroughPRE copy] || [
         message toString @processorResult.@errorInfo.@message set
         nodeIndex: indexOfNode copy;
 
@@ -3776,13 +3776,13 @@ nodeHasCode: [
   maxDepthOfPre:       64;
 
   processor.depthOfRecursion maxDepthOfRecursion > [
+    TRUE dynamic @processorResult.@passErrorThroughPRE set
     ("max depth of recursion (" maxDepthOfRecursion ") exceeded") assembleString compilerError
-    TRUE dynamic @processorResult.@maxDepthExceeded set
   ] when
 
   processor.depthOfPre maxDepthOfPre > [
+    TRUE dynamic @processorResult.@passErrorThroughPRE set
     ("max depth of PRE recursion (" maxDepthOfPre ") exceeded") assembleString compilerError
-    TRUE dynamic @processorResult.@maxDepthExceeded set
   ] when
   
   #add to match table
