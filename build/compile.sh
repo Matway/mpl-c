@@ -2,7 +2,7 @@
 
 SOURCE_VERSION=$(git log --date=format:%y%m%d --format=%cd -1)
 
-mplc -D COMPILER_SOURCE_VERSION=$SOURCE_VERSION -D DEBUG=TRUE -ndebug -o mplc.ll\
+mplc -D COMPILER_SOURCE_VERSION=$SOURCE_VERSION -ndebug -o mplc.ll\
  ../astNodeType.mpl\
  ../astOptimizers.mpl\
  ../builtinImpl.mpl\
