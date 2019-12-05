@@ -110,9 +110,9 @@ getPointerTypeDebugDeclaration: [
   refToVar:;
   compileOnce
   var: refToVar getVar;
-  fr: var.mplTypeId @processor.@debugInfo.@typeIdToDbgId.find;
-  [fr.success copy] "Pointee has no type debug info!" assert
-  "DW_TAG_pointer_type" makeStringView fr.value processor.options.pointerSize 0ix cast 0 cast addDerivedTypeInfo
+  debugDeclarationIndex: refToVar getMplSchema.dbgTypeDeclarationId copy;
+  [debugDeclarationIndex -1 = ~] "Pointee has no type debug info!" assert
+  "DW_TAG_pointer_type" makeStringView debugDeclarationIndex processor.options.pointerSize 0ix cast 0 cast addDerivedTypeInfo
 ];
 
 addLinkedLib: [
@@ -128,8 +128,8 @@ addMemberInfo: [
   field:;
   offset:;
 
-  fr: field.refToVar getVar.mplTypeId @processor.@debugInfo.@typeIdToDbgId.find;
-  [fr.success copy] "Field has not debug info about type!" assert
+  debugDeclarationIndex: field.refToVar getMplSchema.dbgTypeDeclarationId copy;
+  [debugDeclarationIndex -1 = ~] "Field has not debug info about type!" assert
 
   fsize: field.refToVar getStorageSize 0ix cast 0 cast;
   falignment: field.refToVar getAlignment 0ix cast 0 cast;
@@ -143,11 +143,11 @@ addMemberInfo: [
   name "" = [
     ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"f" fieldNumber "\", scope: !" currentNode.funcDbgIndex
       ", file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
-      ", line: " currentNode.position.line ", baseType: !" fr.value ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
+      ", line: " currentNode.position.line ", baseType: !" debugDeclarationIndex ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
   ] [
     ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"" name "\", scope: !" currentNode.funcDbgIndex
       ", file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
-      ", line: " currentNode.position.line ", baseType: !" fr.value ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
+      ", line: " currentNode.position.line ", baseType: !" debugDeclarationIndex ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
   ] if
 
   @processor.@debugInfo.@strings.pushBack
@@ -231,9 +231,8 @@ addVariableDebugInfo: [
   copy nameInfo:;
 
   refToVar isVirtualType not [
-    fr: refToVar getVar.mplTypeId @processor.@debugInfo.@typeIdToDbgId.find;
-    [fr.success copy] "There is no debug declaration for this type!" assert
-    debugDeclarationIndex: fr.value copy;
+    debugDeclarationIndex: refToVar getMplSchema.dbgTypeDeclarationId copy;
+    [debugDeclarationIndex -1 = ~] "There is no debug declaration for this type!" assert
     index: processor.debugInfo.lastId copy;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
     ("!" index " = !DILocalVariable(name: \"" nameInfo processor.nameInfos.at.name "\", scope: !" currentNode.funcDbgIndex
@@ -252,9 +251,8 @@ addGlobalVariableDebugInfo: [
   copy nameInfo:;
 
   refToVar isVirtualType not [
-    fr: refToVar getVar.mplTypeId @processor.@debugInfo.@typeIdToDbgId.find;
-    [fr.success copy] "There is no debug declaration for this type!" assert
-    debugDeclarationIndex: fr.value copy;
+    debugDeclarationIndex: refToVar getMplSchema.dbgTypeDeclarationId copy;
+    [debugDeclarationIndex -1 = ~] "There is no debug declaration for this type!" assert
 
     index: processor.debugInfo.lastId copy;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set

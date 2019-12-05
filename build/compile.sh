@@ -18,6 +18,7 @@ mplc -D COMPILER_SOURCE_VERSION=$SOURCE_VERSION -D DEBUG=TRUE -ndebug -o mplc.ll
  ../processor.mpl\
  ../processorImpl.mpl\
  ../processSubNodes.mpl\
+ ../schemas.mpl\
  ../staticCall.mpl\
  ../variable.mpl\
  ../sl/ascii.mpl\

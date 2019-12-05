@@ -323,7 +323,7 @@ mplNumberBuiltinOp: [
 
           irarg: IRArgument;
           arg createDerefToRegister @irarg.@irNameId set
-          var.irTypeId @irarg.@irTypeId set
+          arg getMplSchema.irTypeId @irarg.@irTypeId set
           FALSE @irarg.@byRef set
           irarg @args.pushBack
 
@@ -429,10 +429,10 @@ mplNumberBuiltinOp: [
           irarg: IRArgument;
           FALSE @irarg.@byRef set
           arg1 createDerefToRegister @irarg.@irNameId set
-          var1.irTypeId @irarg.@irTypeId set
+          arg1 getMplSchema.irTypeId @irarg.@irTypeId set
           irarg @args.pushBack
           arg2 createDerefToRegister @irarg.@irNameId set
-          var2.irTypeId @irarg.@irTypeId set
+          arg2 getMplSchema.irTypeId @irarg.@irTypeId set
           irarg @args.pushBack
 
           result args String tag VarReal32 = ["@llvm.pow.f32" makeStringView] ["@llvm.pow.f64" makeStringView] if createCallIR retName:;
@@ -915,7 +915,7 @@ parseSignature: [
       @processor.@prolog.last move @instruction set
       @processor.@prolog.popBack
       TRUE @refToVar.@mutable set
-      oldIrNameId var.irNameId var.irTypeId createGlobalAliasIR
+      oldIrNameId var.irNameId refToVar getMplSchema.irTypeId createGlobalAliasIR
       oldInstructionIndex @var.@globalDeclarationInstructionIndex set
 
       nameInfo: name findNameInfo;
