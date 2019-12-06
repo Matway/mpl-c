@@ -1,6 +1,7 @@
 "processor" module
 "control" includeModule
 "astNodeType" includeModule
+"schemas" includeModule
 
 CompilerPositionInfo: [{
   column:     -1 dynamic;
@@ -297,6 +298,9 @@ Processor: [{
   stringNames: String RefToVar HashTable;        #for string constants
   typeNames:   String Int32 HashTable;           #mplType->irAliasId
 
+  schemaBuffer: VariableSchema Array;
+  schemaTable: VariableSchema Int32 HashTable;
+
   nameBuffer:  String Array;
   nameTable:   StringView Int32 HashTable;       #strings->nameTag; strings from nameBuffer
 
@@ -314,7 +318,6 @@ Processor: [{
     unitStringNumber: -1 dynamic;
     cuStringNumber:   -1 dynamic;
     fileNameIds:      Int32 Array;
-    typeIdToDbgId:    IntTable;
     globals:          Int32 Array;
   };
 

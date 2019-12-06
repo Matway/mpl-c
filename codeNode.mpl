@@ -1811,9 +1811,7 @@ copyOneVarWith: [
 
   src.mutable @dst.@mutable set
   dstVar: dst getVar;
-  srcVar.irTypeId  @dstVar.@irTypeId set
-  srcVar.mplTypeId @dstVar.@mplTypeId set
-  srcVar.dbgTypeId @dstVar.@dbgTypeId set
+  srcVar.mplSchemaId @dstVar.@mplSchemaId set
 
   dst
 ];
@@ -2792,7 +2790,7 @@ concreteMatchingNode: [
 
     byMplType: info.@byMplType;
 
-    key: 0 node.matchingInfo.inputs.at.refToVar getVar.mplTypeId copy;
+    key: 0 node.matchingInfo.inputs.at.refToVar getVar.mplSchemaId copy;
 
     fr: key @info.@byMplType.find;
     fr.success [

@@ -487,7 +487,7 @@ tryMatchNode: [
     result: -1 dynamic;
 
     getStackDepth 0 > [
-      byType: 0 dynamic getStackEntry getVar.mplTypeId fr.value.byMplType.find;
+      byType: 0 dynamic getStackEntry getVar.mplSchemaId fr.value.byMplType.find;
 
       byType.success [
         byType.value findInIndexArray @result set
@@ -1161,7 +1161,7 @@ makeCallInstructionWith: [
       ] [
         arg: IRArgument;
         currentInput getVar.irNameId @arg.@irNameId set
-        currentInput getVar.irTypeId @arg.@irTypeId set
+        currentInput getMplSchema.irTypeId @arg.@irTypeId set
         currentInputArgCase ArgRef = [currentInputArgCase ArgRefDeref =] || @arg.@byRef set
         currentInputArgCase ArgCopy = [currentInput createDerefToRegister @arg.@irNameId set] when
 
@@ -1191,7 +1191,7 @@ makeCallInstructionWith: [
         ] [
           arg: IRArgument;
           refToVar getVar.irNameId @arg.@irNameId set
-          refToVar getVar.irTypeId @arg.@irTypeId set
+          refToVar getMplSchema.irTypeId @arg.@irTypeId set
           TRUE @arg.@byRef set
 
           arg @argList.pushBack
@@ -1215,7 +1215,7 @@ makeCallInstructionWith: [
 
           arg: IRArgument;
           refToVar getVar.irNameId @arg.@irNameId set
-          refToVar getVar.irTypeId @arg.@irTypeId set
+          refToVar getMplSchema.irTypeId @arg.@irTypeId set
           TRUE @arg.@byRef set
           TRUE @arg.@byRef set
 
