@@ -7,7 +7,7 @@ clearProcessorResult: [
   copy cachedGlobalErrorInfoSize:;
   TRUE dynamic              @processorResult.@success set
   FALSE dynamic             @processorResult.@findModuleFail set
-  FALSE dynamic             @processorResult.@maxDepthExceeded set
+  FALSE dynamic             @processorResult.@passErrorThroughPRE set
   String                    @processorResult.@program set
   ProcessorErrorInfo        @processorResult.@errorInfo set
   cachedGlobalErrorInfoSize 0 < not [
@@ -1387,7 +1387,7 @@ processCallByNode: [
 
     oldGlobalErrorCount @processorResult.@globalErrorInfo.shrink
     oldSuccess [
-      processorResult.maxDepthExceeded not [-1 clearProcessorResult] when
+      processorResult.passErrorThroughPRE not [-1 clearProcessorResult] when
     ] [
       [FALSE] "Has compilerError before trying compiling pre!" assert
     ] if
@@ -1412,6 +1412,7 @@ processCallByNode: [
       [top staticnessOfVar Weak < not] && [
         VarCond top getVar.data.get copy
       ] [
+        TRUE dynamic @processorResult.@passErrorThroughPRE set
         "PRE code must fail or return static Cond" compilerError
         FALSE dynamic
       ] if
@@ -1815,6 +1816,7 @@ processLoop: [
 
     iterationNumber 1 + @iterationNumber set
     iterationNumber maxLoopLength > [
+      TRUE @processorResult.!passErrorThroughPRE
       "static loop length too big, did you forget to add \"dynamic\"?" makeStringView compilerError
     ] when
 
