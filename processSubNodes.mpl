@@ -1310,7 +1310,13 @@ processCallByNode: [
     newNode: newNodeIndex @processor.@nodes.at.get;
     currentNode.parent 0 = [nodeCase NodeCaseList = nodeCase NodeCaseObject = or] && [newNode.matchingInfo.inputs.getSize 0 =] && [newNode.outputs.getSize 1 =] && [
       realCapturesCount: 0;
-      newNode.matchingInfo.captures [.value.refToVar isVirtual not [realCapturesCount 1 + @realCapturesCount set] when] each
+      newNode.matchingInfo.captures [
+        capture: .value;
+        capture.refToVar.hostId 0 < ~ [
+          capture.refToVar isVirtual not [realCapturesCount 1 + @realCapturesCount set] when
+        ] when
+      ] each
+
       realCapturesCount 0 =
     ] && [
       0 newNode.outputs.at.refToVar isStaticData
