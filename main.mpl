@@ -21,12 +21,12 @@ printInfo: [
   "  -logs                               Value of \"HAS_LOGS\" constant in code turn to TRUE" print LF print
   "  -ndebug                             Disable debug info; value of \"DEBUG\" constant in code turn to FALSE" print LF print
   "  -o <file>                           Write output to <file>, default output file is \"mpl.ll\"" print LF print
+  "  -pre_recursion_depth_limit <number> Set PRE recursion depth limit, default value is " print DEFAULT_PRE_RECURSION_DEPTH_LIMIT print LF print
+  "  -recursion_depth_limit <number>     Set recursion depth limit, default value is " print DEFAULT_RECURSION_DEPTH_LIMIT print LF print
+  "  -static_loop_length_limit <number>  Set static loop length limit, default value is " print DEFAULT_STATIC_LOOP_LENGTH_LIMIT print LF print
   "  -statlit                            Number literals are static constants, which are used in analysis; default mode is static literals" print LF print
   "  -verbose_ir                         Print information about current token in IR" print LF print
   "  -version                            Print compiler version while compiling" print LF print
-  "  -recursion_depth_limit <number>     Set recursion depth limit, default value is " print DEFAULT_RECURSION_DEPTH_LIMIT print LF print
-  "  -pre_recursion_depth_limit <number> Set PRE recursion depth limit, default value is " print DEFAULT_PRE_RECURSION_DEPTH_LIMIT print LF print
-  "  -static_loop_length_limit <number>  Set static loop length limit, default value is " print DEFAULT_STATIC_LOOP_LENGTH_LIMIT print LF print
   FALSE @success set
 ];
 
