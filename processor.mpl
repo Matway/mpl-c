@@ -18,21 +18,21 @@ DEFAULT_RECURSION_DEPTH_LIMIT: [256];
 DEFAULT_PRE_RECURSION_DEPTH_LIMIT: [64];
 
 ProcessorOptions: [{
-  mainPath:       String;
-  fileNames:      StringArray;
-  pointerSize:    64nx dynamic;
-  staticLiterals: TRUE dynamic;
-  debug:          TRUE dynamic;
-  arrayChecks:    TRUE dynamic;
-  autoRecursion:  FALSE dynamic;
-  logs:           FALSE dynamic;
-  verboseIR:      FALSE dynamic;
-  callTrace:      FALSE dynamic;
-  threadModel:    0 dynamic;
-  staticLoopLengthLimit: DEFAULT_STATIC_LOOP_LENGTH_LIMIT;
-  recursionDepthLimit: DEFAULT_RECURSION_DEPTH_LIMIT;
+  mainPath:               String;
+  fileNames:              StringArray;
+  pointerSize:            64nx dynamic;
+  staticLiterals:         TRUE dynamic;
+  debug:                  TRUE dynamic;
+  arrayChecks:            TRUE dynamic;
+  autoRecursion:          FALSE dynamic;
+  logs:                   FALSE dynamic;
+  verboseIR:              FALSE dynamic;
+  callTrace:              FALSE dynamic;
+  threadModel:            0 dynamic;
+  staticLoopLengthLimit:  DEFAULT_STATIC_LOOP_LENGTH_LIMIT;
+  recursionDepthLimit:    DEFAULT_RECURSION_DEPTH_LIMIT;
   preRecursionDepthLimit: DEFAULT_PRE_RECURSION_DEPTH_LIMIT;
-  linkerOptions:  String Array;
+  linkerOptions:          String Array;
 }];
 
 ProcessorErrorInfo: [{
