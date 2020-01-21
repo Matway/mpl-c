@@ -3772,17 +3772,14 @@ nodeHasCode: [
     processor.depthOfRecursion @processor.@maxDepthOfRecursion set
   ] when
 
-  maxDepthOfRecursion: 256;
-  maxDepthOfPre:       64;
-
-  processor.depthOfRecursion maxDepthOfRecursion > [
+  processor.depthOfRecursion processor.options.recursionDepthLimit > [
     TRUE dynamic @processorResult.@passErrorThroughPRE set
-    ("max depth of recursion (" maxDepthOfRecursion ") exceeded") assembleString compilerError
+    ("Recursion depth limit (" processor.options.recursionDepthLimit ") exceeded. It can be changed using -recursion_depth_limit option.") assembleString compilerError
   ] when
 
-  processor.depthOfPre maxDepthOfPre > [
+  processor.depthOfPre processor.options.preRecursionDepthLimit > [
     TRUE dynamic @processorResult.@passErrorThroughPRE set
-    ("max depth of PRE recursion (" maxDepthOfPre ") exceeded") assembleString compilerError
+    ("PRE recursion depth limit (" processor.options.preRecursionDepthLimit  ") exceeded. It can be changed using -pre_recursion_depth_limit option.") assembleString compilerError
   ] when
   
   #add to match table
