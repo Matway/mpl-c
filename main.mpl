@@ -98,9 +98,8 @@ parseIntegerOption: [
       ] when
     ]
     [
-      tenPower: 1;
-      codepointIndex: codepoints.getSize 1 -;
-      [result.error "" = [codepointIndex 0 < ~] &&] [
+      codepointIndex: 0;
+      [result.error "" = [codepointIndex codepoints.getSize <] &&] [
         codepoint: codepointIndex codepoints @;
         asciiCode: codepoint.dataBegin Nat32 cast;
         asciiCode (
@@ -108,12 +107,11 @@ parseIntegerOption: [
           [code:; code ascii.zero = [codepointIndex 0 =] && [codepoints.getSize 1 >] &&] ["value has leading zeros" toString @result.!error]
           [
             digit: asciiCode ascii.zero - Int32 cast;
-            digit tenPower * result.value + @result.@value set
-            10 tenPower * @tenPower set
+            result.value 10 * digit + @result.@value set
           ]
         ) cond
 
-        codepointIndex 1 - !codepointIndex
+        codepointIndex 1 + !codepointIndex
       ] while
     ]
   ) sequence
