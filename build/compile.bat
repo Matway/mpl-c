@@ -14,7 +14,6 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -ndebug -o mplc.ll^
  ../main.mpl^
  ../parser.mpl^
  ../pathUtils.mpl^
- ../printAST.mpl^
  ../processor.mpl^
  ../processorImpl.mpl^
  ../processSubNodes.mpl^
