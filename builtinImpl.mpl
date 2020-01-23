@@ -1631,7 +1631,7 @@ parseSignature: [
           [
             i resultStruct.fields.dataSize < [
               field: i resultStruct.fields.at;
-              field.refToVar isVirtualField [
+              field.refToVar isVirtual [
                 field.refToVar isAutoStruct ["unable to copy virtual autostruct" compilerError] when
               ] [
                 field.refToVar unglobalize

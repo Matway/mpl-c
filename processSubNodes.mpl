@@ -1060,8 +1060,6 @@ usePreInputsWith: [
 
 usePreInputs: [FALSE dynamic usePreInputsWith];
 
-pushOutput: [push];
-
 isImplicitDeref: [
   copy case:;
   case ArgReturnDeref =
@@ -1112,7 +1110,7 @@ applyNamedStackChanges: [
         outputRef markAsAbleToDie
         outputRef @currentNode.@candidatesToDie.pushBack
       ] when
-      outputRef pushOutput
+      outputRef push
       i 1 + @i set TRUE
     ] &&
   ] loop
@@ -1696,7 +1694,7 @@ processIf: [
                   outputRef @currentNode.@candidatesToDie.pushBack
                 ] when
 
-                outputRef pushOutput
+                outputRef push
                 i 1 + @i set TRUE
               ] &&
             ] loop
@@ -1931,7 +1929,7 @@ processDynamicLoop: [
               ] when
 
               i 1 + newNode.outputs.dataSize < [
-                curOutput pushOutput
+                curOutput push
               ] when
               i 1 + @i set TRUE
             ] &&
@@ -2227,7 +2225,7 @@ callImportWith: [
       [
         i outputs.getSize < [
           currentOutput: i outputs.at;
-          currentOutput pushOutput
+          currentOutput push
           i 1 + @i set compilable
         ] &&
       ] loop

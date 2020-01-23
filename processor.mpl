@@ -161,8 +161,6 @@ NameTable:  [
   NameWithOverload @elementConstructor HashTable
 ];
 
-IntTable: [Int32 Int32 HashTable];
-
 MatchingInfo: [{
   inputs: Argument Array;
   preInputs: RefToVar Array;
@@ -318,7 +316,7 @@ Processor: [{
 
   debugInfo: {
     strings:          String Array;
-    locationIds:      IntTable;
+    locationIds:      Int32 Int32 HashTable;
     lastId:           0 dynamic;
     unit:             -1 dynamic;
     unitStringNumber: -1 dynamic;

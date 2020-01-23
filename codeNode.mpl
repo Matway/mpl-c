@@ -673,7 +673,7 @@ makeVirtualVarReal: [
             [
               j struct.fields.dataSize < [
                 srcField: j struct.fields.at;
-                srcField.refToVar isVirtualField not [
+                srcField.refToVar isVirtual not [
                   srcField.refToVar @unfinishedSrc.pushBack
                   dstField: j lastDst getField;
                   dstField @unfinishedDst.pushBack
@@ -712,7 +712,7 @@ makeVirtualVarReal: [
             [
               j struct.fields.dataSize < [
                 srcField: j struct.fields.at;
-                srcField.refToVar isVirtualField not [
+                srcField.refToVar isVirtual not [
                   srcField.refToVar @unfinishedSrc.pushBack
                   dstField: j lastDst getField;
                   dstField @unfinishedDst.pushBack
@@ -769,7 +769,7 @@ makeVarVirtual: [
           [
             j struct.fields.dataSize < [compilable] && [
               curField: j struct.fields.at;
-              curField.refToVar isVirtualField not [
+              curField.refToVar isVirtual not [
                 curField.refToVar @unfinished.pushBack
               ] when
               j 1 + @j set TRUE
@@ -822,7 +822,7 @@ makeVarTreeDirty: [
           j: 0 dynamic;
           [
             j struct.fields.dataSize < [
-              j struct.fields.at.refToVar isVirtualField not [
+              j struct.fields.at.refToVar isVirtual not [
                 j lastRefToVar getField @unfinishedVars.pushBack
               ] when
               j 1 + @j set TRUE
@@ -890,7 +890,7 @@ makeVarTreeDynamicWith: [
         j: 0 dynamic;
         [
           j struct.fields.dataSize < [
-            j struct.fields.at.refToVar isVirtualField not [
+            j struct.fields.at.refToVar isVirtual not [
               j lastRefToVar getField @unfinishedVars.pushBack
             ] when
             j 1 + @j set TRUE
@@ -1786,7 +1786,7 @@ copyOneVarWith: [
     # manually copy only nececcary fields
     dstStruct: Struct;
     srcStruct.fields          @dstStruct.@fields set
-    @dstStruct move owner VarStruct src isVirtualField src isSchema FALSE dynamic createVariableWithVirtual
+    @dstStruct move owner VarStruct src isVirtual src isSchema FALSE dynamic createVariableWithVirtual
     src checkedStaticnessOfVar makeStaticness @dst set
     dstStructAc: VarStruct dst getVar.@data.get.get;
     srcStruct.homogeneous       @dstStructAc.@homogeneous set
@@ -1800,7 +1800,7 @@ copyOneVarWith: [
     srcVar.data.getTag VarInvalid VarEnd [
       copy tag:;
       tag VarStruct = not [
-        tag srcVar.data.get tag src isVirtualField src isSchema FALSE dynamic createVariableWithVirtual
+        tag srcVar.data.get tag src isVirtual src isSchema FALSE dynamic createVariableWithVirtual
         src checkedStaticnessOfVar makeStaticness
         @dst set
       ] when
@@ -2394,7 +2394,7 @@ callAssign: [
               stackSize: currentNode.stack.dataSize copy;
 
               fieldRef getVar.data.getTag VarCode = [
-                curDst isVirtualField [
+                curDst isVirtual [
                   "unable to copy virtual autostruct" compilerError
                 ] [
                   curSrc push

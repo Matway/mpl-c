@@ -182,7 +182,7 @@ getTypeDebugDeclaration: [
             [
               f struct.fields.dataSize < [
                 field: f struct.fields.at;
-                field.refToVar isVirtualField not [
+                field.refToVar isVirtual not [
                   memberInfo: @offset field f addMemberInfo;
                   memberInfo @members.pushBack
                 ] when

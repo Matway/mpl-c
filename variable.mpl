@@ -959,14 +959,6 @@ noMatterToCopy: [
   refToVar isVirtual [refToVar isAutoStruct not] &&
 ];
 
-isVirtualField: [
-  refToVar:;
-
-  var: refToVar getVar;
-  var.staticness Virtual < not
-  [refToVar isVirtualType] ||
-];
-
 isForgotten: [
   refToVar:;
   var: refToVar getVar;
@@ -991,7 +983,7 @@ getVirtualValue: [
       struct.fields [
         pair:;
         pair.index 0 > ["," @result.cat] when
-        pair.value.refToVar isVirtualField not [
+        pair.value.refToVar isVirtual not [
           pair.value.refToVar getVirtualValue @result.cat
         ] when
       ] each
@@ -1252,7 +1244,7 @@ getPlainConstantIR: [
         TRUE @branch.@hasPreField set
       ] when
 
-      fieldi.refToVar isVirtualField [
+      fieldi.refToVar isVirtual [
         -1 @branch.@realFieldIndexes.pushBack
       ] [
         FALSE @branch.@fullVirtual set
