@@ -103,12 +103,11 @@ NodeCaseEmpty:                 [0n8 dynamic];
 NodeCaseCode:                  [1n8 dynamic];
 NodeCaseDtor:                  [2n8 dynamic];
 NodeCaseDeclaration:           [3n8 dynamic];
-NodeCaseDllDeclaration:        [4n8 dynamic];
-NodeCaseCodeRefDeclaration:    [5n8 dynamic];
-NodeCaseExport:                [6n8 dynamic];
-NodeCaseLambda:                [7n8 dynamic];
-NodeCaseList:                  [8n8 dynamic];
-NodeCaseObject:                [9n8 dynamic];
+NodeCaseCodeRefDeclaration:    [4n8 dynamic];
+NodeCaseExport:                [5n8 dynamic];
+NodeCaseLambda:                [6n8 dynamic];
+NodeCaseList:                  [7n8 dynamic];
+NodeCaseObject:                [8n8 dynamic];
 
 NodeStateNew:         [0n8 dynamic];
 NodeStateNoOutput:    [1n8 dynamic]; #after calling NodeStateNew recursion with unknown output, node is uncompilable

@@ -3245,7 +3245,6 @@ makeCompilerPosition: [
 
   isDeclaration:
   currentNode.nodeCase NodeCaseDeclaration =
-  [currentNode.nodeCase NodeCaseDllDeclaration =] ||
   [currentNode.nodeCase NodeCaseCodeRefDeclaration =] ||;
 
   isRealFunction:
@@ -3626,17 +3625,13 @@ makeCompilerPosition: [
     "@" makeStringView         @currentNode.@irName.cat
     @functionName              @currentNode.@irName.cat
 
-    currentNode.nodeCase NodeCaseDllDeclaration = [
-      "declare dllimport " makeStringView   @currentNode.@header.cat
+    currentNode.nodeCase NodeCaseDeclaration = [currentNode.nodeCase NodeCaseCodeRefDeclaration =] || [
+      "declare " makeStringView   @currentNode.@header.cat
     ] [
-      currentNode.nodeCase NodeCaseDeclaration = [currentNode.nodeCase NodeCaseCodeRefDeclaration =] || [
-        "declare " makeStringView   @currentNode.@header.cat
+      currentNode.nodeCase NodeCaseExport = [
+        "define " makeStringView   @currentNode.@header.cat
       ] [
-        currentNode.nodeCase NodeCaseExport = [
-          "define " makeStringView   @currentNode.@header.cat
-        ] [
-          "define internal " makeStringView @currentNode.@header.cat
-        ] if
+        "define internal " makeStringView @currentNode.@header.cat
       ] if
     ] if
 
@@ -3653,20 +3648,14 @@ makeCompilerPosition: [
             prevNode.mplConvention currentNode.mplConvention = not [
               ("node " functionName " was defined with another convention") assembleString compilerError
             ] [
-              currentNode.nodeCase NodeCaseDllDeclaration = [
-                prevNode.nodeCase NodeCaseDllDeclaration = not [
-                  "dublicated dllimport func declaration" compilerError
-                ] when
+              currentNode.nodeCase NodeCaseDeclaration = [
+                TRUE @currentNode.@emptyDeclaration set
               ] [
-                currentNode.nodeCase NodeCaseDeclaration = [
-                  TRUE @currentNode.@emptyDeclaration set
+                prevNode.nodeCase NodeCaseDeclaration = [
+                  TRUE @prevNode.@emptyDeclaration set
+                  indexOfNode @fr.@value set
                 ] [
-                  prevNode.nodeCase NodeCaseDeclaration = [
-                    TRUE @prevNode.@emptyDeclaration set
-                    indexOfNode @fr.@value set
-                  ] [
-                    "dublicated func implementation" compilerError
-                  ] if
+                  "dublicated func implementation" compilerError
                 ] if
               ] if
             ] if

@@ -301,7 +301,6 @@ tryMatchNode: [
   goodReality:
   forceRealFunction not [
     currentMatchingNode.nodeCase NodeCaseDeclaration =
-    [currentMatchingNode.nodeCase NodeCaseDllDeclaration =] ||
     [currentMatchingNode.nodeCase NodeCaseCodeRefDeclaration =] ||
     [currentMatchingNode.nodeCase NodeCaseExport =] ||
     [currentMatchingNode.nodeCase NodeCaseLambda =] ||

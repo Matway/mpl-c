@@ -246,9 +246,7 @@
 
           currentNode.header makeStringView @processorResult.@program.cat
 
-          currentNode.nodeCase NodeCaseDeclaration = [currentNode.nodeCase NodeCaseDllDeclaration =] || [
-            # no body
-          ] [
+          currentNode.nodeCase NodeCaseDeclaration = ~ [
             " {" @processorResult.@program.cat
             LF   @processorResult.@program.cat
 
@@ -261,7 +259,7 @@
               ] if
             ] each
             "}" @processorResult.@program.cat
-          ] if
+          ] when
           LF @processorResult.@program.cat
         ] when
         i 1 + @i set TRUE
