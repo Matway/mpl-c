@@ -115,14 +115,6 @@ getPointerTypeDebugDeclaration: [
   "DW_TAG_pointer_type" makeStringView debugDeclarationIndex processor.options.pointerSize 0ix cast 0 cast addDerivedTypeInfo
 ];
 
-addLinkedLib: [
-  libName:;
-  fr: libName makeStringView @processor.@libNames.find;
-  fr.success not [
-    @libName TRUE @processor.@libNames.insert
-  ] when
-];
-
 addMemberInfo: [
   copy fieldNumber:;
   field:;

@@ -2239,8 +2239,6 @@ callImportWith: [
   ) sequence
 ];
 
-callImport: [RefToVar FALSE dynamic callImportWith];
-
 {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;} () {convention: cdecl;} [
 

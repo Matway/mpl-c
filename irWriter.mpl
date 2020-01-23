@@ -68,25 +68,11 @@ createVarExportIR: [
   refToVar copy
 ];
 
-createAliasIR: [
-  aliaseeType:;
-  aliasee:;
-  alias:;
-  ("  " alias getNameById " = alias " aliaseeType getNameById ", " aliaseeType getNameById "* " aliasee getNameById) assembleString makeInstruction @currentNode.@program.pushBack
-];
-
 createGlobalAliasIR: [
   aliaseeType:;
   aliasee:;
   alias:;
   (alias getNameById " = alias " aliaseeType getNameById ", " aliaseeType getNameById "* " aliasee getNameById) assembleString @processor.@prolog.pushBack
-];
-
-createFuncAliasIR: [
-  aliaseeType:;
-  aliasee:;
-  alias:;
-  (alias " = ifunc " aliaseeType ", " aliaseeType "* " aliasee) assembleString
 ];
 
 createStoreConstant: [

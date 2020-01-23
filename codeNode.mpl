@@ -294,11 +294,6 @@ makeVarString: [
   cnr.refToVar copy
 ];
 
-makeConst: [
-  var:;
-  FALSE dynamic @var.@mutable set
-];
-
 getPointeeForMatching: [
   refToVar:;
   var: refToVar getVar;

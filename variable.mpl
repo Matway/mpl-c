@@ -437,40 +437,6 @@ getDebugType: [
   @result
 ];
 
-deepPrintVar: [
-  refToVar:;
-  hasLogs [
-    unprinted: (RefToVar 0) Array;
-    (refToVar 0) @unprinted.pushBack
-    [
-      unprinted.dataSize 0 > [
-        current: unprinted.last deref;
-        curRef: 0n32 current @;
-        curPad: 1n32 current @;
-        @unprinted.popBack
-        curVar: curRef getVar;
-        curPad [" " stringMemory print] times
-        ("ref is " makeStringView curRef.hostId 0 cast ":" makeStringView curRef.varId 0 cast "; tag=" makeStringView curVar.data.getTag 0 cast) printList printLF
-        curVar.data.getTag VarRef = [
-          (VarRef curVar.data.get curPad 1 +) @unprinted.pushBack
-        ] [
-          curVar.data.getTag VarStruct = [
-            struct: VarStruct curVar.data.get.get;
-            f: 0 dynamic;
-            [
-              f struct.fields.dataSize < [
-                (f struct.fields.at.refToVar curPad 1 +) @unprinted.pushBack
-                f 1 + @f set TRUE
-              ] &&
-            ] loop
-          ] when
-        ] if
-        TRUE
-      ] &&
-    ] loop
-  ] when
-];
-
 staticnessOfVar: [
   refToVar:;
   var: refToVar getVar;
