@@ -1753,8 +1753,6 @@ processIf: [
 
 ];
 
-maxLoopLength: [64 dynamic];
-
 processLoop: [
   astNode:;
   indexArray: AstNodeType.Code astNode.data.get;
@@ -1815,9 +1813,9 @@ processLoop: [
     ] &&
 
     iterationNumber 1 + @iterationNumber set
-    iterationNumber maxLoopLength > [
+    iterationNumber processor.options.staticLoopLengthLimit > [
       TRUE @processorResult.!passErrorThroughPRE
-      "static loop length too big, did you forget to add \"dynamic\"?" makeStringView compilerError
+      ("Static loop length limit (" processor.options.staticLoopLengthLimit ") exceeded. Dynamize loop or increase limit using -static_loop_lenght_limit option") assembleString compilerError
     ] when
 
     compilable and
@@ -1981,7 +1979,7 @@ processDynamicLoop: [
 
           newNodeIndex deleteNode
 
-          iterationNumber maxLoopLength > [
+          iterationNumber processor.options.staticLoopLengthLimit > [
             "loop dynamisation iteration count so big" compilerError
           ] when
         ] when

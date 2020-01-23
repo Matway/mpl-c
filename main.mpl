@@ -10,20 +10,23 @@
 printInfo: [
   "USAGE: mplc.exe [options] <inputs>" print LF print
   "OPTIONS:" print LF print
-  "  -32bits             Set 32-bit mode, default mode is 64-bit" print LF print
-  "  -64bits             Set 64-bit mode, default mode is 64-bit" print LF print
-  "  -D <name[ =value]>  Define global name with value, default value is ()" print LF print
-  "  -array_checks 0|1   Turn off/on array index checks, by default it is on in debug mode and off in release mode" print LF print
-  "  -auto_recursion     Make all code block recursive-by-default" print LF print
-  "  -call_trace         Generate information about call trace" print LF print
-  "  -dynalit            Number literals are dynamic constants, which are not used in analysis; default mode is static literals" print LF print
-  "  -linker_option      Add linker option for LLVM" print LF print
-  "  -logs               Value of \"HAS_LOGS\" constant in code turn to TRUE" print LF print
-  "  -ndebug             Disable debug info; value of \"DEBUG\" constant in code turn to FALSE" print LF print
-  "  -o <file>           Write output to <file>, default output file is \"mpl.ll\"" print LF print
-  "  -statlit            Number literals are static constants, which are used in analysis; default mode is static literals" print LF print
-  "  -verbose_ir         Print information about current token in IR" print LF print
-  "  -version            Print compiler version while compiling" print LF print
+  "  -32bits                             Set 32-bit mode, default mode is 64-bit" print LF print
+  "  -64bits                             Set 64-bit mode, default mode is 64-bit" print LF print
+  "  -D <name[ =value]>                  Define global name with value, default value is ()" print LF print
+  "  -array_checks 0|1                   Turn off/on array index checks, by default it is on in debug mode and off in release mode" print LF print
+  "  -auto_recursion                     Make all code block recursive-by-default" print LF print
+  "  -call_trace                         Generate information about call trace" print LF print
+  "  -dynalit                            Number literals are dynamic constants, which are not used in analysis; default mode is static literals" print LF print
+  "  -linker_option                      Add linker option for LLVM" print LF print
+  "  -logs                               Value of \"HAS_LOGS\" constant in code turn to TRUE" print LF print
+  "  -ndebug                             Disable debug info; value of \"DEBUG\" constant in code turn to FALSE" print LF print
+  "  -o <file>                           Write output to <file>, default output file is \"mpl.ll\"" print LF print
+  "  -pre_recursion_depth_limit <number> Set PRE recursion depth limit, default value is " print DEFAULT_PRE_RECURSION_DEPTH_LIMIT print LF print
+  "  -recursion_depth_limit <number>     Set recursion depth limit, default value is " print DEFAULT_RECURSION_DEPTH_LIMIT print LF print
+  "  -static_loop_length_limit <number>  Set static loop length limit, default value is " print DEFAULT_STATIC_LOOP_LENGTH_LIMIT print LF print
+  "  -statlit                            Number literals are static constants, which are used in analysis; default mode is static literals" print LF print
+  "  -verbose_ir                         Print information about current token in IR" print LF print
+  "  -version                            Print compiler version while compiling" print LF print
   FALSE @success set
 ];
 
@@ -73,6 +76,60 @@ createDefinition: [
   ] if
 ];
 
+parseIntegerOption: [
+  text:;
+  result: {
+    error: "" toString;
+    value: 0;
+  };
+
+  (
+    [result.error "" =]
+    [
+      splitResult: text makeStringView.split;
+      splitResult.success ~ [
+        "value is not value UTF-8 sequence" toString @result.!error
+      ] when
+    ]
+    [
+      codepoints: splitResult.chars;
+      codepoints.getSize 0 = [
+        "value is empty" toString @result.!error
+      ] when
+    ]
+    [
+      codepointIndex: 0;
+      [result.error "" = [codepointIndex codepoints.getSize <] &&] [
+        codepoint: codepointIndex codepoints @;
+        asciiCode: codepoint.dataBegin Nat32 cast;
+        asciiCode (
+          [code:; asciiCode ascii.zero < [asciiCode ascii.nine >] ||] ["value has non-digit character" toString @result.!error]
+          [code:; code ascii.zero = [codepointIndex 0 =] && [codepoints.getSize 1 >] &&] ["value has leading zeros" toString @result.!error]
+          [
+            digit: asciiCode ascii.zero - Int32 cast;
+            result.value 10 * digit + @result.@value set
+          ]
+        ) cond
+
+        codepointIndex 1 + !codepointIndex
+      ] while
+    ]
+  ) sequence
+
+  result
+];
+
+processIntegerOption: [
+  text:option:;;
+  parserResult: text parseIntegerOption;
+  parserResult.error "" = ~ [
+    ("Invalid argument value: " text ", " parserResult.error LF) printList
+    FALSE !success
+  ] [
+    parserResult.value @option set
+  ] if
+];
+
 {argc: 0; argv: 0nx;} 0 {convention: cdecl;} [
   ("Start mplc compiler") addLog
   [
@@ -81,12 +138,16 @@ createDefinition: [
 
     success: TRUE dynamic;
 
-    OPT_ANY:                [0 dynamic];
-    OPT_OUTPUT_FILE_NAME:   [1 dynamic];
-    OPT_LINKER_OPTION:      [3 dynamic];
-    OPT_DEFINITION:         [4 dynamic];
-    OPT_ARRAY_CHECK:        [5 dynamic];
-    OPT_CALL_TRACE:         [6 dynamic];
+    OPT_ANY:                       [0 dynamic];
+    OPT_OUTPUT_FILE_NAME:          [1 dynamic];
+    OPT_LINKER_OPTION:             [3 dynamic];
+    OPT_DEFINITION:                [4 dynamic];
+    OPT_ARRAY_CHECK:               [5 dynamic];
+    OPT_CALL_TRACE:                [6 dynamic];
+    OPT_RECURSION_DEPTH_LIMIT:     [7 dynamic];
+    OPT_PRE_RECURSION_DEPTH_LIMIT: [8 dynamic];
+    OPT_STATIC_LOOP_LENGTH_LIMIT:  [9 dynamic];
+
     nextOption: OPT_ANY;
 
     options: ProcessorOptions;
@@ -124,20 +185,23 @@ createDefinition: [
               nextOption (
                 OPT_ANY [
                   option (
-                    "-auto_recursion" [TRUE              @options.!autoRecursion]
-                    "-ndebug"         [FALSE             @options.!debug]
-                    "-logs"           [TRUE              @options.!logs]
-                    "-statlit"        [TRUE              @options.!staticLiterals]
-                    "-dynalit"        [FALSE             @options.!staticLiterals]
-                    "-32bits"         [32nx              @options.!pointerSize]
-                    "-64bits"         [64nx              @options.!pointerSize]
-                    "-verbose_ir"     [TRUE              @options.!verboseIR]
-                    "-version"        [TRUE                 !hasVersion]
-                    "-linker_option"  [OPT_LINKER_OPTION    !nextOption]
-                    "-o"              [OPT_OUTPUT_FILE_NAME !nextOption]
-                    "-D"              [OPT_DEFINITION       !nextOption]
-                    "-array_checks"   [OPT_ARRAY_CHECK      !nextOption]
-                    "-call_trace"     [OPT_CALL_TRACE       !nextOption]
+                    "-auto_recursion"            [TRUE              @options.!autoRecursion]
+                    "-ndebug"                    [FALSE             @options.!debug]
+                    "-logs"                      [TRUE              @options.!logs]
+                    "-statlit"                   [TRUE              @options.!staticLiterals]
+                    "-dynalit"                   [FALSE             @options.!staticLiterals]
+                    "-32bits"                    [32nx              @options.!pointerSize]
+                    "-64bits"                    [64nx              @options.!pointerSize]
+                    "-verbose_ir"                [TRUE              @options.!verboseIR]
+                    "-version"                   [TRUE                          !hasVersion]
+                    "-linker_option"             [OPT_LINKER_OPTION             !nextOption]
+                    "-o"                         [OPT_OUTPUT_FILE_NAME          !nextOption]
+                    "-D"                         [OPT_DEFINITION                !nextOption]
+                    "-array_checks"              [OPT_ARRAY_CHECK               !nextOption]
+                    "-call_trace"                [OPT_CALL_TRACE                !nextOption]
+                    "-pre_recursion_depth_limit" [OPT_PRE_RECURSION_DEPTH_LIMIT !nextOption]
+                    "-recursion_depth_limit"     [OPT_RECURSION_DEPTH_LIMIT     !nextOption]
+                    "-static_loop_length_limit"  [OPT_STATIC_LOOP_LENGTH_LIMIT  !nextOption]
                     [
                       0 splittedOption.chars.at "-" = [
                         "Invalid argument: " print option print LF print
@@ -152,15 +216,15 @@ createDefinition: [
                   option toString @outputFileName set
                   OPT_ANY !nextOption
                 ]
-                OPT_LINKER_OPTION   [
+                OPT_LINKER_OPTION [
                   option toString @options.@linkerOptions.pushBack
                   OPT_ANY !nextOption
                 ]
-                OPT_DEFINITION     [
+                OPT_DEFINITION [
                   splittedOption createDefinition
                   OPT_ANY !nextOption
                 ]
-                OPT_ARRAY_CHECK     [
+                OPT_ARRAY_CHECK [
                   option (
                     "0"   [0 @forceArrayChecks set]
                     "1"   [1 @forceArrayChecks set]
@@ -171,7 +235,7 @@ createDefinition: [
                   ) case
                   OPT_ANY !nextOption
                 ]
-                OPT_CALL_TRACE     [
+                OPT_CALL_TRACE [
                   option (
                     "0"   [0 @forceCallTrace set]
                     "1"   [1 @forceCallTrace set]
@@ -181,6 +245,18 @@ createDefinition: [
                       FALSE @success set
                     ]
                   ) case
+                  OPT_ANY !nextOption
+                ]
+                OPT_RECURSION_DEPTH_LIMIT [
+                  option @options.@recursionDepthLimit processIntegerOption
+                  OPT_ANY !nextOption
+                ]
+                OPT_PRE_RECURSION_DEPTH_LIMIT [
+                  option @options.@preRecursionDepthLimit processIntegerOption
+                  OPT_ANY !nextOption
+                ]
+                OPT_STATIC_LOOP_LENGTH_LIMIT [
+                  option @options.@staticLoopLengthLimit processIntegerOption
                   OPT_ANY !nextOption
                 ]
                 []
