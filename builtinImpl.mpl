@@ -663,6 +663,7 @@ mplBuiltinProcessAtList: [
 [
   field: mplBuiltinProcessAtList;
   compilable [
+    field isVirtual [field makeVirtualVarReal @field set] when
     field derefAndPush
   ] when
 ] "mplBuiltinAt" @declareBuiltin ucall
