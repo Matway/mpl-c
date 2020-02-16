@@ -115,14 +115,6 @@ getPointerTypeDebugDeclaration: [
   "DW_TAG_pointer_type" makeStringView debugDeclarationIndex processor.options.pointerSize 0ix cast 0 cast addDerivedTypeInfo
 ];
 
-addLinkedLib: [
-  libName:;
-  fr: libName makeStringView @processor.@libNames.find;
-  fr.success not [
-    @libName TRUE @processor.@libNames.insert
-  ] when
-];
-
 addMemberInfo: [
   copy fieldNumber:;
   field:;
@@ -182,7 +174,7 @@ getTypeDebugDeclaration: [
             [
               f struct.fields.dataSize < [
                 field: f struct.fields.at;
-                field.refToVar isVirtualField not [
+                field.refToVar isVirtual not [
                   memberInfo: @offset field f addMemberInfo;
                   memberInfo @members.pushBack
                 ] when

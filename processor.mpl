@@ -97,18 +97,15 @@ IndexInfo: [{
   index: -1 dynamic;
 }];
 
-IndexInfoArray: [IndexInfo Array];
-
 NodeCaseEmpty:                 [0n8 dynamic];
 NodeCaseCode:                  [1n8 dynamic];
 NodeCaseDtor:                  [2n8 dynamic];
 NodeCaseDeclaration:           [3n8 dynamic];
-NodeCaseDllDeclaration:        [4n8 dynamic];
-NodeCaseCodeRefDeclaration:    [5n8 dynamic];
-NodeCaseExport:                [6n8 dynamic];
-NodeCaseLambda:                [7n8 dynamic];
-NodeCaseList:                  [8n8 dynamic];
-NodeCaseObject:                [9n8 dynamic];
+NodeCaseCodeRefDeclaration:    [4n8 dynamic];
+NodeCaseExport:                [5n8 dynamic];
+NodeCaseLambda:                [6n8 dynamic];
+NodeCaseList:                  [7n8 dynamic];
+NodeCaseObject:                [8n8 dynamic];
 
 NodeStateNew:         [0n8 dynamic];
 NodeStateNoOutput:    [1n8 dynamic]; #after calling NodeStateNew recursion with unknown output, node is uncompilable
@@ -121,11 +118,6 @@ NodeRecursionStateFail:     [1n8 dynamic];
 NodeRecursionStateNew:      [2n8 dynamic];
 NodeRecursionStateOld:      [3n8 dynamic];
 NodeRecursionStateFailDone: [4n8 dynamic];
-
-CaptureNameResult: [{
-  refToVar: RefToVar;
-  object: RefToVar;
-}];
 
 NameWithOverload: [{
   virtual NAME_WITH_OVERLOAD: ();
@@ -156,13 +148,6 @@ hash: ["NAME_WITH_OVERLOAD" has] [
 RefToVarTable: [
   RefToVar RefToVar HashTable
 ];
-
-NameTable:  [
-  elementConstructor:;
-  NameWithOverload @elementConstructor HashTable
-];
-
-IntTable: [Int32 Int32 HashTable];
 
 MatchingInfo: [{
   inputs: Argument Array;
@@ -319,7 +304,7 @@ Processor: [{
 
   debugInfo: {
     strings:          String Array;
-    locationIds:      IntTable;
+    locationIds:      Int32 Int32 HashTable;
     lastId:           0 dynamic;
     unit:             -1 dynamic;
     unitStringNumber: -1 dynamic;

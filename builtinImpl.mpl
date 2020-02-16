@@ -513,24 +513,7 @@ mplShiftBinaryOp: [
   [t2:; t1:; t1 isNat ["lshr" makeStringView]["ashr" makeStringView] if][rshift] mplShiftBinaryOp
 ] "mplBuiltinRShift" @declareBuiltin ucall
 
-[TRUE defaultRef] "mplBuiltinRef" @declareBuiltin ucall
-[FALSE defaultRef] "mplBuiltinCref" @declareBuiltin ucall
 [TRUE defaultMakeConstWith] "mplBuiltinConst" @declareBuiltin ucall
-
-[
-  refToVar: pop;
-  compilable [
-    refToVar getVar.data.getTag VarRef = [
-      refToVar isSchema [
-        "can not deref virtual-reference" makeStringView compilerError
-      ] [
-        refToVar getPointee push
-      ] if
-    ] [
-      "not a reference" makeStringView compilerError
-    ] if
-  ] when
-] "mplBuiltinDeref" @declareBuiltin ucall
 
 [
   defaultCall
@@ -1648,7 +1631,7 @@ parseSignature: [
           [
             i resultStruct.fields.dataSize < [
               field: i resultStruct.fields.at;
-              field.refToVar isVirtualField [
+              field.refToVar isVirtual [
                 field.refToVar isAutoStruct ["unable to copy virtual autostruct" compilerError] when
               ] [
                 field.refToVar unglobalize

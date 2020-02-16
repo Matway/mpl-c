@@ -294,11 +294,6 @@ makeVarString: [
   cnr.refToVar copy
 ];
 
-makeConst: [
-  var:;
-  FALSE dynamic @var.@mutable set
-];
-
 getPointeeForMatching: [
   refToVar:;
   var: refToVar getVar;
@@ -673,7 +668,7 @@ makeVirtualVarReal: [
             [
               j struct.fields.dataSize < [
                 srcField: j struct.fields.at;
-                srcField.refToVar isVirtualField not [
+                srcField.refToVar isVirtual not [
                   srcField.refToVar @unfinishedSrc.pushBack
                   dstField: j lastDst getField;
                   dstField @unfinishedDst.pushBack
@@ -712,7 +707,7 @@ makeVirtualVarReal: [
             [
               j struct.fields.dataSize < [
                 srcField: j struct.fields.at;
-                srcField.refToVar isVirtualField not [
+                srcField.refToVar isVirtual not [
                   srcField.refToVar @unfinishedSrc.pushBack
                   dstField: j lastDst getField;
                   dstField @unfinishedDst.pushBack
@@ -769,7 +764,7 @@ makeVarVirtual: [
           [
             j struct.fields.dataSize < [compilable] && [
               curField: j struct.fields.at;
-              curField.refToVar isVirtualField not [
+              curField.refToVar isVirtual not [
                 curField.refToVar @unfinished.pushBack
               ] when
               j 1 + @j set TRUE
@@ -822,7 +817,7 @@ makeVarTreeDirty: [
           j: 0 dynamic;
           [
             j struct.fields.dataSize < [
-              j struct.fields.at.refToVar isVirtualField not [
+              j struct.fields.at.refToVar isVirtual not [
                 j lastRefToVar getField @unfinishedVars.pushBack
               ] when
               j 1 + @j set TRUE
@@ -890,7 +885,7 @@ makeVarTreeDynamicWith: [
         j: 0 dynamic;
         [
           j struct.fields.dataSize < [
-            j struct.fields.at.refToVar isVirtualField not [
+            j struct.fields.at.refToVar isVirtual not [
               j lastRefToVar getField @unfinishedVars.pushBack
             ] when
             j 1 + @j set TRUE
@@ -1786,7 +1781,7 @@ copyOneVarWith: [
     # manually copy only nececcary fields
     dstStruct: Struct;
     srcStruct.fields          @dstStruct.@fields set
-    @dstStruct move owner VarStruct src isVirtualField src isSchema FALSE dynamic createVariableWithVirtual
+    @dstStruct move owner VarStruct src isVirtual src isSchema FALSE dynamic createVariableWithVirtual
     src checkedStaticnessOfVar makeStaticness @dst set
     dstStructAc: VarStruct dst getVar.@data.get.get;
     srcStruct.homogeneous       @dstStructAc.@homogeneous set
@@ -1800,7 +1795,7 @@ copyOneVarWith: [
     srcVar.data.getTag VarInvalid VarEnd [
       copy tag:;
       tag VarStruct = not [
-        tag srcVar.data.get tag src isVirtualField src isSchema FALSE dynamic createVariableWithVirtual
+        tag srcVar.data.get tag src isVirtual src isSchema FALSE dynamic createVariableWithVirtual
         src checkedStaticnessOfVar makeStaticness
         @dst set
       ] when
@@ -2394,7 +2389,7 @@ callAssign: [
               stackSize: currentNode.stack.dataSize copy;
 
               fieldRef getVar.data.getTag VarCode = [
-                curDst isVirtualField [
+                curDst isVirtual [
                   "unable to copy virtual autostruct" compilerError
                 ] [
                   curSrc push
@@ -3245,7 +3240,6 @@ makeCompilerPosition: [
 
   isDeclaration:
   currentNode.nodeCase NodeCaseDeclaration =
-  [currentNode.nodeCase NodeCaseDllDeclaration =] ||
   [currentNode.nodeCase NodeCaseCodeRefDeclaration =] ||;
 
   isRealFunction:
@@ -3626,17 +3620,13 @@ makeCompilerPosition: [
     "@" makeStringView         @currentNode.@irName.cat
     @functionName              @currentNode.@irName.cat
 
-    currentNode.nodeCase NodeCaseDllDeclaration = [
-      "declare dllimport " makeStringView   @currentNode.@header.cat
+    currentNode.nodeCase NodeCaseDeclaration = [currentNode.nodeCase NodeCaseCodeRefDeclaration =] || [
+      "declare " makeStringView   @currentNode.@header.cat
     ] [
-      currentNode.nodeCase NodeCaseDeclaration = [currentNode.nodeCase NodeCaseCodeRefDeclaration =] || [
-        "declare " makeStringView   @currentNode.@header.cat
+      currentNode.nodeCase NodeCaseExport = [
+        "define " makeStringView   @currentNode.@header.cat
       ] [
-        currentNode.nodeCase NodeCaseExport = [
-          "define " makeStringView   @currentNode.@header.cat
-        ] [
-          "define internal " makeStringView @currentNode.@header.cat
-        ] if
+        "define internal " makeStringView @currentNode.@header.cat
       ] if
     ] if
 
@@ -3653,20 +3643,14 @@ makeCompilerPosition: [
             prevNode.mplConvention currentNode.mplConvention = not [
               ("node " functionName " was defined with another convention") assembleString compilerError
             ] [
-              currentNode.nodeCase NodeCaseDllDeclaration = [
-                prevNode.nodeCase NodeCaseDllDeclaration = not [
-                  "dublicated dllimport func declaration" compilerError
-                ] when
+              currentNode.nodeCase NodeCaseDeclaration = [
+                TRUE @currentNode.@emptyDeclaration set
               ] [
-                currentNode.nodeCase NodeCaseDeclaration = [
-                  TRUE @currentNode.@emptyDeclaration set
+                prevNode.nodeCase NodeCaseDeclaration = [
+                  TRUE @prevNode.@emptyDeclaration set
+                  indexOfNode @fr.@value set
                 ] [
-                  prevNode.nodeCase NodeCaseDeclaration = [
-                    TRUE @prevNode.@emptyDeclaration set
-                    indexOfNode @fr.@value set
-                  ] [
-                    "dublicated func implementation" compilerError
-                  ] if
+                  "dublicated func implementation" compilerError
                 ] if
               ] if
             ] if
