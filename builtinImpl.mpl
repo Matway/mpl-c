@@ -1240,20 +1240,23 @@ parseSignature: [
 
 [
   refToName: pop;
-  compilable [
-    refToName staticnessOfVar Weak < [
-      result: 0n64 VarNatX createVariable Dynamic makeStaticness createAllocIR;
-      refToName result createGetTextSizeIR
-      result push
-    ] [
+  (
+    [compilable]
+    [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be string" compilerError] when
-      compilable [
+      varName.data.getTag VarString = not ["argument must be string" compilerError] when
+    ]
+    [
+      refToName staticnessOfVar Weak < [
+        result: 0n64 VarNatX createVariable Dynamic makeStaticness createAllocIR;
+        refToName result createGetTextSizeIR
+        result push
+      ] [
         string: VarString varName.data.get;
         string.getTextSize 0i64 cast 0n64 cast VarNatX createVariable Static makeStaticness createPlainIR push
-      ] when
-    ] if
-  ] when
+      ] if
+    ]
+  ) sequence
 ] "mplBuiltinTextSize" @declareBuiltin ucall
 
 [
