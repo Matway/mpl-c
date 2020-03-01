@@ -21,19 +21,36 @@ defaultCall: [
   refToVar: pop;
   compilable [
     var: refToVar getVar;
-    var.data.getTag VarCode = [
-      VarCode var.data.get.index "call" makeStringView processCall
-    ] [
-      var.data.getTag VarImport = [
+    var.data.getTag  (
+      [VarCode =] [
+        VarCode var.data.get.index "call" makeStringView processCall
+      ]
+      [VarImport =] [
         refToVar processFuncPtr
-      ] [
-        refToVar isCallable [
-          RefToVar refToVar "call" makeStringView callCallableStruct # call struct with INVALID object
-        ] [
-          "not callable" makeStringView compilerError
-        ] if
-      ] if
-    ] if
+      ]
+      [VarString =] [
+        (
+          [compilable]
+          [refToVar staticnessOfVar Weak < ["name must be a static string" compilerError] when]
+          [
+            nameInfo: VarString var.data.get findNameInfo;
+            getNameResult: nameInfo getName;
+            nameInfo getNameResult checkFailedName
+            captureNameResult: getNameResult captureName;
+            refToName: captureNameResult.refToVar copy;
+          ]
+          [
+            captureNameResult.object refToName 0 nameInfo pushName
+          ]
+        ) sequence
+      ]
+      [drop refToVar isCallable] [
+        RefToVar refToVar "call" makeStringView callCallableStruct # call struct with INVALID object
+      ]
+      [
+        "not callable" makeStringView compilerError
+      ]
+    ) cond
   ] when
 ];
 

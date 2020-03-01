@@ -520,6 +520,24 @@ mplShiftBinaryOp: [
 ] "mplBuiltinCall" @declareBuiltin ucall
 
 [
+  (
+    [compilable]
+    [refToName: pop;]
+    [
+      refToName staticnessOfVar Weak < ["method name must be a static string" compilerError] when
+    ]
+    [
+      varName: refToName getVar;
+      varName.data.getTag VarString = not ["method name must be a static string" compilerError] when
+    ]
+    [
+      fieldNameInfo: VarString varName.data.get findNameInfo;
+      fieldNameInfo pop 0 processMember
+    ]
+  ) sequence
+] "mplBuiltinCallField" @declareBuiltin ucall
+
+[
   code: pop;
 
   compilable [
@@ -1684,7 +1702,7 @@ parseSignature: [
 
   varLine             3 @struct.@fields.at.@refToVar set
   "line" findNameInfo 3 @struct.@fields.at.@nameInfo set
-  
+
   varColumn             4 @struct.@fields.at.@refToVar set
   "column" findNameInfo 4 @struct.@fields.at.@nameInfo set
 
