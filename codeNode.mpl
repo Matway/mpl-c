@@ -2201,11 +2201,11 @@ processStaticAt: [
 processMember: [
   copy read:;
   copy refToStruct:;
-  data:;
+  nameInfo:;
 
   compilable [
     fieldError: [
-      (refToStruct getMplType " has no field " data.name) assembleString compilerError
+      (refToStruct getMplType " has no field " nameInfo processor.nameInfos.at.name) assembleString compilerError
     ];
 
     refToStruct isSchema [
@@ -2216,7 +2216,7 @@ processMember: [
         pointee: VarRef structVar.data.get;
         pointeeVar: pointee getVar;
         pointeeVar.data.getTag VarStruct = [
-          fr: data.nameInfo pointee findField;
+          fr: nameInfo pointee findField;
           fr.success [
             index: fr.index copy;
             field: index 0 cast VarStruct pointeeVar.data.get.get.fields.at.refToVar;
@@ -2233,11 +2233,11 @@ processMember: [
       ] if
     ] [
       refToStruct getVar.data.getTag VarStruct = [
-        fr: data.nameInfo refToStruct findField;
+        fr: nameInfo refToStruct findField;
         fr.success [
           index: fr.index copy;
           fieldRef: index refToStruct processStaticAt;
-          refToStruct fieldRef read data.nameInfo pushName # let it be marker about field
+          refToStruct fieldRef read nameInfo pushName # let it be marker about field
         ] [
           fieldError
         ] if
@@ -2248,9 +2248,9 @@ processMember: [
   ] when
 ];
 
-processNameMemberNode: [pop 0 dynamic processMember];
-processNameReadMemberNode: [pop 1 dynamic processMember];
-processNameWriteMemberNode: [pop -1 dynamic processMember];
+processNameMemberNode: [.nameInfo pop 0 dynamic processMember];
+processNameReadMemberNode: [.nameInfo pop 1 dynamic processMember];
+processNameWriteMemberNode: [.nameInfo  pop -1 dynamic processMember];
 
 processStringNode: [makeVarString push];
 processInt8Node:   [makeVarInt8   push];

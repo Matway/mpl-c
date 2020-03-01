@@ -22,6 +22,7 @@ builtins: (
   {name: "and"                     ; impl: @mplBuiltinAnd                     ;}
   {name: "array"                   ; impl: @mplBuiltinArray                   ;}
   {name: "call"                    ; impl: @mplBuiltinCall                    ;}
+  {name: "callField"               ; impl: @mplBuiltinCallField               ;}
   {name: "cast"                    ; impl: @mplBuiltinCast                    ;}
   {name: "ceil"                    ; impl: @mplBuiltinCeil                    ;}
   {name: "codeRef"                 ; impl: @mplBuiltinCodeRef                 ;}
