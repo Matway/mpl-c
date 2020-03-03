@@ -8,12 +8,11 @@ extractClearPath: [
       position: 0;
       lastPosition: -1;
 
-      splittedPath.chars [
-        pair:;
-        pair.value "\\" = pair.value "/" = or [
-          pair.index @lastPosition set
+      splittedPath.chars.getSize [
+        i splittedPath.chars @ "\\" = i splittedPath.chars @ "/" = or [
+          i @lastPosition set
         ] when
-      ] each
+      ] times
 
       position lastPosition 1 + splittedPath.chars makeSubRange assembleString
     ] [
@@ -39,10 +38,10 @@ simplifyPath: [
         isBack: [".." =];
 
         splittedPath.chars [
-          pair:;
+          char:;
           lastFragment: @fragments.last;
 
-          pair.value "\\" = pair.value "/" = or [  # slash
+          char "\\" = char "/" = or [  # slash
             lastFragment textSize 0nx > [
 
               lastFragment isCurrent [ @fragments.popBack ] when
@@ -57,20 +56,18 @@ simplifyPath: [
               String @fragments.pushBack
             ] when
           ] [
-            pair.value @lastFragment.cat
+            char @lastFragment.cat
           ] if
         ] each
 
-        fragments [
-          pair:;
-          i: pair.index copy;
+        fragments.getSize [
           i 1 + fragments.dataSize < [
             i 0 > ["/" @resultPath.cat] when
-            pair.value @resultPath.cat
+            i fragments @ @resultPath.cat
           ] [
-            pair.value @resultFileName.cat
+            i fragments @ @resultFileName.cat
           ] if
-        ] each
+        ] times
       ] when
 
       @resultPath

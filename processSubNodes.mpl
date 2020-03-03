@@ -1119,7 +1119,7 @@ applyNamedStackChanges: [
     inputs outputs newNode forcedName makeNamedCallInstruction
 
     implicitDerefInfo: Cond Array;
-    newNode.outputs [.value.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
+    newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
     implicitDerefInfo appliedVars.fixedOutputs.getSize derefNEntries
   ] when
 ];
@@ -1308,7 +1308,7 @@ processCallByNode: [
     currentNode.parent 0 = [nodeCase NodeCaseList = nodeCase NodeCaseObject = or] && [newNode.matchingInfo.inputs.getSize 0 =] && [newNode.outputs.getSize 1 =] && [
       realCapturesCount: 0;
       newNode.matchingInfo.captures [
-        capture: .value;
+        capture:;
         capture.refToVar.hostId 0 < ~ [
           capture.refToVar isVirtual not [realCapturesCount 1 + @realCapturesCount set] when
         ] when
@@ -1962,7 +1962,7 @@ processDynamicLoop: [
           nodeInputs outputs newNode makeCallInstruction
 
           implicitDerefInfo: Cond Array;
-          newNode.outputs [.value.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
+          newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
           implicitDerefInfo outputs.getSize 1 - derefNEntries
           processor.options.verboseIR ["loop end prepare..." makeStringView createComent] when
           1 outputs.last createBranch
@@ -2014,9 +2014,8 @@ processDynamicLoop: [
   ("process export: " makeStringView name makeStringView) addLog
 
   # we dont know count of used in export entites
-  signature.inputs [
-    pair:;
-    r: signature.inputs.getSize 1 - pair.index - signature.inputs.at copyVarFromChild;
+  signature.inputs.getSize [
+    r: signature.inputs.getSize 1 - i - signature.inputs.at copyVarFromChild;
     r makeVarTreeDynamic
     r unglobalize
     r fullUntemporize
@@ -2026,7 +2025,7 @@ processDynamicLoop: [
       FALSE @r.@mutable set
       r push
     ] if
-  ] each
+  ] times
 
   oldSuccess: compilable;
   oldRecursiveNodesStackSize: processor.recursiveNodesStack.getSize;
@@ -2055,23 +2054,22 @@ processDynamicLoop: [
 
     compilable [
       newNode.captureNames [
-        currentCaptureName: .value;
+        currentCaptureName:;
         currentCaptureName.startPoint indexOfNode = not [
           fr: currentCaptureName.startPoint @currentNode.@usedModulesTable.find;
           fr.success [TRUE @fr.@value.@used set] when
         ] when
       ] each
 
-      signature.outputs [
-        pair:;
-        currentInNode: pair.index newNode.outputs.at.refToVar;
-        currentInSignature: pair.value;
+      signature.outputs.getSize [
+        currentInNode: i newNode.outputs.at.refToVar;
+        currentInSignature: i signature.outputs @;
 
         currentInNode currentInSignature variablesAreSame not [
           ("export function output mismatch, expected " currentInSignature getMplType ";" LF
             "but found " currentInNode getMplType) assembleString compilerError
         ] when
-      ] each
+      ] times
     ] when
   ] when
 
@@ -2111,13 +2109,12 @@ processDynamicLoop: [
   asCodeRef [NodeCaseCodeRefDeclaration][NodeCaseDeclaration] if @declarationNode.@nodeCase set
   signature.variadic @declarationNode.@variadic set
 
-  signature.inputs [
-    pair:;
-    r: signature.inputs.getSize 1 - pair.index - signature.inputs.at copyVarFromChild;
+  signature.inputs.getSize [
+    r: signature.inputs.getSize 1 - i - signature.inputs.at copyVarFromChild;
     r unglobalize
     FALSE @r.@mutable set
     r push
-  ] each
+  ] times
 
   [
     curPosition: currentNode.position;
@@ -2131,7 +2128,7 @@ processDynamicLoop: [
       addDebugReserve @currentNode.@funcDbgIndex set
     ] when
     forcedSignature.inputs   [p:; a: pop;] each
-    forcedSignature.outputs [.value copyVarFromChild push] each
+    forcedSignature.outputs [copyVarFromChild push] each
     name finalizeCodeNode
   ] call
 
@@ -2194,11 +2191,10 @@ callImportWith: [
             varargs.data.getTag VarStruct = not ["varargs must be a struct" compilerError] when
           ] [
             varStruct: VarStruct varargs.data.get.get;
-            varStruct.fields [
-              pair:;
-              field: pair.index refToVarargs processStaticAt;
+            varStruct.fields.getSize [
+              field: i refToVarargs processStaticAt;
               field @inputs.pushBack
-            ] each
+            ] times
           ]
         ) sequence
       ] when
@@ -2232,7 +2228,7 @@ callImportWith: [
     ] [
       implicitDerefInfo: Cond Array;
       outputs [
-        .value getVar.data.getTag VarRef = @implicitDerefInfo.pushBack
+        getVar.data.getTag VarRef = @implicitDerefInfo.pushBack
       ] each
       implicitDerefInfo outputs.getSize derefNEntries
     ]

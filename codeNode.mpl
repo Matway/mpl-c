@@ -2551,7 +2551,7 @@ addNamesFromModule: [
 
     moduleNode: moduleId processor.nodes.at.get;
     moduleNode.labelNames [
-      current: .value;
+      current:;
       current.nameInfo current.refToVar addOverloadForPre
       current.nameInfo current.refToVar NameCaseFromModule addNameInfo #it is not own local variable
     ] each
@@ -2566,10 +2566,9 @@ processUseModule: [
   moduleList: currentModule.includedModules copy;
   moduleId @moduleList.pushBack
 
-  moduleList [
-    pair:;
-    current: pair.value;
-    last: pair.index moduleList.getSize 1 - =;
+  moduleList.getSize [
+    current: i moduleList @;
+    last: i moduleList.getSize 1 - =;
 
     asUse [last copy] && [
       current {used: FALSE dynamic; position: currentNode.position copy;} @currentNode.@usedModulesTable.insert
@@ -2586,7 +2585,7 @@ processUseModule: [
         current addNamesFromModule
       ] when
     ] if
-  ] each
+  ] times
 ];
 
 finalizeListNode: [
@@ -2682,7 +2681,7 @@ finalizeObjectNode: [
 unregCodeNodeNames: [
   unregisterNamesIn: [
     [
-      nameWithOverload: .value;
+      nameWithOverload:;
       nameWithOverload.nameOverload nameWithOverload.nameInfo deleteNameInfoWithOverload
     ] each
   ];
@@ -2695,7 +2694,7 @@ unregCodeNodeNames: [
   @currentNode.@fieldCaptureNames.release
 
   currentNode.capturedVars [
-    curVar: .value getVar;
+    curVar: getVar;
     curVar.capturedPrev curVar.capturedHead getVar.@capturedTail set # head->prev of tail
   ] each
 
@@ -3215,7 +3214,7 @@ makeCompilerPosition: [
       ] loop
 
       currentNode.candidatesToDie [
-        refToVar: .value;
+        refToVar:;
         refToVar isAutoStruct [
           refToVar @processorResult @processor multiParserResult compilerPositionInfo CFunctionSignature createDtorForGlobalVar
         ] when
@@ -3447,7 +3446,7 @@ makeCompilerPosition: [
 
   fixArrShadows: [
     [
-      current: .@value;
+      current:;
       current.refToVar.hostId 0 < not [current.refToVar noMatterToCopy not] && [current.refToVar getVar.shadowBegin @current.@refToVar set] when
     ] each
   ];
@@ -3488,8 +3487,8 @@ makeCompilerPosition: [
 
   # count inner overload count
   (@currentNode.@buildingMatchingInfo.@captures @currentNode.@buildingMatchingInfo.@fieldCaptures @currentNode.@labelNames) [
-    .@value [
-      current: .@value;
+    [
+      current:;
       current.nameInfo getOverloadCount @current.@cntNameOverload set
     ] each
   ] each
@@ -3497,8 +3496,8 @@ makeCompilerPosition: [
   unregCodeNodeNames
 
   (@currentNode.@buildingMatchingInfo.@captures @currentNode.@buildingMatchingInfo.@fieldCaptures @currentNode.@labelNames) [
-    .@value [
-      current: .@value;
+    [
+      current:;
       current.nameInfo getOverloadCount @current.@cntNameOverloadParent set
     ] each
   ] each
@@ -3593,7 +3592,7 @@ makeCompilerPosition: [
           splitted: functionName.split;
           splitted.success [
             splitted.chars [
-              symbol: .value;
+              symbol:;
               codePoint: symbol stringMemory Nat8 addressToReference;
               codePoint 48n8 < not [codePoint 57n8 > not] &&         #0..9
               [codePoint 65n8 < not [codePoint 90n8 > not] &&] ||    #A..Z

@@ -197,7 +197,7 @@ concatParserResults: [
   adjustArray: [
     indexArray:;
     @indexArray [
-      cur: .@value;
+      cur:;
       cur shift + @cur set
     ] each
   ];
@@ -205,10 +205,10 @@ concatParserResults: [
   r: @results makeArrayRange;
 
   @results [
-    current: .@value;
+    current:;
     @current.@nodes adjustArray
     @current.@memory [
-      currentNode: .@value;
+      currentNode:;
       currentNode.data.getTag AstNodeType.Code = [
         AstNodeType.Code @currentNode.@data.get adjustArray
       ] [

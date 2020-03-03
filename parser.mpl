@@ -287,9 +287,9 @@ makeParserConstants: [{
     av:;
     result: Cond Array;
     256 @result.resize
-    @result [.@value p:; FALSE @p set] each
+    @result [p:; FALSE @p set] each
     av [
-      v: .value;
+      v:;
       TRUE v 0 cast @result.at set
     ] each
 
@@ -302,11 +302,9 @@ makeParserConstants: [{
     result: Cond Array;
     256 @result.resize
 
-    @result [
-      pair:;
-      i: pair.index copy;
-      i left.at i right.at or @pair.@value set
-    ] each
+    result.getSize [
+      i left.at i right.at or i @result @ set
+    ] times
 
     result
   ];

@@ -568,7 +568,7 @@ isStaticData: [
             curVar: current getVar;
             curVar.data.getTag VarStruct = [
               struct: VarStruct curVar.data.get.get;
-              struct.fields [.value.refToVar @unfinished.pushBack] each
+              struct.fields [.refToVar @unfinished.pushBack] each
             ] [
               FALSE dynamic @result set
             ] if
@@ -946,13 +946,12 @@ getVirtualValue: [
       "{" @result.cat
       struct: VarStruct var.data.get.get;
 
-      struct.fields [
-        pair:;
-        pair.index 0 > ["," @result.cat] when
-        pair.value.refToVar isVirtual not [
-          pair.value.refToVar getVirtualValue @result.cat
+      struct.fields.getSize [
+        i 0 > ["," @result.cat] when
+        i struct.fields @ .refToVar isVirtual not [
+          i struct.fields @ .refToVar getVirtualValue @result.cat
         ] when
-      ] each
+      ] times
       "}" @result.cat
     ]
     VarCode    [
@@ -1274,7 +1273,7 @@ getPlainConstantIR: [
       branch.fullVirtual ~ [
         "{" @resultDBG.cat
         branch.fields [
-          curField: .value;
+          curField:;
           curField.refToVar isVirtual ~ [
             (curField.nameInfo processor.nameInfos.at.name ":" curField.refToVar getDbgType ";") @resultDBG.catMany
           ] [
@@ -1327,7 +1326,7 @@ getPlainConstantIR: [
           "{" @resultIR.cat
           firstGood: TRUE;
           branch.fields [
-            field: .value;
+            field:;
             field.refToVar isVirtual ~ [
               firstGood ~ [
                 ", " @resultIR.cat
@@ -1511,9 +1510,8 @@ getStaticStructIR: [
             struct: VarStruct curVar.data.get.get;
             struct.homogeneous ["[" makeStringView] ["{" makeStringView] if @result.cat
             first: TRUE dynamic;
-            struct.fields [
-              index: .index copy;
-              current: struct.fields.getSize 1 - index - struct.fields.at.refToVar;
+            struct.fields.getSize [
+              current: struct.fields.getSize 1 - i - struct.fields.at.refToVar;
               current isVirtual not [
                 current @unfinishedVars.pushBack
                 first [
@@ -1523,7 +1521,7 @@ getStaticStructIR: [
                   ", " makeStringView @unfinishedTerminators.pushBack
                 ] if
               ] when
-            ] each
+            ] times
           ] [
             [FALSE] "Unknown type in static struct!" assert
           ] if

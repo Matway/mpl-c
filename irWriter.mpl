@@ -566,7 +566,7 @@ createCtors: [
   ] when
 
   processor.moduleFunctions [
-    cur: .value processor.nodes.at.get.irName copy;
+    cur: processor.nodes.at.get.irName copy;
     ("  call void " cur "()") assembleString addStrToProlog
   ] each
 
@@ -580,7 +580,7 @@ createDtors: [
   "" addStrToProlog
   "define internal void @global.dtors() {" addStrToProlog
   processor.dtorFunctions [
-    cur: .value processor.nodes.at.get.irName copy;
+    cur: processor.nodes.at.get.irName copy;
     ("  call void " cur "()") assembleString addStrToProlog
   ] each
   "  ret void" addStrToProlog
@@ -592,37 +592,37 @@ sortInstructions: [
   fakePointersAllocs: Instruction Array;
   fakePointers:       Instruction Array;
   noallocs:           Instruction Array;
-  @currentNode.@program [
-    pair:;
-    pair.index 0 = [pair.value.alloca copy] || [
-      pair.value.fakePointer [
-        @pair.@value move @fakePointersAllocs.pushBack
+  currentNode.program.getSize [
+    program: i @currentNode.@program @;
+    i 0 = [program.alloca copy] || [
+      program.fakePointer [
+        @program move @fakePointersAllocs.pushBack
       ] [
-        @pair.@value move @allocs.pushBack
+        @program move @allocs.pushBack
       ] if
     ] [
-      pair.value.fakePointer [
-        @pair.@value move @fakePointers.pushBack
+      program.fakePointer [
+        @program move @fakePointers.pushBack
       ] [
-        @pair.@value move @noallocs.pushBack
+        @program move @noallocs.pushBack
       ] if
     ] if
-  ] each
+  ] times
 
   @currentNode.@program.clear
-  @allocs             [.@value move @currentNode.@program.pushBack] each
-  @fakePointersAllocs [.@value move @currentNode.@program.pushBack] each
-  @fakePointers       [.@value move @currentNode.@program.pushBack] each
-  @noallocs           [.@value move @currentNode.@program.pushBack] each
+  @allocs             [move @currentNode.@program.pushBack] each
+  @fakePointersAllocs [move @currentNode.@program.pushBack] each
+  @fakePointers       [move @currentNode.@program.pushBack] each
+  @noallocs           [move @currentNode.@program.pushBack] each
 ];
 
 addAliasesForUsedNodes: [
   String @processor.@prolog.pushBack
   "; Func aliases" toString @processor.@prolog.pushBack
   @processor.@nodes [
-    currentNode: .@value.get;
+    currentNode: .get;
     currentNode nodeHasCode [
-      @currentNode.@aliases [.@value move @processor.@prolog.pushBack] each
+      @currentNode.@aliases [move @processor.@prolog.pushBack] each
     ] when
   ] each
 ];

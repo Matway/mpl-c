@@ -57,13 +57,12 @@ addLinkerOptionsDebugInfo: [
     ("!llvm.linker.options = !{!" index "}") assembleString @processor.@debugInfo.@strings.pushBack
     optionsList: String;
     ("!" index " = !{") @optionsList.catMany
-    processor.options.linkerOptions [
-      pair:;
-      pair.index 0 > [
+    processor.options.linkerOptions.getSize [
+      i 0 > [
         ", " @optionsList.cat
       ] when
-      ("!\"" pair.value "\"") @optionsList.catMany
-    ] each
+      ("!\"" i processor.options.linkerOptions @ "\"") @optionsList.catMany
+    ] times
     "}" @optionsList.cat
     @optionsList move @processor.@debugInfo.@strings.pushBack
   ] [
@@ -383,13 +382,11 @@ correctUnitInfo: [
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   newDebugInfo: ("!" index " = !{" ) assembleString;
-  processor.debugInfo.globals [
-    pair:;
-    i: pair.index copy;
+  processor.debugInfo.globals.getSize [
     i 0 > [", "  @newDebugInfo.cat] when
     "!" @newDebugInfo.cat
-    pair.value @newDebugInfo.cat
-  ] each
+    i processor.debugInfo.globals @ @newDebugInfo.cat
+  ] times
   "}"                       @newDebugInfo.cat
 
   @newDebugInfo move @processor.@debugInfo.@strings.pushBack

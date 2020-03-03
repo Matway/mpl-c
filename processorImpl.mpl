@@ -251,7 +251,7 @@
             LF   @processorResult.@program.cat
 
             currentNode.program [
-              curInstruction: .value;
+              curInstruction:;
               curInstruction.enabled [
                 curInstruction.code makeStringView @processorResult.@program.cat
                 LF @processorResult.@program.cat
@@ -269,7 +269,7 @@
     LF @processorResult.@program.cat
 
     processor.debugInfo.strings [
-      s: .value;
+      s:;
       s.getTextSize 0 = not [
         s @processorResult.@program.cat
         LF @processorResult.@program.cat

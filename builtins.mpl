@@ -123,10 +123,9 @@ initBuiltins: [
   currentNode: @codeNode;
   failProc: @failProcForProcessor;
 
-  builtins makeArrayRange [
-    p:;
-    p.value.name makeStringView p.index addBuiltin
-  ] each
+  builtins fieldCount dynamic [
+    i builtins @ .name makeStringView i addBuiltin
+  ] times
 ];
 
 {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref; index: Int32;} () {convention: cdecl;} [

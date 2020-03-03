@@ -779,7 +779,7 @@ parseFieldToSignatureCaptureArray: [
 
   compilable [
     VarStruct varStruct.data.get.get.fields [
-      refToVar: .value.refToVar;
+      refToVar: .refToVar;
       refToVar isVirtual ["input cannot be virtual" compilerError] when
       refToVar @result.pushBack
     ] each
@@ -800,7 +800,7 @@ parseSignature: [
       optionsStruct: VarStruct optionsVar.data.get.get;
       hasConvention: FALSE dynamic;
       optionsStruct.fields [
-        f: .value;
+        f:;
         f.nameInfo (
           processor.variadicNameInfo [
             variadicRefToVar: f.refToVar;
@@ -1312,8 +1312,7 @@ parseSignature: [
           splitted: string makeStringView.split;
           splitted.success [
             splitted.chars [
-              pair:;
-              element: pair.value toString makeVarString;
+              element: toString makeVarString;
               field: Field;
               processor.emptyNameInfo @field.@nameInfo set
               element TRUE dynamic createRef @field.@refToVar set

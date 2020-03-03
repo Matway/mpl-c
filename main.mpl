@@ -312,24 +312,23 @@ processIntegerOption: [
           ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
           "Input files ignored" print LF print
         ] [
-          options.fileNames [
-            pair:;
-            filename: pair.value;
+          options.fileNames.getSize [
+            filename: i options.fileNames @;
 
-            pair.index 0 = [
-              filename pair.index definitions addToProcess
+            i 0 = [
+              filename i definitions addToProcess
             ] [
               loadStringResult: filename loadString;
               loadStringResult.success [
                 ("Loaded string from " filename) addLog
                 ("HASH=" loadStringResult.data hash) addLog
-                filename pair.index loadStringResult.data addToProcess
+                filename i loadStringResult.data addToProcess
               ] [
                 "Unable to load string:" print filename print LF print
                 FALSE @success set
               ] if
             ] if
-          ] each
+          ] times
 
           success [
             multiParserResult: MultiParserResult;
@@ -339,7 +338,7 @@ processIntegerOption: [
             ("names optimized" makeStringView) addLog
 
             ("filenames:" makeStringView) addLog
-            options.fileNames [(.value) addLog] each
+            options.fileNames [fileName:; (fileName) addLog] each
 
             processorResult: ProcessorResult;
             multiParserResult options 0 @processorResult process
@@ -353,17 +352,14 @@ processIntegerOption: [
             ] when
 
             processorResult.success not [
-              processorResult.globalErrorInfo [
-                pair:;
-                current: pair.value;
-                pair.index 0 > [LF print] when
+              processorResult.globalErrorInfo.getSize [
+                current: i processorResult.globalErrorInfo @;
+                i 0 > [LF print] when
                 current.position.getSize 0 = [
                   ("error, "  current.message) printList LF print
                 ] [
-                  current.position [
-                    pair:;
-                    i: pair.index;
-                    nodePosition: pair.value;
+                  current.position.getSize [
+                    nodePosition: i current.position @;
                     (nodePosition.fileNumber options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
 
                     i 0 = [
@@ -371,11 +367,11 @@ processIntegerOption: [
                     ] [
                       ("[" nodePosition.token "], called from here" LF) printList
                     ] if
-                  ] each
+                  ] times
                 ] if
 
                 FALSE @success set
-              ] each
+              ] times
             ] when
           ] when
         ] if

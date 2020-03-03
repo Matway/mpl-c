@@ -14,16 +14,14 @@ makeVariableSchema: [
       node: functionId processor.nodes.at.get;
       signature: node.csignature;
       signature.inputs.getSize @functionSchema.@inputSchemaIds.resize
-      signature.inputs [
-        pair:;
-        pair.value getVar.mplSchemaId copy pair.index @functionSchema.@inputSchemaIds !
-      ] each
+      signature.inputs.getSize [
+        i signature.inputs @ getVar.mplSchemaId copy i @functionSchema.@inputSchemaIds !
+      ] times
 
       signature.outputs.getSize @functionSchema.@outputSchemaIds.resize
-      signature.outputs [
-        pair:;
-        pair.value getVar.mplSchemaId copy pair.index @functionSchema.@outputSchemaIds !
-      ] each
+      signature.outputs.getSize [
+        i signature.outputs @ getVar.mplSchemaId copy i @functionSchema.@outputSchemaIds !
+      ] times
 
       signature.variadic copy @functionSchema.!variadic
       signature.convention copy @functionSchema.!convention
@@ -41,14 +39,13 @@ makeVariableSchema: [
       structSchema: VariableSchemaTags.STRUCT_SCHEMA @varSchema.@data.get;
       struct: VarStruct var.data.get.get;
       struct.fields.getSize @structSchema.@data.resize
-      struct.fields [
-        pair:;
-        field: pair.value;
+      struct.fields.getSize [
+        field: i struct.fields @;
         fieldSchema: FieldSchema;
         field.refToVar getVar.mplSchemaId @fieldSchema.@valueSchemaId set
         field.nameInfo copy @fieldSchema.!nameInfo
-        @fieldSchema pair.index @structSchema.@data @ set
-      ] each
+        @fieldSchema i @structSchema.@data @ set
+      ] times
     ]
     [
       VariableSchemaTags.BUILTIN_TYPE_SCHEMA @varSchema.@data.setTag
@@ -266,12 +263,12 @@ hashSchema: ["FUNCTION_SCHEMA" has] [
   functionSchema:;
   seed:;
   functionSchema.inputSchemaIds [
-    value: .value;
+    value:;
     @seed value hashCombine
   ] each
 
   functionSchema.outputSchemaIds [
-    value: .value;
+    value:;
     @seed value hashCombine
   ] each
 
@@ -290,7 +287,7 @@ hashSchema: ["STRUCT_SCHEMA" has] [
   structSchema: .data;
   seed:;
   structSchema [
-    value: .value;
+    value:;
     @seed value hashSchema
   ] each
 ] pfunc;
