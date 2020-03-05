@@ -133,8 +133,8 @@ Variable: [{
   mplNameId:                         -1 dynamic;
   irNameId:                          -1 dynamic;
   mplSchemaId:                       -1 dynamic;
-  storageStaticness:                 Static;
-  staticness:                        Static;
+  storageStaticity:                  Static;
+  staticity:                         Static;
   global:                            FALSE dynamic;
   temporary:                         TRUE dynamic;
   usedInHeader:                      FALSE dynamic;
@@ -437,13 +437,13 @@ getDebugType: [
   @result
 ];
 
-staticnessOfVar: [
+staticityOfVar: [
   refToVar:;
   var: refToVar getVar;
-  var.staticness copy
+  var.staticity copy
 ];
 
-maxStaticness: [
+maxStaticity: [
   copy s1:;
   copy s2:;
   s1 s2 > [s1 copy][s2 copy] if
@@ -561,7 +561,7 @@ isStaticData: [
         current isVirtual [
         ] [
           current isPlain [
-            current staticnessOfVar Weak < [
+            current staticityOfVar Weak < [
               FALSE dynamic @result set
             ] when
           ] [
@@ -899,7 +899,7 @@ fullUntemporize: [
 isSchema: [
   refToVar:;
   var: refToVar getVar;
-  var.data.getTag VarRef = [var.staticness Schema =] &&
+  var.data.getTag VarRef = [var.staticity Schema =] &&
 ];
 
 isVirtualType: [
@@ -916,7 +916,7 @@ isVirtual: [
   refToVar:;
 
   var: refToVar getVar;
-  var.staticness Virtual < not
+  var.staticity Virtual < not
   [refToVar isVirtualType] ||
 ];
 
@@ -962,7 +962,7 @@ getVirtualValue: [
     VarRef     [
       pointee: VarRef var.data.get;
       pointeeVar: pointee getVar;
-      var.staticness Schema = [
+      var.staticity Schema = [
         "." @result.cat
       ] [
         pointeeVar.data.getTag (
@@ -1062,7 +1062,7 @@ getFuncMplType: [
 ];
 
 getFuncDbgType: [
- Index:;
+  Index:;
   result: String;
   node:Index processor.nodes.at.get;
 

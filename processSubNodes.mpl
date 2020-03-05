@@ -44,11 +44,11 @@ variablesAreEqualWith: [
       stackStruct: VarStruct stackEntryVar.data.get.get;
       cacheStruct.hasDestructor not [cacheStruct.forgotten stackStruct.forgotten =] ||
     ] [
-      cacheStaticness: cacheEntry staticnessOfVar;
-      stackStaticness: stackEntry staticnessOfVar;
+      cacheStaticity: cacheEntry staticityOfVar;
+      stackStaticity: stackEntry staticityOfVar;
 
-      cacheStaticness Weak > not stackStaticness stackDynamicBorder > not and [ # both dynamic
-        cacheStaticness Weak > stackStaticness stackDynamicBorder > and [ # both static
+      cacheStaticity Weak > not stackStaticity stackDynamicBorder > not and [ # both dynamic
+        cacheStaticity Weak > stackStaticity stackDynamicBorder > and [ # both static
           cacheEntry isSemiplainNonrecursiveType [
             result: TRUE;
             cacheEntryVar.data.getTag VarCond VarImport 1 + [
@@ -67,10 +67,10 @@ variablesAreEqualWith: [
                 VarString cacheEntryVar.data.get
                 VarString stackEntryVar.data.get =
               ] [
-                checkRefs [cacheEntryVar.data.getTag VarRef =] && [cacheEntry staticnessOfVar Virtual <] && [
+                checkRefs [cacheEntryVar.data.getTag VarRef =] && [cacheEntry staticityOfVar Virtual <] && [
                   r1: VarRef cacheEntryVar.data.get;
                   r2: VarRef stackEntryVar.data.get;
-                  r1.hostId r2.hostId = [r1.varId r2.varId =] && [r1.mutable r2.mutable =] && [r1 staticnessOfVar r2 staticnessOfVar =] &&
+                  r1.hostId r2.hostId = [r1.varId r2.varId =] && [r1.mutable r2.mutable =] && [r1 staticityOfVar r2 staticityOfVar =] &&
                 ] [
                   TRUE # go recursive
                 ] if
@@ -197,7 +197,7 @@ compareOnePair: [
         currentFromStack currentFromCache first compareOnePair [ # compare current stack value with initial value of argument
           cacheEntryVar: currentFromCache getVar;
           stackEntryVar: currentFromStack getVar;
-          cacheEntryVar.data.getTag VarRef = [currentFromCache staticnessOfVar Virtual <] && [currentFromCache staticnessOfVar Weak >] && [
+          cacheEntryVar.data.getTag VarRef = [currentFromCache staticityOfVar Virtual <] && [currentFromCache staticityOfVar Weak >] && [
             currentFromStack getPointeeForMatching @unfinishedStack.pushBack
             currentFromCache getPointeeForMatching @unfinishedCache.pushBack
             i -1 "deref" makeStringView makeWayInfo @unfinishedWay.pushBack
@@ -276,7 +276,7 @@ tryMatchNode: [
   comparingMessage: String;
 
   canMatch: currentMatchingNode.deleted not [
-    currentMatchingNode.state NodeStateCompiled = 
+    currentMatchingNode.state NodeStateCompiled =
     currentMatchingNode.state NodeStateFailed = or [
       #recursive condition
       currentMatchingNode.nodeIsRecursive
@@ -288,7 +288,7 @@ tryMatchNode: [
       ] &&
     ] ||
     [getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + < not] &&
-    [currentMatchingNode.matchingInfo.hasStackUnderflow not 
+    [currentMatchingNode.matchingInfo.hasStackUnderflow not
       [getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + > not] ||
     ] &&
   ] &&;
@@ -606,7 +606,7 @@ fixRef: [
   ] [
     # dont have shadow - to deref of captured dynamic pointer
     # must by dynamic
-    var.staticness Static = [pointeeVar.storageStaticness Static =] && ["returning pointer to local variable" compilerError] when
+    var.staticity Static = [pointeeVar.storageStaticity Static =] && ["returning pointer to local variable" compilerError] when
     pointee copyVarFromChild @fixed set
     TRUE dynamic @makeDynamic set
   ] if
@@ -614,9 +614,9 @@ fixRef: [
   fixed.hostId @pointee.@hostId set
   fixed.varId  @pointee.@varId  set
 
-  wasVirtual [refToVar Virtual makeStaticness @refToVar set] [
+  wasVirtual [refToVar Virtual makeStaticity @refToVar set] [
     makeDynamic [
-      refToVar Dynamic makeStaticness @refToVar set
+      refToVar Dynamic makeStaticity @refToVar set
     ] when
   ] if
   refToVar
@@ -637,7 +637,7 @@ applyOnePair: [
   cacheEntryVar: cacheEntry getVar;
   stackEntryVar: stackEntry getVar;
 
-  stackEntry cacheEntry staticnessOfVar makeStaticness drop:;
+  stackEntry cacheEntry staticityOfVar makeStaticity drop:;
 
   cacheEntry noMatterToCopy not [cacheEntryVar.shadowEnd getVar.capturedAsMutable copy] && [
     TRUE @stackEntryVar.@capturedAsMutable set
@@ -655,7 +655,7 @@ applyOnePair: [
           TRUE
         ] [
           ("match fail, type=" makeStringView cacheEntry getMplType makeStringView
-            "; st=" makeStringView cacheEntry staticnessOfVar stackEntry staticnessOfVar) addLog
+            "; st=" makeStringView cacheEntry staticityOfVar stackEntry staticityOfVar) addLog
           FALSE
         ] if
       ] "Applying var has wrong value!" assert
@@ -716,7 +716,7 @@ applyEntriesRec: [
 
       cacheEntryVar.capturedAsRealValue [currentFromStack makeVarRealCaptured] when
 
-      cacheEntryVar.data.getTag VarRef = [currentFromCache staticnessOfVar Virtual <] && [currentFromCache staticnessOfVar Dynamic >] && [
+      cacheEntryVar.data.getTag VarRef = [currentFromCache staticityOfVar Virtual <] && [currentFromCache staticityOfVar Dynamic >] && [
         clearPointee: VarRef cacheEntryVar.data.get copy; # if captured, host index will be currentChangesNodeIndex
         clearPointee.hostId currentChangesNodeIndex = [ # we captured it
           clearPointee @unfinishedCache.pushBack
@@ -846,7 +846,7 @@ usePreCapturesWith: [
               cacheEntryVar: currentFromCache getVar;
               stackEntryVar: currentFromStack getVar;
 
-              cacheEntryVar.data.getTag VarRef = [currentFromCache staticnessOfVar Virtual <] && [currentFromCache staticnessOfVar Dynamic >] && [
+              cacheEntryVar.data.getTag VarRef = [currentFromCache staticityOfVar Virtual <] && [currentFromCache staticityOfVar Dynamic >] && [
                 clearPointee: VarRef cacheEntryVar.data.get copy; # if captured, host index will be currentChangesNodeIndex
                 clearPointee.hostId currentChangesNodeIndex = [ # we captured it
                   clearPointee                         @unfinishedCache.pushBack
@@ -1021,7 +1021,7 @@ changeVarValue: [
     varSrc: src getVar;
     varDst: dst getVar;
 
-    varSrc.staticness @varDst.@staticness set
+    varSrc.staticity @varDst.@staticity set
     dst isNonrecursiveType [
       varDst.data.getTag VarCond VarString 1 + [
         copy tag:;
@@ -1406,7 +1406,7 @@ processCallByNode: [
     [
       top: newNode.outputs.last.refToVar;
       top getVar.data.getTag VarCond =
-      [top staticnessOfVar Weak < not] && [
+      [top staticityOfVar Weak < not] && [
         VarCond top getVar.data.get copy
       ] [
         TRUE dynamic @processorResult.@passErrorThroughPRE set
@@ -1551,7 +1551,7 @@ processIf: [
             value1:;
 
             [value1 value2 variablesAreSame] "captures changed to different types!" assert
-            value1 staticnessOfVar Dynamic = value2 staticnessOfVar Dynamic = or [
+            value1 staticityOfVar Dynamic = value2 staticityOfVar Dynamic = or [
               refToDst makeVarDynamic
               value1 makePointeeDirtyIfRef
               value2 makePointeeDirtyIfRef
@@ -1791,7 +1791,7 @@ processLoop: [
           condVar.data.getTag VarCond = not ["loop body must return Cond" makeStringView compilerError] when
 
           compilable [
-            condition staticnessOfVar Weak > [
+            condition staticityOfVar Weak > [
               appliedVars.curToNested [
                 pair:;
                 pair.value pair.key changeVarValue
@@ -1860,7 +1860,7 @@ processDynamicLoop: [
 
           result: FALSE dynamic;
           src dst variablesAreSame [
-            src staticnessOfVar Weak >
+            src staticityOfVar Weak >
             [src dst variablesAreEqual not] && [
               TRUE @result set
             ] when
@@ -1875,7 +1875,7 @@ processDynamicLoop: [
           pair:;
 
           pair.key pair.value checkToRecompile [
-            pair.value staticnessOfVar Dirty = [
+            pair.value staticityOfVar Dirty = [
               pair.key makeVarDirty
             ] [
               pair.key makeVarDynamic
@@ -2204,7 +2204,7 @@ callImportWith: [
         i declarationNode.outputs.getSize < [
           currentOutput: i declarationNode.outputs.at.refToVar;
           current: currentOutput copyVarFromChild;
-          Dynamic current getVar.@staticness set
+          Dynamic current getVar.@staticity set
           current @outputs.pushBack
           current getVar.data.getTag VarStruct = [
             current @currentNode.@candidatesToDie.pushBack
@@ -2257,7 +2257,7 @@ callImportWith: [
     ] &&
   ] loop
 
-  dynamicFunc: refToVar staticnessOfVar Dynamic > not;
+  dynamicFunc: refToVar staticityOfVar Dynamic > not;
   dynamicFunc not [
     node.nodeCase NodeCaseCodeRefDeclaration = [
       "nullpointer call" compilerError

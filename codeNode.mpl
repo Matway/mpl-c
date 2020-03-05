@@ -142,15 +142,15 @@ deleteNameInfo: [
   currentNameInfo.stack.dataSize 1 - nameInfo deleteNameInfoWithOverload
 ];
 
-makeStaticness: [
-  copy staticness:;
+makeStaticity: [
+  copy staticity:;
   refToVar:;
 
   refToVar isVirtual not [
     var: refToVar getVar;
-    staticness @var.@staticness set
+    staticity @var.@staticity set
 
-    staticness Virtual < not [
+    staticity Virtual < not [
       refToVar makeVariableType
     ] when
   ] when
@@ -158,12 +158,12 @@ makeStaticness: [
   refToVar copy
 ];
 
-makeStorageStaticness: [
-  copy staticness:;
+makeStorageStaticity: [
+  copy staticity:;
   copy refToVar:;
 
   refToVar isVirtual not [
-    staticness refToVar getVar.@storageStaticness set
+    staticity refToVar getVar.@storageStaticity set
   ] when
 
   refToVar
@@ -202,12 +202,12 @@ createVariableWithVirtual: [
   indexOfNode @result.@hostId set
 
   makeVirtual [
-    makeSchema [Schema][Virtual] if result getVar.@staticness set
+    makeSchema [Schema] [Virtual] if result getVar.@staticity set
   ] [
     result isPlain [processor.options.staticLiterals not] && [
-      Weak result getVar.@staticness set
+      Weak result getVar.@staticity set
     ] [
-      Static result getVar.@staticness set
+      Static result getVar.@staticity set
     ] if
   ] if
 
@@ -319,7 +319,7 @@ getPointeeWith: [
     pointeeIsGlobal: FALSE dynamic;
     needReallyDeref: FALSE dynamic;
 
-    refToVar staticnessOfVar Dynamic > not [
+    refToVar staticityOfVar Dynamic > not [
 
       # create new var of dynamic dereference
       fromParent [
@@ -468,8 +468,8 @@ getField: [
         psEnd @fieldRefToVar set
       ] if
 
-      var.staticness fieldRefToVar getVar.staticness < [
-        var.staticness fieldRefToVar getVar.@staticness set
+      var.staticity fieldRefToVar getVar.staticity < [
+        var.staticity fieldRefToVar getVar.@staticity set
       ] when
     ] when
 
@@ -530,15 +530,15 @@ setOneVar: [
     ] staticCall
   ] when
 
-  refDst staticnessOfVar Dirty > [
-    staticness: refSrc staticnessOfVar;
-    staticness Weak = [refDst staticnessOfVar @staticness set] when
-    refDst staticness makeStaticness drop:;
+  refDst staticityOfVar Dirty > [
+    staticity: refSrc staticityOfVar;
+    staticity Weak = [refDst staticityOfVar @staticity set] when
+    refDst staticity makeStaticity drop:;
   ] [
     srcVar.data.getTag VarRef = [refSrc.mutable copy] && [VarRef srcVar.data.get.mutable copy] && [
-      staticness: refSrc staticnessOfVar;
+      staticity: refSrc staticityOfVar;
       refSrc makeVarTreeDirty
-      refSrc staticness makeStaticness drop:;
+      refSrc staticity makeStaticity drop:;
     ] when
   ] if
 ];
@@ -595,7 +595,7 @@ createRefWith: [
   ] [
     pointee: refToVar copy;
     var: pointee getVar;
-    pointee staticnessOfVar Weak = [Dynamic @var.@staticness set] when
+    pointee staticityOfVar Weak = [Dynamic @var.@staticity set] when
     pointee fullUntemporize
 
     pointee.mutable [mutable copy] && @pointee.@mutable set
@@ -638,7 +638,7 @@ makeVirtualVarReal: [
     result: refToVar copyOneVar;
 
     result isVirtualType not [
-      Static result getVar.@staticness set
+      Static result getVar.@staticity set
 
       refToVar @unfinishedSrc.pushBack
       result @unfinishedDst.pushBack
@@ -675,7 +675,7 @@ makeVirtualVarReal: [
                   dstField unglobalize
                 ] [
                   dstField: j lastDst getField;
-                  dstField Virtual makeStaticness r:;
+                  dstField Virtual makeStaticity r:;
                   dstField unglobalize
                 ] if
 
@@ -743,7 +743,7 @@ makeVirtualVarReal: [
 
 makeVarSchema: [
   refToVar:;
-  refToVar Schema makeStaticness drop
+  refToVar Schema makeStaticity drop
 ];
 
 makeVarVirtual: [
@@ -778,7 +778,7 @@ makeVarVirtual: [
             "can not virtualize reference to local variable" makeStringView compilerError
           ] if
         ] [
-          cur staticnessOfVar Weak < [
+          cur staticityOfVar Weak < [
             "can not virtualize dynamic value" makeStringView compilerError
           ] when
         ] if
@@ -788,7 +788,7 @@ makeVarVirtual: [
   ] loop
 
   compilable [
-    refToVar Virtual makeStaticness drop
+    refToVar Virtual makeStaticity drop
   ] when
 ];
 
@@ -808,8 +808,8 @@ makeVarTreeDirty: [
       @unfinishedVars.popBack
 
       var: lastRefToVar getVar;
-      lastRefToVar staticnessOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
-      lastRefToVar staticnessOfVar Schema = ["can't dynamize schema" makeStringView compilerError] when
+      lastRefToVar staticityOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
+      lastRefToVar staticityOfVar Schema = ["can't dynamize schema" makeStringView compilerError] when
 
       compilable [
         var.data.getTag VarStruct = [
@@ -825,17 +825,17 @@ makeVarTreeDirty: [
           ] loop
         ] [
           var.data.getTag VarRef = [
-            lastRefToVar staticnessOfVar Static = [
+            lastRefToVar staticityOfVar Static = [
               pointee: lastRefToVar getPointeeWhileDynamize;
               pointee.mutable [pointee @unfinishedVars.pushBack] when
             ] [
-              [lastRefToVar staticnessOfVar Dynamic > not] "Ref must be only Static or Dynamic!" assert
+              [lastRefToVar staticityOfVar Dynamic > not] "Ref must be only Static or Dynamic!" assert
             ] if
           ] when
         ] if
 
         var.data.getTag VarImport = not var.data.getTag VarString = not and [
-          lastRefToVar Dirty makeStaticness @lastRefToVar set
+          lastRefToVar Dirty makeStaticity @lastRefToVar set
         ] when
       ] when
 
@@ -847,7 +847,7 @@ makeVarTreeDirty: [
 makePointeeDirtyIfRef: [
   refToVar:;
   var: refToVar getVar;
-  var.data.getTag VarRef = [var.staticness Static =] && [
+  var.data.getTag VarRef = [var.staticity Static =] && [
     pointee: refToVar getPointeeWhileDynamize;
     pointee makeVarRealCaptured
     pointee.mutable [pointee makeVarTreeDirty] when
@@ -855,12 +855,12 @@ makePointeeDirtyIfRef: [
 ];
 
 makeVarDynamicOrDirty: [
-  newStaticness:;
+  newStaticity:;
   refToVar:;
-  refToVar staticnessOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
+  refToVar staticityOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
 
   refToVar makePointeeDirtyIfRef
-  msr: refToVar newStaticness makeStaticness;
+  msr: refToVar newStaticity makeStaticity;
 ];
 
 makeVarDynamic: [Dynamic makeVarDynamicOrDirty];
@@ -878,7 +878,7 @@ makeVarTreeDynamicWith: [
       @unfinishedVars.popBack
 
       var: lastRefToVar getVar;
-      lastRefToVar staticnessOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
+      lastRefToVar staticityOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
 
       var.data.getTag VarStruct = [
         struct: VarStruct var.data.get.get;
@@ -893,22 +893,22 @@ makeVarTreeDynamicWith: [
         ] loop
       ] [
         var.data.getTag VarRef = [
-          lastRefToVar staticnessOfVar Static = [
+          lastRefToVar staticityOfVar Static = [
             dynamicStoraged not [
               pointee: lastRefToVar getPointeeWhileDynamize;
               pointee.mutable [pointee makeVarTreeDirty] when
             ] when # dynamic storaged data is not real
           ] [
-            [lastRefToVar staticnessOfVar Dynamic = lastRefToVar staticnessOfVar Dirty = or] "Ref must be only Static or Dirty or Dynamic!" assert
+            [lastRefToVar staticityOfVar Dynamic = lastRefToVar staticityOfVar Dirty = or] "Ref must be only Static or Dirty or Dynamic!" assert
           ] if
         ] when
       ] if
 
       dynamicStoraged [
-        lastRefToVar Dynamic makeStorageStaticness @lastRefToVar set
-        lastRefToVar Dirty   makeStaticness @lastRefToVar set
+        lastRefToVar Dynamic makeStorageStaticity @lastRefToVar set
+        lastRefToVar Dirty   makeStaticity @lastRefToVar set
       ] [
-        lastRefToVar Dynamic makeStaticness @lastRefToVar set
+        lastRefToVar Dynamic makeStaticity @lastRefToVar set
       ] if
       compilable
     ] &&
@@ -937,13 +937,13 @@ createNamedVariable: [
 
   compilable [
     newRefToVar: refToVar copy;
-    staticness: refToVar staticnessOfVar;
+    staticity: refToVar staticityOfVar;
     var: newRefToVar getVar;
 
     currentNode.nextLabelIsVirtual [
       refToVar isVirtual not [
-        staticness Dynamic > not ["value for virtual label must be static" makeStringView compilerError] when
-        staticness Weak    =     [Static @var.@staticness set] when
+        staticity Dynamic > not ["value for virtual label must be static" makeStringView compilerError] when
+        staticity Weak    =     [Static @var.@staticity set] when
       ] when
     ] when
 
@@ -954,12 +954,12 @@ createNamedVariable: [
 
     var.temporary [refToVar isGlobalLabel] &&  [
       refToVar makeVarTreeDirty
-      Dirty @staticness set
+      Dirty @staticity set
     ] when
 
     var.temporary currentNode.nextLabelIsSchema not and [
-      staticness @var.@staticness set
-      staticness Weak    = [Dynamic @var.@staticness set] when
+      staticity @var.@staticity set
+      staticity Weak = [Dynamic @var.@staticity set] when
     ] [
       newRefToVar noMatterToCopy currentNode.nextLabelIsVirtual or newRefToVar isUnallocable not and [
         refToVar copyVarToNew @newRefToVar set
@@ -1201,7 +1201,7 @@ getNameAs: [
             # if var was captured somewhere, we must use it
             head: refToVar getVar.capturedHead;
             result: head getVar.capturedTail copy;
-            refToVar.mutable @result.@mutable set # tail cant keep correct staticness in some cases
+            refToVar.mutable @result.@mutable set # tail cant keep correct staticity in some cases
 
             currentNode.parent 0 = [nameInfoEntry.startPoint indexOfNode = not] && [
               fr: nameInfoEntry.startPoint @currentNode.@usedModulesTable.find;
@@ -1772,8 +1772,8 @@ copyOneVarWith: [
   dst: RefToVar;
   srcVar: src getVar;
 
-  checkedStaticnessOfVar: [
-    toNew [staticnessOfVar Dynamic maxStaticness] [staticnessOfVar] if
+  checkedStaticityOfVar: [
+    toNew [staticityOfVar Dynamic maxStaticity] [staticityOfVar] if
   ];
 
   srcVar.data.getTag VarStruct = [
@@ -1782,7 +1782,7 @@ copyOneVarWith: [
     dstStruct: Struct;
     srcStruct.fields          @dstStruct.@fields set
     @dstStruct move owner VarStruct src isVirtual src isSchema FALSE dynamic createVariableWithVirtual
-    src checkedStaticnessOfVar makeStaticness @dst set
+    src checkedStaticityOfVar makeStaticity @dst set
     dstStructAc: VarStruct dst getVar.@data.get.get;
     srcStruct.homogeneous       @dstStructAc.@homogeneous set
     srcStruct.fullVirtual       @dstStructAc.@fullVirtual set
@@ -1796,7 +1796,7 @@ copyOneVarWith: [
       copy tag:;
       tag VarStruct = not [
         tag srcVar.data.get tag src isVirtual src isSchema FALSE dynamic createVariableWithVirtual
-        src checkedStaticnessOfVar makeStaticness
+        src checkedStaticityOfVar makeStaticity
         @dst set
       ] when
     ] staticCall
@@ -1921,8 +1921,8 @@ copyVarFromParent: [TRUE  FALSE dynamic copyVarImpl];
       endVar: end getVar;
       global: refToVar isGlobal;
 
-      var.storageStaticness @beginVar.@storageStaticness set
-      var.storageStaticness   @endVar.@storageStaticness set
+      var.storageStaticity @beginVar.@storageStaticity set
+      var.storageStaticity @endVar  .@storageStaticity set
 
       global [
         reason ShadowReasonField = not [
@@ -2021,8 +2021,8 @@ addStackUnderflowInfo: [
     entryRef: 0 dynamic getStackEntry;
     compilable [
       entry: entryRef copy;
-      entry staticnessOfVar Weak = [
-        entry Dynamic makeStaticness @entry set
+      entry staticityOfVar Weak = [
+        entry Dynamic makeStaticity @entry set
       ] when
 
       shadowBegin: RefToVar;
@@ -2628,9 +2628,9 @@ finalizeListNode: [
           curFieldRef markAsUnableToDie
         ] [
           curFieldRef markAsUnableToDie
-          staticness: curFieldRef staticnessOfVar;
-          staticness Weak = [Dynamic @staticness set] when
-          staticness Virtual = not [curFieldRef staticness makeStaticness drop:;] when
+          staticity: curFieldRef staticityOfVar;
+          staticity Weak = [Dynamic @staticity set] when
+          staticity Virtual = not [curFieldRef staticity makeStaticity drop:;] when
           curFieldRef i refToStruct createGEPInsteadOfAlloc
         ] if
 
@@ -2663,7 +2663,7 @@ finalizeObjectNode: [
       i structInfo.fields.dataSize < [
         dstFieldRef: i structInfo.fields.at.refToVar;
 
-        [dstFieldRef staticnessOfVar Weak = not] "Field label is weak!" assert
+        [dstFieldRef staticityOfVar Weak = not] "Field label is weak!" assert
         [dstFieldRef noMatterToCopy [dstFieldRef.hostId indexOfNode =] ||] "field host incorrect" assert
         dstFieldRef isVirtual not [
           [dstFieldRef getVar.allocationInstructionIndex currentNode.program.dataSize <] "field is not allocated" assert
@@ -3764,7 +3764,7 @@ nodeHasCode: [
     TRUE dynamic @processorResult.@passErrorThroughPRE set
     ("PRE recursion depth limit (" processor.options.preRecursionDepthLimit  ") exceeded. It can be changed using -pre_recursion_depth_limit option.") assembleString compilerError
   ] when
-  
+
   #add to match table
   indexArray storageAddress indexOfNode addMatchingNode
 

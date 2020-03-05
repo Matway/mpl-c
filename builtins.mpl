@@ -111,7 +111,7 @@ addBuiltin: [
   ] if
   nameId:;
 
-  bvar: @id VarBuiltin createVariable Virtual makeStaticness;
+  bvar: @id VarBuiltin createVariable Virtual makeStaticity;
   nameId bvar NameCaseBuiltin addNameInfo
 ];
 

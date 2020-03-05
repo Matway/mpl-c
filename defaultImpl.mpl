@@ -31,7 +31,7 @@ defaultCall: [
       [VarString =] [
         (
           [compilable]
-          [refToVar staticnessOfVar Weak < ["name must be a static string" compilerError] when]
+          [refToVar staticityOfVar Weak < ["name must be a static string" compilerError] when]
           [
             nameInfo: VarString var.data.get findNameInfo;
             getNameResult: nameInfo getName;
@@ -70,7 +70,7 @@ defaultSet: [
           "builtin-strings cannot be copied" compilerError
         ] [
           refToDst.mutable [
-            [refToDst staticnessOfVar Weak = not] "Destination is weak!" assert
+            [refToDst staticityOfVar Weak = not] "Destination is weak!" assert
             refToSrc refToDst createCopyToExists
           ] [
             "destination is immutable" compilerError
@@ -120,7 +120,7 @@ defaultUseOrIncludeModule: [
     [compilable]
     [currentNode.parent  0 = not ["module can be used only in top node" compilerError] when]
     [refToName: pop;]
-    [refToName staticnessOfVar Weak < ["name must be static string" compilerError] when]
+    [refToName staticityOfVar Weak < ["name must be static string" compilerError] when]
     [
       varName: refToName getVar;
       varName.data.getTag VarString = not ["name must be static string" compilerError] when

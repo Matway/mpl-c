@@ -20,7 +20,7 @@ declareBuiltin: [
   ] declareBuiltinName exportFunction
 ];
 
-staticnessOfBinResult: [
+staticityOfBinResult: [
   s1:; s2:;
   s1 Dynamic > not s2 Dynamic > not or [
     Dynamic
@@ -59,7 +59,7 @@ mplNumberBinaryOp: [
       var1: arg1 getVar;
       var2: arg2 getVar;
 
-      arg1 staticnessOfVar Dynamic > arg2 staticnessOfVar Dynamic > and [
+      arg1 staticityOfVar Dynamic > arg2 staticityOfVar Dynamic > and [
         var1.data.getTag firstTag lastTag [
           copy tag:;
           value1: tag var1.data.get copy;
@@ -68,7 +68,7 @@ mplNumberBinaryOp: [
           value1 value2 @exValidator call
           compilable [
             value1 value2 @opFunc call resultType cutValue resultType createVariable
-            arg1 staticnessOfVar arg2 staticnessOfVar staticnessOfBinResult makeStaticness
+            arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult makeStaticity
             createPlainIR push
           ] when
         ] staticCall
@@ -82,7 +82,7 @@ mplNumberBinaryOp: [
           value2: tag var2.data.get copy;
           resultType: tag @getResultType call;
           result: resultType zeroValue resultType createVariable
-          Dynamic makeStaticness
+          Dynamic makeStaticity
           createAllocIR;
           opName createBinaryOperation
           result push
@@ -141,12 +141,12 @@ mplNumberBinaryOp: [
 
     compilable [
 
-      arg1 staticnessOfVar Dynamic > arg2 staticnessOfVar Dynamic > and [
+      arg1 staticityOfVar Dynamic > arg2 staticityOfVar Dynamic > and [
         var1.data.getTag VarString = [
           value1: VarString var1.data.get copy;
           value2: VarString var2.data.get copy;
           value1 value2 = VarCond createVariable
-          arg1 staticnessOfVar arg2 staticnessOfVar staticnessOfBinResult makeStaticness
+          arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult makeStaticity
           createPlainIR push
         ] [
           var1.data.getTag VarCond VarReal64 1 + [
@@ -154,7 +154,7 @@ mplNumberBinaryOp: [
             value1: tag var1.data.get copy;
             value2: tag var2.data.get copy;
             value1 value2 = VarCond createVariable
-            arg1 staticnessOfVar arg2 staticnessOfVar staticnessOfBinResult makeStaticness
+            arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult makeStaticity
             createPlainIR push
           ] staticCall
         ] if
@@ -163,21 +163,21 @@ mplNumberBinaryOp: [
         arg2 makeVarRealCaptured
 
         var1.data.getTag VarString = [
-          result: FALSE VarCond createVariable Dynamic makeStaticness createAllocIR;
+          result: FALSE VarCond createVariable Dynamic makeStaticity createAllocIR;
           "icmp eq" makeStringView createBinaryOperation
           result push
         ] [
           arg1 isReal [
             var1.data.getTag VarReal32 VarReal64 1 + [
               copy tag:;
-              result: FALSE VarCond createVariable Dynamic makeStaticness createAllocIR;
+              result: FALSE VarCond createVariable Dynamic makeStaticity createAllocIR;
               "fcmp oeq" makeStringView createBinaryOperation
               result push
             ] staticCall
           ] [
             var1.data.getTag VarCond VarIntX 1 + [
               copy tag:;
-              result: FALSE VarCond createVariable Dynamic makeStaticness createAllocIR;
+              result: FALSE VarCond createVariable Dynamic makeStaticity createAllocIR;
               "icmp eq" makeStringView createBinaryOperation
               result push
             ] staticCall
@@ -215,7 +215,7 @@ mplNumberUnaryOp: [
     var.data.getTag firstTag < [var.data.getTag lastTag < not] || ["argument invalid" compilerError] when
 
     compilable [
-      arg staticnessOfVar Dynamic > [
+      arg staticityOfVar Dynamic > [
         var.data.getTag firstTag lastTag [
           copy tag:;
           value: tag var.data.get copy;
@@ -223,7 +223,7 @@ mplNumberUnaryOp: [
           value @exValidator call
           compilable [
             value @opFunc call resultType cutValue resultType createVariable
-            arg staticnessOfVar makeStaticness
+            arg staticityOfVar makeStaticity
             createPlainIR push
           ] when
         ] staticCall
@@ -236,7 +236,7 @@ mplNumberUnaryOp: [
           value: tag var.data.get copy;
           resultType: tag copy;
           result: resultType zeroValue resultType createVariable
-          Dynamic makeStaticness
+          Dynamic makeStaticity
           createAllocIR;
           opName mopName createUnaryOperation
           result push
@@ -296,7 +296,7 @@ mplNumberBuiltinOp: [
     arg isReal not ["argument invalid" makeStringView compilerError] when
 
     compilable [
-      arg staticnessOfVar Dynamic > [
+      arg staticityOfVar Dynamic > [
         var.data.getTag VarReal32 VarReal64 1 + [
           copy tag:;
           value: tag var.data.get copy;
@@ -304,7 +304,7 @@ mplNumberBuiltinOp: [
           value @exValidator call
           compilable [
             value @opFunc call resultType cutValue resultType createVariable
-            arg staticnessOfVar makeStaticness
+            arg staticityOfVar makeStaticity
             createPlainIR push
           ] when
         ] staticCall
@@ -316,7 +316,7 @@ mplNumberBuiltinOp: [
           value: tag var.data.get copy;
           resultType: tag copy;
           result: resultType zeroValue resultType createVariable
-          Dynamic makeStaticness
+          Dynamic makeStaticity
           createAllocIR;
 
           args: IRArgument Array;
@@ -400,7 +400,7 @@ mplNumberBuiltinOp: [
       var1: arg1 getVar;
       var2: arg2 getVar;
 
-      arg1 staticnessOfVar Dynamic > arg2 staticnessOfVar Dynamic > and [
+      arg1 staticityOfVar Dynamic > arg2 staticityOfVar Dynamic > and [
         var1.data.getTag VarReal32 VarReal64 1 + [
           copy tag:;
           value1: tag var1.data.get copy;
@@ -409,7 +409,7 @@ mplNumberBuiltinOp: [
 
           compilable [
             value1 value2 ^ resultType cutValue resultType createVariable
-            arg1 staticnessOfVar arg2 staticnessOfVar staticnessOfBinResult makeStaticness
+            arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult makeStaticity
             createPlainIR push
           ] when
         ] staticCall
@@ -421,7 +421,7 @@ mplNumberBuiltinOp: [
           copy tag:;
           resultType: tag copy;
           result: resultType zeroValue resultType createVariable
-          Dynamic makeStaticness
+          Dynamic makeStaticity
           createAllocIR;
 
           args: IRArgument Array;
@@ -464,7 +464,7 @@ mplShiftBinaryOp: [
       var1: arg1 getVar;
       var2: arg2 getVar;
 
-      arg1 staticnessOfVar Dynamic > arg2 staticnessOfVar Dynamic > and [
+      arg1 staticityOfVar Dynamic > arg2 staticityOfVar Dynamic > and [
         var1.data.getTag VarNat8 VarIntX 1 + [
           copy tag1:;
           var2.data.getTag VarNat8 VarNatX 1 + [
@@ -476,7 +476,7 @@ mplShiftBinaryOp: [
 
             compilable [
               value1 value2 @opFunc call resultType cutValue resultType createVariable
-              arg1 staticnessOfVar arg2 staticnessOfVar staticnessOfBinResult makeStaticness
+              arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult makeStaticity
               createPlainIR push
             ] when
           ] staticCall
@@ -490,7 +490,7 @@ mplShiftBinaryOp: [
           copy tag:;
           resultType: tag copy;
           result: resultType zeroValue resultType createVariable
-          Dynamic makeStaticness
+          Dynamic makeStaticity
           createAllocIR;
           arg1 getStorageSize arg2 getStorageSize = [
             opName createBinaryOperation
@@ -524,7 +524,7 @@ mplShiftBinaryOp: [
     [compilable]
     [refToName: pop;]
     [
-      refToName staticnessOfVar Weak < ["method name must be a static string" compilerError] when
+      refToName staticityOfVar Weak < ["method name must be a static string" compilerError] when
     ]
     [
       varName: refToName getVar;
@@ -576,7 +576,7 @@ mplShiftBinaryOp: [
 [
   refToVar: pop;
   compilable [
-    refToVar staticnessOfVar Weak = [refToVar Static makeStaticness @refToVar set] when
+    refToVar staticityOfVar Weak = [refToVar Static makeStaticity @refToVar set] when
     refToVar push
   ] when
 ] "mplBuiltinStatic" @declareBuiltin ucall
@@ -604,7 +604,7 @@ mplBuiltinProcessAtList: [
           pointeeVar.data.getTag VarStruct = not ["not a combined" compilerError] when
         ]
         [indexVar.data.getTag VarInt32 = not ["index must be Int32" compilerError] when ]
-        [refToIndex staticnessOfVar Weak < [ "index must be static" compilerError] when ]
+        [refToIndex staticityOfVar Weak < [ "index must be static" compilerError] when ]
         [
           index: VarInt32 indexVar.data.get 0 cast;
           struct: VarStruct pointeeVar.data.get.get;
@@ -623,14 +623,14 @@ mplBuiltinProcessAtList: [
         [indexVar.data.getTag VarInt32 = not ["index must be Int32" compilerError] when]
         [
           struct: VarStruct structVar.data.get.get;
-          refToIndex staticnessOfVar Weak < [
+          refToIndex staticityOfVar Weak < [
             struct.homogeneous [
               struct.fields.dataSize 0 > [
                 # create dynamic getIndex
                 realRefToStruct: refToStruct;
                 realStructVar: structVar;
                 realStruct: struct;
-                refToStruct staticnessOfVar Virtual < not [
+                refToStruct staticityOfVar Virtual < not [
                   "can't get dynamic index in virtual struct" compilerError
                 ] when
 
@@ -646,7 +646,7 @@ mplBuiltinProcessAtList: [
 
                 refToStruct.mutable @fieldRef.@mutable set
                 fieldRef fullUntemporize
-                fieldRef staticnessOfVar Virtual < not [
+                fieldRef staticityOfVar Virtual < not [
                   "dynamic index is combined of virtuals" compilerError
                 ] [
                   fieldRef makeVarTreeDynamicStoraged
@@ -708,7 +708,7 @@ mplBuiltinProcessAtList: [
     varCond.data.getTag VarCond = not [("condition has a wrong type " condition getMplType) assembleString compilerError] when
 
     compilable [
-      condition staticnessOfVar Weak > [
+      condition staticityOfVar Weak > [
         value: VarCond varCond.data.get copy;
         value [
           VarCode varThen.data.get.index "staticIfThen" makeStringView processCall
@@ -740,7 +740,7 @@ mplBuiltinProcessAtList: [
     varCond.data.getTag VarCond = not ["condition has a wrong type" makeStringView compilerError] when
 
     compilable [
-      condition staticnessOfVar Weak > [
+      condition staticityOfVar Weak > [
         value: VarCond varCond.data.get copy;
         codeIndex: value [VarCode varThen.data.get.index copy] [VarCode varElse.data.get.index copy] if;
         astNode: codeIndex @multiParserResult.@memory.at;
@@ -808,7 +808,7 @@ parseSignature: [
             (
               [compilable]
               [variadicVar.data.getTag VarCond = not ["value must be Cond" compilerError] when]
-              [variadicRefToVar staticnessOfVar Weak < ["value must be Static" compilerError] when]
+              [variadicRefToVar staticityOfVar Weak < ["value must be Static" compilerError] when]
               [VarCond variadicVar.data.get @result.@variadic set]
             ) sequence
           ]
@@ -818,13 +818,13 @@ parseSignature: [
             (
               [compilable]
               [conventionVarRef.data.getTag VarRef = not ["value must be String Ref" compilerError] when]
-              [conventionRefToVarRef staticnessOfVar Weak < ["value must be Static" compilerError] when]
+              [conventionRefToVarRef staticityOfVar Weak < ["value must be Static" compilerError] when]
               [
                 conventionRefToVar: VarRef conventionVarRef.data.get;
                 conventionVar: conventionRefToVar getVar;
                 conventionVar.data.getTag VarString = not ["value must be String Ref" compilerError] when
               ]
-              [conventionRefToVar staticnessOfVar Weak < ["value must be Static" compilerError] when]
+              [conventionRefToVar staticityOfVar Weak < ["value must be Static" compilerError] when]
               [
                 string: VarString conventionVar.data.get;
                 string @result.@convention set
@@ -871,7 +871,7 @@ parseSignature: [
     [compilable]
     [currentNode.parent 0 = not ["export must be global" compilerError] when]
     [refToName: pop;]
-    [refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when]
+    [refToName staticityOfVar Weak < ["function name must be static string" compilerError] when]
     [
       varName: refToName getVar;
       varName.data.getTag VarString = not ["function name must be static string" compilerError] when
@@ -895,7 +895,7 @@ parseSignature: [
     [currentNode.parent 0 = not ["export must be global" compilerError] when]
     [refToName: pop;]
     [refToVar: pop;]
-    [refToName staticnessOfVar Weak < ["variable name must be static string" compilerError] when]
+    [refToName staticityOfVar Weak < ["variable name must be static string" compilerError] when]
     [
       varName: refToName getVar;
       varName.data.getTag VarString = not ["variable name must be static string" compilerError] when
@@ -938,7 +938,7 @@ parseSignature: [
     [compilable]
     [currentNode.parent 0 = not ["import must be global" compilerError] when]
     [refToName: pop;]
-    [refToName staticnessOfVar Weak < ["function name must be static string" compilerError] when]
+    [refToName staticityOfVar Weak < ["function name must be static string" compilerError] when]
     [
       varName: refToName getVar;
       varName.data.getTag VarString = not ["function name must be static string" compilerError] when
@@ -973,7 +973,7 @@ parseSignature: [
     refToName: pop;
     refToType: pop;
     compilable [
-      refToName staticnessOfVar Weak < ["variable name must be static string" compilerError] when
+      refToName staticityOfVar Weak < ["variable name must be static string" compilerError] when
       compilable [
         varName: refToName getVar;
         varName.data.getTag VarString = not ["variable name must be static string" compilerError] when
@@ -1066,7 +1066,7 @@ parseSignature: [
 
     refToVar isNumber refToSchema isNumber and [
       compilable [
-        refToVar staticnessOfVar Dynamic > [
+        refToVar staticityOfVar Dynamic > [
           refToDst: RefToVar;
 
           varSrc.data.getTag VarNat8 VarReal64 1 + [
@@ -1079,7 +1079,7 @@ parseSignature: [
             ] staticCall
           ] staticCall
 
-          refToVar staticnessOfVar refToDst getVar.@staticness set
+          refToVar staticityOfVar refToDst getVar.@staticity set
           refToDst push
         ] [
           refToDst: RefToVar;
@@ -1090,7 +1090,7 @@ parseSignature: [
             branchSchema tagDst createVariable @refToDst set
           ] staticCall
 
-          Dynamic refToDst getVar.@staticness set
+          Dynamic refToDst getVar.@staticity set
 
           # a lot of cases for different casts
           refToVar isReal refToSchema isReal or [
@@ -1160,7 +1160,7 @@ parseSignature: [
       refToVar makeVarRealCaptured
       refToVar makeVarTreeDirty
       refToDst: 0n64 VarNatX createVariable;
-      Dynamic @refToDst getVar.@staticness set
+      Dynamic @refToDst getVar.@staticity set
       var: refToVar getVar;
       refToVar refToDst "ptrtoint" makeStringView createCastCopyPtrToNew
       refToDst push
@@ -1194,7 +1194,7 @@ parseSignature: [
         "pointee is virtual, cannot cast" compilerError
       ] [
         refToDst: schemaOfResult VarRef createVariable;
-        Dirty refToDst getVar.@staticness set
+        Dirty refToDst getVar.@staticity set
         refToVar refToDst "inttoptr" makeStringView createCastCopyToNew
         refToDst derefAndPush
       ] if
@@ -1225,7 +1225,7 @@ parseSignature: [
   ] [
     refToName: pop;
     compilable [
-      refToName staticnessOfVar Weak < ["name must be static string" compilerError] when
+      refToName staticityOfVar Weak < ["name must be static string" compilerError] when
       compilable [
         varName: refToName getVar;
         varName.data.getTag VarString = not ["name must be static string" compilerError] when
@@ -1266,13 +1266,13 @@ parseSignature: [
       varName.data.getTag VarString = not ["argument must be string" compilerError] when
     ]
     [
-      refToName staticnessOfVar Weak < [
-        result: 0n64 VarNatX createVariable Dynamic makeStaticness createAllocIR;
+      refToName staticityOfVar Weak < [
+        result: 0n64 VarNatX createVariable Dynamic makeStaticity createAllocIR;
         refToName result createGetTextSizeIR
         result push
       ] [
         string: VarString varName.data.get;
-        string.getTextSize 0i64 cast 0n64 cast VarNatX createVariable Static makeStaticness createPlainIR push
+        string.getTextSize 0i64 cast 0n64 cast VarNatX createVariable Static makeStaticity createPlainIR push
       ] if
     ]
   ) sequence
@@ -1282,13 +1282,13 @@ parseSignature: [
   (
     [compilable]
     [refToStr2: pop;]
-    [refToStr2 staticnessOfVar Weak < ["must be static string" compilerError] when]
+    [refToStr2 staticityOfVar Weak < ["must be static string" compilerError] when]
     [
       varStr2: refToStr2 getVar;
       varStr2.data.getTag VarString = not ["must be static string" compilerError] when
     ]
     [refToStr1: pop;]
-    [refToStr1 staticnessOfVar Weak < ["must be static string" compilerError] when]
+    [refToStr1 staticityOfVar Weak < ["must be static string" compilerError] when]
     [
       varStr1: refToStr1 getVar;
       varStr1.data.getTag VarString = not ["must be static string" compilerError] when
@@ -1300,7 +1300,7 @@ parseSignature: [
 [
   refToName: pop;
   compilable [
-    refToName staticnessOfVar Weak < ["name must be static string" makeStringView compilerError] when
+    refToName staticityOfVar Weak < ["name must be static string" makeStringView compilerError] when
     compilable [
       varName: refToName getVar;
       varName.data.getTag VarString = not ["name must be static string" makeStringView compilerError] when
@@ -1360,7 +1360,7 @@ parseSignature: [
     [refToName: pop;]
     [refToStruct: pop;]
     [
-      refToName staticnessOfVar Weak < ["name must be static string" compilerError] when
+      refToName staticityOfVar Weak < ["name must be static string" compilerError] when
     ]
     [
       varName: refToName getVar;
@@ -1371,10 +1371,10 @@ parseSignature: [
         string: VarString varName.data.get;
         fr: string makeStringView findNameInfo refToStruct findField;
         compilable [
-          fr.success VarCond createVariable Static makeStaticness createPlainIR push
+          fr.success VarCond createVariable Static makeStaticity createPlainIR push
         ] when
       ] [
-        FALSE VarCond createVariable Static makeStaticness createPlainIR push
+        FALSE VarCond createVariable Static makeStaticity createPlainIR push
       ] if
     ]
   ) sequence
@@ -1386,7 +1386,7 @@ parseSignature: [
     [refToName: pop;]
     [refToStruct: pop;]
     [
-      refToName staticnessOfVar Weak < ["name must be static string" compilerError] when
+      refToName staticityOfVar Weak < ["name must be static string" compilerError] when
     ]
     [
       varName: refToName getVar;
@@ -1400,7 +1400,7 @@ parseSignature: [
     ] [
       fr.success not [(refToStruct getMplType " has no field " string) assembleString compilerError] when
     ] [
-      fr.index Int64 cast VarInt32 createVariable Static makeStaticness createPlainIR push
+      fr.index Int64 cast VarInt32 createVariable Static makeStaticity createPlainIR push
     ]
   ) sequence
 ] "mplBuiltinFieldIndex" @declareBuiltin ucall
@@ -1410,7 +1410,7 @@ parseSignature: [
     [compilable]
     [refToName: pop;]
     [
-      refToName staticnessOfVar Weak < ["name must be static string" compilerError] when
+      refToName staticityOfVar Weak < ["name must be static string" compilerError] when
     ]
     [
       varName: refToName getVar;
@@ -1440,7 +1440,7 @@ parseSignature: [
       refToVar getStorageSize
     ] if
 
-    0n64 cast VarNatX createVariable Static makeStaticness createPlainIR push
+    0n64 cast VarNatX createVariable Static makeStaticity createPlainIR push
   ] when
 ] "mplBuiltinStorageSize" @declareBuiltin ucall
 
@@ -1462,14 +1462,14 @@ parseSignature: [
       refToVar getAlignment
     ] if
 
-    0n64 cast VarNatX createVariable Static makeStaticness createPlainIR push
+    0n64 cast VarNatX createVariable Static makeStaticity createPlainIR push
   ] when
 ] "mplBuiltinAlignment" @declareBuiltin ucall
 
 [
   refToName: pop;
   compilable [
-    refToName staticnessOfVar Weak < ["name must be static string" makeStringView compilerError] when
+    refToName staticityOfVar Weak < ["name must be static string" makeStringView compilerError] when
     compilable [
       varName: refToName getVar;
       varName.data.getTag VarString = not ["name must be static string" makeStringView compilerError] when
@@ -1498,7 +1498,7 @@ parseSignature: [
   refToVar1: pop;
   refToVar2: pop;
   compilable [
-    refToVar1 refToVar2 variablesAreSame VarCond createVariable Static makeStaticness createPlainIR push
+    refToVar1 refToVar2 variablesAreSame VarCond createVariable Static makeStaticity createPlainIR push
   ] when
 ] "mplBuiltinSame" @declareBuiltin ucall
 
@@ -1511,8 +1511,8 @@ parseSignature: [
       refToVar1 refToVar2 refsAreEqual [
         1 @cmpResult set
       ] [
-        refToVar1 getVar.storageStaticness Dynamic > not
-        refToVar2 getVar.storageStaticness Dynamic > not or [
+        refToVar1 getVar.storageStaticity Dynamic > not
+        refToVar2 getVar.storageStaticity Dynamic > not or [
           0 @cmpResult set
         ] [
           -1 @cmpResult set
@@ -1520,14 +1520,14 @@ parseSignature: [
       ] if
 
       cmpResult 0 = [
-        result: FALSE VarCond createVariable Dynamic makeStaticness createAllocIR;
+        result: FALSE VarCond createVariable Dynamic makeStaticity createAllocIR;
         refToVar1 refToVar2 result "icmp eq" makeStringView createDirectBinaryOperation
         result push
       ] [
-        cmpResult 1 = VarCond createVariable Static makeStaticness createPlainIR push
+        cmpResult 1 = VarCond createVariable Static makeStaticity createPlainIR push
       ] if
     ] [
-      FALSE VarCond createVariable Static makeStaticness createPlainIR push
+      FALSE VarCond createVariable Static makeStaticity createPlainIR push
     ] if
   ] when
 ] "mplBuiltinIs" @declareBuiltin ucall
@@ -1535,23 +1535,23 @@ parseSignature: [
 [
   refToVar: pop;
   compilable [
-    refToVar.mutable not VarCond createVariable Static makeStaticness createPlainIR push
+    refToVar.mutable not VarCond createVariable Static makeStaticity createPlainIR push
   ] when
 ] "mplBuiltinIsConst" @declareBuiltin ucall
 
 [
   refToVar: pop;
   compilable [
-    refToVar getVar.data.getTag VarStruct = VarCond createVariable Static makeStaticness createPlainIR push
+    refToVar getVar.data.getTag VarStruct = VarCond createVariable Static makeStaticity createPlainIR push
   ] when
 ] "mplBuiltinIsCombined" @declareBuiltin ucall
 
 [
-  processor.options.debug VarCond createVariable Static makeStaticness createPlainIR push
+  processor.options.debug VarCond createVariable Static makeStaticity createPlainIR push
 ] "mplBuiltinDebug" @declareBuiltin ucall
 
 [
-  processor.options.logs VarCond createVariable Static makeStaticness createPlainIR push
+  processor.options.logs VarCond createVariable Static makeStaticity createPlainIR push
 ] "mplBuiltinHasLogs" @declareBuiltin ucall
 
 [
@@ -1563,12 +1563,12 @@ parseSignature: [
       pointeeVar: pointee getVar;
       pointeeVar.data.getTag VarStruct = not ["not a combined" makeStringView compilerError] when
       compilable [
-        VarStruct pointeeVar.data.get.get.fields.dataSize 0i64 cast VarInt32 createVariable Static makeStaticness createPlainIR push
+        VarStruct pointeeVar.data.get.get.fields.dataSize 0i64 cast VarInt32 createVariable Static makeStaticity createPlainIR push
       ] when
     ] [
       var.data.getTag VarStruct = not ["not a combined" makeStringView compilerError] when
       compilable [
-        VarStruct var.data.get.get.fields.dataSize 0i64 cast VarInt32 createVariable Static makeStaticness createPlainIR push
+        VarStruct var.data.get.get.fields.dataSize 0i64 cast VarInt32 createVariable Static makeStaticity createPlainIR push
       ] when
     ] if
   ] when
@@ -1581,7 +1581,7 @@ parseSignature: [
     varCount: refToCount getVar;
     varCount.data.getTag VarInt32 = not ["index must be Int32" compilerError] when
     compilable [
-      refToCount staticnessOfVar Dynamic > not ["index must be static" compilerError] when
+      refToCount staticityOfVar Dynamic > not ["index must be static" compilerError] when
       compilable [
         count: VarInt32 varCount.data.get 0 cast;
         var: refToVar getVar;
@@ -1608,7 +1608,7 @@ parseSignature: [
 ] "mplBuiltinFieldName" @declareBuiltin ucall
 
 [
-  COMPILER_SOURCE_VERSION 0i64 cast VarInt32 createVariable Static makeStaticness createPlainIR push
+  COMPILER_SOURCE_VERSION 0i64 cast VarInt32 createVariable Static makeStaticity createPlainIR push
 ] "mplBuiltinCompilerVersion" @declareBuiltin ucall
 
 [
@@ -1619,7 +1619,7 @@ parseSignature: [
     varCount: refToCount getVar;
     varCount.data.getTag VarInt32 = not ["count must be Int32" makeStringView compilerError] when
     compilable [
-      refToCount staticnessOfVar Dynamic > not ["count must be static" makeStringView compilerError] when
+      refToCount staticityOfVar Dynamic > not ["count must be static" makeStringView compilerError] when
       compilable [
         count: VarInt32 varCount.data.get 0 cast;
         count 0 < [
@@ -1628,13 +1628,13 @@ parseSignature: [
 
         compilable [
           struct: Struct;
-          staticness: refToElement staticnessOfVar;
-          staticness Weak = [Dynamic @staticness set] when
+          staticity: refToElement staticityOfVar;
+          staticity Weak = [Dynamic @staticity set] when
 
           i: 0 dynamic;
           [
             i count < [
-              element: refToElement copyVar staticness makeStaticness;
+              element: refToElement copyVar staticity makeStaticity;
               field: Field;
               processor.emptyNameInfo @field.@nameInfo set
               element @field.@refToVar set
@@ -1752,7 +1752,7 @@ parseSignature: [
   refToCond: pop;
   compilable [
     condVar: refToCond getVar;
-    condVar.data.getTag VarCond = not [refToCond staticnessOfVar Dynamic > not] || ["not a static Cond" makeStringView compilerError] when
+    condVar.data.getTag VarCond = not [refToCond staticityOfVar Dynamic > not] || ["not a static Cond" makeStringView compilerError] when
     compilable [
       refToVar: pop;
       compilable [
@@ -1784,7 +1784,7 @@ parseSignature: [
   compilable [
     refToVar push
     refToVar isForgotten
-    VarCond createVariable Static makeStaticness createPlainIR push
+    VarCond createVariable Static makeStaticity createPlainIR push
   ] when
 ] "mplBuiltinIsMoved" @declareBuiltin ucall
 
