@@ -202,7 +202,7 @@ defaultPrintStack: [
   [
     i getStackDepth < [
       entry: i getStackEntryUnchecked;
-      (i getStackEntryUnchecked getMplType entry.mutable ["R" makeStringView]["C" makeStringView] if LF) printList
+      (entry getMplType entry.mutable ["R"] ["C"] if entry getVar.temporary ["T"] [""] if LF) printList
       i 1 + @i set TRUE
     ] &&
   ] loop
