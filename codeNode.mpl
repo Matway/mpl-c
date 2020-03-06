@@ -3843,7 +3843,7 @@ nodeHasCode: [
   HAS_LOGS [
     currentNode.parent 0 = [
       currentNode.includedModules [
-        id: .value;
+        id:;
         ("node included module: " id processor.nodes.at.get.moduleName) addLog
       ] each
     ] when
