@@ -77,3 +77,39 @@ simplifyPath: [
     ] if
   ] call
 ];
+
+stripExtension: [
+  splitResult: makeStringView.split;
+  splitResult.success [
+    extensionPosition: splitResult.chars.getSize;
+    splitResult.chars.getSize [
+      i splitResult.chars @ "/" = [i splitResult.chars @ "\\" =] || [
+        splitResult.chars.getSize !extensionPosition
+      ] [
+        i splitResult.chars @ "." = [
+          i copy !extensionPosition
+        ] when
+      ] if
+    ] times
+
+    0 extensionPosition splitResult.chars makeSubRange assembleString
+  ] [
+    String
+  ] if
+];
+
+stripPath: [
+  splitResult: makeStringView.split;
+  splitResult.success [
+    filePosition: 0;
+    splitResult.chars.getSize [
+      i splitResult.chars @ "/" = [i splitResult.chars @ "\\" =] || [
+        i 1 + !filePosition
+      ] when
+    ] times
+
+    filePosition splitResult.chars.getSize splitResult.chars makeSubRange assembleString
+  ] [
+    String
+  ] if
+];

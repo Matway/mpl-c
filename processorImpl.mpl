@@ -119,9 +119,14 @@
 
         cachedGlobalErrorInfoSize clearProcessorResult
       ] [
-        ("compiled file " n processor.options.fileNames.at) addLog
+        moduleName: n processor.options.fileNames.at;
+        ("compiled file " moduleName) addLog
+
+        moduleName stripExtension stripPath !moduleName
+        moduleName topNodeIndex @processor.@modules.insert
+        moduleName copy topNodeIndex @processor.@nodes.at.get.!moduleName
+
         # call files which depends from this module
-        moduleName: topNodeIndex processor.nodes.at.get.moduleName;
         moduleName.getTextSize 0 > [
           fr: moduleName @dependedFiles.find;
           fr.success [

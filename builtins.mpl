@@ -61,7 +61,6 @@ builtins: (
   {name: "manuallyInitVariable"    ; impl: @mplBuiltinManuallyInitVariable    ;}
   {name: "manuallyDestroyVariable" ; impl: @mplBuiltinManuallyDestroyVariable ;}
   {name: "mod"                     ; impl: @mplBuiltinMod                     ;}
-  {name: "module"                  ; impl: @mplBuiltinModule                  ;}
   {name: "move"                    ; impl: @mplBuiltinMove                    ;}
   {name: "moveIf"                  ; impl: @mplBuiltinMoveIf                  ;}
   {name: "neg"                     ; impl: @mplBuiltinNeg                     ;}

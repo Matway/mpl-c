@@ -1219,41 +1219,6 @@ parseSignature: [
   TRUE @currentNode.@nextLabelIsSchema set
 ] "mplBuiltinSchema" @declareBuiltin ucall
 
-[
-  currentNode.parent 0 = not [
-    "module can be declared only in top node" makeStringView compilerError
-  ] [
-    refToName: pop;
-    compilable [
-      refToName staticityOfVar Weak < ["name must be static string" compilerError] when
-      compilable [
-        varName: refToName getVar;
-        varName.data.getTag VarString = not ["name must be static string" compilerError] when
-        compilable [
-          string: VarString varName.data.get;
-          ("declare module " string) addLog
-          fr: string makeStringView @processor.@modules.find;
-          fr.success [fr.value 0 < not] && [
-            ("duplicate declaration of module: " string) assembleString compilerError
-          ] [
-            fr.success [
-              indexOfNode @fr.@value set
-            ] [
-              string indexOfNode @processor.@modules.insert
-            ] if
-
-            currentNode.moduleName.getTextSize 0 = [
-              string @currentNode.@moduleName set
-            ] [
-              "duplicate named module" compilerError
-            ] if
-          ] if
-        ] when
-      ] when
-    ] when
-  ] if
-] "mplBuiltinModule" @declareBuiltin ucall
-
 [TRUE dynamic defaultUseOrIncludeModule] "mplBuiltinUseModule" @declareBuiltin ucall
 [FALSE dynamic defaultUseOrIncludeModule] "mplBuiltinIncludeModule" @declareBuiltin ucall
 
