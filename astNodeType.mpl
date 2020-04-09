@@ -1,5 +1,3 @@
-"astNodeType" module
-
 "Array"     includeModule
 "HashTable" includeModule
 "String"    includeModule

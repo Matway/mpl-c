@@ -1,4 +1,3 @@
-"variable" module
 "HashTable" includeModule
 "String"    includeModule
 "Variant"   includeModule

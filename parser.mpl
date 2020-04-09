@@ -1,4 +1,3 @@
-"parser" module
 "control" includeModule
 "ascii" includeModule
 "String" includeModule

@@ -1,4 +1,3 @@
-"debugWriter" module
 "control" useModule
 
 addDebugProlog: [

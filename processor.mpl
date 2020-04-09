@@ -1,4 +1,3 @@
-"processor" module
 "control" includeModule
 "astNodeType" includeModule
 "schemas" includeModule

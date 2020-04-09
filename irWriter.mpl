@@ -1,5 +1,3 @@
-"irWriter" module
-
 "control" includeModule
 "defaultImpl" includeModule
 

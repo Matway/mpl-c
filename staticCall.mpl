@@ -1,4 +1,3 @@
-"staticCall" module
 "control" useModule
 
 staticCall: [

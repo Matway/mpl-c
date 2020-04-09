@@ -1,4 +1,3 @@
-"pathUtils" module
 "control" useModule
 
 extractClearPath: [

@@ -1,4 +1,3 @@
-"processorImpl" module
 "astNodeType" useModule
 "variable" useModule
 "codeNode" useModule
@@ -108,6 +107,7 @@
 
       processorResult.findModuleFail [
         # cant compile this file now, add him to queue
+        ("postpone compilation of \"" n processor.options.fileNames.at "\" because \"" processorResult.errorInfo.missedModule "\" is not compiled yet") addLog
         fr: processorResult.errorInfo.missedModule makeStringView @dependedFiles.find;
         fr.success [
           n @fr.@value.pushBack
@@ -188,7 +188,7 @@
           pair.value.dataSize 0 > [
             fr: pair.key processor.modules.find;
             fr.success not [
-              ("missed module: " @pair.@key "; used in file: " pair.value.last processor.options.fileNames.at LF) assembleString @processorResult.@errorInfo.@message set
+              ("missing module \"" @pair.@key "\" used in file: \"" pair.value.last processor.options.fileNames.at "\"" LF) assembleString @processorResult.@errorInfo.@message.cat
               TRUE @hasErrorMessage set
             ] when
             TRUE @hasError set

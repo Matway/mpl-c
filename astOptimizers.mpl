@@ -1,4 +1,3 @@
-"astOptimizers" module
 "control" useModule
 
 optimizeLabelsInCurrentNode: [

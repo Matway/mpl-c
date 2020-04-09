@@ -1,4 +1,3 @@
-"defaultImpl" module
 "control" includeModule
 
 failProcForProcessor: [
