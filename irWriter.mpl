@@ -118,35 +118,25 @@ getStringImplementation: [
   ] call
 ];
 
-createStringTypeByStringName: [
-  stringName: makeStringView;
-  stringNameNoFirst: stringName.getTextSize 1 - stringName.dataBegin storageAddress 1nx + Nat8 addressToReference makeStringViewRaw;
-  ("%type." stringNameNoFirst) assembleString
-];
-
 createStringIR: [
   refToVar:;
   string:;
 
   stringId: processor.lastStringId copy;
   stringName: ("@string." processor.lastStringId) assembleString;
-  stringType: stringName createStringTypeByStringName;
+
+  stringSizeWithZero: string.chars.getSize 0 = [1] [string.chars.getSize 0 cast] if;
+  stringSize: stringSizeWithZero 1 -;
 
   processor.lastStringId 1 + @processor.@lastStringId set
 
   var: refToVar getVar;
   @stringName findNameInfo @var.@mplNameId set
-  ("getelementptr inbounds (" stringType ", " stringType "* " stringName ", i32 0, i32 2, i32 0)") assembleString makeStringId @var.@irNameId set
+  ("getelementptr inbounds ({i32, [" stringSizeWithZero " x i8]}, {i32, [" stringSizeWithZero " x i8]}* " stringName ", i32 0, i32 1, i32 0)") assembleString makeStringId @var.@irNameId set
 
   valueImplementation: string makeStringView getStringImplementation;
 
-  stringSizeWithZero: string.chars.getSize 0 = [1][string.chars.getSize 0 cast] if;
-  stringSize: stringSizeWithZero 1 -;
-  stringSizeCheck: stringSize Nat32 cast 0xDEADBEEFn32 xor;
-
-  (stringType " = type {i32, i32, [" stringSizeWithZero " x i8]}"
-  ) assembleString @processor.@prolog.pushBack
-  (stringName " = private unnamed_addr constant " stringType " {i32 " stringSizeCheck ", i32 " stringSize ", [" stringSizeWithZero " x i8] c\"" valueImplementation "\\00\"}"
+  (stringName " = private unnamed_addr constant {i32, [" stringSizeWithZero " x i8]} {i32 " stringSize ", [" stringSizeWithZero " x i8] c\"" valueImplementation "\\00\"}"
   ) assembleString @processor.@prolog.pushBack
 ];
 
@@ -168,23 +158,6 @@ createGetTextSizeIR: [
   ] [
     int32SizeRegister refToDst createStoreFromRegister
   ] if
-
-  processor.options.debug [
-    checkPtrRegister:       generateRegisterIRName;
-    checkInt32SizeRegister: generateRegisterIRName;
-    xorRegister:            generateRegisterIRName;
-    checkRegister:          generateRegisterIRName;
-    ("  " checkPtrRegister getNameById " = getelementptr i32, i32* " int32PtrRegister getNameById ", i32 -2") appendInstruction
-    ("  " checkInt32SizeRegister getNameById " = load i32, i32* " checkPtrRegister getNameById) appendInstruction
-    ("  " xorRegister getNameById " = xor i32 " checkInt32SizeRegister getNameById ", " int32SizeRegister getNameById) appendInstruction
-    ("  " checkRegister getNameById " = icmp eq i32 " xorRegister getNameById ", " 0xDEADBEEFn32) appendInstruction
-    ("  br i1 " checkRegister getNameById ", label %label" currentNode.lastBrLabelName 1 + ", label %label" currentNode.lastBrLabelName) appendInstruction
-
-    createLabel
-    "Pointer is not a builtin Text!" createFailWithMessage
-    1 createJump
-    createLabel
-  ] when
 ];
 
 createTypeDeclaration: [
