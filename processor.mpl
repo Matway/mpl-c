@@ -177,6 +177,7 @@ CodeNode: [{
   position:         CompilerPositionInfo;
   stack:            RefToVar Array; # we must compile node without touching parent
   minStackDepth:    0 dynamic;
+  programTemplate:  String;
   program:          Instruction Array;
   aliases:          String Array;
   variables:        Variable Owner Array; # as unique_ptr...
@@ -301,7 +302,6 @@ Processor: [{
   depthOfPre:          0 dynamic;
 
   prolog: String Array;
-  programTemplate:  String;
 
   debugInfo: {
     strings:          String Array;

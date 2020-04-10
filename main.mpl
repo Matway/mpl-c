@@ -382,10 +382,13 @@ processIntegerOption: [
   ] call
 
   debugMemory [
-    cm: memoryCounterMalloc copy;
-    cf: memoryCounterFree copy;
-    cx: memoryXor copy;
-    cu: memoryUsed copy;
-    (LF "mallocs: " cm "; frees: " cf "; xors: " cx "; used: " cu LF) printList
+    (
+      LF
+      "allocations: " memoryCurrentAllocationCount copy "/" memoryTotalAllocationCount copy
+      ", bytes: " memoryCurrentAllocationSize copy "/" memoryTotalAllocationSize copy
+      ", max: " memoryMaxAllocationSize copy
+      ", checksum: " memoryChecksum copy
+      LF
+    ) printList
   ] when
 ] "main" exportFunction

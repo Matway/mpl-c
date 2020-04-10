@@ -2270,15 +2270,15 @@ addDebugLocationForLastInstruction: [
   processor.options.debug [
     instruction: @currentNode.@program.last;
     instruction.codeSize 0 >
-    [instruction.codeOffset instruction.codeSize 1 - + processor.programTemplate.chars.at 58n8 =  not] && # label detector, code of ":"
+    [instruction.codeOffset instruction.codeSize 1 - + currentNode.programTemplate.chars.at 58n8 =  not] && # label detector, code of ":"
     [currentNode.position.line 0 < not] &&
     [
-      code: processor.programTemplate.getStringView instruction.codeOffset instruction.codeSize slice;
+      code: currentNode.programTemplate.getStringView instruction.codeOffset instruction.codeSize slice;
       locationIndex: currentNode.position currentNode.funcDbgIndex addDebugLocation;
-      offset: processor.programTemplate.getTextSize;
-      (code ", !dbg !" locationIndex) @processor.@programTemplate.catMany
+      offset: currentNode.programTemplate.getTextSize;
+      (code ", !dbg !" locationIndex) @currentNode.@programTemplate.catMany
       offset copy @instruction.!codeOffset
-      processor.programTemplate.getTextSize offset - @instruction.!codeSize
+      currentNode.programTemplate.getTextSize offset - @instruction.!codeSize
     ] when
   ] when
 ];

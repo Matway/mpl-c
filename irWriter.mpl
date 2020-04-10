@@ -3,9 +3,9 @@
 
 appendInstruction: [
   list:;
-  offset: processor.programTemplate.getTextSize;
-  list @processor.@programTemplate.catMany
-  processor.programTemplate.getTextSize offset - offset makeInstruction @currentNode.@program.pushBack
+  offset: currentNode.programTemplate.getTextSize;
+  list @currentNode.@programTemplate.catMany
+  currentNode.programTemplate.getTextSize offset - offset makeInstruction @currentNode.@program.pushBack
 ];
 
 IRArgument: [{
@@ -460,35 +460,35 @@ createCallIR: [
 
   processor.options.callTrace [createCallTraceProlog] when
 
-  offset: processor.programTemplate.getTextSize;
+  offset: currentNode.programTemplate.getTextSize;
 
   haveRet [
     generateRegisterIRName @retName set
-    ("  " @retName getNameById " = call " conventionName refToRet getIrType " ") @processor.@programTemplate.catMany
+    ("  " @retName getNameById " = call " conventionName refToRet getIrType " ") @currentNode.@programTemplate.catMany
   ] [
-    ("  call " conventionName "void ") @processor.@programTemplate.catMany
+    ("  call " conventionName "void ") @currentNode.@programTemplate.catMany
   ] if
 
-  @funcName @processor.@programTemplate.cat
-  "(" @processor.@programTemplate.cat
+  @funcName @currentNode.@programTemplate.cat
+  "(" @currentNode.@programTemplate.cat
 
   i: 0 dynamic;
   [
     i argList.dataSize < [
       currentArg: i argList.at;
-      i 0 > [", "  @processor.@programTemplate.cat] when
-      currentArg.irTypeId getNameById @processor.@programTemplate.cat
-      currentArg.byRef ["*" @processor.@programTemplate.cat] when
-      " " @processor.@programTemplate.cat
-      currentArg.irNameId getNameById @processor.@programTemplate.cat
+      i 0 > [", "  @currentNode.@programTemplate.cat] when
+      currentArg.irTypeId getNameById @currentNode.@programTemplate.cat
+      currentArg.byRef ["*" @currentNode.@programTemplate.cat] when
+      " " @currentNode.@programTemplate.cat
+      currentArg.irNameId getNameById @currentNode.@programTemplate.cat
 
       i 1 + @i set TRUE
     ] &&
   ] loop
 
-  ")" @processor.@programTemplate.cat
+  ")" @currentNode.@programTemplate.cat
 
-  processor.programTemplate.getTextSize offset - offset makeInstruction @currentNode.@program.pushBack
+  currentNode.programTemplate.getTextSize offset - offset makeInstruction @currentNode.@program.pushBack
 
   addDebugLocationForLastInstruction
 
