@@ -269,7 +269,7 @@ addVariableMetadata: [
   refToVar isVirtualType not [
     localVariableDebugIndex: nameInfo refToVar addVariableDebugInfo;
     ("  call void @llvm.dbg.declare(metadata " refToVar getIrType "* " refToVar getIrName ", metadata !" localVariableDebugIndex ", metadata !" processor.debugInfo.unit 1 + ")"
-    ) assembleString makeInstruction @currentNode.@program.pushBack
+    ) appendInstruction
   ] when
 ];
 

@@ -53,10 +53,11 @@ makeInstruction: [{
   enabled: TRUE dynamic;
   alloca: FALSE dynamic;
   fakePointer: FALSE dynamic;
-  code: copy;
+  codeOffset: copy;
+  codeSize: copy;
 }];
 
-Instruction: [String makeInstruction];
+Instruction: [0 0 makeInstruction];
 
 ArgVirtual:       [0n8 dynamic];
 ArgGlobal:        [1n8 dynamic];
@@ -299,7 +300,8 @@ Processor: [{
   maxDepthOfRecursion: 0 dynamic;
   depthOfPre:          0 dynamic;
 
-  prolog:              String Array;
+  prolog: String Array;
+  programTemplate:  String;
 
   debugInfo: {
     strings:          String Array;

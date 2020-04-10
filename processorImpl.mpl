@@ -258,7 +258,7 @@
             currentNode.program [
               curInstruction:;
               curInstruction.enabled [
-                curInstruction.code makeStringView @processorResult.@program.cat
+                processor.programTemplate.getStringView curInstruction.codeOffset curInstruction.codeSize slice @processorResult.@program.cat
                 LF @processorResult.@program.cat
               ] [
               ] if

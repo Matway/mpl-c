@@ -1,6 +1,13 @@
 "control" includeModule
 "defaultImpl" includeModule
 
+appendInstruction: [
+  list:;
+  offset: processor.programTemplate.getTextSize;
+  list @processor.@programTemplate.catMany
+  processor.programTemplate.getTextSize offset - offset makeInstruction @currentNode.@program.pushBack
+];
+
 IRArgument: [{
   irTypeId: 0;
   irNameId: 0;
@@ -10,7 +17,7 @@ IRArgument: [{
 createDerefTo: [
   derefNameId:;
   refToVar:;
-  ("  " @derefNameId getNameById " = load " refToVar getIrType ", " refToVar getIrType "* " refToVar getIrName) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " @derefNameId getNameById " = load " refToVar getIrType ", " refToVar getIrType "* " refToVar getIrName) appendInstruction
 ];
 
 createDerefToRegister: [
@@ -27,7 +34,7 @@ createAllocIR: [
     (refToVar getIrName " = local_unnamed_addr global " refToVar getIrType " zeroinitializer") assembleString @processor.@prolog.pushBack
     processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
   ] [
-    ("  " refToVar getIrName " = alloca " refToVar getIrType) assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " refToVar getIrName " = alloca " refToVar getIrType) appendInstruction
     TRUE @currentNode.@program.last.@alloca set
     currentNode.program.dataSize 1 - @var.@allocationInstructionIndex set
   ] if
@@ -78,7 +85,7 @@ createStoreConstant: [
   refWithValue:;
 
   s: refWithValue getPlainConstantIR;
-  ("  store " refToDst getIrType " " s ", " refToDst getIrType "* " refToDst getIrName) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  store " refToDst getIrType " " s ", " refToDst getIrType "* " refToDst getIrName) appendInstruction
 ];
 
 createPlainIR: [
@@ -151,12 +158,12 @@ createGetTextSizeIR: [
   int32SizeRegister: generateRegisterIRName;
   int64SizeRegister: generateRegisterIRName;
 
-  ("  " int32PtrRegister getNameById " = bitcast i8* " refToName getIrName " to i32*") assembleString makeInstruction @currentNode.@program.pushBack
-  ("  " ptrRegister getNameById " = getelementptr i32, i32* " int32PtrRegister getNameById ", i32 -1") assembleString makeInstruction @currentNode.@program.pushBack
-  ("  " int32SizeRegister getNameById " = load i32, i32* " ptrRegister getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " int32PtrRegister getNameById " = bitcast i8* " refToName getIrName " to i32*") appendInstruction
+  ("  " ptrRegister getNameById " = getelementptr i32, i32* " int32PtrRegister getNameById ", i32 -1") appendInstruction
+  ("  " int32SizeRegister getNameById " = load i32, i32* " ptrRegister getNameById) appendInstruction
 
   processor.options.pointerSize 64nx = [
-    ("  " int64SizeRegister getNameById " = zext i32 " int32SizeRegister getNameById " to i64") assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " int64SizeRegister getNameById " = zext i32 " int32SizeRegister getNameById " to i64") appendInstruction
     int64SizeRegister refToDst createStoreFromRegister
   ] [
     int32SizeRegister refToDst createStoreFromRegister
@@ -167,11 +174,11 @@ createGetTextSizeIR: [
     checkInt32SizeRegister: generateRegisterIRName;
     xorRegister:            generateRegisterIRName;
     checkRegister:          generateRegisterIRName;
-    ("  " checkPtrRegister getNameById " = getelementptr i32, i32* " int32PtrRegister getNameById ", i32 -2") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  " checkInt32SizeRegister getNameById " = load i32, i32* " checkPtrRegister getNameById) assembleString makeInstruction @currentNode.@program.pushBack
-    ("  " xorRegister getNameById " = xor i32 " checkInt32SizeRegister getNameById ", " int32SizeRegister getNameById) assembleString makeInstruction @currentNode.@program.pushBack
-    ("  " checkRegister getNameById " = icmp eq i32 " xorRegister getNameById ", " 0xDEADBEEFn32) assembleString makeInstruction @currentNode.@program.pushBack
-    ("  br i1 " checkRegister getNameById ", label %label" currentNode.lastBrLabelName 1 + ", label %label" currentNode.lastBrLabelName) assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " checkPtrRegister getNameById " = getelementptr i32, i32* " int32PtrRegister getNameById ", i32 -2") appendInstruction
+    ("  " checkInt32SizeRegister getNameById " = load i32, i32* " checkPtrRegister getNameById) appendInstruction
+    ("  " xorRegister getNameById " = xor i32 " checkInt32SizeRegister getNameById ", " int32SizeRegister getNameById) appendInstruction
+    ("  " checkRegister getNameById " = icmp eq i32 " xorRegister getNameById ", " 0xDEADBEEFn32) appendInstruction
+    ("  br i1 " checkRegister getNameById ", label %label" currentNode.lastBrLabelName 1 + ", label %label" currentNode.lastBrLabelName) appendInstruction
 
     createLabel
     "Pointer is not a builtin Text!" createFailWithMessage
@@ -194,7 +201,7 @@ createStaticGEP: [
 
   realIndex: index VarStruct struct.data.get.get.realFieldIndexes.at;
   ("  " resultRefToVar getIrName " = getelementptr " structRefToVar getIrType ", " structRefToVar getIrType "* " structRefToVar getIrName ", i32 0, i32 " realIndex
-  ) assembleString makeInstruction @currentNode.@program.pushBack
+  ) appendInstruction
 ];
 
 createFailWithMessage: [
@@ -226,8 +233,8 @@ createDynamicGEP: [
     structSize: VarStruct struct.data.get.get.fields.getSize; #in homogenius struct it is = realFieldIndex
     checkRegister: generateRegisterIRName;
 
-    ("  " checkRegister getNameById " = icmp ult i32 " indexRegister getNameById ", " structSize) assembleString makeInstruction @currentNode.@program.pushBack
-    ("  br i1 " checkRegister getNameById ", label %label" currentNode.lastBrLabelName 1 + ", label %label" currentNode.lastBrLabelName) assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " checkRegister getNameById " = icmp ult i32 " indexRegister getNameById ", " structSize) appendInstruction
+    ("  br i1 " checkRegister getNameById ", label %label" currentNode.lastBrLabelName 1 + ", label %label" currentNode.lastBrLabelName) appendInstruction
 
     createLabel
     "Index is out of bounds!" createFailWithMessage
@@ -236,7 +243,7 @@ createDynamicGEP: [
   ] when
 
   ("  " resultRefToVar getIrName " = getelementptr " structRefToVar getIrType ", " structRefToVar getIrType "* " structRefToVar  getIrName ", i32 0, i32 " indexRegister getNameById
-  ) assembleString makeInstruction @currentNode.@program.pushBack
+  ) appendInstruction
 
 ];
 
@@ -264,7 +271,7 @@ createStoreFromRegister: [
   regName:;
 
   resultVar: destRefToVar getVar;
-  ("  store " destRefToVar getIrType " " @regName getNameById ", " destRefToVar getIrType "* " destRefToVar getIrName) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  store " destRefToVar getIrType " " @regName getNameById ", " destRefToVar getIrType "* " destRefToVar getIrName) appendInstruction
 ];
 
 createBinaryOperation: [
@@ -273,7 +280,7 @@ createBinaryOperation: [
   var1p: arg1 createDerefToRegister;
   var2p: arg2 createDerefToRegister;
   resultReg: generateRegisterIRName;
-  ("  " resultReg getNameById " = " @opName " " arg1 getIrType " " var1p getNameById ", " var2p getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " resultReg getNameById " = " @opName " " arg1 getIrType " " var1p getNameById ", " var2p getNameById) appendInstruction
   resultReg result createStoreFromRegister
 ];
 
@@ -290,9 +297,9 @@ createBinaryOperationDiffTypes: [
     "trunc" makeStringView
   ] if;
 
-  ("  " castedReg getNameById " = " castName " " arg2 getIrType " " var2p getNameById " to " arg1 getIrType) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " castedReg getNameById " = " castName " " arg2 getIrType " " var2p getNameById " to " arg1 getIrType) appendInstruction
   resultReg: generateRegisterIRName;
-  ("  " resultReg getNameById " = " opName " " arg1 getIrType " " var1p getNameById ", " castedReg getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " resultReg getNameById " = " opName " " arg1 getIrType " " var1p getNameById ", " castedReg getNameById) appendInstruction
   resultReg result createStoreFromRegister
 ];
 
@@ -302,7 +309,7 @@ createDirectBinaryOperation: [
   arg2:;
   arg1:;
   resultReg: generateRegisterIRName;
-  ("  " resultReg getNameById " = " opName " " arg1 getIrType "* " arg1 getIrName ", " arg2 getIrName) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " resultReg getNameById " = " opName " " arg1 getIrType "* " arg1 getIrName ", " arg2 getIrName) appendInstruction
   resultReg result createStoreFromRegister
 ];
 
@@ -312,7 +319,7 @@ createUnaryOperation: [
 
   varp: arg createDerefToRegister;
   resultReg: generateRegisterIRName;
-  ("  " resultReg getNameById " = " opName " " arg getIrType " " mopName varp getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " resultReg getNameById " = " opName " " arg getIrType " " mopName varp getNameById) appendInstruction
   resultReg result createStoreFromRegister
 ];
 
@@ -382,7 +389,7 @@ createCastCopyToNew: [
 
   loadReg: srcRef createDerefToRegister;
   castedReg: generateRegisterIRName;
-  ("  " castedReg getNameById " = " @castName " " srcRef getIrType " " loadReg getNameById " to " dstRef getIrType) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " castedReg getNameById " = " @castName " " srcRef getIrType " " loadReg getNameById " to " dstRef getIrType) appendInstruction
 
   castedReg dstRef createStoreFromRegister
 ];
@@ -393,7 +400,7 @@ createCastCopyPtrToNew: [
   srcRef:;
 
   castedReg: generateRegisterIRName;
-  ("  " castedReg getNameById " = " @castName " " srcRef getIrType "* " srcRef getIrName " to " dstRef getIrType) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " castedReg getNameById " = " @castName " " srcRef getIrType "* " srcRef getIrName " to " dstRef getIrType) appendInstruction
 
   castedReg dstRef createStoreFromRegister
 ];
@@ -439,7 +446,7 @@ createRefOperation: [
 createRetValue: [
   refToVar:;
   getReg: refToVar createDerefToRegister;
-  ("  ret " refToVar getIrType " " getReg getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  ret " refToVar getIrType " " getReg getNameById) appendInstruction
 ];
 
 createCallIR: [
@@ -449,39 +456,40 @@ createCallIR: [
   refToRet:;
 
   haveRet: refToRet.varId 0 < not;
-
-  operation: String;
   retName: 0;
 
   processor.options.callTrace [createCallTraceProlog] when
 
+  offset: processor.programTemplate.getTextSize;
+
   haveRet [
     generateRegisterIRName @retName set
-    ("  " @retName getNameById " = call " conventionName refToRet getIrType " ") @operation.catMany
+    ("  " @retName getNameById " = call " conventionName refToRet getIrType " ") @processor.@programTemplate.catMany
   ] [
-    ("  call " conventionName "void ") @operation.catMany
+    ("  call " conventionName "void ") @processor.@programTemplate.catMany
   ] if
 
-  @funcName @operation.cat
-  "(" @operation.cat
+  @funcName @processor.@programTemplate.cat
+  "(" @processor.@programTemplate.cat
 
   i: 0 dynamic;
   [
     i argList.dataSize < [
       currentArg: i argList.at;
-      i 0 > [", "  @operation.cat] when
-      currentArg.irTypeId getNameById @operation.cat
-      currentArg.byRef ["*" @operation.cat] when
-      " " @operation.cat
-      currentArg.irNameId getNameById  @operation.cat
+      i 0 > [", "  @processor.@programTemplate.cat] when
+      currentArg.irTypeId getNameById @processor.@programTemplate.cat
+      currentArg.byRef ["*" @processor.@programTemplate.cat] when
+      " " @processor.@programTemplate.cat
+      currentArg.irNameId getNameById @processor.@programTemplate.cat
 
       i 1 + @i set TRUE
     ] &&
   ] loop
 
-  ")" @operation.cat
+  ")" @processor.@programTemplate.cat
 
-  operation makeInstruction @currentNode.@program.pushBack
+  processor.programTemplate.getTextSize offset - offset makeInstruction @currentNode.@program.pushBack
+
   addDebugLocationForLastInstruction
 
   processor.options.callTrace [createCallTraceEpilog] when
@@ -490,7 +498,7 @@ createCallIR: [
 ];
 
 createLabel: [
-  ("label" currentNode.lastBrLabelName ":") assembleString makeInstruction @currentNode.@program.pushBack
+  ("label" currentNode.lastBrLabelName ":") appendInstruction
   currentNode.lastBrLabelName 1 + @currentNode.@lastBrLabelName set
 ];
 
@@ -500,13 +508,13 @@ createBranch: [
 
   condReg: refToCond createDerefToRegister;
   ("  br i1 " condReg getNameById ", label %label" currentNode.lastBrLabelName timeShift - ", label %label" currentNode.lastBrLabelName timeShift - 1 +
-  ) assembleString makeInstruction @currentNode.@program.pushBack
+  ) appendInstruction
 ];
 
 createJump: [
   copy timeShift:;
 
-  ("  br label %label" currentNode.lastBrLabelName timeShift - 1 +) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  br label %label" currentNode.lastBrLabelName timeShift - 1 +) appendInstruction
 ];
 
 createPhiNode: [
@@ -517,14 +525,14 @@ createPhiNode: [
   varType:;
 
   ("  " @varName " = phi " @varType " [ " @thenName ", %label" currentNode.lastBrLabelName 3 - shift + " ], [ " @elseName ", %label" currentNode.lastBrLabelName 2 - shift + " ]"
-  ) assembleString makeInstruction @currentNode.@program.pushBack
+  ) appendInstruction
 ];
 
 createComent: [
   coment: makeStringView;
   [
     compileOnce
-    (" ;" coment) assembleString makeInstruction @currentNode.@program.pushBack
+    (" ;" coment) appendInstruction
   ] call
 ];
 
@@ -657,48 +665,48 @@ createCallTraceProlog: [
   ptr: generateRegisterIRName;
   ptrNext: generateRegisterIRName;
 
-  ("  " ptr getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") assembleString makeInstruction @currentNode.@program.pushBack
-  ("  " ptrNext getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 1") assembleString makeInstruction @currentNode.@program.pushBack
-  ("  store %type.callTraceInfo* " ptrNext getNameById ", %type.callTraceInfo** @debug.callTracePtr") assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " ptr getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") appendInstruction
+  ("  " ptrNext getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 1") appendInstruction
+  ("  store %type.callTraceInfo* " ptrNext getNameById ", %type.callTraceInfo** @debug.callTracePtr") appendInstruction
 
   currentNode.hasNestedCall not [
     #ptr->next = ptrNext
     ptrDotNext: generateRegisterIRName;
-    ("  " ptrDotNext getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 0, i32 1") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  store %type.callTraceInfo* " ptrNext getNameById ", %type.callTraceInfo** " ptrDotNext getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrDotNext getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 0, i32 1") appendInstruction
+    ("  store %type.callTraceInfo* " ptrNext getNameById ", %type.callTraceInfo** " ptrDotNext getNameById) appendInstruction
 
     #ptrNext->prev = ptr
     ptrNextDotPrev: generateRegisterIRName;
-    ("  " ptrNextDotPrev getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 0") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  store %type.callTraceInfo* " ptr getNameById ", %type.callTraceInfo** " ptrNextDotPrev getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrNextDotPrev getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 0") appendInstruction
+    ("  store %type.callTraceInfo* " ptr getNameById ", %type.callTraceInfo** " ptrNextDotPrev getNameById) appendInstruction
 
     #ptrNext->fileName = fileName
     fileNameVar: currentNode.position.fileNumber processor.options.fileNames.at makeVarString;
     ptrNextDotName: generateRegisterIRName;
-    ("  " ptrNextDotName getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 2") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  store i8* " fileNameVar getIrName ", i8** " ptrNextDotName getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrNextDotName getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 2") appendInstruction
+    ("  store i8* " fileNameVar getIrName ", i8** " ptrNextDotName getNameById) appendInstruction
 
     TRUE @currentNode.@hasNestedCall set
   ] when
 
   #ptrNext->line = line
   ptrNextDotLine: generateRegisterIRName;
-  ("  " ptrNextDotLine getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 3") assembleString makeInstruction @currentNode.@program.pushBack
-  ("  store i32 " currentNode.position.line ", i32* " ptrNextDotLine getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " ptrNextDotLine getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 3") appendInstruction
+  ("  store i32 " currentNode.position.line ", i32* " ptrNextDotLine getNameById) appendInstruction
 
   #ptrNext->column = column
   ptrNextDotColumn: generateRegisterIRName;
-  ("  " ptrNextDotColumn getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 4") assembleString makeInstruction @currentNode.@program.pushBack
-  ("  store i32 " currentNode.position.column ", i32* " ptrNextDotColumn getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " ptrNextDotColumn getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 4") appendInstruction
+  ("  store i32 " currentNode.position.column ", i32* " ptrNextDotColumn getNameById) appendInstruction
 ];
 
 createCallTraceEpilog: [
   ptr: generateRegisterIRName;
   ptrPrev: generateRegisterIRName;
 
-  ("  " ptr getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") assembleString makeInstruction @currentNode.@program.pushBack
-  ("  " ptrPrev getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 -1") assembleString makeInstruction @currentNode.@program.pushBack
-  ("  store %type.callTraceInfo* " ptrPrev getNameById ", %type.callTraceInfo** @debug.callTracePtr") assembleString makeInstruction @currentNode.@program.pushBack
+  ("  " ptr getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") appendInstruction
+  ("  " ptrPrev getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 -1") appendInstruction
+  ("  store %type.callTraceInfo* " ptrPrev getNameById ", %type.callTraceInfo** @debug.callTracePtr") appendInstruction
 ];
 
 createGetCallTrace: [
@@ -712,25 +720,25 @@ createGetCallTrace: [
     ptrFirstSrc: generateRegisterIRName;
     ptrFirstCast: generateRegisterIRName;
     ptrFirstDst: generateRegisterIRName;
-    ("  " ptrFirstSrc getNameById " = getelementptr inbounds " callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  " ptrFirstDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 0") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  " ptrFirstCast getNameById " = bitcast %type.callTraceInfo* " ptrFirstSrc getNameById " to " infoIrType "*") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  store " infoIrType "* " ptrFirstCast getNameById ", " infoIrType "** " ptrFirstDst getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrFirstSrc getNameById " = getelementptr inbounds " callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0") appendInstruction
+    ("  " ptrFirstDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 0") appendInstruction
+    ("  " ptrFirstCast getNameById " = bitcast %type.callTraceInfo* " ptrFirstSrc getNameById " to " infoIrType "*") appendInstruction
+    ("  store " infoIrType "* " ptrFirstCast getNameById ", " infoIrType "** " ptrFirstDst getNameById) appendInstruction
 
     ptrLastSrc: generateRegisterIRName;
     ptrLastCast: generateRegisterIRName;
     ptrLastDst: generateRegisterIRName;
-    ("  " ptrLastSrc getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  " ptrLastDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 1") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  " ptrLastCast getNameById " = bitcast %type.callTraceInfo* " ptrLastSrc getNameById " to " infoIrType "*") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  store " infoIrType "* " ptrLastCast getNameById ", " infoIrType "** " ptrLastDst getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrLastSrc getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") appendInstruction
+    ("  " ptrLastDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 1") appendInstruction
+    ("  " ptrLastCast getNameById " = bitcast %type.callTraceInfo* " ptrLastSrc getNameById " to " infoIrType "*") appendInstruction
+    ("  store " infoIrType "* " ptrLastCast getNameById ", " infoIrType "** " ptrLastDst getNameById) appendInstruction
   ] [
     ptrFirstDst: generateRegisterIRName;
-    ("  " ptrFirstDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 0") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  store " infoIrType "* null, " infoIrType "** " ptrFirstDst getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrFirstDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 0") appendInstruction
+    ("  store " infoIrType "* null, " infoIrType "** " ptrFirstDst getNameById) appendInstruction
 
     ptrLastDst: generateRegisterIRName;
-    ("  " ptrLastDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 1") assembleString makeInstruction @currentNode.@program.pushBack
-    ("  store " infoIrType "* null, " infoIrType "** " ptrLastDst getNameById) assembleString makeInstruction @currentNode.@program.pushBack
+    ("  " ptrLastDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 1") appendInstruction
+    ("  store " infoIrType "* null, " infoIrType "** " ptrLastDst getNameById) appendInstruction
   ] if
 ];

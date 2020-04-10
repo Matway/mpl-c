@@ -19,6 +19,7 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -ndebug -o mplc.ll^
  ../processSubNodes.mpl^
  ../schemas.mpl^
  ../staticCall.mpl^
+ ../stringTools.mpl^
  ../variable.mpl^
  ../sl/ascii.mpl^
  ../sl/Array.mpl^

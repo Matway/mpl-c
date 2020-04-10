@@ -3,6 +3,7 @@
 "staticCall" includeModule
 "variable" includeModule
 "processor" includeModule
+"stringTools" includeModule
 
 addOverload: [
   copy nameInfo:;
@@ -2267,14 +2268,17 @@ processReal64Node: [makeVarReal64 push];
 
 addDebugLocationForLastInstruction: [
   processor.options.debug [
-    operation: @currentNode.@program.last.@code;
-    operation.chars.dataSize 1 >
-    [operation.chars.dataSize 2 - operation.chars.at 58n8 =  not] && # label detector, code of ":"
+    instruction: @currentNode.@program.last;
+    instruction.codeSize 0 >
+    [instruction.codeOffset instruction.codeSize 1 - + processor.programTemplate.chars.at 58n8 =  not] && # label detector, code of ":"
     [currentNode.position.line 0 < not] &&
     [
-      ", !dbg !" makeStringView @operation.cat
+      code: processor.programTemplate.getStringView instruction.codeOffset instruction.codeSize slice;
       locationIndex: currentNode.position currentNode.funcDbgIndex addDebugLocation;
-      locationIndex @operation.cat
+      offset: processor.programTemplate.getTextSize;
+      (code ", !dbg !" locationIndex) @processor.@programTemplate.catMany
+      offset copy @instruction.!codeOffset
+      processor.programTemplate.getTextSize offset - @instruction.!codeSize
     ] when
   ] when
 ];
@@ -3365,8 +3369,7 @@ makeCompilerPosition: [
   hasRet [
     retRef createRetValue
   ] [
-    s: "  ret void" toString;
-    @s move makeInstruction @currentNode.@program.pushBack
+    ("  ret void") appendInstruction
   ] if
 
   callDestructors
