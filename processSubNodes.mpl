@@ -283,9 +283,9 @@ tryMatchNode: [
         [forceRealFunction copy] ||
       ] &&
     ] ||
-    [getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + < not] &&
+    [currentNode getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + < not] &&
     [currentMatchingNode.matchingInfo.hasStackUnderflow not
-      [getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + > not] ||
+      [currentNode getStackDepth currentMatchingNode.matchingInfo.inputs.dataSize currentMatchingNode.matchingInfo.preInputs.dataSize + > not] ||
     ] &&
   ] &&;
 
@@ -343,7 +343,7 @@ tryMatchNode: [
     i: 0 dynamic;
     [
       i currentMatchingNode.matchingInfo.inputs.getSize < [
-        stackEntry: i getStackEntry;
+        stackEntry: i currentNode getStackEntry;
         cacheEntry: i currentMatchingNode.matchingInfo.inputs.at.refToVar;
 
         stackEntry cacheEntry compareEntriesRec [
@@ -365,7 +365,7 @@ tryMatchNode: [
       i: 0 dynamic;
       [
         i currentMatchingNode.matchingInfo.preInputs.dataSize < [
-          stackEntry: i currentMatchingNode.matchingInfo.inputs.dataSize + getStackEntry copy;
+          stackEntry: i currentMatchingNode.matchingInfo.inputs.dataSize + currentNode getStackEntry copy;
           cacheEntry: i currentMatchingNode.matchingInfo.preInputs.at;
 
           cacheEntry.hostId 0 < not [stackEntry cacheEntry compareEntriesRec] && [
@@ -480,8 +480,8 @@ tryMatchNode: [
 
     result: -1 dynamic;
 
-    getStackDepth 0 > [
-      byType: 0 dynamic getStackEntry getVar.mplSchemaId fr.value.byMplType.find;
+    currentNode getStackDepth 0 > [
+      byType: 0 currentNode getStackEntry getVar.mplSchemaId fr.value.byMplType.find;
 
       byType.success [
         byType.value findInIndexArray @result set
@@ -1040,7 +1040,7 @@ usePreInputsWith: [
   newNodeIndex 0 < not [
     newNode: newNodeIndex processor.blocks.at.get;
 
-    newMinStackDepth: getStackDepth newNode.matchingInfo.inputs.dataSize - newNode.matchingInfo.preInputs.dataSize -;
+    newMinStackDepth: currentNode getStackDepth newNode.matchingInfo.inputs.dataSize - newNode.matchingInfo.preInputs.dataSize -;
     newMinStackDepth currentNode.minStackDepth < [
       newMinStackDepth @currentNode.@minStackDepth set
     ] when
@@ -1068,7 +1068,7 @@ derefNEntries: [
   [
     i count < [
       count 1 - i - implicitDerefInfo.at [
-        dst: i getStackEntry;
+        dst: i @currentNode getStackEntry;
         dst getPossiblePointee @dst set
       ] when
       i 1 + @i set TRUE
@@ -1479,7 +1479,7 @@ processIf: [
         appliedVarsThen: newNodeThenIndex applyNodeChanges;
         appliedVarsElse: newNodeElseIndex applyNodeChanges;
 
-        stackDepth: getStackDepth;
+        stackDepth: currentNode getStackDepth;
         newNodeThen.matchingInfo.inputs.dataSize stackDepth > ["then branch stack underflow" makeStringView compilerError] when
         newNodeElse.matchingInfo.inputs.dataSize stackDepth > ["else branch stack underflow" makeStringView compilerError] when
         stackDepth newNodeThen.matchingInfo.inputs.dataSize - newNodeThen.outputs.dataSize +
@@ -1497,7 +1497,7 @@ processIf: [
             branch:;
             copy index:;
             index branch.fixedOutputs.dataSize + longestOutputSize < [
-              longestInputSize index - 1 - getStackEntry copy
+              longestInputSize index - 1 - currentNode getStackEntry copy
             ] [
               index branch.fixedOutputs.dataSize + longestOutputSize - branch.fixedOutputs.at copy
             ] if
@@ -1886,7 +1886,7 @@ processDynamicLoop: [
           i: 0 dynamic;
           [
             i newNode.matchingInfo.inputs.dataSize < [
-              curInput: i getStackEntry;
+              curInput: i currentNode getStackEntry;
               curOutput: newNode.matchingInfo.inputs.dataSize 1 - i - newNode.outputs.at .refToVar;
               curInput curOutput checkToRecompile [
                 curInput makeVarTreeDynamic

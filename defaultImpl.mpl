@@ -6,7 +6,7 @@ failProcForProcessor: [
   "ASSERTION FAILED!!!" print LF print
   message print LF print
   "While compiling:" print LF print
-  defaultPrintStackTrace
+  currentNode defaultPrintStackTrace
 
   "Terminating..." print LF print
   2 exit
@@ -114,10 +114,10 @@ defaultMakeConstWith: [
 ];
 
 defaultUseOrIncludeModule: [
-  copy asUse:;
+  asUse: block:;;
   (
     [compilable]
-    [currentNode.parent  0 = not ["module can be used only in top node" compilerError] when]
+    [block.parent 0 = not ["module can be used only in top block" compilerError] when]
     [refToName: pop;]
     [refToName staticityOfVar Weak < ["name must be static string" compilerError] when]
     [
@@ -129,8 +129,8 @@ defaultUseOrIncludeModule: [
 
       fr: string makeStringView processor.modules.find;
       fr.success [fr.value 0 < not] && [
-        frn: fr.value currentNode.usedModulesTable.find;
-        frn2: fr.value currentNode.directlyIncludedModulesTable.find;
+        frn: fr.value block.usedModulesTable.find;
+        frn2: fr.value block.directlyIncludedModulesTable.find;
         frn.success frn2.success or [
           ("duplicate use module: " string) assembleString compilerError
         ] [
@@ -146,45 +146,39 @@ defaultUseOrIncludeModule: [
 ];
 
 getStackEntryWith: [
-  copy check:;
-  copy depth:;
-
-  index: currentNode.id copy;
-  result: RefToVar Ref; #ref to 0nx
-
+  depth: check: block:;; copy;
+  result: RefToVar @block isConst [Cref] [Ref] uif; #ref to 0nx
   [
-    node: index @processor.@blocks.at.get;
-
-    node.root [
+    block.root [
       check ["stack underflow" compilerError] when
       FALSE
     ] [
-      depth node.stack.dataSize < [
-        node.stack.dataSize 1 - depth - @node.@stack.at !result
+      depth block.stack.dataSize < [
+        block.stack.dataSize 1 - depth - @block.@stack.at !result
         FALSE
       ] [
-        depth node.stack.dataSize - node.buildingMatchingInfo.inputs.dataSize + @depth set
-        node.parent @index set
+        depth block.stack.dataSize - block.buildingMatchingInfo.inputs.dataSize + @depth set
+        block.parent @processor.@blocks.at.get !block
         TRUE
       ] if
     ] if
   ] loop
+
   @result
 ];
 
-getStackEntry:          [compileOnce TRUE  static getStackEntryWith];
-getStackEntryUnchecked: [            FALSE static getStackEntryWith];
+getStackEntry:          [depth: block:;; depth TRUE  @block getStackEntryWith];
+getStackEntryUnchecked: [depth: block:;; depth FALSE block  getStackEntryWith];
 
 getStackDepth: [
+  block:;
   depth: 0 dynamic;
   inputsCount: 0 dynamic;
-  index: currentNode.id copy;
   [
-    node: index processor.blocks.at.get;
-    node.root not [
-      depth node.stack.dataSize + @depth set
-      inputsCount node.buildingMatchingInfo.inputs.dataSize + @inputsCount set
-      node.parent @index set
+    block.root not [
+      depth block.stack.dataSize + @depth set
+      inputsCount block.buildingMatchingInfo.inputs.dataSize + @inputsCount set
+      block.parent processor.blocks.at.get !block
       TRUE
     ] &&
   ] loop
@@ -195,12 +189,13 @@ getStackDepth: [
 ];
 
 defaultPrintStack: [
-  ("stack:" LF "depth=" getStackDepth LF) printList
+  block:;
+  ("stack:" LF "depth=" block getStackDepth LF) printList
 
   i: 0 dynamic;
   [
-    i getStackDepth < [
-      entry: i getStackEntryUnchecked;
+    i block getStackDepth < [
+      entry: i block getStackEntryUnchecked;
       (entry getMplType entry.mutable ["R"] ["C"] if entry getVar.temporary ["T"] [""] if LF) printList
       i 1 + @i set TRUE
     ] &&
@@ -208,24 +203,23 @@ defaultPrintStack: [
 ];
 
 defaultPrintStackTrace: [
-  nodeIndex: currentNode.id copy;
+  block:;
+  currentBlock: block;
   [
-    node: nodeIndex processor.blocks.at.get;
-    node.root [
+    currentBlock.root [
       FALSE
     ] [
-      ("at filename: "   node.position.fileNumber processor.options.fileNames.at
-        ", token: "      node.position.token
-        ", nodeIndex: "  nodeIndex
-        ", line: "       node.position.line
-        ", column: "     node.position.column LF) printList
+      ("at filename: "   currentBlock.position.fileNumber processor.options.fileNames.at
+        ", token: "      currentBlock.position.token
+        ", line: "       currentBlock.position.line
+        ", column: "     currentBlock.position.column LF) printList
 
-      node.parent @nodeIndex set
+      currentBlock.parent processor.blocks.at.get !currentBlock
       TRUE
     ] if
   ] loop
 
-  defaultPrintStack
+  block defaultPrintStack
 ];
 
 findNameInfo: [

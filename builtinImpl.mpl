@@ -1216,8 +1216,8 @@ parseSignature: [
   TRUE @currentNode.@nextLabelIsSchema set
 ] "mplBuiltinSchema" @declareBuiltin ucall
 
-[TRUE dynamic defaultUseOrIncludeModule] "mplBuiltinUseModule" @declareBuiltin ucall
-[FALSE dynamic defaultUseOrIncludeModule] "mplBuiltinIncludeModule" @declareBuiltin ucall
+[TRUE dynamic currentNode defaultUseOrIncludeModule] "mplBuiltinUseModule" @declareBuiltin ucall
+[FALSE dynamic currentNode defaultUseOrIncludeModule] "mplBuiltinIncludeModule" @declareBuiltin ucall
 
 [
   refToName: pop;
@@ -1449,11 +1449,11 @@ parseSignature: [
 ] "mplBuiltinPrintVariableCount" @declareBuiltin ucall
 
 [
-  defaultPrintStack
+  currentNode defaultPrintStack
 ] "mplBuiltinPrintStack" @declareBuiltin ucall
 
 [
-  defaultPrintStackTrace
+  currentNode defaultPrintStackTrace
 ] "mplBuiltinPrintStackTrace" @declareBuiltin ucall
 
 [

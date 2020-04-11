@@ -231,8 +231,8 @@ push: [
 
 getStackEntryForPreInput: [
   copy depth:;
-  depth getStackDepth < [
-    entry: depth getStackEntry;
+  depth currentNode getStackDepth < [
+    entry: depth currentNode getStackEntry;
     [entry.hostId currentNode.id = not] "Pre input is just in inputs!" assert
     shadowBegin: RefToVar;
     shadowEnd: RefToVar;
@@ -2000,7 +2000,7 @@ addStackUnderflowInfo: [
   result:;
 
   currentNode.stack.dataSize 0 = [
-    entryRef: 0 dynamic getStackEntry;
+    entryRef: 0 currentNode getStackEntry;
     compilable [
       entry: entryRef copy;
       entry staticityOfVar Weak = [
@@ -2690,7 +2690,7 @@ unregCodeNodeNames: [
 ];
 
 checkPreStackDepth: [
-  newMinStackDepth: getStackDepth currentNode.stack.dataSize -;
+  newMinStackDepth: currentNode getStackDepth currentNode.stack.dataSize -;
   preCountedStackDepth: currentNode.minStackDepth copy;
   i: preCountedStackDepth copy;
   [
@@ -3715,7 +3715,7 @@ nodeHasCode: [
   nodeCase                        @codeNode.@nodeCase set
   parentIndex                     @codeNode.@parent set
   @compilerPositionInfo           @codeNode.@position set
-  getStackDepth                   @codeNode.@minStackDepth set
+  currentNode getStackDepth       @codeNode.@minStackDepth set
   processor.varCount              @codeNode.@variableCountDelta set
   processor.exportDepth           @codeNode.@exportDepth set
 
