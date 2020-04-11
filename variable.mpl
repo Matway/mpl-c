@@ -310,7 +310,7 @@ getMplType: [
   forMatching: Cond;
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Ref;
   multiParserResult: MultiParserResult Cref;
   result: RefToVar Ref;
 } () {convention: cdecl;} "popImpl" importFunction
@@ -847,12 +847,12 @@ isGlobal: [
 ];
 
 unglobalize: [
-  refToVar:;
+  refToVar: block:;;
   var: refToVar getVar;
   var.global [
     FALSE @var.@global set
     -1 dynamic @var.@globalId set
-    refToVar makeVariableIRName
+    refToVar block makeVariableIRName
   ] when
 ];
 
@@ -1496,9 +1496,8 @@ getStaticStructIR: [
 
 # require captures "processor" and "codeNode"
 generateVariableIRNameWith: [
-  copy temporaryRegister:;
-  copy hostId:;
-  temporaryRegister not [currentNode.parent 0 =] && [
+  hostId: temporaryRegister: block:;;;
+  temporaryRegister not [block.parent 0 =] && [
     ("@global." processor.globalVarCount) assembleString makeStringId
     processor.globalVarCount 1 + @processor.@globalVarCount set
   ] [
@@ -1509,13 +1508,12 @@ generateVariableIRNameWith: [
 ];
 
 generateVariableIRName: [FALSE generateVariableIRNameWith];
-generateRegisterIRName: [currentNode.id TRUE generateVariableIRNameWith];
+generateRegisterIRName: [currentNode.id TRUE currentNode generateVariableIRNameWith];
 
 makeVariableIRName: [
-  refToVar:;
+  refToVar: block:;;
   var: refToVar getVar;
-
-  refToVar.hostId refToVar isGlobal not generateVariableIRNameWith @var.@irNameId set
+  refToVar.hostId refToVar isGlobal not block generateVariableIRNameWith @var.@irNameId set
 ];
 
 findFieldWithOverloadShift: [

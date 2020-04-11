@@ -595,23 +595,23 @@ fixRef: [
       fr.value @fixed set
     ] [
       # dont have prototype - deref of captured dynamic pointer
-      pointee copyVarFromChild @fixed set
+      pointee @currentNode copyVarFromChild @fixed set
       TRUE dynamic @makeDynamic set
     ] if
   ] [
     # dont have shadow - to deref of captured dynamic pointer
     # must by dynamic
     var.staticity Static = [pointeeVar.storageStaticity Static =] && ["returning pointer to local variable" currentNode compilerError] when
-    pointee copyVarFromChild @fixed set
+    pointee @currentNode copyVarFromChild @fixed set
     TRUE dynamic @makeDynamic set
   ] if
 
   fixed.hostId @pointee.@hostId set
   fixed.varId  @pointee.@varId  set
 
-  wasVirtual [refToVar Virtual makeStaticity @refToVar set] [
+  wasVirtual [refToVar Virtual currentNode makeStaticity @refToVar set] [
     makeDynamic [
-      refToVar Dynamic makeStaticity @refToVar set
+      refToVar Dynamic currentNode makeStaticity @refToVar set
     ] when
   ] if
   refToVar
@@ -632,7 +632,7 @@ applyOnePair: [
   cacheEntryVar: cacheEntry getVar;
   stackEntryVar: stackEntry getVar;
 
-  stackEntry cacheEntry staticityOfVar makeStaticity drop:;
+  stackEntry cacheEntry staticityOfVar currentNode makeStaticity drop:;
 
   cacheEntry noMatterToCopy not [cacheEntryVar.shadowEnd getVar.capturedAsMutable copy] && [
     TRUE @stackEntryVar.@capturedAsMutable set
@@ -727,7 +727,7 @@ applyEntriesRec: [
               cacheFieldRef: j currentFromCache getFieldForMatching;
               cacheFieldRef.hostId currentChangesNodeIndex = [ # we captured it
                 cacheFieldRef @unfinishedCache.pushBack
-                j currentFromStack getField @unfinishedStack.pushBack
+                j currentFromStack @currentNode getField @unfinishedStack.pushBack
               ] when
               j 1 + @j set TRUE
             ] &&
@@ -857,7 +857,7 @@ usePreCapturesWith: [
                       cacheFieldRef: j currentFromCache getFieldForMatching;
                       cacheFieldRef.hostId currentChangesNodeIndex = [ # we captured it
                         cacheFieldRef @unfinishedCache.pushBack
-                        j currentFromStack getField @unfinishedStack.pushBack
+                        j currentFromStack @currentNode getField @unfinishedStack.pushBack
                       ] when
                       j 1 + @j set compilable
                     ] &&
@@ -978,7 +978,7 @@ applyNodeChanges: [
   [
     i currentChangesNode.outputs.dataSize < [
       currentOutput: i currentChangesNode.outputs.at;
-      outputRef: currentOutput.refToVar copyVarFromChild; # output is to inner var
+      outputRef: currentOutput.refToVar @currentNode copyVarFromChild; # output is to inner var
       outputRef fixOutputRefsRec
       outputRef @appliedVars.@fixedOutputs.pushBack
       i 1 + @i set compilable
@@ -995,7 +995,7 @@ applyNodeChanges: [
     curVar:    pair.key getVar;
     nestedVar: pair.value getVar;
     nestedVar.data.getTag VarRef = [
-      nestedCopy: pair.value copyOneVar;
+      nestedCopy: pair.value @currentNode copyOneVar;
       pair.value isGlobal [
         pVar: pair.value getVar;
         nVar: nestedCopy getVar;
@@ -1047,7 +1047,7 @@ usePreInputsWith: [
 
     exitPre not [
       newNode.matchingInfo.hasStackUnderflow [
-        addStackUnderflowInfo
+        @currentNode addStackUnderflowInfo
       ] when
     ] when
   ] when
@@ -1312,7 +1312,7 @@ processCallByNode: [
     ] && [
       0 newNode.outputs.at.refToVar isStaticData
     ] && [
-      result: 0 newNode.outputs.at.refToVar copyVarFromChild;
+      result: 0 newNode.outputs.at.refToVar @currentNode copyVarFromChild;
       TRUE @newNode.@deleted set
       result @currentNode createStaticInitIR push
     ] [
@@ -1931,7 +1931,7 @@ processDynamicLoop: [
             i: 0 dynamic;
             [
               i inputs.getSize < [
-                curNodeInput: i inputs.at copyVar;
+                curNodeInput: i inputs.at @currentNode copyVar;
                 curNodeInput @nodeInputs.pushBack
 
                 (curNodeInput getIrType "*") assembleString makeStringView # with *
@@ -2006,9 +2006,9 @@ processDynamicLoop: [
 
   # we dont know count of used in export entites
   signature.inputs.getSize [
-    r: signature.inputs.getSize 1 - i - signature.inputs.at copyVarFromChild;
+    r: signature.inputs.getSize 1 - i - signature.inputs.at @currentNode copyVarFromChild;
     r makeVarTreeDynamic
-    r unglobalize
+    r currentNode unglobalize
     r fullUntemporize
     r getVar.data.getTag VarRef = [
       r getPointeeNoDerefIR push
@@ -2099,8 +2099,8 @@ processDynamicLoop: [
   signature.variadic @declarationNode.@variadic set
 
   signature.inputs.getSize [
-    r: signature.inputs.getSize 1 - i - signature.inputs.at copyVarFromChild;
-    r unglobalize
+    r: signature.inputs.getSize 1 - i - signature.inputs.at @currentNode copyVarFromChild;
+    r currentNode unglobalize
     FALSE @r.@mutable set
     r push
   ] times
@@ -2116,7 +2116,7 @@ processDynamicLoop: [
       addDebugReserve @currentNode.@funcDbgIndex set
     ] when
     forcedSignature.inputs   [p:; a: pop;] each
-    forcedSignature.outputs [copyVarFromChild push] each
+    forcedSignature.outputs [@currentNode copyVarFromChild push] each
     name finalizeCodeNode
   ] call
 
@@ -2162,7 +2162,7 @@ callImportWith: [
                 ("cant call import, expected mutable argument #" i " with type " nodeEntry currentNode getMplType) assembleString currentNode compilerError
               ] when
             ] [
-              nodeMutable [stackEntry makeVarTreeDirty] when
+              nodeMutable [stackEntry @currentNode makeVarTreeDirty] when
               input @inputs.pushBack
             ]
           ) sequence
@@ -2191,7 +2191,7 @@ callImportWith: [
       [
         i declarationNode.outputs.getSize < [
           currentOutput: i declarationNode.outputs.at.refToVar;
-          current: currentOutput copyVarFromChild;
+          current: currentOutput @currentNode copyVarFromChild;
           Dynamic current getVar.@staticity set
           current @outputs.pushBack
           current getVar.data.getTag VarStruct = [

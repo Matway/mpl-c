@@ -108,7 +108,7 @@ addBuiltin: [
   ] if
   nameId:;
 
-  bvar: @id VarBuiltin createVariable Virtual makeStaticity;
+  bvar: @id VarBuiltin @currentNode createVariable Virtual @currentNode makeStaticity;
   nameId bvar NameCaseBuiltin addNameInfo
 ];
 

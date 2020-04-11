@@ -84,7 +84,7 @@ defaultSet: [
       ] [
         lambdaCastResult: refToSrc refToDst tryImplicitLambdaCast;
         lambdaCastResult.success [
-          newSrc: lambdaCastResult.refToVar TRUE createRef;
+          newSrc: lambdaCastResult.refToVar TRUE @block createRef;
           newSrc refToDst @block createCopyToExists
         ] [
           ("types mismatch, src is " refToSrc block getMplType "," LF "dst is " refToDst block getMplType) assembleString block compilerError
@@ -95,10 +95,10 @@ defaultSet: [
 ];
 
 defaultRef: [
-  copy mutable:;
+  mutable: block:;;
   refToVar: pop;
   compilable [
-    refToVar mutable createRef push
+    refToVar mutable @block createRef push
   ] when
 ];
 

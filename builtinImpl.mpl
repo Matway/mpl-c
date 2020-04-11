@@ -65,8 +65,8 @@ mplNumberBinaryOp: [
           resultType: tag @getResultType call;
           value1 value2 @exValidator call
           compilable [
-            value1 value2 @opFunc call resultType cutValue resultType createVariable
-            arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult makeStaticity
+            value1 value2 @opFunc call resultType cutValue resultType @currentNode createVariable
+            arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult currentNode makeStaticity
             @currentNode createPlainIR push
           ] when
         ] staticCall
@@ -79,8 +79,8 @@ mplNumberBinaryOp: [
           value1: tag var1.data.get copy;
           value2: tag var2.data.get copy;
           resultType: tag @getResultType call;
-          result: resultType zeroValue resultType createVariable
-          Dynamic makeStaticity
+          result: resultType zeroValue resultType @currentNode createVariable
+          Dynamic currentNode makeStaticity
           @currentNode createAllocIR;
           opName @currentNode createBinaryOperation
           result push
@@ -138,21 +138,20 @@ mplNumberBinaryOp: [
     ] if
 
     compilable [
-
       arg1 staticityOfVar Dynamic > arg2 staticityOfVar Dynamic > and [
         var1.data.getTag VarString = [
           value1: VarString var1.data.get copy;
           value2: VarString var2.data.get copy;
-          value1 value2 = VarCond createVariable
-          arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult makeStaticity
+          value1 value2 = VarCond @currentNode createVariable
+          arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult currentNode makeStaticity
           @currentNode createPlainIR push
         ] [
           var1.data.getTag VarCond VarReal64 1 + [
             copy tag:;
             value1: tag var1.data.get copy;
             value2: tag var2.data.get copy;
-            value1 value2 = VarCond createVariable
-            arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult makeStaticity
+            value1 value2 = VarCond @currentNode createVariable
+            arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult currentNode makeStaticity
             @currentNode createPlainIR push
           ] staticCall
         ] if
@@ -161,21 +160,21 @@ mplNumberBinaryOp: [
         arg2 makeVarRealCaptured
 
         var1.data.getTag VarString = [
-          result: FALSE VarCond createVariable Dynamic makeStaticity @currentNode createAllocIR;
+          result: FALSE VarCond @currentNode createVariable Dynamic @currentNode makeStaticity @currentNode createAllocIR;
           "icmp eq" makeStringView @currentNode createBinaryOperation
           result push
         ] [
           arg1 isReal [
             var1.data.getTag VarReal32 VarReal64 1 + [
               copy tag:;
-              result: FALSE VarCond createVariable Dynamic makeStaticity @currentNode createAllocIR;
+              result: FALSE VarCond @currentNode createVariable Dynamic @currentNode makeStaticity @currentNode createAllocIR;
               "fcmp oeq" @currentNode createBinaryOperation
               result push
             ] staticCall
           ] [
             var1.data.getTag VarCond VarIntX 1 + [
               copy tag:;
-              result: FALSE VarCond createVariable Dynamic makeStaticity @currentNode createAllocIR;
+              result: FALSE VarCond @currentNode createVariable Dynamic @currentNode makeStaticity @currentNode createAllocIR;
               "icmp eq" @currentNode createBinaryOperation
               result push
             ] staticCall
@@ -220,8 +219,8 @@ mplNumberUnaryOp: [
           resultType: tag copy;
           value @exValidator call
           compilable [
-            value @opFunc call resultType cutValue resultType createVariable
-            arg staticityOfVar makeStaticity
+            value @opFunc call resultType cutValue resultType @currentNode createVariable
+            arg staticityOfVar currentNode makeStaticity
             @currentNode createPlainIR push
           ] when
         ] staticCall
@@ -233,8 +232,8 @@ mplNumberUnaryOp: [
           copy tag:;
           value: tag var.data.get copy;
           resultType: tag copy;
-          result: resultType zeroValue resultType createVariable
-          Dynamic makeStaticity
+          result: resultType zeroValue resultType @currentNode createVariable
+          Dynamic currentNode makeStaticity
           @currentNode createAllocIR;
           opName mopName @currentNode createUnaryOperation
           result push
@@ -263,11 +262,11 @@ mplNumberUnaryOp: [
 ] "mplBuiltinOr" @declareBuiltin ucall
 
 [
-  TRUE VarCond createVariable @currentNode createPlainIR push
+  TRUE VarCond @currentNode createVariable @currentNode createPlainIR push
 ] "mplBuiltinTrue" @declareBuiltin ucall
 
 [
-  FALSE VarCond createVariable @currentNode createPlainIR push
+  FALSE VarCond @currentNode createVariable @currentNode createPlainIR push
 ] "mplBuiltinFalse" @declareBuiltin ucall
 
 [
@@ -301,8 +300,8 @@ mplNumberBuiltinOp: [
           resultType: tag copy;
           value @exValidator call
           compilable [
-            value @opFunc call resultType cutValue resultType createVariable
-            arg staticityOfVar makeStaticity
+            value @opFunc call resultType cutValue resultType @currentNode createVariable
+            arg staticityOfVar currentNode makeStaticity
             @currentNode createPlainIR push
           ] when
         ] staticCall
@@ -313,8 +312,8 @@ mplNumberBuiltinOp: [
           copy tag:;
           value: tag var.data.get copy;
           resultType: tag copy;
-          result: resultType zeroValue resultType createVariable
-          Dynamic makeStaticity
+          result: resultType zeroValue resultType @currentNode createVariable
+          Dynamic currentNode makeStaticity
           @currentNode createAllocIR;
 
           args: IRArgument Array;
@@ -406,8 +405,8 @@ mplNumberBuiltinOp: [
           resultType: tag copy;
 
           compilable [
-            value1 value2 ^ resultType cutValue resultType createVariable
-            arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult makeStaticity
+            value1 value2 ^ resultType cutValue resultType @currentNode createVariable
+            arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult @currentNode makeStaticity
             @currentNode createPlainIR push
           ] when
         ] staticCall
@@ -418,8 +417,8 @@ mplNumberBuiltinOp: [
         var1.data.getTag VarReal32 VarReal64 1 + [
           copy tag:;
           resultType: tag copy;
-          result: resultType zeroValue resultType createVariable
-          Dynamic makeStaticity
+          result: resultType zeroValue resultType @currentNode createVariable
+          Dynamic @currentNode makeStaticity
           @currentNode createAllocIR;
 
           args: IRArgument Array;
@@ -473,8 +472,8 @@ mplShiftBinaryOp: [
             value2 63n64 > ["shift value must be less than 64" currentNode compilerError] when
 
             compilable [
-              value1 value2 @opFunc call resultType cutValue resultType createVariable
-              arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult makeStaticity
+              value1 value2 @opFunc call resultType cutValue resultType @currentNode createVariable
+              arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult @currentNode makeStaticity
               @currentNode createPlainIR push
             ] when
           ] staticCall
@@ -487,8 +486,8 @@ mplShiftBinaryOp: [
         var1.data.getTag VarNat8 VarIntX 1 + [
           copy tag:;
           resultType: tag copy;
-          result: resultType zeroValue resultType createVariable
-          Dynamic makeStaticity
+          result: resultType zeroValue resultType @currentNode createVariable
+          Dynamic @currentNode makeStaticity
           @currentNode createAllocIR;
           arg1 currentNode getStorageSize arg2 currentNode getStorageSize = [
             opName @currentNode createBinaryOperation
@@ -566,7 +565,7 @@ mplShiftBinaryOp: [
 [
   refToVar: pop;
   compilable [
-    refToVar makeVarTreeDirty
+    refToVar @currentNode makeVarTreeDirty
     refToVar push
   ] when
 ] "mplBuiltinDirty" @declareBuiltin ucall
@@ -574,7 +573,7 @@ mplShiftBinaryOp: [
 [
   refToVar: pop;
   compilable [
-    refToVar staticityOfVar Weak = [refToVar Static makeStaticity @refToVar set] when
+    refToVar staticityOfVar Weak = [refToVar Static currentNode makeStaticity @refToVar set] when
     refToVar push
   ] when
 ] "mplBuiltinStatic" @declareBuiltin ucall
@@ -609,7 +608,7 @@ mplBuiltinProcessAtList: [
           index 0 < [index struct.fields.getSize < not] || ["index is out of bounds" currentNode compilerError] when
         ] [
           field: index struct.fields.at.refToVar;
-          field VarRef TRUE dynamic TRUE dynamic TRUE dynamic createVariableWithVirtual @result set
+          field VarRef TRUE dynamic TRUE dynamic TRUE dynamic @currentNode createVariableWithVirtual @result set
           refToStruct.mutable @result.@mutable set
           result fullUntemporize
         ]
@@ -638,7 +637,7 @@ mplBuiltinProcessAtList: [
                 firstField.hostId currentNode.id = not [
                   fBegin: RefToVar;
                   fEnd: RefToVar;
-                  fieldRef @fBegin @fEnd ShadowReasonField makeShadowsDynamic
+                  fieldRef @fBegin @fEnd ShadowReasonField @currentNode makeShadowsDynamic
                   fEnd @fieldRef set
                 ] when
 
@@ -647,8 +646,8 @@ mplBuiltinProcessAtList: [
                 fieldRef staticityOfVar Virtual < not [
                   "dynamic index is combined of virtuals" currentNode compilerError
                 ] [
-                  fieldRef makeVarTreeDynamicStoraged
-                  fieldRef unglobalize
+                  fieldRef @currentNode makeVarTreeDynamicStoraged
+                  fieldRef currentNode unglobalize
                   fieldRef refToIndex realRefToStruct @currentNode createDynamicGEP
                   fieldVar: fieldRef getVar;
                   currentNode.program.dataSize 1 - @fieldVar.@getInstructionIndex set
@@ -656,7 +655,7 @@ mplBuiltinProcessAtList: [
                 ] if
 
                 refToStruct.mutable [
-                  refToStruct makeVarTreeDirty
+                  refToStruct @currentNode makeVarTreeDirty
                 ] when
               ] [
                 "struct is empty" currentNode compilerError
@@ -851,7 +850,7 @@ parseSignature: [
           returnVar.temporary [
             return @result.@outputs.pushBack
           ] [
-            return TRUE dynamic createRef @result.@outputs.pushBack
+            return TRUE dynamic @currentNode createRef @result.@outputs.pushBack
           ] if
         ] if
       ] when
@@ -901,7 +900,7 @@ parseSignature: [
       refToVar isVirtual ["cannot export virtual var" currentNode compilerError] when
     ] [
       refToVar getVar.temporary not [
-        refToVar TRUE dynamic createRef @refToVar set
+        refToVar TRUE dynamic @currentNode createRef @refToVar set
       ] when
       var: refToVar getVar;
       FALSE @var.@temporary set
@@ -980,11 +979,11 @@ parseSignature: [
             "variable cant be virtual" currentNode compilerError
           ] [
             varType.temporary not [
-              refToType TRUE dynamic createRef @refToType set
+              refToType TRUE dynamic @currentNode createRef @refToType set
             ] when
 
             name: VarString varName.data.get;
-            newRefToVar: refToType copyVar;
+            newRefToVar: refToType @currentNode copyVar;
             newVar: newRefToVar getVar;
             TRUE @newRefToVar.@mutable set
             FALSE @newVar.@temporary set
@@ -1021,7 +1020,7 @@ parseSignature: [
         refToVar getVar.data.getTag VarString = [
           "builtin-strings cannot be copied" currentNode compilerError
         ] [
-          result: refToVar copyVarToNew;
+          result: refToVar @currentNode copyVarToNew;
           result isVirtual [
             result isAutoStruct ["unable to copy virtual autostruct" currentNode compilerError] when
           ] [
@@ -1039,7 +1038,7 @@ parseSignature: [
 [
   refToVar: pop;
   compilable [
-    result: refToVar copyVarToNew;
+    result: refToVar @currentNode copyVarToNew;
     result isVirtual not [result isUnallocable not] && [
       TRUE @result.@mutable set
       result @currentNode createAllocIR callInit
@@ -1057,7 +1056,7 @@ parseSignature: [
     varSrc: refToVar getVar;
     varSchema: refToSchema getVar;
     varSchema.data.getTag VarRef = [refToSchema isVirtual] && [
-      VarRef varSchema.data.get copyVarFromChild @refToSchema set
+      VarRef varSchema.data.get @currentNode copyVarFromChild @refToSchema set
       refToSchema getVar !varSchema
     ] when
 
@@ -1072,7 +1071,7 @@ parseSignature: [
             varSchema.data.getTag VarNat8 VarReal64 1 + [
               copy tagDst:;
               branchSchema: tagDst @varSchema.@data.get;
-              branchSrc branchSchema cast tagDst cutValue tagDst createVariable @currentNode createPlainIR @refToDst set
+              branchSrc branchSchema cast tagDst cutValue tagDst @currentNode createVariable @currentNode createPlainIR @refToDst set
             ] staticCall
           ] staticCall
 
@@ -1084,7 +1083,7 @@ parseSignature: [
           varSchema.data.getTag VarNat8 VarReal64 1 + [
             copy tagDst:;
             branchSchema: tagDst @varSchema.@data.get;
-            branchSchema tagDst createVariable @refToDst set
+            branchSchema tagDst @currentNode createVariable @refToDst set
           ] staticCall
 
           Dynamic refToDst getVar.@staticity set
@@ -1155,8 +1154,8 @@ parseSignature: [
     [
       TRUE refToVar getVar.@capturedAsMutable set #we need ref
       refToVar makeVarRealCaptured
-      refToVar makeVarTreeDirty
-      refToDst: 0n64 VarNatX createVariable;
+      refToVar @currentNode makeVarTreeDirty
+      refToDst: 0n64 VarNatX @currentNode createVariable;
       Dynamic @refToDst getVar.@staticity set
       var: refToVar getVar;
       refToVar refToDst "ptrtoint" @currentNode createCastCopyPtrToNew
@@ -1178,7 +1177,7 @@ parseSignature: [
       schemaOfResult: RefToVar;
       varSchema.data.getTag VarRef = [
         refToSchema isSchema [
-          VarRef varSchema.data.get copyVarFromChild @schemaOfResult set
+          VarRef varSchema.data.get @currentNode copyVarFromChild @schemaOfResult set
           refToSchema.mutable schemaOfResult.mutable and @schemaOfResult.@mutable set
         ] [
           [FALSE] "Unable in current semantic!" assert
@@ -1190,7 +1189,7 @@ parseSignature: [
       schemaOfResult isVirtual [
         "pointee is virtual, cannot cast" currentNode compilerError
       ] [
-        refToDst: schemaOfResult VarRef createVariable;
+        refToDst: schemaOfResult VarRef @currentNode createVariable;
         Dirty refToDst getVar.@staticity set
         refToVar refToDst "inttoptr" @currentNode createCastCopyToNew
         refToDst derefAndPush
@@ -1229,12 +1228,12 @@ parseSignature: [
     ]
     [
       refToName staticityOfVar Weak < [
-        result: 0n64 VarNatX createVariable Dynamic makeStaticity @currentNode createAllocIR;
+        result: 0n64 VarNatX @currentNode createVariable Dynamic @currentNode makeStaticity @currentNode createAllocIR;
         refToName result @currentNode createGetTextSizeIR
         result push
       ] [
         string: VarString varName.data.get;
-        string.getTextSize 0i64 cast 0n64 cast VarNatX createVariable Static makeStaticity @currentNode createPlainIR push
+        string.getTextSize 0i64 cast 0n64 cast VarNatX @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
       ] if
     ]
   ) sequence
@@ -1277,11 +1276,11 @@ parseSignature: [
               element: toString makeVarString;
               field: Field;
               processor.emptyNameInfo @field.@nameInfo set
-              element TRUE dynamic createRef @field.@refToVar set
+              element TRUE dynamic @currentNode createRef @field.@refToVar set
               field @struct.@fields.pushBack
             ] each
 
-            result: @struct move owner VarStruct createVariable;
+            result: @struct move owner VarStruct @currentNode createVariable;
             result isVirtual not [result @currentNode createAllocIR @result set] when
             resultStruct: VarStruct result getVar.data.get.get;
 
@@ -1295,7 +1294,7 @@ parseSignature: [
                   "no alloc..." @currentNode createComment # fake instruction
 
                   loadReg: field.refToVar @currentNode createDerefToRegister;
-                  field.refToVar unglobalize
+                  field.refToVar currentNode unglobalize
                   loadReg field.refToVar @currentNode createStoreFromRegister
 
                   field.refToVar i result @currentNode createGEPInsteadOfAlloc
@@ -1333,10 +1332,10 @@ parseSignature: [
         string: VarString varName.data.get;
         fr: string makeStringView findNameInfo refToStruct findField;
         compilable [
-          fr.success VarCond createVariable Static makeStaticity @currentNode createPlainIR push
+          fr.success VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
         ] when
       ] [
-        FALSE VarCond createVariable Static makeStaticity @currentNode createPlainIR push
+        FALSE VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
       ] if
     ]
   ) sequence
@@ -1362,7 +1361,7 @@ parseSignature: [
     ] [
       fr.success not [(refToStruct currentNode getMplType " has no field " string) assembleString currentNode compilerError] when
     ] [
-      fr.index Int64 cast VarInt32 createVariable Static makeStaticity @currentNode createPlainIR push
+      fr.index Int64 cast VarInt32 @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
     ]
   ) sequence
 ] "mplBuiltinFieldIndex" @declareBuiltin ucall
@@ -1379,7 +1378,7 @@ parseSignature: [
       varName.data.getTag VarString = not ["name must be static string" currentNode compilerError] when
     ]
     [
-      VarString varName.data.get findNameInfo pop createNamedVariable
+      VarString varName.data.get findNameInfo pop @currentNode createNamedVariable
     ]
   ) sequence
 ] "mplBuiltinDef" @declareBuiltin ucall
@@ -1402,7 +1401,7 @@ parseSignature: [
       refToVar currentNode getStorageSize
     ] if
 
-    0n64 cast VarNatX createVariable Static makeStaticity @currentNode createPlainIR push
+    0n64 cast VarNatX @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
   ] when
 ] "mplBuiltinStorageSize" @declareBuiltin ucall
 
@@ -1424,7 +1423,7 @@ parseSignature: [
       refToVar currentNode getAlignment
     ] if
 
-    0n64 cast VarNatX createVariable Static makeStaticity @currentNode createPlainIR push
+    0n64 cast VarNatX @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
   ] when
 ] "mplBuiltinAlignment" @declareBuiltin ucall
 
@@ -1460,7 +1459,7 @@ parseSignature: [
   refToVar1: pop;
   refToVar2: pop;
   compilable [
-    refToVar1 refToVar2 variablesAreSame VarCond createVariable Static makeStaticity @currentNode createPlainIR push
+    refToVar1 refToVar2 variablesAreSame VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
   ] when
 ] "mplBuiltinSame" @declareBuiltin ucall
 
@@ -1482,11 +1481,11 @@ parseSignature: [
       ] if
 
       cmpResult 0 = [
-        result: FALSE VarCond createVariable Dynamic makeStaticity @currentNode createAllocIR;
+        result: FALSE VarCond @currentNode createVariable Dynamic @currentNode makeStaticity @currentNode createAllocIR;
         refToVar1 refToVar2 result "icmp eq" @currentNode createDirectBinaryOperation
         result push
       ] [
-        cmpResult 1 = VarCond createVariable Static makeStaticity @currentNode createPlainIR push
+        cmpResult 1 = VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
       ] if
     ] [
       ("different arguments, left: " refToVar1 currentNode getMplType ", right: " refToVar2 currentNode getMplType) assembleString currentNode compilerError
@@ -1497,23 +1496,23 @@ parseSignature: [
 [
   refToVar: pop;
   compilable [
-    refToVar.mutable not VarCond createVariable Static makeStaticity @currentNode createPlainIR push
+    refToVar.mutable not VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
   ] when
 ] "mplBuiltinIsConst" @declareBuiltin ucall
 
 [
   refToVar: pop;
   compilable [
-    refToVar getVar.data.getTag VarStruct = VarCond createVariable Static makeStaticity @currentNode createPlainIR push
+    refToVar getVar.data.getTag VarStruct = VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
   ] when
 ] "mplBuiltinIsCombined" @declareBuiltin ucall
 
 [
-  processor.options.debug VarCond createVariable Static makeStaticity @currentNode createPlainIR push
+  processor.options.debug VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
 ] "mplBuiltinDebug" @declareBuiltin ucall
 
 [
-  processor.options.logs VarCond createVariable Static makeStaticity @currentNode createPlainIR push
+  processor.options.logs VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
 ] "mplBuiltinHasLogs" @declareBuiltin ucall
 
 [
@@ -1525,12 +1524,12 @@ parseSignature: [
       pointeeVar: pointee getVar;
       pointeeVar.data.getTag VarStruct = not ["not a combined" currentNode compilerError] when
       compilable [
-        VarStruct pointeeVar.data.get.get.fields.dataSize 0i64 cast VarInt32 createVariable Static makeStaticity @currentNode createPlainIR push
+        VarStruct pointeeVar.data.get.get.fields.dataSize 0i64 cast VarInt32 @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
       ] when
     ] [
       var.data.getTag VarStruct = not ["not a combined" currentNode compilerError] when
       compilable [
-        VarStruct var.data.get.get.fields.dataSize 0i64 cast VarInt32 createVariable Static makeStaticity @currentNode createPlainIR push
+        VarStruct var.data.get.get.fields.dataSize 0i64 cast VarInt32 @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
       ] when
     ] if
   ] when
@@ -1570,7 +1569,7 @@ parseSignature: [
 ] "mplBuiltinFieldName" @declareBuiltin ucall
 
 [
-  COMPILER_SOURCE_VERSION 0i64 cast VarInt32 createVariable Static makeStaticity @currentNode createPlainIR push
+  COMPILER_SOURCE_VERSION 0i64 cast VarInt32 @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
 ] "mplBuiltinCompilerVersion" @declareBuiltin ucall
 
 [
@@ -1596,7 +1595,7 @@ parseSignature: [
           i: 0 dynamic;
           [
             i count < [
-              element: refToElement copyVar staticity makeStaticity;
+              element: refToElement @currentNode copyVar staticity @currentNode makeStaticity;
               field: Field;
               processor.emptyNameInfo @field.@nameInfo set
               element @field.@refToVar set
@@ -1605,7 +1604,7 @@ parseSignature: [
             ] &&
           ] loop
 
-          result: @struct move owner VarStruct createVariable;
+          result: @struct move owner VarStruct @currentNode createVariable;
           result isVirtual not [result @currentNode createAllocIR @result set] when
           resultStruct: VarStruct result getVar.data.get.get;
 
@@ -1617,7 +1616,7 @@ parseSignature: [
               field.refToVar isVirtual [
                 field.refToVar isAutoStruct ["unable to copy virtual autostruct" currentNode compilerError] when
               ] [
-                field.refToVar unglobalize
+                field.refToVar currentNode unglobalize
                 currentNode.program.dataSize field.refToVar getVar.@allocationInstructionIndex set
                 "no alloc..." @currentNode createComment # fake instruction
                 refToElement field.refToVar @currentNode createCheckedCopyToNew
@@ -1637,11 +1636,11 @@ parseSignature: [
 ] "mplBuiltinArray" @declareBuiltin ucall
 
 [
-  varPrev:   0n64 VarNatX createVariable;
-  varNext:   0n64 VarNatX createVariable;
+  varPrev:   0n64 VarNatX @currentNode createVariable;
+  varNext:   0n64 VarNatX @currentNode createVariable;
   varName:   String makeVarString TRUE dynamic createRefNoOp;
-  varLine:   0i64 VarInt32 createVariable;
-  varColumn: 0i64 VarInt32 createVariable;
+  varLine:   0i64 VarInt32 @currentNode createVariable;
+  varColumn: 0i64 VarInt32 @currentNode createVariable;
 
   varPrev   makeVarDirty
   varNext   makeVarDirty
@@ -1667,8 +1666,8 @@ parseSignature: [
   varColumn             4 @struct.@fields.at.@refToVar set
   "column" findNameInfo 4 @struct.@fields.at.@nameInfo set
 
-  first: @struct move owner VarStruct createVariable;
-  last: first copyVar;
+  first: @struct move owner VarStruct @currentNode createVariable;
+  last: first @currentNode copyVar;
 
   firstRef: first FALSE dynamic createRefNoOp;
   lastRef:  last  FALSE dynamic createRefNoOp;
@@ -1685,7 +1684,7 @@ parseSignature: [
   lastRef             1 @resultStruct.@fields.at.@refToVar set
   "last" findNameInfo 1 @resultStruct.@fields.at.@nameInfo set
 
-  result: @resultStruct move owner VarStruct createVariable @currentNode createAllocIR;
+  result: @resultStruct move owner VarStruct @currentNode createVariable @currentNode createAllocIR;
   first getIrType result getIrType result @currentNode createGetCallTrace
   result push
 ] "mplBuiltinGetCallTrace" @declareBuiltin ucall
@@ -1746,7 +1745,7 @@ parseSignature: [
   compilable [
     refToVar push
     refToVar isForgotten
-    VarCond createVariable Static makeStaticity @currentNode createPlainIR push
+    VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR push
   ] when
 ] "mplBuiltinIsMoved" @declareBuiltin ucall
 
