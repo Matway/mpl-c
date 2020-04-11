@@ -124,14 +124,14 @@ initBuiltins: [
   ] times
 ];
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; currentNode: Block Ref; multiParserResult: MultiParserResult Cref; index: Int32;} () {convention: cdecl;} [
+{processorResult: ProcessorResult Ref; processor: Processor Ref; block: Block Ref; multiParserResult: MultiParserResult Cref; index: Int32;} () {convention: cdecl;} [
   processorResult:;
   processor:;
-  currentNode:;
+  block:;
   multiParserResult:;
   failProc: @failProcForProcessor;
   copy index:;
 
   builtinFunc: index builtins @ .@impl;
-  multiParserResult @currentNode @processor @processorResult @builtinFunc call
+  multiParserResult @block @processor @processorResult @builtinFunc call
 ] "callBuiltinImpl" exportFunction

@@ -1618,7 +1618,7 @@ callCallable: [
 
   var: refToVar getVar;
   var.data.getTag VarBuiltin = [
-    VarBuiltin var.data.get callBuiltin
+    VarBuiltin var.data.get @currentNode callBuiltin
   ] [
     var.data.getTag VarCode = [
       object regNamesSelf

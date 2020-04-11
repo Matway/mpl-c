@@ -181,7 +181,7 @@ Variable: [{
 
 compilable: [processorResult.success copy];
 
-callBuiltin:           [multiParserResult @currentNode @processor @processorResult callBuiltinImpl];
+callBuiltin:           [block:; multiParserResult @block @processor @processorResult callBuiltinImpl];
 processFuncPtr:        [multiParserResult @currentNode @processor @processorResult processFuncPtrImpl];
 processPre:            [multiParserResult @currentNode @processor @processorResult processPreImpl];
 processCall:           [multiParserResult @currentNode @processor @processorResult processCallImpl];
@@ -234,7 +234,7 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Ref;
   multiParserResult: MultiParserResult Cref;
   index: Int32;
 } () {convention: cdecl;} "callBuiltinImpl" importFunction
