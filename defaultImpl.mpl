@@ -58,7 +58,6 @@ defaultSet: [
   block:;
   refToDst: pop;
   refToSrc: pop;
-
   compilable [
     refToSrc makeVarRealCaptured
     refToDst makeVarRealCaptured
@@ -72,7 +71,7 @@ defaultSet: [
         ] [
           refToDst.mutable [
             [refToDst staticityOfVar Weak = not] "Destination is weak!" assert
-            refToSrc refToDst createCopyToExists
+            refToSrc refToDst @block createCopyToExists
           ] [
             "destination is immutable" block compilerError
           ] if
@@ -85,7 +84,7 @@ defaultSet: [
         lambdaCastResult: refToSrc refToDst tryImplicitLambdaCast;
         lambdaCastResult.success [
           newSrc: lambdaCastResult.refToVar TRUE createRef;
-          newSrc refToDst createCopyToExists
+          newSrc refToDst @block createCopyToExists
         ] [
           ("types mismatch, src is " refToSrc getMplType "," LF "dst is " refToDst getMplType) assembleString block compilerError
         ] if

@@ -1155,7 +1155,7 @@ makeCallInstructionWith: [
         currentInput getVar.irNameId @arg.@irNameId set
         currentInput getMplSchema.irTypeId @arg.@irTypeId set
         currentInputArgCase ArgRef = [currentInputArgCase ArgRefDeref =] || @arg.@byRef set
-        currentInputArgCase ArgCopy = [currentInput createDerefToRegister @arg.@irNameId set] when
+        currentInputArgCase ArgCopy = [currentInput @currentNode createDerefToRegister @arg.@irNameId set] when
 
         arg @argList.pushBack
       ] if
@@ -1175,7 +1175,7 @@ makeCallInstructionWith: [
         refToVar: outputRef;
         outputRef getVar.allocationInstructionIndex 0 <
         [outputRef getVar.globalDeclarationInstructionIndex 0 <] && [
-          outputRef createAllocIR r:;
+          outputRef @currentNode createAllocIR r:;
         ] when
 
         currentOutput.argCase ArgReturn = [currentOutput.argCase ArgReturnDeref =] || [
@@ -1223,10 +1223,10 @@ makeCallInstructionWith: [
     pureFuncName: forcedName "" = [dynamicFunc [refToVar getIrName][newNode.irName makeStringView] if][forcedName copy] if;
     funcName: newNode.variadic [("(" newNode.argTypes ") " pureFuncName) assembleString][pureFuncName toString] if;
     convName: newNode.convention;
-    retName: argRet argList convName funcName createCallIR;
+    retName: argRet argList convName funcName @currentNode createCallIR;
 
     argRet.varId 0 < not [
-      @retName argRet createStoreFromRegister
+      @retName argRet @currentNode createStoreFromRegister
     ] when
   ] when
 ];
@@ -1314,7 +1314,7 @@ processCallByNode: [
     ] && [
       result: 0 newNode.outputs.at.refToVar copyVarFromChild;
       TRUE @newNode.@deleted set
-      result createStaticInitIR push
+      result @currentNode createStaticInitIR push
     ] [
       forcedName: forcedNameString makeStringView;
       newNodeIndex forcedName processNamedCallByNode
@@ -1651,7 +1651,7 @@ processIf: [
                   outputThen outputElse newOutput mergeValuesRec
                   i newNodeThen.outputs.dataSize + longestOutputSize < not [newOutput @outputsThen.pushBack] when
                   i newNodeElse.outputs.dataSize + longestOutputSize < not [newOutput @outputsElse.pushBack] when
-                  newOutput createAllocIR @outputs.pushBack
+                  newOutput @currentNode createAllocIR @outputs.pushBack
                 ] [
                   ("branch types mismatch; in 'then' type is " outputThen getMplType "; in 'else' type is " outputElse getMplType) assembleString currentNode compilerError
                 ] if
@@ -1709,7 +1709,7 @@ processIf: [
                     current.varId curInput.varId = not [
                       curInput isVirtual not ["variable states in branches mismatch" currentNode compilerError] when
                       FALSE curInput getVar.@temporary set
-                      curInput current createCheckedCopyToNewNoDie
+                      curInput current @currentNode createCheckedCopyToNewNoDie
                     ] when
                     -1 @result.pushBack
                     i 1 + @i set TRUE
@@ -1719,20 +1719,20 @@ processIf: [
               ];
 
               wasNestedCall: currentNode.hasNestedCall copy;
-              0 refToCond createBranch
-              createLabel
+              0 refToCond @currentNode createBranch
+              @currentNode createLabel
               inputsThen outputsThen newNodeThen makeCallInstruction
               storesThen: newNodeThen outputsThen createStores;
-              0 createJump
-              createLabel
+              0 @currentNode createJump
+              @currentNode createLabel
               wasNestedCall @currentNode.@hasNestedCall set
               inputsElse outputsElse newNodeElse makeCallInstruction
               storesElse: newNodeElse outputsElse createStores;
-              1 createJump
-              createLabel
+              1 @currentNode createJump
+              @currentNode createLabel
               implicitDerefInfo longestOutputSize derefNEntries
-              processor.options.verboseIR ["create phi nodes..." makeStringView createComent] when
-              processor.options.verboseIR ["end if" makeStringView createComent] when
+              processor.options.verboseIR ["create phi nodes..." @currentNode createComment] when
+              processor.options.verboseIR ["end if" @currentNode createComment] when
             ] when
           ] when
         ] when
@@ -1938,7 +1938,7 @@ processDynamicLoop: [
                 curNodeInput getIrName
                 i inputs.at getIrName
                 inputs.dataSize 1 - i - outputs.at getIrName
-                1 createPhiNode
+                1 @currentNode createPhiNode
 
                 i 1 + @i set TRUE
               ] &&
@@ -1946,19 +1946,19 @@ processDynamicLoop: [
           ];
 
           # create instruction
-          processor.options.verboseIR ["loop prepare..." makeStringView createComent] when
-          1 createJump
-          createLabel
+          processor.options.verboseIR ["loop prepare..." @currentNode createComment] when
+          1 @currentNode createJump
+          @currentNode createLabel
           createPhiNodes # for each input-output!
-          processor.options.verboseIR ["phi nodes prepared" makeStringView createComent] when
+          processor.options.verboseIR ["phi nodes prepared" @currentNode createComment] when
           nodeInputs outputs newNode makeCallInstruction
 
           implicitDerefInfo: Cond Array;
           newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
           implicitDerefInfo outputs.getSize 1 - derefNEntries
-          processor.options.verboseIR ["loop end prepare..." makeStringView createComent] when
-          1 outputs.last createBranch
-          createLabel
+          processor.options.verboseIR ["loop end prepare..." @currentNode createComment] when
+          1 outputs.last @currentNode createBranch
+          @currentNode createLabel
         ] when
 
         needToRemake [

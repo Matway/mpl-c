@@ -940,7 +940,7 @@ getVirtualValue: [
     ]
     VarCode    [
       info: VarCode    var.data.get;
-      ("\"" info.moduleId processor.options.fileNames.at getStringImplementation "\"/" info.line ":" info.column) @result.catMany
+      ("\"" info.moduleId processor.options.fileNames.at.getStringView getStringImplementation "\"/" info.line ":" info.column) @result.catMany
     ]
     VarBuiltin [VarBuiltin var.data.get @result.cat]
     VarRef     [
@@ -951,7 +951,7 @@ getVirtualValue: [
       ] [
         pointeeVar.data.getTag (
           VarString  [
-            string: VarString pointeeVar.data.get;
+            string: VarString pointeeVar.data.get.getStringView;
             (string textSize "_" string getStringImplementation) @result.catMany
           ]
           VarImport  [VarImport  pointeeVar.data.get @result.cat]

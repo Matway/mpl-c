@@ -244,18 +244,18 @@ getStackEntryForPreInput: [
 ];
 
 makeVarCode:   [VarCode   createVariable];
-makeVarInt8:   [VarInt8   checkValue VarInt8   createVariable createPlainIR];
-makeVarInt16:  [VarInt16  checkValue VarInt16  createVariable createPlainIR];
-makeVarInt32:  [VarInt32  checkValue VarInt32  createVariable createPlainIR];
-makeVarInt64:  [VarInt64  checkValue VarInt64  createVariable createPlainIR];
-makeVarIntX:   [VarIntX   checkValue VarIntX   createVariable createPlainIR];
-makeVarNat8:   [VarNat8   checkValue VarNat8   createVariable createPlainIR];
-makeVarNat16:  [VarNat16  checkValue VarNat16  createVariable createPlainIR];
-makeVarNat32:  [VarNat32  checkValue VarNat32  createVariable createPlainIR];
-makeVarNat64:  [VarNat64  checkValue VarNat64  createVariable createPlainIR];
-makeVarNatX:   [VarNatX   checkValue VarNatX   createVariable createPlainIR];
-makeVarReal32: [VarReal32 checkValue VarReal32 createVariable createPlainIR];
-makeVarReal64: [VarReal64 checkValue VarReal64 createVariable createPlainIR];
+makeVarInt8:   [VarInt8   checkValue VarInt8   createVariable @currentNode createPlainIR];
+makeVarInt16:  [VarInt16  checkValue VarInt16  createVariable @currentNode createPlainIR];
+makeVarInt32:  [VarInt32  checkValue VarInt32  createVariable @currentNode createPlainIR];
+makeVarInt64:  [VarInt64  checkValue VarInt64  createVariable @currentNode createPlainIR];
+makeVarIntX:   [VarIntX   checkValue VarIntX   createVariable @currentNode createPlainIR];
+makeVarNat8:   [VarNat8   checkValue VarNat8   createVariable @currentNode createPlainIR];
+makeVarNat16:  [VarNat16  checkValue VarNat16  createVariable @currentNode createPlainIR];
+makeVarNat32:  [VarNat32  checkValue VarNat32  createVariable @currentNode createPlainIR];
+makeVarNat64:  [VarNat64  checkValue VarNat64  createVariable @currentNode createPlainIR];
+makeVarNatX:   [VarNatX   checkValue VarNatX   createVariable @currentNode createPlainIR];
+makeVarReal32: [VarReal32 checkValue VarReal32 createVariable @currentNode createPlainIR];
+makeVarReal64: [VarReal64 checkValue VarReal64 createVariable @currentNode createPlainIR];
 
 makeVarString: [
   string:;
@@ -269,7 +269,7 @@ makeVarString: [
     currentNode: 0 @processor.@blocks.at.get;
 
     string VarString createVariable @refToVar set
-    string refToVar createStringIR
+    string.getStringView refToVar createStringIR
     string refToVar @processor.@stringNames.insert
 
     refToVar fullUntemporize
@@ -376,7 +376,7 @@ getPointeeWith: [
     ] if
 
     needReallyDeref makeDerefIR and [
-      refToVar pointeeVar.irNameId createDerefTo
+      refToVar pointeeVar.irNameId @currentNode createDerefTo
       currentNode.program.dataSize 1 - @pointeeVar.@getInstructionIndex set
     ] when
 
@@ -588,7 +588,7 @@ createRefWith: [
 
     pointee.mutable [mutable copy] && @pointee.@mutable set
     newRefToVar: pointee VarRef createVariable;
-    createOperation [pointee newRefToVar createRefOperation] when
+    createOperation [pointee newRefToVar @currentNode createRefOperation] when
     newRefToVar
   ] if
 ];
@@ -605,7 +605,7 @@ createCheckedStaticGEP: [
 
   fieldVar.getInstructionIndex 0 < [fieldVar.allocationInstructionIndex 0 <] && [
     fieldRef unglobalize
-    fieldRef index refToStruct createStaticGEP
+    fieldRef index refToStruct @currentNode createStaticGEP
     currentNode.program.dataSize 1 - @fieldVar.@getInstructionIndex set
   ] when
 ];
@@ -616,7 +616,7 @@ makeVirtualVarReal: [
   refToVar isVirtualType [
     refToVar copy
   ] [
-    processor.options.verboseIR [("made virtual var real, type: " refToVar getMplType) assembleString createComent] when
+    processor.options.verboseIR [("made virtual var real, type: " refToVar getMplType) assembleString @currentNode createComment] when
 
     realValue: refToVar getVar.@realValue;
 
@@ -679,7 +679,7 @@ makeVirtualVarReal: [
       # second pass: create IR code for variable
       @result makeVariableType
       refToVar @unfinishedSrc.pushBack
-      result createAllocIR @unfinishedDst.pushBack
+      result @currentNode createAllocIR @unfinishedDst.pushBack
 
       [
         unfinishedSrc.dataSize 0 > [
@@ -711,7 +711,7 @@ makeVirtualVarReal: [
               varSrc.data.getTag VarRef = [
               ] [
                 lastSrc isPlain [
-                  lastSrc lastDst createStoreConstant
+                  lastSrc lastDst @currentNode createStoreConstant
                 ] when
               ] if
             ] when
@@ -979,7 +979,7 @@ createNamedVariable: [
         ", !dbg !"   @globalInstruction.cat
         d            @globalInstruction.cat
       ] [
-        nameInfo newRefToVar currentNode addVariableMetadata
+        nameInfo newRefToVar @currentNode addVariableMetadata
       ] if
     ] when
 
@@ -1320,8 +1320,8 @@ captureName: [
 
           processor.options.debug [shadowEnd isVirtual not] && [shadowEnd isGlobal not] && [
             fakePointer: shadowEnd VarRef createVariable;
-            shadowEnd fakePointer createRefOperation
-            nameInfo fakePointer currentNode addVariableMetadata
+            shadowEnd fakePointer @currentNode createRefOperation
+            nameInfo fakePointer @currentNode addVariableMetadata
             programSize: currentNode.program.getSize;
             TRUE programSize 3 - @currentNode.@program.at.@fakePointer set
             TRUE programSize 2 - @currentNode.@program.at.@fakePointer set
@@ -1723,11 +1723,11 @@ setRef: [
             src push
             TRUE defaultRef #source
             refToVar push
-            currentNode defaultSet
+            @currentNode defaultSet
           ] [
             src push
             refToVar push
-            currentNode defaultSet
+            @currentNode defaultSet
           ] if
         ] when
       ] when
@@ -1739,7 +1739,7 @@ setRef: [
       src getVar.temporary [
         src push
         refToVar push
-        currentNode defaultSet
+        @currentNode defaultSet
       ] [
         "rewrite value works only with temporary values" currentNode compilerError
       ] if
@@ -2400,7 +2400,7 @@ callAssign: [
             ] loop
           ] if
         ] [
-          curSrc curDst createMemset
+          curSrc curDst @currentNode createMemset
         ] if
         compilable [currentNode.state NodeStateNoOutput = not] &&
       ] &&
@@ -2481,7 +2481,7 @@ killStruct: [
 
   processor.options.verboseIR [
     ("filename: " currentNode.position.fileNumber processor.options.fileNames.at
-      ", line: " currentNode.position.line ", column: " currentNode.position.column ", token: " astNode.token) assembleString createComent
+      ", line: " currentNode.position.line ", column: " currentNode.position.column ", token: " astNode.token) assembleString @currentNode createComment
   ] when
 
   programSize: currentNode.program.dataSize copy;
@@ -2596,7 +2596,7 @@ finalizeListNode: [
     struct: VarStruct refToStruct getVar.data.get.get;
 
     refToStruct isVirtual not [
-      refToStruct createAllocIR @refToStruct set
+      refToStruct @currentNode createAllocIR @refToStruct set
     ] when
 
     i: 0 dynamic;
@@ -2611,7 +2611,7 @@ finalizeListNode: [
           staticity: curFieldRef staticityOfVar;
           staticity Weak = [Dynamic @staticity set] when
           staticity Virtual = not [curFieldRef staticity makeStaticity drop:;] when
-          curFieldRef i refToStruct createGEPInsteadOfAlloc
+          curFieldRef i refToStruct @currentNode createGEPInsteadOfAlloc
         ] if
 
         i 1 + @i set compilable
@@ -2637,7 +2637,7 @@ finalizeObjectNode: [
   ] loop
 
   refToStruct isVirtual not [
-    refToStruct createAllocIR drop
+    refToStruct @currentNode createAllocIR drop
     i: 0 dynamic;
     [
       i structInfo.fields.dataSize < [
@@ -2647,7 +2647,7 @@ finalizeObjectNode: [
         [dstFieldRef noMatterToCopy [dstFieldRef.hostId currentNode.id =] ||] "field host incorrect" assert
         dstFieldRef isVirtual not [
           [dstFieldRef getVar.allocationInstructionIndex currentNode.program.dataSize <] "field is not allocated" assert
-          dstFieldRef i refToStruct createGEPInsteadOfAlloc
+          dstFieldRef i refToStruct @currentNode createGEPInsteadOfAlloc
         ] when
 
         i 1 + @i set TRUE
@@ -3050,7 +3050,7 @@ makeCompilerPosition: [
   currentNode.nodeCase NodeCaseList   = [finalizeListNode] when
   currentNode.nodeCase NodeCaseObject = [finalizeObjectNode] when
 
-  processor.options.verboseIR ["return" makeStringView createComent] when
+  processor.options.verboseIR ["return" @currentNode createComment] when
 
 
   retType: String;
@@ -3071,12 +3071,12 @@ makeCompilerPosition: [
       refToVar isVirtual not
       [isDeclaration not] && [
         refForArg: refToVar VarRef createVariable;
-        refToVar refForArg createRefOperation
+        refToVar refForArg @currentNode createRefOperation
         refForArg TRUE
       ] [
         copyForArg: refToVar copyVarToNew;
         TRUE dynamic @copyForArg.@mutable set
-        refToVar copyForArg createCopyToNew
+        refToVar copyForArg @currentNode createCopyToNew
         copyForArg FALSE
       ] if
     ] [
@@ -3158,7 +3158,7 @@ makeCompilerPosition: [
       var.usedInHeader [
         copyForArg: refToVar copyVarToNew;
         TRUE dynamic @copyForArg.@mutable set
-        refToVar copyForArg createCopyToNew
+        refToVar copyForArg @currentNode createCopyToNew
         copyForArg @refToVar set
       ] when
 
@@ -3272,7 +3272,7 @@ makeCompilerPosition: [
               current.refToVar regNameId addCopyArg
 
               current.refToVar getVar.allocationInstructionIndex 0 < [
-                regNameId current.refToVar createAllocIR createStoreFromRegister
+                regNameId current.refToVar @currentNode createAllocIR @currentNode createStoreFromRegister
                 TRUE @currentNode.@program.last.@alloca set #fake for good sotring
               ] when
             ] [
@@ -3336,13 +3336,13 @@ makeCompilerPosition: [
   ] loop
 
   hasRet [
-    retRef createRetValue
+    retRef @currentNode createRetValue
   ] [
-    ("  ret void") appendInstruction
+    ("  ret void") @currentNode appendInstruction
   ] if
 
   callDestructors
-  processor.options.verboseIR ["called destructors" createComent] when
+  processor.options.verboseIR ["called destructors" @currentNode createComment] when
 
   i: 0 dynamic;
   [
@@ -3381,7 +3381,7 @@ makeCompilerPosition: [
     ] if
   ] when
 
-  sortInstructions
+  @currentNode sortInstructions
 
   addNames: [
     s:;
@@ -3429,22 +3429,22 @@ makeCompilerPosition: [
     info: String;
     "labelNames: " @info.cat
     currentNode.labelNames @info addNames
-    info createComent
+    info @currentNode createComment
 
     info: String;
     "fromModuleNames: " @info.cat
     currentNode.fromModuleNames @info addNames
-    info createComent
+    info @currentNode createComment
 
     info: String;
     "captureNames: " @info.cat
     currentNode.captureNames @info addNames
-    info createComent
+    info @currentNode createComment
 
     info: String;
     "fieldCaptureNames: " @info.cat
     currentNode.fieldCaptureNames @info addNames
-    info createComent
+    info @currentNode createComment
   ] when
 
   currentNode.parent 0 = [
@@ -3523,7 +3523,7 @@ makeCompilerPosition: [
         (";declare func: " functionName) assembleString addStrToProlog #fix global import var matching bug
         processor.prolog.dataSize 1 - refToVar getVar.@globalDeclarationInstructionIndex set
       ] [
-        (";declare func: " functionName) assembleString createComent #fix global import var matching bug
+        (";declare func: " functionName) assembleString @currentNode createComment #fix global import var matching bug
         currentNode.program.dataSize 1 - refToVar getVar.@allocationInstructionIndex set
       ] if
     ] [
@@ -3740,7 +3740,7 @@ nodeHasCode: [
 
   recursionTries: 0 dynamic;
   [
-    createLabel
+    @currentNode createLabel
 
     0 @currentNode.@countOfUCall set
     @currentNode.@labelNames.clear
