@@ -185,7 +185,7 @@ callBuiltin:           [block:; multiParserResult @block @processor @processorRe
 processFuncPtr:        [multiParserResult @currentNode @processor @processorResult processFuncPtrImpl];
 processPre:            [multiParserResult @currentNode @processor @processorResult processPreImpl];
 processCall:           [multiParserResult @currentNode @processor @processorResult processCallImpl];
-processExportFunction: [multiParserResult @currentNode @processor @processorResult processExportFunctionImpl];
+processExportFunction: [block:; multiParserResult @block @processor @processorResult processExportFunctionImpl];
 processImportFunction: [multiParserResult @currentNode @processor @processorResult processImportFunctionImpl];
 compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode @processor @processorResult compareEntriesRecImpl];
 makeVariableType:      [block:; block @processor @processorResult makeVariableTypeImpl];
@@ -1508,7 +1508,7 @@ generateVariableIRNameWith: [
 ];
 
 generateVariableIRName: [FALSE generateVariableIRNameWith];
-generateRegisterIRName: [currentNode.id TRUE currentNode generateVariableIRNameWith];
+generateRegisterIRName: [block:; block.id TRUE block generateVariableIRNameWith];
 
 makeVariableIRName: [
   refToVar: block:;;

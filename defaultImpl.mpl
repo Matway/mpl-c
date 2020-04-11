@@ -14,12 +14,12 @@ failProcForProcessor: [
 ];
 
 defaultFailProc: [
-  text: pop;
+  text: @currentNode pop;
 ];
 
 defaultCall: [
   block:;
-  refToVar: pop;
+  refToVar: @block pop;
   compilable [
     var: refToVar getVar;
     var.data.getTag  (
@@ -35,9 +35,9 @@ defaultCall: [
           [refToVar staticityOfVar Weak < ["name must be a static string" block compilerError] when]
           [
             nameInfo: VarString var.data.get findNameInfo;
-            getNameResult: nameInfo getName;
+            getNameResult: nameInfo @block getName;
             nameInfo getNameResult checkFailedName
-            captureNameResult: getNameResult captureName;
+            captureNameResult: getNameResult @block captureName;
             refToName: captureNameResult.refToVar copy;
           ]
           [
@@ -57,8 +57,8 @@ defaultCall: [
 
 defaultSet: [
   block:;
-  refToDst: pop;
-  refToSrc: pop;
+  refToDst: @block pop;
+  refToSrc: @block pop;
   compilable [
     refToSrc makeVarRealCaptured
     refToDst makeVarRealCaptured
@@ -82,7 +82,7 @@ defaultSet: [
       refToDst.mutable not [
         "destination is immutable" block compilerError
       ] [
-        lambdaCastResult: refToSrc refToDst tryImplicitLambdaCast;
+        lambdaCastResult: refToSrc refToDst @block tryImplicitLambdaCast;
         lambdaCastResult.success [
           newSrc: lambdaCastResult.refToVar TRUE @block createRef;
           newSrc refToDst @block createCopyToExists
@@ -96,21 +96,21 @@ defaultSet: [
 
 defaultRef: [
   mutable: block:;;
-  refToVar: pop;
+  refToVar: @block pop;
   compilable [
-    refToVar mutable @block createRef push
+    refToVar mutable @block createRef @block push
   ] when
 ];
 
 defaultMakeConstWith: [
   check: block:;;
-  refToVar: pop;
+  refToVar: @block pop;
   compilable [
     check [refToVar getVar.temporary copy] && [
       "temporary objects cannot be set const" block compilerError
     ] [
       FALSE @refToVar.@mutable set
-      refToVar push
+      refToVar @block push
     ] if
   ] when
 ];
@@ -120,7 +120,7 @@ defaultUseOrIncludeModule: [
   (
     [compilable]
     [block.parent 0 = not ["module can be used only in top block" block compilerError] when]
-    [refToName: pop;]
+    [refToName: @block pop;]
     [refToName staticityOfVar Weak < ["name must be static string" block compilerError] when]
     [
       varName: refToName getVar;

@@ -252,12 +252,12 @@ compareOnePair: [
 ] "compareEntriesRecImpl" exportFunction
 
 getOverload: [
-  cap:;
+  cap: block:;;
   overload: cap.nameOverload copy;
   maxOverloadCountCur: cap.nameInfo getOverloadCount;
   maxOverloadCountNes: cap.cntNameOverloadParent copy;
   overload maxOverloadCountCur + maxOverloadCountNes < [
-    ("while matching cant call overload for name: " cap.nameInfo processor.nameInfos.at.name) assembleString currentNode compilerError
+    ("while matching cant call overload for name: " cap.nameInfo processor.nameInfos.at.name) assembleString block compilerError
     0
   ] [
     overload maxOverloadCountCur + maxOverloadCountNes -
@@ -389,8 +389,8 @@ tryMatchNode: [
         i currentMatchingNode.matchingInfo.captures.dataSize < [
           currentCapture: i currentMatchingNode.matchingInfo.captures.at;
           cacheEntry: currentCapture.refToVar;
-          overload: currentCapture.refToVar.hostId 0 < [-1][currentCapture getOverload] if;
-          stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload.refToVar;
+          overload: currentCapture.refToVar.hostId 0 < [-1] [currentCapture @currentNode getOverload] if;
+          stackEntry: currentCapture.nameInfo currentCapture overload @currentNode getNameForMatchingWithOverload.refToVar;
 
           stackEntry.hostId 0 < cacheEntry.hostId 0 < and [
             stackEntry.hostId 0 < not cacheEntry.hostId 0 < not and [stackEntry cacheEntry compareEntriesRec] &&
@@ -414,7 +414,7 @@ tryMatchNode: [
       [
         i currentMatchingNode.matchingInfo.fieldCaptures.dataSize < [
           currentFieldCapture: i currentMatchingNode.matchingInfo.fieldCaptures.at;
-          overload: currentFieldCapture getOverload;
+          overload: currentFieldCapture @currentNode getOverload;
           compilable [
             currentFieldInfo: overload currentFieldCapture.nameInfo processor.nameInfos.at.stack.at.last;
             currentFieldInfo.nameCase currentFieldCapture.captureCase = [currentFieldCapture.object currentFieldInfo.refToVar variablesAreSame] &&
@@ -822,12 +822,12 @@ usePreCapturesWith: [
       i currentChangesNode.matchingInfo.captures.dataSize < [
         currentCapture: i currentChangesNode.matchingInfo.captures.at;
         cacheEntry: currentCapture.refToVar;
-        overload: currentCapture.refToVar.hostId 0 < [-1] [currentCapture getOverload] if;
-        gnr: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload;
+        overload: currentCapture.refToVar.hostId 0 < [-1] [currentCapture @currentNode getOverload] if;
+        gnr: currentCapture.nameInfo currentCapture overload @currentNode getNameForMatchingWithOverload;
         gnr.refToVar.hostId 0 < [
           # it is failed capture
         ] [
-          stackEntry: gnr captureName.refToVar;
+          stackEntry: gnr @currentNode captureName.refToVar;
 
           unfinishedStack: RefToVar Array;
           unfinishedCache: RefToVar Array;
@@ -879,8 +879,8 @@ usePreCapturesWith: [
       i currentChangesNode.matchingInfo.fieldCaptures.dataSize < [
         currentFieldCapture: i currentChangesNode.matchingInfo.fieldCaptures.at;
         fieldName: currentFieldCapture.nameInfo copy;
-        overload: currentFieldCapture getOverload;
-        fieldCnr: currentFieldCapture.nameInfo overload getNameWithOverload captureName;
+        overload: currentFieldCapture @currentNode getOverload;
+        fieldCnr: currentFieldCapture.nameInfo overload getNameWithOverload @currentNode captureName;
         i 1 + @i set compilable
       ] &&
     ] loop
@@ -938,7 +938,7 @@ applyNodeChanges: [
   i: 0 dynamic;
   [
     i pops.dataSize < [
-      pops.dataSize i - 1 - pops.at push
+      pops.dataSize i - 1 - pops.at @currentNode push
       i 1 + @i set compilable
     ] &&
   ] loop
@@ -952,8 +952,8 @@ applyNodeChanges: [
       cacheEntry.hostId 0 < [
         currentCapture.nameInfo addFailedCapture
       ] [
-        overload: currentCapture getOverload;
-        stackEntry: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
+        overload: currentCapture @currentNode getOverload;
+        stackEntry: currentCapture.nameInfo currentCapture overload @currentNode getNameForMatchingWithOverload @currentNode captureName.refToVar;
         stackEntry cacheEntry applyEntriesRec
       ] if
 
@@ -967,8 +967,8 @@ applyNodeChanges: [
       currentFieldCapture: i currentChangesNode.matchingInfo.fieldCaptures.at;
 
       fieldName: currentFieldCapture.nameInfo copy;
-      overload: currentFieldCapture getOverload;
-      fieldCnr: currentFieldCapture.nameInfo overload getNameWithOverload captureName;
+      overload: currentFieldCapture @currentNode getOverload;
+      fieldCnr: currentFieldCapture.nameInfo overload getNameWithOverload @currentNode captureName;
 
       i 1 + @i set compilable
     ] &&
@@ -1062,14 +1062,13 @@ isImplicitDeref: [
 ];
 
 derefNEntries: [
-  copy count:;
-  implicitDerefInfo:;
+  implicitDerefInfo: count: block:;;;
   i: 0 dynamic;
   [
     i count < [
       count 1 - i - implicitDerefInfo.at [
-        dst: i @currentNode getStackEntry;
-        dst getPossiblePointee @dst set
+        dst: i @block getStackEntry;
+        dst @block getPossiblePointee @dst set
       ] when
       i 1 + @i set TRUE
     ] &&
@@ -1091,7 +1090,7 @@ applyNamedStackChanges: [
   i: 0 dynamic;
   [
     i newNode.matchingInfo.inputs.dataSize < [
-      pop @inputs.pushBack
+      @currentNode pop @inputs.pushBack
       i 1 + @i set TRUE
     ] &&
   ] loop
@@ -1105,7 +1104,7 @@ applyNamedStackChanges: [
         outputRef markAsAbleToDie
         outputRef @currentNode.@candidatesToDie.pushBack
       ] when
-      outputRef push
+      outputRef @currentNode push
       i 1 + @i set TRUE
     ] &&
   ] loop
@@ -1115,7 +1114,7 @@ applyNamedStackChanges: [
 
     implicitDerefInfo: Cond Array;
     newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
-    implicitDerefInfo appliedVars.fixedOutputs.getSize derefNEntries
+    implicitDerefInfo appliedVars.fixedOutputs.getSize @currentNode derefNEntries
   ] when
 ];
 
@@ -1125,14 +1124,13 @@ applyStackChanges: [
 ];
 
 makeCallInstructionWith: [
+  block:;
   copy dynamicFunc:;
   refToVar:;
   forcedName:;
   newNode:;
   outputs:;
   inputs:;
-  compileOnce
-
   argRet: RefToVar;
   argList: IRArgument Array;
 
@@ -1155,7 +1153,7 @@ makeCallInstructionWith: [
         currentInput getVar.irNameId @arg.@irNameId set
         currentInput getMplSchema.irTypeId @arg.@irTypeId set
         currentInputArgCase ArgRef = [currentInputArgCase ArgRefDeref =] || @arg.@byRef set
-        currentInputArgCase ArgCopy = [currentInput @currentNode createDerefToRegister @arg.@irNameId set] when
+        currentInputArgCase ArgCopy = [currentInput @block createDerefToRegister @arg.@irNameId set] when
 
         arg @argList.pushBack
       ] if
@@ -1175,7 +1173,7 @@ makeCallInstructionWith: [
         refToVar: outputRef;
         outputRef getVar.allocationInstructionIndex 0 <
         [outputRef getVar.globalDeclarationInstructionIndex 0 <] && [
-          outputRef @currentNode createAllocIR r:;
+          outputRef @block createAllocIR r:;
         ] when
 
         currentOutput.argCase ArgReturn = [currentOutput.argCase ArgReturnDeref =] || [
@@ -1201,8 +1199,8 @@ makeCallInstructionWith: [
 
       currentCapture.refToVar.hostId 0 < not [
         currentCapture.argCase ArgRef = [
-          overload: currentCapture getOverload;
-          refToVar: currentCapture.nameInfo currentCapture overload getNameForMatchingWithOverload captureName.refToVar;
+          overload: currentCapture block getOverload;
+          refToVar: currentCapture.nameInfo currentCapture overload @block getNameForMatchingWithOverload @block captureName.refToVar;
           [currentCapture.refToVar refToVar variablesAreSame] "invalid capture type while generating arg list!" assert
 
           arg: IRArgument;
@@ -1223,23 +1221,23 @@ makeCallInstructionWith: [
     pureFuncName: forcedName "" = [dynamicFunc [refToVar getIrName][newNode.irName makeStringView] if][forcedName copy] if;
     funcName: newNode.variadic [("(" newNode.argTypes ") " pureFuncName) assembleString][pureFuncName toString] if;
     convName: newNode.convention;
-    retName: argRet argList convName funcName @currentNode createCallIR;
+    retName: argRet argList convName funcName @block createCallIR;
 
     argRet.varId 0 < not [
-      @retName argRet @currentNode createStoreFromRegister
+      @retName argRet @block createStoreFromRegister
     ] when
   ] when
 ];
 
 makeNamedCallInstruction: [
   r: RefToVar;
-  r FALSE dynamic makeCallInstructionWith
+  r FALSE dynamic @currentNode makeCallInstructionWith
 ];
 
 makeCallInstruction: [
   r: RefToVar;
   forcedName: StringView;
-  forcedName r FALSE dynamic makeCallInstructionWith
+  forcedName r FALSE dynamic @currentNode makeCallInstructionWith
 ];
 
 processNamedCallByNode: [
@@ -1314,7 +1312,7 @@ processCallByNode: [
     ] && [
       result: 0 newNode.outputs.at.refToVar @currentNode copyVarFromChild;
       TRUE @newNode.@deleted set
-      result @currentNode createStaticInitIR push
+      result @currentNode createStaticInitIR @currentNode push
     ] [
       forcedName: forcedNameString makeStringView;
       newNodeIndex forcedName processNamedCallByNode
@@ -1669,7 +1667,7 @@ processIf: [
             i: 0 dynamic;
             [
               i longestInputSize < [
-                a: pop;
+                a: @currentNode pop;
                 a @inputs.pushBack
                 i newNodeThen.matchingInfo.inputs.dataSize < [a @inputsThen.pushBack] when
                 i newNodeElse.matchingInfo.inputs.dataSize < [a @inputsElse.pushBack] when
@@ -1686,7 +1684,7 @@ processIf: [
                   outputRef @currentNode.@candidatesToDie.pushBack
                 ] when
 
-                outputRef push
+                outputRef @currentNode push
                 i 1 + @i set TRUE
               ] &&
             ] loop
@@ -1730,7 +1728,7 @@ processIf: [
               storesElse: newNodeElse outputsElse createStores;
               1 @currentNode createJump
               @currentNode createLabel
-              implicitDerefInfo longestOutputSize derefNEntries
+              implicitDerefInfo longestOutputSize @currentNode derefNEntries
               processor.options.verboseIR ["create phi nodes..." @currentNode createComment] when
               processor.options.verboseIR ["end if" @currentNode createComment] when
             ] when
@@ -1790,7 +1788,7 @@ processLoop: [
               ] each
 
               newNode newNodeIndex @appliedVars applyStackChanges
-              a: pop;
+              a: @currentNode pop;
               VarCond a getVar.data.get copy
             ] [
               TRUE dynamic @loopIsDynamic set
@@ -1906,7 +1904,7 @@ processDynamicLoop: [
           i: 0 dynamic;
           [
             i newNode.matchingInfo.inputs.dataSize < [
-              pop @inputs.pushBack
+              @currentNode pop @inputs.pushBack
               i 1 + @i set TRUE
             ] &&
           ] loop
@@ -1921,7 +1919,7 @@ processDynamicLoop: [
               ] when
 
               i 1 + newNode.outputs.dataSize < [
-                curOutput push
+                curOutput @currentNode push
               ] when
               i 1 + @i set TRUE
             ] &&
@@ -1955,7 +1953,7 @@ processDynamicLoop: [
 
           implicitDerefInfo: Cond Array;
           newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
-          implicitDerefInfo outputs.getSize 1 - derefNEntries
+          implicitDerefInfo outputs.getSize 1 - @currentNode derefNEntries
           processor.options.verboseIR ["loop end prepare..." @currentNode createComment] when
           1 outputs.last @currentNode createBranch
           @currentNode createLabel
@@ -2011,10 +2009,10 @@ processDynamicLoop: [
     r currentNode unglobalize
     r fullUntemporize
     r getVar.data.getTag VarRef = [
-      r getPointeeNoDerefIR push
+      r getPointeeNoDerefIR @currentNode push
     ] [
       FALSE @r.@mutable set
-      r push
+      r @currentNode push
     ] if
   ] times
 
@@ -2064,7 +2062,7 @@ processDynamicLoop: [
     ] when
   ] when
 
-  signature.inputs [p:; a: pop;] each
+  signature.inputs [p:; a: @currentNode pop;] each
 
   oldSuccess compilable not and processor.depthOfPre 0 = and [
     @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
@@ -2102,7 +2100,7 @@ processDynamicLoop: [
     r: signature.inputs.getSize 1 - i - signature.inputs.at @currentNode copyVarFromChild;
     r currentNode unglobalize
     FALSE @r.@mutable set
-    r push
+    r @currentNode push
   ] times
 
   [
@@ -2115,22 +2113,19 @@ processDynamicLoop: [
     processor.options.debug [
       addDebugReserve @currentNode.@funcDbgIndex set
     ] when
-    forcedSignature.inputs   [p:; a: pop;] each
-    forcedSignature.outputs [@currentNode copyVarFromChild push] each
+    forcedSignature.inputs   [p:; a: @currentNode pop;] each
+    forcedSignature.outputs [@currentNode copyVarFromChild @currentNode push] each
     name finalizeCodeNode
   ] call
 
-  signature.inputs   [p:; a: pop;] each
+  signature.inputs   [p:; a: @currentNode pop;] each
   declarationNode storageAddress
 ] "processImportFunctionImpl" exportFunction
 
 callImportWith: [
-  copy dynamicFunc:;
-  refToVar:;
-  declarationNode:;
-
-  inputs:   RefToVar Array;
-  outputs:  RefToVar Array;
+  declarationNode: refToVar: dynamicFunc: block:;;;;
+  inputs:  RefToVar Array;
+  outputs: RefToVar Array;
   (
     [compilable]
     [
@@ -2139,7 +2134,7 @@ callImportWith: [
         i declarationNode.matchingInfo.inputs.dataSize < [
           (
             [compilable]
-            [stackEntry: pop;]
+            [stackEntry: @block pop;]
             [
               input: stackEntry copy;
               input makeVarRealCaptured
@@ -2150,19 +2145,19 @@ callImportWith: [
               ] when
 
               stackEntry nodeEntry variablesAreSame not [
-                lambdaCastResult: input nodeEntry tryImplicitLambdaCast;
+                lambdaCastResult: input nodeEntry @block tryImplicitLambdaCast;
                 lambdaCastResult.success [
                   lambdaCastResult.refToVar @input set
                 ] [
-                  ("cant call import, variable types of argument #" i " are incorrect, expected " nodeEntry currentNode getMplType ";" LF "but found " stackEntry currentNode getMplType) assembleString currentNode compilerError
+                  ("cant call import, variable types of argument #" i " are incorrect, expected " nodeEntry block getMplType ";" LF "but found " stackEntry block getMplType) assembleString block compilerError
                 ] if
               ] when
             ] [
               stackEntry.mutable not nodeMutable and [
-                ("cant call import, expected mutable argument #" i " with type " nodeEntry currentNode getMplType) assembleString currentNode compilerError
+                ("cant call import, expected mutable argument #" i " with type " nodeEntry block getMplType) assembleString block compilerError
               ] when
             ] [
-              nodeMutable [stackEntry @currentNode makeVarTreeDirty] when
+              nodeMutable [stackEntry @block makeVarTreeDirty] when
               input @inputs.pushBack
             ]
           ) sequence
@@ -2173,14 +2168,14 @@ callImportWith: [
       declarationNode.variadic [
         (
           [compilable]
-          [refToVarargs: pop;]
+          [refToVarargs: @block pop;]
           [
             varargs: refToVarargs getVar;
-            varargs.data.getTag VarStruct = not ["varargs must be a struct" currentNode compilerError] when
+            varargs.data.getTag VarStruct = not ["varargs must be a struct" block compilerError] when
           ] [
             varStruct: VarStruct varargs.data.get.get;
             varStruct.fields.getSize [
-              field: i refToVarargs processStaticAt;
+              field: i refToVarargs @block processStaticAt;
               field @inputs.pushBack
             ] times
           ]
@@ -2191,11 +2186,11 @@ callImportWith: [
       [
         i declarationNode.outputs.getSize < [
           currentOutput: i declarationNode.outputs.at.refToVar;
-          current: currentOutput @currentNode copyVarFromChild;
+          current: currentOutput @block copyVarFromChild;
           Dynamic current getVar.@staticity set
           current @outputs.pushBack
           current getVar.data.getTag VarStruct = [
-            current @currentNode.@candidatesToDie.pushBack
+            current @block.@candidatesToDie.pushBack
           ] when
 
           i 1 + @i set compilable
@@ -2203,13 +2198,12 @@ callImportWith: [
       ] loop
     ] [
       forcedName: StringView;
-      inputs outputs declarationNode forcedName refToVar dynamicFunc makeCallInstructionWith
-
+      inputs outputs declarationNode forcedName refToVar dynamicFunc @block makeCallInstructionWith
       i: 0 dynamic;
       [
         i outputs.getSize < [
           currentOutput: i outputs.at;
-          currentOutput push
+          currentOutput @block push
           i 1 + @i set compilable
         ] &&
       ] loop
@@ -2218,17 +2212,17 @@ callImportWith: [
       outputs [
         getVar.data.getTag VarRef = @implicitDerefInfo.pushBack
       ] each
-      implicitDerefInfo outputs.getSize derefNEntries
+
+      implicitDerefInfo outputs.getSize @block derefNEntries
     ]
   ) sequence
 ];
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
+{processorResult: ProcessorResult Ref; processor: Processor Ref; block: Block Ref; multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;} () {convention: cdecl;} [
-
   processorResult:;
   processor:;
-  currentNode:;
+  block:;
   multiParserResult:;
   failProc: @failProcForProcessor;
 
@@ -2247,9 +2241,9 @@ callImportWith: [
   dynamicFunc: refToVar staticityOfVar Dynamic > not;
   dynamicFunc not [
     node.nodeCase NodeCaseCodeRefDeclaration = [
-      "nullpointer call" currentNode compilerError
+      "nullpointer call" block compilerError
     ] when
   ] when
 
-  @node refToVar dynamicFunc callImportWith
+  @node refToVar dynamicFunc @block callImportWith
 ] "processFuncPtrImpl" exportFunction

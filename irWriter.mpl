@@ -21,7 +21,7 @@ createDerefTo: [
 
 createDerefToRegister: [
   block:;
-  derefName: generateRegisterIRName;
+  derefName: block generateRegisterIRName;
   derefName @block createDerefTo
   derefName
 ];
@@ -132,10 +132,10 @@ createStringIR: [
 
 createGetTextSizeIR: [
   refToName: refToDst: block:;;;
-  int32PtrRegister:  generateRegisterIRName;
-  ptrRegister:       generateRegisterIRName;
-  int32SizeRegister: generateRegisterIRName;
-  int64SizeRegister: generateRegisterIRName;
+  int32PtrRegister:  block generateRegisterIRName;
+  ptrRegister:       block generateRegisterIRName;
+  int32SizeRegister: block generateRegisterIRName;
+  int64SizeRegister: block generateRegisterIRName;
 
   ("  " int32PtrRegister getNameById " = bitcast i8* " refToName getIrName " to i32*") @block appendInstruction
   ("  " ptrRegister getNameById " = getelementptr i32, i32* " int32PtrRegister getNameById ", i32 -1") @block appendInstruction
@@ -164,17 +164,17 @@ createStaticGEP: [
 
 createFailWithMessage: [
   message: block:;;
-  gnr: processor.failProcNameInfo getName;
-  cnr: gnr captureName;
+  gnr: processor.failProcNameInfo @block getName;
+  cnr: gnr @block captureName;
   failProcRefToVar: cnr.refToVar copy;
-  message toString makeVarString push
+  message toString @block makeVarString @block push
 
   failProcRefToVar getVar.data.getTag VarBuiltin = [
     #no overload
     defaultFailProc
   ] [
     failProcRefToVar derefAndPush
-    block defaultCall
+    @block defaultCall
   ] if
 ];
 
@@ -184,7 +184,7 @@ createDynamicGEP: [
   indexRegister: indexRefToVar @block createDerefToRegister;
   processor.options.arrayChecks [
     structSize: VarStruct struct.data.get.get.fields.getSize; #in homogenius struct it is = realFieldIndex
-    checkRegister: generateRegisterIRName;
+    checkRegister: block generateRegisterIRName;
 
     ("  " checkRegister getNameById " = icmp ult i32 " indexRegister getNameById ", " structSize) @block appendInstruction
     ("  br i1 " checkRegister getNameById ", label %label" block.lastBrLabelName 1 + ", label %label" block.lastBrLabelName) @block appendInstruction
@@ -224,7 +224,7 @@ createBinaryOperation: [
   opName: block:;;
   var1p: arg1 @block createDerefToRegister;
   var2p: arg2 @block createDerefToRegister;
-  resultReg: generateRegisterIRName;
+  resultReg: block generateRegisterIRName;
   ("  " resultReg getNameById " = " @opName " " arg1 getIrType " " var1p getNameById ", " var2p getNameById) @block appendInstruction
   resultReg result @block createStoreFromRegister
 ];
@@ -233,7 +233,7 @@ createBinaryOperationDiffTypes: [
   opName: block:;;
   var1p: arg1 @block createDerefToRegister;
   var2p: arg2 @block createDerefToRegister;
-  castedReg: generateRegisterIRName;
+  castedReg: block generateRegisterIRName;
   castName: arg1 block getStorageSize arg2 block getStorageSize > [
     arg1 isNat ["zext"] ["sext"] if
   ] [
@@ -241,14 +241,14 @@ createBinaryOperationDiffTypes: [
   ] if;
 
   ("  " castedReg getNameById " = " castName " " arg2 getIrType " " var2p getNameById " to " arg1 getIrType) @block appendInstruction
-  resultReg: generateRegisterIRName;
+  resultReg: block generateRegisterIRName;
   ("  " resultReg getNameById " = " opName " " arg1 getIrType " " var1p getNameById ", " castedReg getNameById) @block appendInstruction
   resultReg result @block createStoreFromRegister
 ];
 
 createDirectBinaryOperation: [
   arg1: arg2: result: opName: block:;;;;;
-  resultReg: generateRegisterIRName;
+  resultReg: block generateRegisterIRName;
   ("  " resultReg getNameById " = " opName " " arg1 getIrType "* " arg1 getIrName ", " arg2 getIrName) @block appendInstruction
   resultReg result @block createStoreFromRegister
 ];
@@ -256,7 +256,7 @@ createDirectBinaryOperation: [
 createUnaryOperation: [
   opName: mopName: block:;;;
   varp: arg @block createDerefToRegister;
-  resultReg: generateRegisterIRName;
+  resultReg: block generateRegisterIRName;
   ("  " resultReg getNameById " = " opName " " arg getIrType " " mopName varp getNameById) @block appendInstruction
   resultReg result @block createStoreFromRegister
 ];
@@ -319,7 +319,7 @@ createCastCopyToNew: [
   srcRef: dstRef: castName: block:;;;;
   dstRef @block createAllocIR !dstRef
   loadReg: srcRef @block createDerefToRegister;
-  castedReg: generateRegisterIRName;
+  castedReg: block generateRegisterIRName;
   ("  " castedReg getNameById " = " @castName " " srcRef getIrType " " loadReg getNameById " to " dstRef getIrType) @block appendInstruction
   castedReg dstRef @block createStoreFromRegister
 ];
@@ -327,7 +327,7 @@ createCastCopyToNew: [
 createCastCopyPtrToNew: [
   srcRef: dstRef: castName: block:;;;;
   dstRef @block createAllocIR !dstRef
-  castedReg: generateRegisterIRName;
+  castedReg: block generateRegisterIRName;
   ("  " castedReg getNameById " = " @castName " " srcRef getIrType "* " srcRef getIrName " to " dstRef getIrType) @block appendInstruction
   castedReg dstRef @block createStoreFromRegister
 ];
@@ -384,7 +384,7 @@ createCallIR: [
   offset: block.programTemplate.getTextSize;
 
   haveRet [
-    generateRegisterIRName @retName set
+    block generateRegisterIRName @retName set
     ("  " @retName getNameById " = call " conventionName refToRet getIrType " ") @block.@programTemplate.catMany
   ] [
     ("  call " conventionName "void ") @block.@programTemplate.catMany
@@ -411,7 +411,7 @@ createCallIR: [
 
   block.programTemplate.getTextSize offset - offset makeInstruction @block.@program.pushBack
 
-  addDebugLocationForLastInstruction
+  @block addDebugLocationForLastInstruction
 
   processor.options.callTrace [@block createCallTraceEpilog] when
 
@@ -572,8 +572,8 @@ createCallTraceData: [
 
 createCallTraceProlog: [
   block:;
-  ptr: generateRegisterIRName;
-  ptrNext: generateRegisterIRName;
+  ptr: block generateRegisterIRName;
+  ptrNext: block generateRegisterIRName;
 
   ("  " ptr getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
   ("  " ptrNext getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 1") @block appendInstruction
@@ -581,18 +581,18 @@ createCallTraceProlog: [
 
   block.hasNestedCall not [
     #ptr->next = ptrNext
-    ptrDotNext: generateRegisterIRName;
+    ptrDotNext: block generateRegisterIRName;
     ("  " ptrDotNext getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 0, i32 1") @block appendInstruction
     ("  store %type.callTraceInfo* " ptrNext getNameById ", %type.callTraceInfo** " ptrDotNext getNameById) @block appendInstruction
 
     #ptrNext->prev = ptr
-    ptrNextDotPrev: generateRegisterIRName;
+    ptrNextDotPrev: block generateRegisterIRName;
     ("  " ptrNextDotPrev getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 0") @block appendInstruction
     ("  store %type.callTraceInfo* " ptr getNameById ", %type.callTraceInfo** " ptrNextDotPrev getNameById) @block appendInstruction
 
     #ptrNext->fileName = fileName
-    fileNameVar: block.position.fileNumber processor.options.fileNames.at makeVarString;
-    ptrNextDotName: generateRegisterIRName;
+    fileNameVar: block.position.fileNumber processor.options.fileNames.at @block makeVarString;
+    ptrNextDotName: block generateRegisterIRName;
     ("  " ptrNextDotName getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 2") @block appendInstruction
     ("  store i8* " fileNameVar getIrName ", i8** " ptrNextDotName getNameById) @block appendInstruction
 
@@ -600,20 +600,20 @@ createCallTraceProlog: [
   ] when
 
   #ptrNext->line = line
-  ptrNextDotLine: generateRegisterIRName;
+  ptrNextDotLine: block generateRegisterIRName;
   ("  " ptrNextDotLine getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 3") @block appendInstruction
   ("  store i32 " block.position.line ", i32* " ptrNextDotLine getNameById) @block appendInstruction
 
   #ptrNext->column = column
-  ptrNextDotColumn: generateRegisterIRName;
+  ptrNextDotColumn: block generateRegisterIRName;
   ("  " ptrNextDotColumn getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 4") @block appendInstruction
   ("  store i32 " block.position.column ", i32* " ptrNextDotColumn getNameById) @block appendInstruction
 ];
 
 createCallTraceEpilog: [
   block:;
-  ptr: generateRegisterIRName;
-  ptrPrev: generateRegisterIRName;
+  ptr: block generateRegisterIRName;
+  ptrPrev: block generateRegisterIRName;
   ("  " ptr getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
   ("  " ptrPrev getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 -1") @block appendInstruction
   ("  store %type.callTraceInfo* " ptrPrev getNameById ", %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
@@ -624,27 +624,27 @@ createGetCallTrace: [
   processor.options.callTrace [
     callTraceDataType: "[65536 x %type.callTraceInfo]" toString;
 
-    ptrFirstSrc: generateRegisterIRName;
-    ptrFirstCast: generateRegisterIRName;
-    ptrFirstDst: generateRegisterIRName;
+    ptrFirstSrc: block generateRegisterIRName;
+    ptrFirstCast: block generateRegisterIRName;
+    ptrFirstDst: block generateRegisterIRName;
     ("  " ptrFirstSrc getNameById " = getelementptr inbounds " callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0") @block appendInstruction
     ("  " ptrFirstDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 0") @block appendInstruction
     ("  " ptrFirstCast getNameById " = bitcast %type.callTraceInfo* " ptrFirstSrc getNameById " to " infoIrType "*") @block appendInstruction
     ("  store " infoIrType "* " ptrFirstCast getNameById ", " infoIrType "** " ptrFirstDst getNameById) @block appendInstruction
 
-    ptrLastSrc: generateRegisterIRName;
-    ptrLastCast: generateRegisterIRName;
-    ptrLastDst: generateRegisterIRName;
+    ptrLastSrc: block generateRegisterIRName;
+    ptrLastCast: block generateRegisterIRName;
+    ptrLastDst: block generateRegisterIRName;
     ("  " ptrLastSrc getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
     ("  " ptrLastDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 1") @block appendInstruction
     ("  " ptrLastCast getNameById " = bitcast %type.callTraceInfo* " ptrLastSrc getNameById " to " infoIrType "*") @block appendInstruction
     ("  store " infoIrType "* " ptrLastCast getNameById ", " infoIrType "** " ptrLastDst getNameById) @block appendInstruction
   ] [
-    ptrFirstDst: generateRegisterIRName;
+    ptrFirstDst: block generateRegisterIRName;
     ("  " ptrFirstDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 0") @block appendInstruction
     ("  store " infoIrType "* null, " infoIrType "** " ptrFirstDst getNameById) @block appendInstruction
 
-    ptrLastDst: generateRegisterIRName;
+    ptrLastDst: block generateRegisterIRName;
     ("  " ptrLastDst getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable getIrName ", i32 0, i32 1") @block appendInstruction
     ("  store " infoIrType "* null, " infoIrType "** " ptrLastDst getNameById) @block appendInstruction
   ] if
