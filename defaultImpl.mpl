@@ -6,7 +6,8 @@ failProcForProcessor: [
   "ASSERTION FAILED!!!" print LF print
   message print LF print
   "While compiling:" print LF print
-  currentNode defaultPrintStackTrace
+
+  test: [FALSE]; test: [block TRUE] [TRUE] pfunc; test [block] [currentNode] uif defaultPrintStackTrace
 
   "Terminating..." print LF print
   2 exit

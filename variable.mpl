@@ -188,10 +188,10 @@ processCall:           [multiParserResult @currentNode @processor @processorResu
 processExportFunction: [multiParserResult @currentNode @processor @processorResult processExportFunctionImpl];
 processImportFunction: [multiParserResult @currentNode @processor @processorResult processImportFunctionImpl];
 compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode @processor @processorResult compareEntriesRecImpl];
-makeVariableType:      [multiParserResult @currentNode @processor @processorResult makeVariableTypeImpl];
+makeVariableType:      [block:; block @processor @processorResult makeVariableTypeImpl];
 compilerError:         [block:; makeStringView block @processor @processorResult compilerErrorImpl];
-generateDebugTypeId:   [multiParserResult @currentNode @processor @processorResult generateDebugTypeIdImpl];
-generateIrTypeId:      [multiParserResult @currentNode @processor @processorResult generateIrTypeIdImpl];
+generateDebugTypeId:   [block:; block @processor @processorResult generateDebugTypeIdImpl];
+generateIrTypeId:      [block:; block @processor @processorResult generateIrTypeIdImpl];
 getMplType: [
   block:;
   result: String;
@@ -302,8 +302,7 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
-  multiParserResult: MultiParserResult Cref;
+  block: Block Cref;
   refToVar: RefToVar Cref;
 } () {convention: cdecl;} "makeVariableTypeImpl" importFunction
 
@@ -340,16 +339,14 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
-  multiParserResult: MultiParserResult Cref;
+  block: Block Cref;
   refToVar: RefToVar Cref;
 } Int32 {} "generateDebugTypeIdImpl" importFunction
 
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
-  multiParserResult: MultiParserResult Cref;
+  block: Block Cref;
   refToVar: RefToVar Cref;
 } Int32 {} "generateIrTypeIdImpl" importFunction
 
@@ -404,7 +401,8 @@ getIrType:   [getMplSchema.irTypeId getNameById];
 getMplTypeId: [getMplType makeStringId];
 
 getDebugType: [
-  dbgType: getDbgType;
+  refToVar: block:;;
+  dbgType: refToVar getDbgType;
   splitted: dbgType.split;
   splitted.success [
     splitted.chars.getSize 1024 > [
@@ -412,8 +410,9 @@ getDebugType: [
       "..." makeStringView @splitted.@chars.pushBack
     ] when
   ] [
-    ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString currentNode compilerError
+    ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString block compilerError
   ] if
+
   result: (dbgType hash ".") assembleString;
   splitted.chars @result.catMany
   @result
@@ -566,7 +565,8 @@ isStaticData: [
 ];
 
 getSingleDataStorageSize: [
-  var: getVar;
+  refToVar: block:;;
+  var: refToVar getVar;
   var.data.getTag (
     VarCond    [1nx]
     VarInt8    [1nx]
@@ -583,11 +583,11 @@ getSingleDataStorageSize: [
     VarReal64  [8nx]
     VarRef     [processor.options.pointerSize 8nx /]
     VarString  [
-      "strings dont have storageSize and alignment" currentNode compilerError
+      "strings dont have storageSize and alignment" block compilerError
       0nx
     ]
     VarImport  [
-      "functions dont have storageSize and alignment" currentNode compilerError
+      "functions dont have storageSize and alignment" block compilerError
       0nx
     ]
     [0nx]
@@ -681,8 +681,7 @@ getPlainDataMPLType: [
 ];
 
 getNonrecursiveDataIRType: [
-  compileOnce
-  refToVar:;
+  refToVar: block:;;
   refToVar isPlain [
     refToVar getPlainDataIRType
   ] [
@@ -697,10 +696,11 @@ getNonrecursiveDataIRType: [
         var.data.getTag VarCode = [var.data.getTag VarBuiltin =] ||  [
           "ERROR" toString @result set
         ] [
-          "Unknown nonrecursive struct" currentNode compilerError
+          "Unknown nonrecursive struct" block compilerError
         ] if
       ] if
     ] if
+
     @result
   ] if
 ];
@@ -735,8 +735,7 @@ getNonrecursiveDataMPLType: [
 ];
 
 getNonrecursiveDataDBGType: [
-  compileOnce
-  refToVar:;
+  refToVar: block:;;
   refToVar isPlain [
     refToVar getPlainDataMPLType
   ] [
@@ -754,11 +753,12 @@ getNonrecursiveDataDBGType: [
           var.data.getTag VarImport = [
             ("F" VarImport var.data.get getFuncDbgType) assembleString @result set
           ] [
-            "Unknown nonrecursive struct" currentNode compilerError
+            "Unknown nonrecursive struct" block compilerError
           ] if
         ] if
       ] if
     ] if
+
     @result
   ] if
 ];
@@ -771,9 +771,8 @@ getStructStorageSize: [
 ];
 
 makeStructStorageSize: [
-  refToVar:;
+  refToVar: block:;;
   result: 0nx;
-
   var: refToVar getVar;
   struct: VarStruct @var.@data.get.get;
   maxA: 1nx;
@@ -782,30 +781,24 @@ makeStructStorageSize: [
     j struct.fields.dataSize < [
       curField: j struct.fields.at;
       curField.refToVar isVirtual not [
-        curS: curField.refToVar getStorageSize;
-        curA: curField.refToVar getAlignment;
-        result
-        curA + 1nx - curA 1nx - not and
-        curS +
-        @result set
-
+        curS: curField.refToVar block getStorageSize;
+        curA: curField.refToVar block getAlignment;
+        result curA + 1nx - curA 1nx - not and curS + @result set
         curA maxA > [curA @maxA set] when
       ] when
+
       j 1 + @j set TRUE
     ] &&
   ] loop
 
-  result
-  maxA + 1nx - maxA 1nx - not and
-  @result set
-
+  result maxA + 1nx - maxA 1nx - not and @result set
   result @struct.@structStorageSize set
 ];
 
 getStorageSize: [
-  refToVar:;
+  refToVar: block:;;
   refToVar isSingle [
-    refToVar getSingleDataStorageSize
+    refToVar block getSingleDataStorageSize
   ] [
     refToVar getStructStorageSize
   ] if
@@ -819,9 +812,8 @@ getStructAlignment: [
 ];
 
 makeStructAlignment: [
-  refToVar:;
+  refToVar: block:;;
   result: 0nx;
-
   var: refToVar getVar;
   struct: VarStruct @var.@data.get.get;
   j: 0;
@@ -829,19 +821,20 @@ makeStructAlignment: [
     j struct.fields.dataSize < [
       curField: j struct.fields.at;
       curField.refToVar isVirtual not [
-        curA: curField.refToVar getAlignment;
+        curA: curField.refToVar block getAlignment;
         result curA < [curA @result set] when
       ] when
       j 1 + @j set TRUE
     ] &&
   ] loop
+
   result @struct.@structAlignment set
 ];
 
 getAlignment: [
-  refToVar:;
+  refToVar: block:;;
   refToVar isSingle [
-    refToVar getSingleDataStorageSize
+    refToVar block getSingleDataStorageSize
   ] [
     refToVar getStructAlignment
   ] if
@@ -1076,11 +1069,11 @@ getFuncDbgType: [
 ];
 
 makeDbgTypeId: [
-  refToVar:;
+  refToVar: block:;;
   refToVar isVirtualType not [
     varSchema: refToVar getMplSchema;
     varSchema.dbgTypeDeclarationId -1 = [
-      refToVar currentNode getTypeDebugDeclaration @varSchema.@dbgTypeDeclarationId set
+      refToVar block getTypeDebugDeclaration @varSchema.@dbgTypeDeclarationId set
     ] when
   ] when
 ];
@@ -1147,16 +1140,14 @@ getPlainConstantIR: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
-  multiParserResult: MultiParserResult Cref;
+  currentNode: Block Cref;
   refToVar: RefToVar Cref;
 } () {} [
   processorResult:;
   processor:;
-  currentNode:;
-  multiParserResult:;
-  failProc: @failProcForProcessor;
+  block:;
   refToVar:;
+  failProc: @failProcForProcessor;
 
   #fill info:
 
@@ -1206,40 +1197,37 @@ getPlainConstantIR: [
       ] when
     ] times
 
-    refToVar makeStructAlignment
-    refToVar makeStructStorageSize
+    refToVar block makeStructAlignment
+    refToVar block makeStructStorageSize
   ] when
 
   var makeVariableSchema getVariableSchemaId @var.!mplSchemaId
   varSchema: refToVar getMplSchema;
   varSchema.irTypeId -1 = [
-    refToVar generateIrTypeId @varSchema.!irTypeId
+    refToVar block generateIrTypeId @varSchema.!irTypeId
   ] when
 
   processor.options.debug [varSchema.dbgTypeId -1 =] && [
-    refToVar generateDebugTypeId @varSchema.!dbgTypeId
-    refToVar makeDbgTypeId
+    refToVar block generateDebugTypeId @varSchema.!dbgTypeId
+    refToVar block makeDbgTypeId
   ] when
-
 ] "makeVariableTypeImpl" exportFunction
 
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
-  multiParserResult: MultiParserResult Cref;
+  block: Block Cref;
   refToVar: RefToVar Cref;
 } Int32 {} [
   processorResult:;
   processor:;
-  currentNode:;
-  multiParserResult:;
-  failProc: @failProcForProcessor;
+  block:;
   refToVar:;
+  failProc: @failProcForProcessor;
   var: refToVar getVar;
   resultDBG: String;
   var.data.getTag (
-    [drop refToVar isNonrecursiveType] [refToVar getNonrecursiveDataDBGType @resultDBG set]
+    [drop refToVar isNonrecursiveType] [refToVar block getNonrecursiveDataDBGType @resultDBG set]
     [VarRef =] [
       branch: VarRef var.data.get;
       pointee: branch getVar;
@@ -1271,21 +1259,19 @@ getPlainConstantIR: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
-  multiParserResult: MultiParserResult Cref;
+  block: Block Cref;
   refToVar: RefToVar Cref;
 } Int32 {} [
   processorResult:;
   processor:;
-  currentNode:;
-  multiParserResult:;
-  failProc: @failProcForProcessor;
+  block:;
   refToVar:;
+  failProc: @failProcForProcessor;
   var: refToVar getVar;
   resultIR: String;
 
   var.data.getTag (
-    [drop refToVar isNonrecursiveType] [refToVar getNonrecursiveDataIRType @resultIR set]
+    [drop refToVar isNonrecursiveType] [refToVar block getNonrecursiveDataIRType @resultIR set]
     [VarRef =] [
       branch: VarRef var.data.get;
       pointee: branch getVar;

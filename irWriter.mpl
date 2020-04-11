@@ -234,7 +234,7 @@ createBinaryOperationDiffTypes: [
   var1p: arg1 @block createDerefToRegister;
   var2p: arg2 @block createDerefToRegister;
   castedReg: generateRegisterIRName;
-  castName: arg1 getStorageSize arg2 getStorageSize > [
+  castName: arg1 block getStorageSize arg2 block getStorageSize > [
     arg1 isNat ["zext"] ["sext"] if
   ] [
     "trunc"

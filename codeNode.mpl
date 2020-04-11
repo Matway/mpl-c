@@ -151,7 +151,7 @@ makeStaticity: [
     staticity @var.@staticity set
 
     staticity Virtual < not [
-      refToVar makeVariableType
+      refToVar currentNode makeVariableType
     ] when
   ] when
 
@@ -216,7 +216,7 @@ createVariableWithVirtual: [
 
   result isNonrecursiveType not [result isUnallocable not] && @result.@mutable set
 
-  makeType [result makeVariableType] when
+  makeType [result currentNode makeVariableType] when
   result makeVariableIRName
 
   processor.varCount 1 + @processor.@varCount set
@@ -677,7 +677,7 @@ makeVirtualVarReal: [
       ] loop
 
       # second pass: create IR code for variable
-      @result makeVariableType
+      @result currentNode makeVariableType
       refToVar @unfinishedSrc.pushBack
       result @currentNode createAllocIR @unfinishedDst.pushBack
 
@@ -965,7 +965,7 @@ createNamedVariable: [
     FALSE newRefToVar getVar.@tref set
 
     currentNode.nextLabelIsVirtual currentNode.nextLabelIsSchema or [
-      newRefToVar makeVariableType
+      newRefToVar currentNode makeVariableType
       currentNode.nextLabelIsSchema [newRefToVar makeVarSchema][newRefToVar makeVarVirtual] if
       FALSE @currentNode.@nextLabelIsVirtual set
       FALSE @currentNode.@nextLabelIsSchema set

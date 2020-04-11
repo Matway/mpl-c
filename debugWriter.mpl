@@ -119,8 +119,8 @@ addMemberInfo: [
   debugDeclarationIndex: field.refToVar getMplSchema.dbgTypeDeclarationId copy;
   [debugDeclarationIndex -1 = ~] "Field has not debug info about type!" assert
 
-  fsize: field.refToVar getStorageSize 0ix cast 0 cast;
-  falignment: field.refToVar getAlignment 0ix cast 0 cast;
+  fsize: field.refToVar block getStorageSize 0ix cast 0 cast;
+  falignment: field.refToVar block getAlignment 0ix cast 0 cast;
   offset falignment + 1 - 0n32 cast falignment 1 - 0n32 cast not and 0 cast @offset set
 
   index: processor.debugInfo.lastId copy;
@@ -200,7 +200,7 @@ getTypeDebugDeclaration: [
             processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
             ("!" index " = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !" block.position.fileNumber processor.debugInfo.fileNameIds.at
-              ", name: \"" refToVar getDebugType "\", line: " block.position.line ", size: " refToVar getStorageSize 0ix cast 0 cast 8 * ", elements: !" index 1 -
+              ", name: \"" refToVar block getDebugType "\", line: " block.position.line ", size: " refToVar block getStorageSize 0ix cast 0 cast 8 * ", elements: !" index 1 -
               ")") assembleString @processor.@debugInfo.@strings.pushBack
             index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
             index

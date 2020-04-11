@@ -490,7 +490,7 @@ mplShiftBinaryOp: [
           result: resultType zeroValue resultType createVariable
           Dynamic makeStaticity
           @currentNode createAllocIR;
-          arg1 getStorageSize arg2 getStorageSize = [
+          arg1 currentNode getStorageSize arg2 currentNode getStorageSize = [
             opName @currentNode createBinaryOperation
           ] [
             opName @currentNode createBinaryOperationDiffTypes
@@ -1093,10 +1093,10 @@ parseSignature: [
           refToVar isReal refToSchema isReal or [
             refToVar isReal refToSchema isReal and [
               #Real to Real
-              refToVar getStorageSize refToSchema getStorageSize = [
+              refToVar currentNode getStorageSize refToSchema currentNode getStorageSize = [
                 refToVar refToDst @currentNode createCopyToNew
               ] [
-                refToVar getStorageSize refToSchema getStorageSize < [
+                refToVar currentNode getStorageSize refToSchema currentNode getStorageSize < [
                   refToVar refToDst "fpext" @currentNode createCastCopyToNew
                 ] [
                   refToVar refToDst "fptrunc" @currentNode createCastCopyToNew
@@ -1122,10 +1122,10 @@ parseSignature: [
             ] if
           ] [
             #Int to Int
-            refToVar getStorageSize refToSchema getStorageSize = [
+            refToVar currentNode getStorageSize refToSchema currentNode getStorageSize = [
               refToVar refToDst @currentNode createCopyToNew
             ] [
-              refToVar getStorageSize refToSchema getStorageSize < [
+              refToVar currentNode getStorageSize refToSchema currentNode getStorageSize < [
                 refToVar isNat [
                   refToVar refToDst "zext" @currentNode createCastCopyToNew
                 ] [
@@ -1393,13 +1393,13 @@ parseSignature: [
         pointee isVirtual [
           0nx
         ] [
-          pointee getStorageSize
+          pointee currentNode getStorageSize
         ] if
       ] [
         0nx
       ] if
     ] [
-      refToVar getStorageSize
+      refToVar currentNode getStorageSize
     ] if
 
     0n64 cast VarNatX createVariable Static makeStaticity @currentNode createPlainIR push
@@ -1415,13 +1415,13 @@ parseSignature: [
         pointee isVirtual [
           0nx
         ] [
-          pointee getAlignment
+          pointee currentNode getAlignment
         ] if
       ] [
         0nx
       ] if
     ] [
-      refToVar getAlignment
+      refToVar currentNode getAlignment
     ] if
 
     0n64 cast VarNatX createVariable Static makeStaticity @currentNode createPlainIR push
