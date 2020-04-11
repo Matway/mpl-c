@@ -381,15 +381,15 @@ getMplType: [
 # these functions require capture "processor"
 variableIsDeleted: [
   refToVar:;
-  refToVar.varId refToVar.hostId @processor.@nodes.at.get.@variables.at.assigned not
+  refToVar.varId refToVar.hostId @processor.@blocks.at.get.@variables.at.assigned not
 ];
 
 getVar: [
   refToVar:;
 
   [
-    refToVar.hostId 0 < not [refToVar.hostId processor.nodes.dataSize <] && [
-      node: refToVar.hostId @processor.@nodes.at.get;
+    refToVar.hostId 0 < not [refToVar.hostId processor.blocks.dataSize <] && [
+      node: refToVar.hostId @processor.@blocks.at.get;
       sz: node.variables.dataSize copy;
       refToVar.varId 0  < not [refToVar.varId sz <] && [
         refToVar.varId node.variables.at.assigned [
@@ -403,12 +403,12 @@ getVar: [
         FALSE
       ] if
     ] [
-      ("invalid host id=" refToVar.hostId " of " processor.nodes.dataSize) addLog
+      ("invalid host id=" refToVar.hostId " of " processor.blocks.dataSize) addLog
       FALSE
     ] if
   ] "Wrong refToVar!" assert
 
-  refToVar.varId refToVar.hostId @processor.@nodes.at.get.@variables.at.get
+  refToVar.varId refToVar.hostId @processor.@blocks.at.get.@variables.at.get
 ];
 
 getNameById: [processor.nameBuffer.at makeStringView];
@@ -1024,7 +1024,7 @@ makeTypeAliasId: [
 
 getFuncIrType: [
   funcIndex:;
-  node: funcIndex processor.nodes.at.get;
+  node: funcIndex processor.blocks.at.get;
   resultId: node.signature toString makeStringId;
   resultId getNameById
 ];
@@ -1032,7 +1032,7 @@ getFuncIrType: [
 getFuncMplType: [
   funcIndex:;
   result: String;
-  node: funcIndex processor.nodes.at.get;
+  node: funcIndex processor.blocks.at.get;
 
   catData: [
     args:;
@@ -1063,7 +1063,7 @@ getFuncMplType: [
 getFuncDbgType: [
   Index:;
   result: String;
-  node:Index processor.nodes.at.get;
+  node: Index processor.blocks.at.get;
 
   catData: [
     args:;
@@ -1544,7 +1544,7 @@ generateVariableIRNameWith: [
     ("@global." processor.globalVarCount) assembleString makeStringId
     processor.globalVarCount 1 + @processor.@globalVarCount set
   ] [
-    hostNode: hostId @processor.@nodes.at.get;
+    hostNode: hostId @processor.@blocks.at.get;
     ("%var." hostNode.lastVarName) assembleString makeStringId
     hostNode.lastVarName 1 + @hostNode.@lastVarName set
   ] if

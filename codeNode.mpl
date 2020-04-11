@@ -220,10 +220,6 @@ createVariableWithVirtual: [
   result makeVariableIRName
 
   processor.varCount 1 + @processor.@varCount set
-  tag VarStruct = [
-    processor.structureVarCount 1 + @processor.@structureVarCount set
-    processor.fieldVarCount VarStruct result getVar.data.get.get.fields.getSize + @processor.@fieldVarCount set
-  ] when
 
   result
 ];
@@ -274,7 +270,7 @@ makeVarString: [
     topNode: @currentNode;
     [topIndex 0 = not] [
       topNode.parent @topIndex set
-      topIndex @processor.@nodes.at.get !topNode
+      topIndex @processor.@blocks.at.get !topNode
     ] while
 
     indexOfNode: topIndex copy;
@@ -1076,7 +1072,7 @@ processListNode: [
         nodeIndex: indexOfNode copy;
 
         [
-          node: nodeIndex processor.nodes.at.get;
+          node: nodeIndex processor.blocks.at.get;
           node.root [
             FALSE
           ] [
@@ -1323,7 +1319,7 @@ captureName: [
           refToVar isVirtual [ArgVirtual] [refToVar isGlobal [ArgGlobal] [ArgRef] if ] if @newCapture.@argCase set
           realCapture: newCapture.argCase ArgRef =;
 
-          realCapture [currentNode.exportDepth refToVar.hostId processor.nodes.at.get.exportDepth = not] && [
+          realCapture [currentNode.exportDepth refToVar.hostId processor.blocks.at.get.exportDepth = not] && [
             TRUE !captureError
           ] when
 
@@ -1687,14 +1683,14 @@ tryImplicitLambdaCast: [
 
     dstPointeeVar.data.getTag VarImport = [
       declarationIndex: VarImport dstPointeeVar.data.get;
-      declarationNode: declarationIndex processor.nodes.at.get;
+      declarationNode: declarationIndex processor.blocks.at.get;
       csignature: declarationNode.csignature;
       implName: ("lambda." indexOfNode "." currentNode.lastLambdaName) assembleString;
       astNode: VarCode refToSrc getVar.data.get.index @multiParserResult.@memory.at;
       implIndex: csignature astNode implName makeStringView TRUE dynamic processExportFunction;
 
       compilable [
-        implNode: implIndex processor.nodes.at.get;
+        implNode: implIndex processor.blocks.at.get;
         implNode.state NodeStateCompiled = not [
           currentNode.state NodeStateHasOutput > [NodeStateHasOutput @currentNode.@state set] when
           dstPointee @result.@refToVar set
@@ -2283,9 +2279,8 @@ addDebugLocationForLastInstruction: [
   ] when
 ];
 
-addCodeNode: [
-  Block owner @processor.@nodes.pushBack
-  processor.nodeCount 1 + @processor.@nodeCount set
+addBlock: [
+  Block owner @processor.@blocks.pushBack
 ];
 
 argAbleToCopy: [
@@ -2552,7 +2547,7 @@ addNamesFromModule: [
   fru.success not [
     moduleId TRUE @currentNode.@usedOrIncludedModulesTable.insert
 
-    moduleNode: moduleId processor.nodes.at.get;
+    moduleNode: moduleId processor.blocks.at.get;
     moduleNode.labelNames [
       current:;
       current.nameInfo current.refToVar addOverloadForPre
@@ -2565,7 +2560,7 @@ processUseModule: [
   copy asUse:;
   copy moduleId:;
 
-  currentModule: moduleId processor.nodes.at.get;
+  currentModule: moduleId processor.blocks.at.get;
   moduleList: currentModule.includedModules copy;
   moduleId @moduleList.pushBack
 
@@ -2731,7 +2726,7 @@ addMatchingNode: [
   copy indexOfNode:;
   copy addr:;
 
-  node: indexOfNode @processor.@nodes.at.get;
+  node: indexOfNode @processor.@blocks.at.get;
   addr @node.@indexArrayAddress set
 
   fr: addr @processor.@matchingNodes.find;
@@ -2754,7 +2749,7 @@ addMatchingNode: [
 deleteMatchingNode: [
   copy indexOfNode:;
 
-  node: indexOfNode @processor.@nodes.at.get;
+  node: indexOfNode @processor.@blocks.at.get;
   node.matchingInfoIndex 0 < not [
     addr: node.indexArrayAddress copy;
     info: addr @processor.@matchingNodes.find.@value;
@@ -2763,9 +2758,9 @@ deleteMatchingNode: [
 
     [node.matchingInfoIndex indexArray.at indexOfNode =] "Current node: matchingInfo table is incorrect!" assert
     indexArray.getSize 1 - node.matchingInfoIndex = not [
-      [indexArray.last processor.nodes.at.get.matchingInfoIndex indexArray.getSize 1 - =] "Last node: matchingInfo table is incorrect!" assert
+      [indexArray.last processor.blocks.at.get.matchingInfoIndex indexArray.getSize 1 - =] "Last node: matchingInfo table is incorrect!" assert
 
-      node.matchingInfoIndex indexArray.last @processor.@nodes.at.get.@matchingInfoIndex set
+      node.matchingInfoIndex indexArray.last @processor.@blocks.at.get.@matchingInfoIndex set
       indexArray.last node.matchingInfoIndex @indexArray.at set
     ] when
 
@@ -2776,7 +2771,7 @@ deleteMatchingNode: [
 
 concreteMatchingNode: [
   copy indexOfNode:;
-  node: indexOfNode @processor.@nodes.at.get;
+  node: indexOfNode @processor.@blocks.at.get;
 
   node.matchingInfo.inputs.getSize 0 = not [
     indexOfNode deleteMatchingNode
@@ -2802,14 +2797,12 @@ concreteMatchingNode: [
 
 deleteNode: [
   copy nodeIndex:;
-  node: nodeIndex @processor.@nodes.at.get;
+  node: nodeIndex @processor.@blocks.at.get;
   TRUE dynamic @node.@empty   set
   TRUE dynamic @node.@deleted set
   @node.@program.release
 
   nodeIndex deleteMatchingNode
-
-  processor.deletedNodeCount 1 + @processor.@deletedNodeCount set
 ];
 
 clearRecursionStack: [
@@ -2823,11 +2816,11 @@ checkRecursionOfCodeNode: [
 
   removePrevNodes: [
     #go back from end of   nodes to current node, delete "hasOutput" and "noOutput" nodes
-    i: processor.nodes.getSize 1 -;
+    i: processor.blocks.getSize 1 -;
     processed: FALSE dynamic;
     [
       i 0 < not [
-        current: i @processor.@nodes.at.get;
+        current: i @processor.@blocks.at.get;
         current.deleted not [
           current.recursionState NodeRecursionStateFail > [
             [i indexOfNode =] "Another recursive node!" assert
@@ -2861,11 +2854,11 @@ checkRecursionOfCodeNode: [
     ] "Processor.recursionStack mismatch!" assert
     @processor.@recursiveNodesStack.popBack
     #go back from end of   nodes to current node, mark "hasOutput" nodes as "Compiled"; "noOutput" nodes - logic error, assert
-    i: processor.nodes.getSize 1 -;
+    i: processor.blocks.getSize 1 -;
     processed: FALSE dynamic;
     [
       i 0  < not [
-        current: i @processor.@nodes.at.get;
+        current: i @processor.@blocks.at.get;
         current.deleted not [
           current.recursionState NodeRecursionStateFail > [
             [i indexOfNode =] "Another recursive node!" assert
@@ -2914,7 +2907,7 @@ checkRecursionOfCodeNode: [
           nestedToCur: RefToVarTable;
           comparingMessage: String;
           currentMatchingNodeIndex: indexOfNode copy;
-          currentMatchingNode: currentMatchingNodeIndex @processor.@nodes.at.get;
+          currentMatchingNode: currentMatchingNodeIndex @processor.@blocks.at.get;
 
           compareShadows: [
             refToVar2:;
@@ -3525,7 +3518,7 @@ makeCompilerPosition: [
     topNode: @currentNode;
     [topNode.parent 0 = not] [
       topNode.parent @topIndex set
-      topIndex @processor.@nodes.at.get !topNode
+      topIndex @processor.@blocks.at.get !topNode
     ] while
 
     indexOfNode: topIndex copy;
@@ -3534,7 +3527,7 @@ makeCompilerPosition: [
     refToVar: RefToVar;
     fr: @functionName @processor.@namedFunctions.find;
     fr.success [
-      prev: fr.value @processor.@nodes.at.get;
+      prev: fr.value @processor.@blocks.at.get;
       prev.refToVar @refToVar set
       refToVar.hostId 0 < not [
         declarationNodeIndex @prev.@nextRecLambdaId set
@@ -3636,7 +3629,7 @@ makeCompilerPosition: [
     ] [
       fr: @functionName @processor.@namedFunctions.find;
       fr.success [
-        prevNode: fr.value @processor.@nodes.at.get;
+        prevNode: fr.value @processor.@blocks.at.get;
         prevNode.state NodeStateCompiled = [
           prevNode.signature currentNode.signature = not [
             ("node " functionName " was defined with another signature") assembleString compilerError
@@ -3737,9 +3730,9 @@ nodeHasCode: [
   functionName:;
   compileOnce
 
-  addCodeNode
-  codeNode: @processor.@nodes.last.get;
-  indexOfCodeNode: processor.nodes.dataSize 1 -;
+  addBlock
+  codeNode: @processor.@blocks.last.get;
+  indexOfCodeNode: processor.blocks.dataSize 1 -;
   currentNode: @codeNode;
   indexOfNode: indexOfCodeNode copy;
   failProc: @failProcForProcessor;
@@ -3846,7 +3839,7 @@ nodeHasCode: [
     currentNode.parent 0 = [
       currentNode.includedModules [
         id:;
-        ("node included module: " id processor.nodes.at.get.moduleName) addLog
+        ("node included module: " id processor.blocks.at.get.moduleName) addLog
       ] each
     ] when
   ] when

@@ -1,16 +1,16 @@
 Block: [{
-  root:             FALSE dynamic;
-  parent:           0 dynamic;
-  nodeCase:         NodeCaseCode;
-  position:         CompilerPositionInfo;
-  stack:            RefToVar Array; # we must compile node without touching parent
-  minStackDepth:    0 dynamic;
-  programTemplate:  String;
-  program:          Instruction Array;
-  aliases:          String Array;
-  variables:        Variable Owner Array; # as unique_ptr...
-  lastLambdaName:   Int32;
-  nextRecLambdaId:  -1 dynamic;
+  root:            FALSE dynamic;
+  parent:          0 dynamic;
+  nodeCase:        NodeCaseCode;
+  position:        CompilerPositionInfo;
+  stack:           RefToVar Array; # we must compile node without touching parent
+  minStackDepth:   0 dynamic;
+  programTemplate: String;
+  program:         Instruction Array;
+  aliases:         String Array;
+  variables:       Variable Owner Array; # as unique_ptr...
+  lastLambdaName:  Int32;
+  nextRecLambdaId: -1 dynamic;
 
   nodeIsRecursive:    FALSE dynamic;
   nextLabelIsVirtual: FALSE dynamic;

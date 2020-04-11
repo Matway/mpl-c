@@ -50,8 +50,8 @@
   "failProc"   findNameInfo @processor.@failProcNameInfo set
   "convention" findNameInfo @processor.@conventionNameInfo set
 
-  addCodeNode
-  TRUE dynamic @processor.@nodes.last.get.@root set
+  addBlock
+  TRUE dynamic @processor.@blocks.last.get.@root set
 
   @processorResult @processor initBuiltins
 
@@ -124,7 +124,7 @@
 
         moduleName stripExtension stripPath !moduleName
         moduleName topNodeIndex @processor.@modules.insert
-        moduleName copy topNodeIndex @processor.@nodes.at.get.!moduleName
+        moduleName copy topNodeIndex @processor.@blocks.at.get.!moduleName
 
         # call files which depends from this module
         moduleName.getTextSize 0 > [
@@ -244,8 +244,8 @@
 
     i: 1 dynamic; # 0th node is root fake node
     [
-      i processor.nodes.dataSize < [
-        currentNode: i @processor.@nodes.at.get;
+      i processor.blocks.dataSize < [
+        currentNode: i @processor.@blocks.at.get;
         currentNode nodeHasCode [
           LF makeStringView @processorResult.@program.cat
 
@@ -298,9 +298,9 @@
   processorResult:;
   refToVar:;
 
-  addCodeNode
-  codeNode: @processor.@nodes.last.get;
-  indexOfCodeNode: processor.nodes.dataSize 1 -;
+  addBlock
+  codeNode: @processor.@blocks.last.get;
+  indexOfCodeNode: processor.blocks.dataSize 1 -;
   currentNode: @codeNode;
   indexOfNode: indexOfCodeNode copy;
   failProc: @failProcForProcessor;

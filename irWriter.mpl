@@ -545,7 +545,7 @@ createCtors: [
   ] when
 
   processor.moduleFunctions [
-    cur: processor.nodes.at.get.irName copy;
+    cur: processor.blocks.at.get.irName copy;
     ("  call void " cur "()") assembleString addStrToProlog
   ] each
 
@@ -559,7 +559,7 @@ createDtors: [
   "" addStrToProlog
   "define internal void @global.dtors() {" addStrToProlog
   processor.dtorFunctions [
-    cur: processor.nodes.at.get.irName copy;
+    cur: processor.blocks.at.get.irName copy;
     ("  call void " cur "()") assembleString addStrToProlog
   ] each
   "  ret void" addStrToProlog
@@ -598,7 +598,7 @@ sortInstructions: [
 addAliasesForUsedNodes: [
   String @processor.@prolog.pushBack
   "; Func aliases" toString @processor.@prolog.pushBack
-  @processor.@nodes [
+  @processor.@blocks [
     currentNode: .get;
     currentNode nodeHasCode [
       @currentNode.@aliases [move @processor.@prolog.pushBack] each

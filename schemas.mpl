@@ -9,7 +9,7 @@ makeVariableSchema: [
       VariableSchemaTags.FUNCTION_SCHEMA @varSchema.@data.setTag
       functionSchema: VariableSchemaTags.FUNCTION_SCHEMA @varSchema.@data.get;
       functionId: VarImport var.data.get;
-      node: functionId processor.nodes.at.get;
+      node: functionId processor.blocks.at.get;
       signature: node.csignature;
       signature.inputs.getSize @functionSchema.@inputSchemaIds.resize
       signature.inputs.getSize [

@@ -184,7 +184,7 @@ MatchingNode: [{
 Processor: [{
   options: ProcessorOptions;
 
-  nodes:               Block Owner Array;
+  blocks:              Block Owner Array;
   matchingNodes:       Natx MatchingNode HashTable;
   recursiveNodesStack: Int32 Array;
   nameInfos:           NameInfo Array;
@@ -247,12 +247,7 @@ Processor: [{
   moduleFunctions: Int32 Array;
   dtorFunctions:   Int32 Array;
 
-  varCount:          0 dynamic;
-  structureVarCount: 0 dynamic;
-  fieldVarCount:     0 dynamic;
-  nodeCount:         0 dynamic;
-  deletedNodeCount:  0 dynamic;
-  deletedVarCount:   0 dynamic;
+  varCount: 0 dynamic;
 
   usedFloatBuiltins: FALSE dynamic;
 

@@ -153,7 +153,7 @@ getStackEntryWith: [
   result: RefToVar Ref; #ref to 0nx
 
   [
-    node: index @processor.@nodes.at .get;
+    node: index @processor.@blocks.at.get;
 
     node.root [
       check ["stack underflow" compilerError] when
@@ -180,7 +180,7 @@ getStackDepth: [
   inputsCount: 0 dynamic;
   index: indexOfNode copy;
   [
-    node: index processor.nodes.at.get;
+    node: index processor.blocks.at.get;
     node.root not [
       depth node.stack.dataSize + @depth set
       inputsCount node.buildingMatchingInfo.inputs.dataSize + @inputsCount set
@@ -210,7 +210,7 @@ defaultPrintStack: [
 defaultPrintStackTrace: [
   nodeIndex: indexOfNode copy;
   [
-    node: nodeIndex processor.nodes.at.get;
+    node: nodeIndex processor.blocks.at.get;
     node.root [
       FALSE
     ] [

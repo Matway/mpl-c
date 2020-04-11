@@ -159,7 +159,7 @@ compareOnePair: [
   cacheEntry:;
   stackEntry:;
 
-  currentMatchingNode: currentMatchingNodeIndex processor.nodes.at.get;
+  currentMatchingNode: currentMatchingNodeIndex processor.blocks.at.get;
 
   makeWayInfo: [{
     copy currentName:;
@@ -465,7 +465,7 @@ tryMatchNode: [
         i where.dataSize < [
           fr.value.tries 1 + @fr.@value.@tries set
           currentMatchingNodeIndex: i where.at;
-          currentMatchingNode: currentMatchingNodeIndex processor.nodes.at.get;
+          currentMatchingNode: currentMatchingNodeIndex processor.blocks.at.get;
 
           currentMatchingNode tryMatchNode [
             currentMatchingNodeIndex @result set
@@ -514,7 +514,7 @@ fixRecursionStack: [
   i: indexOfNode copy;
   [
     processor.recursiveNodesStack.getSize 0 > [i newNodeIndex = not] && [
-      current: i @processor.@nodes.at.get;
+      current: i @processor.@blocks.at.get;
       i processor.recursiveNodesStack.last = [
         NodeRecursionStateNo @current.@recursionState set
         @processor.@recursiveNodesStack.popBack
@@ -529,7 +529,7 @@ fixRecursionStack: [
 
 changeNewNodeState: [
   copy newNodeIndex:;
-  newNode: newNodeIndex @processor.@nodes.at.get;
+  newNode: newNodeIndex @processor.@blocks.at.get;
   newNode.state NodeStateNew = [
     [newNode.nodeIsRecursive copy] "new node must be recursive!" assert
     fixRecursionStack
@@ -556,7 +556,7 @@ changeNewNodeState: [
 
 changeNewExportNodeState: [
   copy newNodeIndex:;
-  newNode: newNodeIndex @processor.@nodes.at.get;
+  newNode: newNodeIndex @processor.@blocks.at.get;
   newNode.state NodeStateNew = [
     [newNode.nodeIsRecursive copy] "new node must be recursive!" assert
     fixRecursionStack
@@ -815,7 +815,7 @@ usePreCapturesWith: [
   copy exitPre:;
   currentChangesNodeIndex:;
   currentChangesNodeIndex 0 < not [
-    currentChangesNode: currentChangesNodeIndex processor.nodes.at.get;
+    currentChangesNode: currentChangesNodeIndex processor.blocks.at.get;
 
     oldSuccess: @processorResult move copy;
     -1 clearProcessorResult
@@ -913,7 +913,7 @@ addFailedCapture: [
 applyNodeChanges: [
   compileOnce
   copy currentChangesNodeIndex:;
-  currentChangesNode: currentChangesNodeIndex processor.nodes.at.get;
+  currentChangesNode: currentChangesNodeIndex processor.blocks.at.get;
 
   [getStackDepth currentChangesNode.matchingInfo.inputs.dataSize < not] "Stack underflow!" assert
 
@@ -1041,7 +1041,7 @@ usePreInputsWith: [
   copy exitPre:;
   newNodeIndex:;
   newNodeIndex 0 < not [
-    newNode: newNodeIndex processor.nodes.at.get;
+    newNode: newNodeIndex processor.blocks.at.get;
 
     newMinStackDepth: getStackDepth newNode.matchingInfo.inputs.dataSize - newNode.matchingInfo.preInputs.dataSize -;
     newMinStackDepth currentNode.minStackDepth < [
@@ -1248,7 +1248,7 @@ makeCallInstruction: [
 processNamedCallByNode: [
   forcedName:;
   copy newNodeIndex:;
-  newNode: newNodeIndex processor.nodes.at.get;
+  newNode: newNodeIndex processor.blocks.at.get;
   compileOnce
 
   newNodeIndex changeNewNodeState
@@ -1302,7 +1302,7 @@ processCallByNode: [
   ] when
 
   compilable [
-    newNode: newNodeIndex @processor.@nodes.at.get;
+    newNode: newNodeIndex @processor.@blocks.at.get;
     currentNode.parent 0 = [nodeCase NodeCaseList = nodeCase NodeCaseObject = or] && [newNode.matchingInfo.inputs.getSize 0 =] && [newNode.outputs.getSize 1 =] && [
       realCapturesCount: 0;
       newNode.matchingInfo.captures [
@@ -1387,7 +1387,7 @@ processCallByNode: [
       [FALSE] "Has compilerError before trying compiling pre!" assert
     ] if
 
-    newNode: newNodeIndex processor.nodes.at.get;
+    newNode: newNodeIndex processor.blocks.at.get;
     newNodeIndex TRUE dynamic usePreInputsWith
     newNodeIndex TRUE dynamic usePreCapturesWith
 
@@ -1444,7 +1444,7 @@ processIf: [
   newNodeThenIndex usePreInputs
 
   compilable [
-    newNodeThen: newNodeThenIndex @processor.@nodes.at.get;
+    newNodeThen: newNodeThenIndex @processor.@blocks.at.get;
     newNodeElseIndex: @indexArrayElse tryMatchAllNodes;
     newNodeElseIndex 0 < [compilable] && [
       "ifElse" makeStringView
@@ -1461,7 +1461,7 @@ processIf: [
     newNodeElseIndex usePreInputs
 
     compilable [
-      newNodeElse: newNodeElseIndex @processor.@nodes.at.get;
+      newNodeElse: newNodeElseIndex @processor.@blocks.at.get;
 
       newNodeThenIndex changeNewNodeState
       newNodeElseIndex changeNewNodeState
@@ -1773,7 +1773,7 @@ processLoop: [
     newNodeIndex usePreInputs
 
     compilable [
-      newNode: newNodeIndex @processor.@nodes.at.get;
+      newNode: newNodeIndex @processor.@blocks.at.get;
       newNodeIndex changeNewNodeState
 
       newNode.state NodeStateHasOutput < [
@@ -1842,7 +1842,7 @@ processDynamicLoop: [
     newNodeIndex usePreInputs
 
     compilable [
-      newNode: newNodeIndex @processor.@nodes.at.get;
+      newNode: newNodeIndex @processor.@blocks.at.get;
       newNodeIndex changeNewNodeState
 
       newNode.state NodeStateHasOutput < [
@@ -1968,7 +1968,7 @@ processDynamicLoop: [
         ] when
 
         needToRemake [
-          newNodeIndex processor.nodes.at.get.nodeCompileOnce [
+          newNodeIndex processor.blocks.at.get.nodeCompileOnce [
             "loop body compileOnce directive fail" compilerError
           ] when
 
@@ -2041,7 +2041,7 @@ processDynamicLoop: [
   compilable [
     newNodeIndex changeNewExportNodeState
 
-    newNode: newNodeIndex processor.nodes.at.get;
+    newNode: newNodeIndex processor.blocks.at.get;
     newNode.outputs.getSize 1 > ["export function cant have 2 or more outputs" compilerError] when
     newNode.outputs.getSize 1 = [signature.outputs.getSize 0 =] && ["signature is void, export function must be without output" compilerError] when
     newNode.outputs.getSize 0 = [signature.outputs.getSize 1 =] && ["signature is not void, export function must have output" compilerError] when
@@ -2100,9 +2100,9 @@ processDynamicLoop: [
   signature:;
   compileOnce
 
-  addCodeNode
-  declarationNodeIndex: processor.nodes.dataSize 1 -;
-  declarationNode: declarationNodeIndex @processor.@nodes.at.get;
+  addBlock
+  declarationNodeIndex: processor.blocks.dataSize 1 -;
+  declarationNode: declarationNodeIndex @processor.@blocks.at.get;
   indexOfNode @declarationNode.@parent set
   asCodeRef [NodeCaseCodeRefDeclaration][NodeCaseDeclaration] if @declarationNode.@nodeCase set
   signature.variadic @declarationNode.@variadic set
@@ -2246,11 +2246,11 @@ callImportWith: [
   refToVar:;
   var: refToVar getVar;
   protoIndex: VarImport var.data.get copy;
-  node: protoIndex @processor.@nodes.at.get;
+  node: protoIndex @processor.@blocks.at.get;
   [
     node.nextRecLambdaId 0 < not [
       node.nextRecLambdaId @protoIndex set
-      protoIndex @processor.@nodes.at.get !node
+      protoIndex @processor.@blocks.at.get !node
       TRUE
     ] &&
   ] loop

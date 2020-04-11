@@ -952,11 +952,11 @@ parseSignature: [
     [compilable]
     [signature: parseSignature;]
     [
-      name: ("null." processor.nodes.getSize) assembleString;
+      name: ("null." processor.blocks.getSize) assembleString;
       index: signature name makeStringView TRUE dynamic processImportFunction;
     ]
     [
-      nullNode: index processor.nodes.at.get;
+      nullNode: index processor.blocks.at.get;
       gnr: nullNode.varNameInfo getName;
       cnr: gnr captureName;
       refToVar: cnr.refToVar copy;
