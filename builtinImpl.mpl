@@ -8,7 +8,7 @@ declareBuiltin: [
   virtual declareBuiltinName:;
   virtual declareBuiltinBody:;
 
-  {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;} () {} [
+  {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;} () {} [
     processorResult:;
     processor:;
     copy indexOfNode:;

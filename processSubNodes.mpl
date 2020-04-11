@@ -135,7 +135,7 @@ compareOnePair: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
 
   comparingMessage: String Ref;
@@ -439,7 +439,7 @@ tryMatchNode: [
   ] &&
 ];
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref; forceRealFunction: Cond; indexArrayOfSubNode: IndexArray Cref;} Int32 {convention: cdecl;} [
+{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref; forceRealFunction: Cond; indexArrayOfSubNode: IndexArray Cref;} Int32 {convention: cdecl;} [
   processorResult:;
   processor:;
   copy indexOfNode:;
@@ -1269,7 +1269,7 @@ processCallByNode: [
   forcedName processNamedCallByNode
 ];
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
+{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
   positionInfo: CompilerPositionInfo Cref; name: StringView Cref; nodeCase: NodeCaseCode; indexArray: IndexArray Cref;} () {convention: cdecl;} [
 
   processorResult:;
@@ -1329,7 +1329,7 @@ processCallByNode: [
   ] if
 ] "processCallByIndexArrayImpl" exportFunction
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref; name: StringView Cref; callAstNodeIndex: Int32;} () {convention: cdecl;} [
+{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref; name: StringView Cref; callAstNodeIndex: Int32;} () {convention: cdecl;} [
   processorResult:;
   processor:;
   copy indexOfNode:;
@@ -1355,7 +1355,7 @@ processCallByNode: [
   ] staticCall
 ] "processCallImpl" exportFunction
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref; preAstNodeIndex: Int32;} Cond {convention: cdecl;} [
+{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref; preAstNodeIndex: Int32;} Cond {convention: cdecl;} [
   processorResult:;
   processor:;
   copy indexOfNode:;
@@ -1987,7 +1987,7 @@ processDynamicLoop: [
   ] loop
 ];
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
+{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
   asLambda: Cond; name: StringView Cref; astNode: AstNode Cref; signature: CFunctionSignature Cref;} Int32 {convention: cdecl;} [
   processorResult:;
   processor:;
@@ -2086,7 +2086,7 @@ processDynamicLoop: [
   newNodeIndex
 ] "processExportFunctionImpl" exportFunction
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
+{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
   asCodeRef: Cond; name: StringView Cref; signature: CFunctionSignature Cref;} Int32 {convention: cdecl;} [
   processorResult:;
   processor:;
@@ -2233,7 +2233,7 @@ callImportWith: [
   ) sequence
 ];
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: CodeNode Ref; multiParserResult: MultiParserResult Cref;
+{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;} () {convention: cdecl;} [
 
   processorResult:;

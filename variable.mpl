@@ -223,7 +223,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   positionInfo: CompilerPositionInfo Cref;
   name: StringView Cref;
@@ -235,7 +235,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   index: Int32;
 } () {convention: cdecl;} "callBuiltinImpl" importFunction
@@ -244,7 +244,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } () {convention: cdecl;} "processFuncPtrImpl" importFunction
@@ -253,7 +253,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   preAstNodeIndex: Int32;
 } Cond {convention: cdecl;} "processPreImpl" importFunction
@@ -262,7 +262,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   name: StringView Cref;
   callAstNodeIndex: Int32;
@@ -272,7 +272,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   asLambda: Cond;
   name: StringView Cref;
@@ -284,7 +284,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   asCodeRef: Cond;
   name: StringView Cref;
@@ -295,7 +295,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
 
   comparingMessage: String Ref;
@@ -310,7 +310,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } () {convention: cdecl;} "makeVariableTypeImpl" importFunction
@@ -320,7 +320,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   result: RefToVar Ref;
 } () {convention: cdecl;} "popImpl" importFunction
@@ -331,7 +331,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
 
   reason: Nat8;
@@ -344,7 +344,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   message: StringView Cref;
 } () {convention: cdecl;} "compilerErrorImpl" importFunction
@@ -353,7 +353,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } Int32 {} "generateDebugTypeIdImpl" importFunction
@@ -362,7 +362,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } Int32 {} "generateIrTypeIdImpl" importFunction
@@ -371,7 +371,7 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   resultMPL: String Ref;
   refToVar: RefToVar Cref;
@@ -1165,7 +1165,7 @@ getPlainConstantIR: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } () {} [
@@ -1246,7 +1246,7 @@ getPlainConstantIR: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } Int32 {} [
@@ -1293,7 +1293,7 @@ getPlainConstantIR: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } Int32 {} [
@@ -1357,7 +1357,7 @@ getPlainConstantIR: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   resultMPL: String Ref;
   refToVar: RefToVar Cref;

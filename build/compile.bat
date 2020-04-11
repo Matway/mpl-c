@@ -5,6 +5,7 @@ FOR /F "tokens=*" %%v IN ('git log --date^=format:%%y%%m%%d --format^=%%cd -1') 
 mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -ndebug -o mplc.ll^
  ../astNodeType.mpl^
  ../astOptimizers.mpl^
+ ../Block.mpl^
  ../builtinImpl.mpl^
  ../builtins.mpl^
  ../codeNode.mpl^

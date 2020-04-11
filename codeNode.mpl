@@ -1049,7 +1049,7 @@ processListNode: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   message: StringView Cref;
 } () {convention: cdecl;} [
@@ -1878,7 +1878,7 @@ copyVarFromParent: [TRUE  FALSE dynamic copyVarImpl];
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
 
   reason: Nat8;
@@ -2004,7 +2004,7 @@ addStackUnderflowInfo: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   result: RefToVar Ref;
 } () {convention: cdecl;} [
@@ -2284,7 +2284,7 @@ addDebugLocationForLastInstruction: [
 ];
 
 addCodeNode: [
-  CodeNode owner @processor.@nodes.pushBack
+  Block owner @processor.@nodes.pushBack
   processor.nodeCount 1 + @processor.@nodeCount set
 ];
 
@@ -2488,7 +2488,7 @@ killStruct: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   indexOfAstNode: Int32;
   astNode: AstNode Cref;
@@ -3059,7 +3059,7 @@ makeCompilerPosition: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   indexOfNode: Int32;
-  currentNode: CodeNode Ref;
+  currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   forcedSignature: CFunctionSignature Cref;
   compilerPositionInfo: CompilerPositionInfo Cref;
