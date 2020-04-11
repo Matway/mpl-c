@@ -1,4 +1,5 @@
 Block: [{
+  id:              Int32;
   root:            FALSE dynamic;
   parent:          0 dynamic;
   nodeCase:        NodeCaseCode;

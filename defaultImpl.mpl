@@ -149,7 +149,7 @@ getStackEntryWith: [
   copy check:;
   copy depth:;
 
-  index: indexOfNode copy;
+  index: currentNode.id copy;
   result: RefToVar Ref; #ref to 0nx
 
   [
@@ -178,7 +178,7 @@ getStackEntryUnchecked: [            FALSE static getStackEntryWith];
 getStackDepth: [
   depth: 0 dynamic;
   inputsCount: 0 dynamic;
-  index: indexOfNode copy;
+  index: currentNode.id copy;
   [
     node: index processor.blocks.at.get;
     node.root not [
@@ -208,7 +208,7 @@ defaultPrintStack: [
 ];
 
 defaultPrintStackTrace: [
-  nodeIndex: indexOfNode copy;
+  nodeIndex: currentNode.id copy;
   [
     node: nodeIndex processor.blocks.at.get;
     node.root [

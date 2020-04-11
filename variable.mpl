@@ -181,20 +181,20 @@ Variable: [{
 
 compilable: [processorResult.success copy];
 
-callBuiltin:           [multiParserResult @currentNode indexOfNode @processor @processorResult callBuiltinImpl];
-processFuncPtr:        [multiParserResult @currentNode indexOfNode @processor @processorResult processFuncPtrImpl];
-processPre:            [multiParserResult @currentNode indexOfNode @processor @processorResult processPreImpl];
-processCall:           [multiParserResult @currentNode indexOfNode @processor @processorResult processCallImpl];
-processExportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processExportFunctionImpl];
-processImportFunction: [multiParserResult @currentNode indexOfNode @processor @processorResult processImportFunctionImpl];
-compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode indexOfNode @processor @processorResult compareEntriesRecImpl];
-makeVariableType:      [multiParserResult @currentNode indexOfNode @processor @processorResult makeVariableTypeImpl];
-compilerError:         [makeStringView multiParserResult @currentNode indexOfNode @processor @processorResult compilerErrorImpl];
-generateDebugTypeId:   [multiParserResult @currentNode indexOfNode @processor @processorResult generateDebugTypeIdImpl];
-generateIrTypeId:      [multiParserResult @currentNode indexOfNode @processor @processorResult generateIrTypeIdImpl];
+callBuiltin:           [multiParserResult @currentNode @processor @processorResult callBuiltinImpl];
+processFuncPtr:        [multiParserResult @currentNode @processor @processorResult processFuncPtrImpl];
+processPre:            [multiParserResult @currentNode @processor @processorResult processPreImpl];
+processCall:           [multiParserResult @currentNode @processor @processorResult processCallImpl];
+processExportFunction: [multiParserResult @currentNode @processor @processorResult processExportFunctionImpl];
+processImportFunction: [multiParserResult @currentNode @processor @processorResult processImportFunctionImpl];
+compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode @processor @processorResult compareEntriesRecImpl];
+makeVariableType:      [multiParserResult @currentNode @processor @processorResult makeVariableTypeImpl];
+compilerError:         [makeStringView multiParserResult @currentNode @processor @processorResult compilerErrorImpl];
+generateDebugTypeId:   [multiParserResult @currentNode @processor @processorResult generateDebugTypeIdImpl];
+generateIrTypeId:      [multiParserResult @currentNode @processor @processorResult generateIrTypeIdImpl];
 getMplType: [
   result: String;
-  @result multiParserResult @currentNode indexOfNode @processor @processorResult getMplTypeImpl
+  @result multiParserResult @currentNode @processor @processorResult getMplTypeImpl
   @result
 ];
 
@@ -222,7 +222,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   positionInfo: CompilerPositionInfo Cref;
@@ -234,7 +233,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   index: Int32;
@@ -243,7 +241,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
@@ -252,7 +249,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   preAstNodeIndex: Int32;
@@ -261,7 +257,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   name: StringView Cref;
@@ -271,7 +266,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   asLambda: Cond;
@@ -283,18 +277,16 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   asCodeRef: Cond;
   name: StringView Cref;
   signature: CFunctionSignature Cref;
-} Int32 {convention: cdecl;} "processImportFunctionImpl" importFunction
+} Natx {convention: cdecl;} "processImportFunctionImpl" importFunction
 
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
 
@@ -309,7 +301,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
@@ -319,7 +310,6 @@ getMplType: [
   forMatching: Cond;
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   result: RefToVar Ref;
@@ -330,7 +320,6 @@ getMplType: [
 
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
 
@@ -343,7 +332,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   message: StringView Cref;
@@ -352,7 +340,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
@@ -361,7 +348,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
@@ -370,7 +356,6 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   resultMPL: String Ref;
@@ -1164,14 +1149,12 @@ getPlainConstantIR: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } () {} [
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -1245,14 +1228,12 @@ getPlainConstantIR: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } Int32 {} [
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -1292,14 +1273,12 @@ getPlainConstantIR: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } Int32 {} [
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -1356,7 +1335,6 @@ getPlainConstantIR: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
   resultMPL: String Ref;
@@ -1364,7 +1342,6 @@ getPlainConstantIR: [
 } () {} [
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -1551,7 +1528,7 @@ generateVariableIRNameWith: [
 ];
 
 generateVariableIRName: [FALSE generateVariableIRNameWith];
-generateRegisterIRName: [indexOfNode TRUE generateVariableIRNameWith];
+generateRegisterIRName: [currentNode.id TRUE generateVariableIRNameWith];
 
 makeVariableIRName: [
   refToVar:;

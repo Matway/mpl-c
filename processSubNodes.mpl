@@ -134,7 +134,6 @@ compareOnePair: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  indexOfNode: Int32;
   currentNode: Block Ref;
   multiParserResult: MultiParserResult Cref;
 
@@ -147,7 +146,6 @@ compareOnePair: [
 } Cond {convention: cdecl;} [
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -439,10 +437,9 @@ tryMatchNode: [
   ] &&
 ];
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref; forceRealFunction: Cond; indexArrayOfSubNode: IndexArray Cref;} Int32 {convention: cdecl;} [
+{processorResult: ProcessorResult Ref; processor: Processor Ref; currentNode: Block Ref; multiParserResult: MultiParserResult Cref; forceRealFunction: Cond; indexArrayOfSubNode: IndexArray Cref;} Int32 {convention: cdecl;} [
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -503,15 +500,15 @@ tryMatchNode: [
 ] "tryMatchAllNodesWith" exportFunction
 
 tryMatchAllNodes: [
-  FALSE multiParserResult @currentNode indexOfNode @processor @processorResult tryMatchAllNodesWith
+  FALSE multiParserResult @currentNode @processor @processorResult tryMatchAllNodesWith
 ];
 
 tryMatchAllNodesForRealFunction: [
-  TRUE multiParserResult @currentNode indexOfNode @processor @processorResult tryMatchAllNodesWith
+  TRUE multiParserResult @currentNode @processor @processorResult tryMatchAllNodesWith
 ];
 
 fixRecursionStack: [
-  i: indexOfNode copy;
+  i: currentNode.id copy;
   [
     processor.recursiveNodesStack.getSize 0 > [i newNodeIndex = not] && [
       current: i @processor.@blocks.at.get;
@@ -521,7 +518,7 @@ fixRecursionStack: [
       ] when
 
       current.parent @i set
-      [i 0 = not] "NewNodeIndex is not a parent of indexOfNode while fixRecursionStack!" assert
+      [i 0 = not] "NewNodeIndex is not a parent of currentNode.id while fixRecursionStack!" assert
       TRUE
     ] &&
   ] loop
@@ -1269,12 +1266,11 @@ processCallByNode: [
   forcedName processNamedCallByNode
 ];
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
+{processorResult: ProcessorResult Ref; processor: Processor Ref; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
   positionInfo: CompilerPositionInfo Cref; name: StringView Cref; nodeCase: NodeCaseCode; indexArray: IndexArray Cref;} () {convention: cdecl;} [
 
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -1290,7 +1286,7 @@ processCallByNode: [
   newNodeIndex: indexArray tryMatchAllNodes;
   newNodeIndex 0 < [compilable] && [
     name
-    indexOfNode
+    currentNode.id
     nodeCase
     @processorResult
     @processor
@@ -1329,10 +1325,9 @@ processCallByNode: [
   ] if
 ] "processCallByIndexArrayImpl" exportFunction
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref; name: StringView Cref; callAstNodeIndex: Int32;} () {convention: cdecl;} [
+{processorResult: ProcessorResult Ref; processor: Processor Ref; currentNode: Block Ref; multiParserResult: MultiParserResult Cref; name: StringView Cref; callAstNodeIndex: Int32;} () {convention: cdecl;} [
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -1355,10 +1350,9 @@ processCallByNode: [
   ] staticCall
 ] "processCallImpl" exportFunction
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref; preAstNodeIndex: Int32;} Cond {convention: cdecl;} [
+{processorResult: ProcessorResult Ref; processor: Processor Ref; currentNode: Block Ref; multiParserResult: MultiParserResult Cref; preAstNodeIndex: Int32;} Cond {convention: cdecl;} [
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -1376,7 +1370,7 @@ processCallByNode: [
     newNodeIndex: indexArray tryMatchAllNodes;
     newNodeIndex 0 < [compilable] && [
       processor.depthOfPre 1 + @processor.@depthOfPre set
-      "PRE" makeStringView indexOfNode NodeCaseCode  @processorResult @processor indexArray multiParserResult positionInfo CFunctionSignature astNodeToCodeNode @newNodeIndex set
+      "PRE" makeStringView currentNode.id NodeCaseCode @processorResult @processor indexArray multiParserResult positionInfo CFunctionSignature astNodeToCodeNode @newNodeIndex set
       processor.depthOfPre 1 - @processor.@depthOfPre set
     ] when
 
@@ -1431,7 +1425,7 @@ processIf: [
   newNodeThenIndex: @indexArrayThen tryMatchAllNodes;
   newNodeThenIndex 0 < [compilable] && [
     "ifThen" makeStringView
-    indexOfNode
+    currentNode.id
     NodeCaseCode
     @processorResult
     @processor
@@ -1448,7 +1442,7 @@ processIf: [
     newNodeElseIndex: @indexArrayElse tryMatchAllNodes;
     newNodeElseIndex 0 < [compilable] && [
       "ifElse" makeStringView
-      indexOfNode
+      currentNode.id
       NodeCaseCode
       @processorResult
       @processor
@@ -1760,7 +1754,7 @@ processLoop: [
     newNodeIndex: @indexArray tryMatchAllNodes;
     newNodeIndex 0 < [compilable] && [
       "loop" makeStringView
-      indexOfNode
+      currentNode.id
       NodeCaseCode
       @processorResult
       @processor
@@ -1829,7 +1823,7 @@ processDynamicLoop: [
     newNodeIndex: @indexArray tryMatchAllNodes;
     newNodeIndex 0 < [compilable] && [
       "dynamicLoop" makeStringView
-      indexOfNode
+      currentNode.id
       NodeCaseCode
       @processorResult
       @processor
@@ -1987,11 +1981,10 @@ processDynamicLoop: [
   ] loop
 ];
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
+{processorResult: ProcessorResult Ref; processor: Processor Ref; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
   asLambda: Cond; name: StringView Cref; astNode: AstNode Cref; signature: CFunctionSignature Cref;} Int32 {convention: cdecl;} [
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -2032,7 +2025,7 @@ processDynamicLoop: [
   newNodeIndex 0 < [compilable] && [
     nodeCase: asLambda [NodeCaseLambda][NodeCaseExport] if;
     processor.exportDepth 1 + @processor.@exportDepth set
-    name indexOfNode nodeCase @processorResult @processor indexArray multiParserResult positionInfo signature astNodeToCodeNode @newNodeIndex set
+    name currentNode.id nodeCase @processorResult @processor indexArray multiParserResult positionInfo signature astNodeToCodeNode @newNodeIndex set
     processor.exportDepth 1 - @processor.@exportDepth set
   ] when
 
@@ -2053,7 +2046,7 @@ processDynamicLoop: [
     compilable [
       newNode.captureNames [
         currentCaptureName:;
-        currentCaptureName.startPoint indexOfNode = not [
+        currentCaptureName.startPoint currentNode.id = not [
           fr: currentCaptureName.startPoint @currentNode.@usedModulesTable.find;
           fr.success [TRUE @fr.@value.@used set] when
         ] when
@@ -2078,7 +2071,7 @@ processDynamicLoop: [
     oldRecursiveNodesStackSize @processor.@recursiveNodesStack.shrink
     -1 clearProcessorResult
 
-    signature name FALSE dynamic processImportFunction !newNodeIndex
+    signature name FALSE dynamic processImportFunction Block addressToReference .id copy !newNodeIndex
   ] when
 
   ("processed export: " makeStringView name makeStringView) addLog
@@ -2086,11 +2079,10 @@ processDynamicLoop: [
   newNodeIndex
 ] "processExportFunctionImpl" exportFunction
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
-  asCodeRef: Cond; name: StringView Cref; signature: CFunctionSignature Cref;} Int32 {convention: cdecl;} [
+{processorResult: ProcessorResult Ref; processor: Processor Ref; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
+  asCodeRef: Cond; name: StringView Cref; signature: CFunctionSignature Cref;} Natx {convention: cdecl;} [
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;
@@ -2101,9 +2093,8 @@ processDynamicLoop: [
   compileOnce
 
   addBlock
-  declarationNodeIndex: processor.blocks.dataSize 1 -;
-  declarationNode: declarationNodeIndex @processor.@blocks.at.get;
-  indexOfNode @declarationNode.@parent set
+  declarationNode: @processor.@blocks.last.get;
+  currentNode.id @declarationNode.@parent set
   asCodeRef [NodeCaseCodeRefDeclaration][NodeCaseDeclaration] if @declarationNode.@nodeCase set
   signature.variadic @declarationNode.@variadic set
 
@@ -2116,7 +2107,6 @@ processDynamicLoop: [
 
   [
     curPosition: currentNode.position;
-    indexOfNode: declarationNodeIndex copy;
     currentNode: @declarationNode;
     curPosition @currentNode.@position set
     position: curPosition copy;
@@ -2131,7 +2121,7 @@ processDynamicLoop: [
   ] call
 
   signature.inputs   [p:; a: pop;] each
-  declarationNodeIndex
+  declarationNode storageAddress
 ] "processImportFunctionImpl" exportFunction
 
 callImportWith: [
@@ -2233,12 +2223,11 @@ callImportWith: [
   ) sequence
 ];
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
+{processorResult: ProcessorResult Ref; processor: Processor Ref; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;} () {convention: cdecl;} [
 
   processorResult:;
   processor:;
-  copy indexOfNode:;
   currentNode:;
   multiParserResult:;
   failProc: @failProcForProcessor;

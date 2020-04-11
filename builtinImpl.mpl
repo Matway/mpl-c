@@ -8,10 +8,9 @@ declareBuiltin: [
   virtual declareBuiltinName:;
   virtual declareBuiltinBody:;
 
-  {processorResult: ProcessorResult Ref; processor: Processor Ref; indexOfNode: Int32; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;} () {} [
+  {processorResult: ProcessorResult Ref; processor: Processor Ref; currentNode: Block Ref; multiParserResult: MultiParserResult Cref;} () {} [
     processorResult:;
     processor:;
-    copy indexOfNode:;
     currentNode:;
     multiParserResult:;
     failProc: @failProcForProcessor;
@@ -636,7 +635,7 @@ mplBuiltinProcessAtList: [
                 refToIndex makeVarRealCaptured
                 firstField: 0 realStruct.fields.at.refToVar;
                 fieldRef: firstField copyVarFromParent;
-                firstField.hostId indexOfNode = not [
+                firstField.hostId currentNode.id = not [
                   fBegin: RefToVar;
                   fEnd: RefToVar;
                   fieldRef @fBegin @fEnd ShadowReasonField makeShadowsDynamic
@@ -943,7 +942,7 @@ parseSignature: [
       varName.data.getTag VarString = not ["function name must be static string" compilerError] when
     ]
     [signature: parseSignature;]
-    [index: signature VarString varName.data.get makeStringView FALSE dynamic processImportFunction;]
+    [block: signature VarString varName.data.get makeStringView FALSE dynamic processImportFunction Block addressToReference;]
   ) sequence
 ] "mplBuiltinImportFunction" @declareBuiltin ucall
 
@@ -953,11 +952,10 @@ parseSignature: [
     [signature: parseSignature;]
     [
       name: ("null." processor.blocks.getSize) assembleString;
-      index: signature name makeStringView TRUE dynamic processImportFunction;
+      block: signature name makeStringView TRUE dynamic processImportFunction Block addressToReference;
     ]
     [
-      nullNode: index processor.blocks.at.get;
-      gnr: nullNode.varNameInfo getName;
+      gnr: block.varNameInfo getName;
       cnr: gnr captureName;
       refToVar: cnr.refToVar copy;
 

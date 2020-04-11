@@ -300,9 +300,7 @@
 
   addBlock
   codeNode: @processor.@blocks.last.get;
-  indexOfCodeNode: processor.blocks.dataSize 1 -;
   currentNode: @codeNode;
-  indexOfNode: indexOfCodeNode copy;
   failProc: @failProcForProcessor;
 
   NodeCaseDtor @codeNode.@nodeCase set
