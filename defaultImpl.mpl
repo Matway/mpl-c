@@ -86,7 +86,7 @@ defaultSet: [
           newSrc: lambdaCastResult.refToVar TRUE createRef;
           newSrc refToDst @block createCopyToExists
         ] [
-          ("types mismatch, src is " refToSrc getMplType "," LF "dst is " refToDst getMplType) assembleString block compilerError
+          ("types mismatch, src is " refToSrc block getMplType "," LF "dst is " refToDst block getMplType) assembleString block compilerError
         ] if
       ] if
     ] if
@@ -197,7 +197,7 @@ defaultPrintStack: [
   [
     i block getStackDepth < [
       entry: i block getStackEntryUnchecked;
-      (entry getMplType entry.mutable ["R"] ["C"] if entry getVar.temporary ["T"] [""] if LF) printList
+      (entry block getMplType entry.mutable ["R"] ["C"] if entry getVar.temporary ["T"] [""] if LF) printList
       i 1 + @i set TRUE
     ] &&
   ] loop

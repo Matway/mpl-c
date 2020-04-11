@@ -48,7 +48,7 @@ mplNumberBinaryOp: [
     var1.data.getTag firstTag < [var1.data.getTag lastTag < not] || ["first argument invalid" currentNode compilerError] [
       var2.data.getTag firstTag < [var2.data.getTag lastTag < not] || ["second argument invalid" currentNode compilerError] [
         arg1 arg2 variablesAreSame not [
-          ("arguments have different schemas, left is " arg1 getMplType ", right is " arg2 getMplType) assembleString currentNode compilerError
+          ("arguments have different schemas, left is " arg1 currentNode getMplType ", right is " arg2 currentNode getMplType) assembleString currentNode compilerError
         ] when
       ] if
     ] if
@@ -132,7 +132,7 @@ mplNumberBinaryOp: [
     arg1 comparable not [ "first argument is not comparable" currentNode compilerError ] [
       arg2 comparable not [ "second argument is not comparable" currentNode compilerError ] [
         arg1 arg2 variablesAreSame not [
-          ("arguments have different schemas, left is " arg1 getMplType ", right is " arg2 getMplType) assembleString currentNode compilerError
+          ("arguments have different schemas, left is " arg1 currentNode getMplType ", right is " arg2 currentNode getMplType) assembleString currentNode compilerError
         ] when
       ] if
     ] if
@@ -389,7 +389,7 @@ mplNumberBuiltinOp: [
     arg1 isReal not ["first argument invalid" currentNode compilerError] [
       arg2 isReal not ["second argument invalid" currentNode compilerError] [
         arg1 arg2 variablesAreSame not [
-          ("arguments have different schemas, left is " arg1 getMplType ", right is " arg2 getMplType) assembleString currentNode compilerError
+          ("arguments have different schemas, left is " arg1 currentNode getMplType ", right is " arg2 currentNode getMplType) assembleString currentNode compilerError
         ] when
       ] if
     ] if
@@ -703,7 +703,7 @@ mplBuiltinProcessAtList: [
 
     varElse.data.getTag VarCode = not ["branch else must be a [CODE]" currentNode compilerError] when
     varThen.data.getTag VarCode = not ["branch then must be a [CODE]" currentNode compilerError] when
-    varCond.data.getTag VarCond = not [("condition has a wrong type " condition getMplType) assembleString currentNode compilerError] when
+    varCond.data.getTag VarCond = not [("condition has a wrong type " condition currentNode getMplType) assembleString currentNode compilerError] when
 
     compilable [
       condition staticityOfVar Weak > [
@@ -844,7 +844,7 @@ parseSignature: [
       compilable [
         return isVirtual [
           returnVar: return getVar;
-          returnVar.data.getTag VarStruct = not [(return getMplType " can not be a return type") assembleString currentNode compilerError] when
+          returnVar.data.getTag VarStruct = not [(return currentNode getMplType " can not be a return type") assembleString currentNode compilerError] when
         ] [
           #todo: detect temporality
           returnVar: return getVar;
@@ -1360,7 +1360,7 @@ parseSignature: [
       string: VarString varName.data.get;
       fr: string makeStringView findNameInfo refToStruct findField;
     ] [
-      fr.success not [(refToStruct getMplType " has no field " string) assembleString currentNode compilerError] when
+      fr.success not [(refToStruct currentNode getMplType " has no field " string) assembleString currentNode compilerError] when
     ] [
       fr.index Int64 cast VarInt32 createVariable Static makeStaticity @currentNode createPlainIR push
     ]
@@ -1489,7 +1489,7 @@ parseSignature: [
         cmpResult 1 = VarCond createVariable Static makeStaticity @currentNode createPlainIR push
       ] if
     ] [
-      ("different arguments, left: " refToVar1 getMplType ", right: " refToVar2 getMplType) assembleString currentNode compilerError
+      ("different arguments, left: " refToVar1 currentNode getMplType ", right: " refToVar2 currentNode getMplType) assembleString currentNode compilerError
     ] if
   ] when
 ] "mplBuiltinIs" @declareBuiltin ucall

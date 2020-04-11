@@ -189,12 +189,13 @@ processExportFunction: [multiParserResult @currentNode @processor @processorResu
 processImportFunction: [multiParserResult @currentNode @processor @processorResult processImportFunctionImpl];
 compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode @processor @processorResult compareEntriesRecImpl];
 makeVariableType:      [multiParserResult @currentNode @processor @processorResult makeVariableTypeImpl];
-compilerError:         [block:; makeStringView multiParserResult block @processor @processorResult compilerErrorImpl];
+compilerError:         [block:; makeStringView block @processor @processorResult compilerErrorImpl];
 generateDebugTypeId:   [multiParserResult @currentNode @processor @processorResult generateDebugTypeIdImpl];
 generateIrTypeId:      [multiParserResult @currentNode @processor @processorResult generateIrTypeIdImpl];
 getMplType: [
+  block:;
   result: String;
-  @result multiParserResult @currentNode @processor @processorResult getMplTypeImpl
+  @result block @processor @processorResult getMplTypeImpl
   @result
 ];
 
@@ -333,7 +334,6 @@ getMplType: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   block: Block Cref;
-  multiParserResult: MultiParserResult Cref;
   message: StringView Cref;
 } () {convention: cdecl;} "compilerErrorImpl" importFunction
 
@@ -356,12 +356,10 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
-  multiParserResult: MultiParserResult Cref;
+  block: Block Cref;
   resultMPL: String Ref;
   refToVar: RefToVar Cref;
 } () {}  "getMplTypeImpl" importFunction
-
 
 # these functions require capture "processor"
 variableIsDeleted: [
@@ -708,8 +706,7 @@ getNonrecursiveDataIRType: [
 ];
 
 getNonrecursiveDataMPLType: [
-  compileOnce
-  refToVar:;
+  refToVar: block:;;
   refToVar isPlain [
     refToVar getPlainDataMPLType
   ] [
@@ -725,13 +722,14 @@ getNonrecursiveDataMPLType: [
           "b" toString @result set
         ] [
           var.data.getTag VarImport = [
-            ("F" VarImport var.data.get getFuncMplType) assembleString @result set
+            ("F" VarImport var.data.get block getFuncMplType) assembleString @result set
           ] [
-            "Unknown nonrecursive struct" currentNode compilerError
+            "Unknown nonrecursive struct" block compilerError
           ] if
         ] if
       ] if
     ] if
+
     @result
   ] if
 ];
@@ -1015,7 +1013,7 @@ getFuncIrType: [
 ];
 
 getFuncMplType: [
-  funcIndex:;
+  funcIndex: block:;;
   result: String;
   node: funcIndex processor.blocks.at.get;
 
@@ -1027,9 +1025,9 @@ getFuncMplType: [
     [
       i args.getSize < [
         current: i args.at;
-        current getMplType                                            @result.cat
+        current block getMplType @result.cat
         i 1 + args.getSize < [
-          ","                                                         @result.cat
+          "," @result.cat
         ] when
         i 1 + @i set TRUE
       ] &&
@@ -1335,28 +1333,26 @@ getPlainConstantIR: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
-  multiParserResult: MultiParserResult Cref;
+  block: Block Cref;
   resultMPL: String Ref;
   refToVar: RefToVar Cref;
 } () {} [
   processorResult:;
   processor:;
-  currentNode:;
-  multiParserResult:;
-  failProc: @failProcForProcessor;
+  block:;
   resultMPL:;
+  failProc: @failProcForProcessor;
 
   refToVar:;
   var: refToVar getVar;
 
   refToVar isNonrecursiveType [
-    refToVar getNonrecursiveDataMPLType @resultMPL set
+    refToVar block getNonrecursiveDataMPLType @resultMPL set
   ] [
     var.data.getTag VarRef = [
       branch: VarRef var.data.get;
       pointee: branch getVar;
-      branch getMplType @resultMPL.cat
+      branch block getMplType @resultMPL.cat
       branch.mutable [
         "R" @resultMPL.cat
       ] [
@@ -1372,7 +1368,7 @@ getPlainConstantIR: [
             curField: i branch.fields.at;
             (
               curField.nameInfo processor.nameInfos.at.name ":"
-              curField.refToVar getMplType ";") @resultMPL.catMany
+              curField.refToVar block getMplType ";") @resultMPL.catMany
             i 1 + @i set TRUE
           ] &&
         ] loop
@@ -1388,7 +1384,6 @@ getPlainConstantIR: [
     "'" @resultMPL.cat
     ir @resultMPL.cat
   ] when
-
 ] "getMplTypeImpl" exportFunction
 
 cutValue: [
@@ -1572,7 +1567,7 @@ findFieldWithOverloadShift: [
       ] &&
     ] loop
   ] [
-    (refToVar getMplType " is not combined") assembleString currentNode compilerError
+    (refToVar currentNode getMplType " is not combined") assembleString currentNode compilerError
   ] if
 
   result

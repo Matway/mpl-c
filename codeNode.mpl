@@ -616,7 +616,7 @@ makeVirtualVarReal: [
   refToVar isVirtualType [
     refToVar copy
   ] [
-    processor.options.verboseIR [("made virtual var real, type: " refToVar getMplType) assembleString @currentNode createComment] when
+    processor.options.verboseIR [("made virtual var real, type: " refToVar currentNode getMplType) assembleString @currentNode createComment] when
 
     realValue: refToVar getVar.@realValue;
 
@@ -1037,15 +1037,13 @@ processListNode: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   block: Block Cref;
-  multiParserResult: MultiParserResult Cref;
   message: StringView Cref;
 } () {convention: cdecl;} [
   processorResult:;
   processor:;
   block:;
-  multiParserResult:;
-  failProc: @failProcForProcessor;
   message:;
+  failProc: @failProcForProcessor;
   [
     compileOnce
     processorResult.findModuleFail not [processor.depthOfPre 0 =] && [HAS_LOGS] && [
@@ -2184,7 +2182,7 @@ processMember: [
 
   compilable [
     fieldError: [
-      (refToStruct getMplType " has no field " nameInfo processor.nameInfos.at.name) assembleString currentNode compilerError
+      (refToStruct currentNode getMplType " has no field " nameInfo processor.nameInfos.at.name) assembleString currentNode compilerError
     ];
 
     refToStruct isSchema [
@@ -2321,13 +2319,13 @@ callInit: [
               fieldRef getVar.data.getTag VarCode = [
                 current fieldRef @initName callCallableField
                 compilable [currentNode.state NodeStateNoOutput = not] && [currentNode.stack.dataSize stackSize = not] && [
-                  ("Struct " current getMplType "'s INIT method dont save stack") assembleString currentNode compilerError
+                  ("Struct " current currentNode getMplType "'s INIT method dont save stack") assembleString currentNode compilerError
                 ] when
               ] [
-                ("Struct " current getMplType "'s INIT method is not a CODE") assembleString currentNode compilerError
+                ("Struct " current currentNode getMplType "'s INIT method is not a CODE") assembleString currentNode compilerError
               ] if
             ] [
-              ("Struct " current getMplType " is automatic, but has not INIT field") assembleString currentNode compilerError
+              ("Struct " current currentNode getMplType " is automatic, but has not INIT field") assembleString currentNode compilerError
             ] if
           ] when
         ] when
@@ -2377,14 +2375,14 @@ callAssign: [
                   curSrc push
                   curDst fieldRef @assignName callCallableField
                   compilable [currentNode.state NodeStateNoOutput = not] && [currentNode.stack.dataSize stackSize = not] && [
-                    ("Struct " curSrc getMplType "'s ASSIGN method dont save stack") assembleString currentNode compilerError
+                    ("Struct " curSrc currentNode getMplType "'s ASSIGN method dont save stack") assembleString currentNode compilerError
                   ] when
                 ] if
               ] [
-                ("Struct " curSrc getMplType "'s ASSIGN method is not a CODE") assembleString currentNode compilerError
+                ("Struct " curSrc currentNode getMplType "'s ASSIGN method is not a CODE") assembleString currentNode compilerError
               ] if
             ] [
-              ("Struct " curSrc getMplType " is automatic, but has not ASSIGN field") assembleString currentNode compilerError
+              ("Struct " curSrc currentNode getMplType " is automatic, but has not ASSIGN field") assembleString currentNode compilerError
             ] if
           ] [
             structSrc: VarStruct curSrcVar.data.get.get;
@@ -2432,10 +2430,10 @@ callDie: [
             fieldRef getVar.data.getTag VarCode = [
               last fieldRef @dieName callCallableField
               compilable [currentNode.state NodeStateNoOutput = not] && [currentNode.stack.dataSize stackSize = not] && [
-                ("Struct " last getMplType "'s DIE method dont save stack") assembleString currentNode compilerError
+                ("Struct " last currentNode getMplType "'s DIE method dont save stack") assembleString currentNode compilerError
               ] when
             ] [
-              ("Struct " last getMplType "'s DIE method is not a CODE") assembleString currentNode compilerError
+              ("Struct " last currentNode getMplType "'s DIE method is not a CODE") assembleString currentNode compilerError
             ] if
           ] when
 
@@ -3351,7 +3349,7 @@ makeCompilerPosition: [
       current.refToVar.hostId 0 < not [
         current.argCase ArgRef = [
           isRealFunction [
-            ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name "; type=" current.refToVar getMplType) assembleString currentNode compilerError
+            ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name "; type=" current.refToVar currentNode getMplType) assembleString currentNode compilerError
           ] when
 
           current.refToVar FALSE addRefArg

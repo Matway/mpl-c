@@ -323,7 +323,7 @@ tryMatchNode: [
           ", stack entry not found" @s.cat
         ] [
           stackEntry cacheEntry variablesAreSame not [
-            (", stack type is " stackEntry getMplType ", cache type is " cacheEntry getMplType) @s.catMany
+            (", stack type is " stackEntry currentNode getMplType ", cache type is " cacheEntry currentNode getMplType) @s.catMany
           ] [
             stackEntry.mutable cacheEntry.mutable = not [
               stackEntry.mutable [", stack is mutable" makeStringView] [", stack is immutable" makeStringView] if @s.cat
@@ -1653,7 +1653,7 @@ processIf: [
                   i newNodeElse.outputs.dataSize + longestOutputSize < not [newOutput @outputsElse.pushBack] when
                   newOutput @currentNode createAllocIR @outputs.pushBack
                 ] [
-                  ("branch types mismatch; in 'then' type is " outputThen getMplType "; in 'else' type is " outputElse getMplType) assembleString currentNode compilerError
+                  ("branch types mismatch; in 'then' type is " outputThen currentNode getMplType "; in 'else' type is " outputElse currentNode getMplType) assembleString currentNode compilerError
                 ] if
 
                 isOutputImplicitDerefThen @implicitDerefInfo.pushBack
@@ -2057,8 +2057,8 @@ processDynamicLoop: [
         currentInSignature: i signature.outputs @;
 
         currentInNode currentInSignature variablesAreSame not [
-          ("export function output mismatch, expected " currentInSignature getMplType ";" LF
-            "but found " currentInNode getMplType) assembleString currentNode compilerError
+          ("export function output mismatch, expected " currentInSignature currentNode getMplType ";" LF
+            "but found " currentInNode currentNode getMplType) assembleString currentNode compilerError
         ] when
       ] times
     ] when
@@ -2154,12 +2154,12 @@ callImportWith: [
                 lambdaCastResult.success [
                   lambdaCastResult.refToVar @input set
                 ] [
-                  ("cant call import, variable types of argument #" i " are incorrect, expected " nodeEntry getMplType ";" LF "but found " stackEntry getMplType) assembleString currentNode compilerError
+                  ("cant call import, variable types of argument #" i " are incorrect, expected " nodeEntry currentNode getMplType ";" LF "but found " stackEntry currentNode getMplType) assembleString currentNode compilerError
                 ] if
               ] when
             ] [
               stackEntry.mutable not nodeMutable and [
-                ("cant call import, expected mutable argument #" i " with type " nodeEntry getMplType) assembleString currentNode compilerError
+                ("cant call import, expected mutable argument #" i " with type " nodeEntry currentNode getMplType) assembleString currentNode compilerError
               ] when
             ] [
               nodeMutable [stackEntry makeVarTreeDirty] when
