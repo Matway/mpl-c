@@ -1491,7 +1491,7 @@ parseSignature: [
         cmpResult 1 = VarCond createVariable Static makeStaticity createPlainIR push
       ] if
     ] [
-      FALSE VarCond createVariable Static makeStaticity createPlainIR push
+      ("different arguments, left: " refToVar1 getMplType ", right: " refToVar2 getMplType) assembleString compilerError
     ] if
   ] when
 ] "mplBuiltinIs" @declareBuiltin ucall
