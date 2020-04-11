@@ -17,6 +17,7 @@ defaultFailProc: [
 ];
 
 defaultCall: [
+  block:;
   refToVar: pop;
   compilable [
     var: refToVar getVar;
@@ -30,7 +31,7 @@ defaultCall: [
       [VarString =] [
         (
           [compilable]
-          [refToVar staticityOfVar Weak < ["name must be a static string" compilerError] when]
+          [refToVar staticityOfVar Weak < ["name must be a static string" block compilerError] when]
           [
             nameInfo: VarString var.data.get findNameInfo;
             getNameResult: nameInfo getName;
@@ -47,13 +48,14 @@ defaultCall: [
         RefToVar refToVar "call" makeStringView callCallableStruct # call struct with INVALID object
       ]
       [
-        "not callable" makeStringView compilerError
+        "not callable" block compilerError
       ]
     ) cond
   ] when
 ];
 
 defaultSet: [
+  block:;
   refToDst: pop;
   refToSrc: pop;
 
@@ -63,29 +65,29 @@ defaultSet: [
 
     refToDst refToSrc variablesAreSame [
       refToSrc getVar.data.getTag VarImport = [
-        "functions cannot be copied" compilerError
+        "functions cannot be copied" block compilerError
       ] [
         refToSrc getVar.data.getTag VarString = [
-          "builtin-strings cannot be copied" compilerError
+          "builtin-strings cannot be copied" block compilerError
         ] [
           refToDst.mutable [
             [refToDst staticityOfVar Weak = not] "Destination is weak!" assert
             refToSrc refToDst createCopyToExists
           ] [
-            "destination is immutable" compilerError
+            "destination is immutable" block compilerError
           ] if
         ] if
       ] if
     ] [
       refToDst.mutable not [
-        "destination is immutable" compilerError
+        "destination is immutable" block compilerError
       ] [
         lambdaCastResult: refToSrc refToDst tryImplicitLambdaCast;
         lambdaCastResult.success [
           newSrc: lambdaCastResult.refToVar TRUE createRef;
           newSrc refToDst createCopyToExists
         ] [
-          ("types mismatch, src is " refToSrc getMplType "," LF "dst is " refToDst getMplType) assembleString compilerError
+          ("types mismatch, src is " refToSrc getMplType "," LF "dst is " refToDst getMplType) assembleString block compilerError
         ] if
       ] if
     ] if
@@ -101,11 +103,11 @@ defaultRef: [
 ];
 
 defaultMakeConstWith: [
-  copy check:;
+  check: block:;;
   refToVar: pop;
   compilable [
     check [refToVar getVar.temporary copy] && [
-      "temporary objects cannot be set const" compilerError
+      "temporary objects cannot be set const" block compilerError
     ] [
       FALSE @refToVar.@mutable set
       refToVar push
@@ -117,12 +119,12 @@ defaultUseOrIncludeModule: [
   asUse: block:;;
   (
     [compilable]
-    [block.parent 0 = not ["module can be used only in top block" compilerError] when]
+    [block.parent 0 = not ["module can be used only in top block" block compilerError] when]
     [refToName: pop;]
-    [refToName staticityOfVar Weak < ["name must be static string" compilerError] when]
+    [refToName staticityOfVar Weak < ["name must be static string" block compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" compilerError] when
+      varName.data.getTag VarString = not ["name must be static string" block compilerError] when
     ] [
       string: VarString varName.data.get;
       ("use or include module " string) addLog
@@ -132,14 +134,14 @@ defaultUseOrIncludeModule: [
         frn: fr.value block.usedModulesTable.find;
         frn2: fr.value block.directlyIncludedModulesTable.find;
         frn.success frn2.success or [
-          ("duplicate use module: " string) assembleString compilerError
+          ("duplicate use module: " string) assembleString block compilerError
         ] [
           fr.value asUse processUseModule
         ] if
       ] [
         TRUE dynamic @processorResult.@findModuleFail set
         string @processorResult.@errorInfo.@missedModule set
-        ("module not found: " string) assembleString compilerError
+        ("module not found: " string) assembleString block compilerError
       ] if
     ]
   ) sequence
@@ -150,7 +152,7 @@ getStackEntryWith: [
   result: RefToVar @block isConst [Cref] [Ref] uif; #ref to 0nx
   [
     block.root [
-      check ["stack underflow" compilerError] when
+      check ["stack underflow" block compilerError] when
       FALSE
     ] [
       depth block.stack.dataSize < [

@@ -190,7 +190,7 @@ createFailWithMessage: [
     defaultFailProc
   ] [
     failProcRefToVar derefAndPush
-    defaultCall
+    currentNode defaultCall
   ] if
 ];
 
@@ -325,7 +325,7 @@ createCheckedCopyToNewWith: [
           srcRef callInit
           srcRef fullUntemporize
         ] [
-          "movable variable is not mutable" makeStringView compilerError
+          "movable variable is not mutable" currentNode compilerError
         ] if
       ] [
         prevMut: dstRef.mutable copy;
@@ -349,7 +349,7 @@ createCopyToNew: [
   newRefToVar:;
   newRefToVar isVirtual [
     oldRefToVar:;
-    "unable to copy virtual autostruct" compilerError
+    "unable to copy virtual autostruct" currentNode compilerError
   ] [
     newRefToVar createAllocIR createCheckedCopyToNew
   ] if
@@ -399,7 +399,7 @@ createCopyToExists: [
       ] [
         processor.options.verboseIR ["set; call ASSIGN" createComent] when
         srcRef isVirtual [
-          "unable to copy virtual autostruct" compilerError
+          "unable to copy virtual autostruct" currentNode compilerError
         ] [
           srcRef dstRef callAssign
         ] if

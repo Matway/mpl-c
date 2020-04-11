@@ -189,7 +189,7 @@ processExportFunction: [multiParserResult @currentNode @processor @processorResu
 processImportFunction: [multiParserResult @currentNode @processor @processorResult processImportFunctionImpl];
 compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode @processor @processorResult compareEntriesRecImpl];
 makeVariableType:      [multiParserResult @currentNode @processor @processorResult makeVariableTypeImpl];
-compilerError:         [makeStringView multiParserResult @currentNode @processor @processorResult compilerErrorImpl];
+compilerError:         [block:; makeStringView multiParserResult block @processor @processorResult compilerErrorImpl];
 generateDebugTypeId:   [multiParserResult @currentNode @processor @processorResult generateDebugTypeIdImpl];
 generateIrTypeId:      [multiParserResult @currentNode @processor @processorResult generateIrTypeIdImpl];
 getMplType: [
@@ -332,7 +332,7 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Cref;
   multiParserResult: MultiParserResult Cref;
   message: StringView Cref;
 } () {convention: cdecl;} "compilerErrorImpl" importFunction
@@ -414,7 +414,7 @@ getDebugType: [
       "..." makeStringView @splitted.@chars.pushBack
     ] when
   ] [
-    ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString compilerError
+    ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString currentNode compilerError
   ] if
   result: (dbgType hash ".") assembleString;
   splitted.chars @result.catMany
@@ -585,11 +585,11 @@ getSingleDataStorageSize: [
     VarReal64  [8nx]
     VarRef     [processor.options.pointerSize 8nx /]
     VarString  [
-      "strings dont have storageSize and alignment" compilerError
+      "strings dont have storageSize and alignment" currentNode compilerError
       0nx
     ]
     VarImport  [
-      "functions dont have storageSize and alignment" compilerError
+      "functions dont have storageSize and alignment" currentNode compilerError
       0nx
     ]
     [0nx]
@@ -699,7 +699,7 @@ getNonrecursiveDataIRType: [
         var.data.getTag VarCode = [var.data.getTag VarBuiltin =] ||  [
           "ERROR" toString @result set
         ] [
-          "Unknown nonrecursive struct" makeStringView compilerError
+          "Unknown nonrecursive struct" currentNode compilerError
         ] if
       ] if
     ] if
@@ -727,7 +727,7 @@ getNonrecursiveDataMPLType: [
           var.data.getTag VarImport = [
             ("F" VarImport var.data.get getFuncMplType) assembleString @result set
           ] [
-            "Unknown nonrecursive struct" makeStringView compilerError
+            "Unknown nonrecursive struct" currentNode compilerError
           ] if
         ] if
       ] if
@@ -756,7 +756,7 @@ getNonrecursiveDataDBGType: [
           var.data.getTag VarImport = [
             ("F" VarImport var.data.get getFuncDbgType) assembleString @result set
           ] [
-            "Unknown nonrecursive struct" makeStringView compilerError
+            "Unknown nonrecursive struct" currentNode compilerError
           ] if
         ] if
       ] if
@@ -1420,7 +1420,7 @@ checkValue: [
     VarInt32 [value 0x7FFFFFFFi64 > [value 0x80000000i64 neg <] ||]
     VarIntX  [processor.options.pointerSize 32nx = [value 0x7FFFFFFFi64 > [value 0x80000000i64 neg <] ||] &&]
     [FALSE]
-  ) case ["number constant overflow" compilerError] when
+  ) case ["number constant overflow" currentNode compilerError] when
   @value
 ];
 
@@ -1572,7 +1572,7 @@ findFieldWithOverloadShift: [
       ] &&
     ] loop
   ] [
-    (refToVar getMplType " is not combined") assembleString compilerError
+    (refToVar getMplType " is not combined") assembleString currentNode compilerError
   ] if
 
   result

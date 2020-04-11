@@ -13,7 +13,7 @@ addOverload: [
     Overload @currentNameInfo.@stack.pushBack
     currentNameInfo.stack.dataSize 1 -
   ] [
-    "bad overload index" makeStringView compilerError
+    "bad overload index" currentNode compilerError
     -1
   ] if
 ];
@@ -415,7 +415,7 @@ getFieldForMatching: [
 
     fieldRefToVar
   ] [
-    "index is out of bounds" makeStringView compilerError
+    "index is out of bounds" currentNode compilerError
     RefToVar
   ] if
 ];
@@ -465,7 +465,7 @@ getField: [
 
     @fieldRefToVar
   ] [
-    "index is out of bounds" makeStringView compilerError
+    "index is out of bounds" currentNode compilerError
     failResult: RefToVar Ref;
     @failResult
   ] if
@@ -745,7 +745,7 @@ makeVarVirtual: [
       curVar: cur getVar;
       curVar.data.getTag VarStruct = [
         cur isAutoStruct [
-          "can not virtualize automatic struct" makeStringView compilerError
+          "can not virtualize automatic struct" currentNode compilerError
         ] [
           struct: VarStruct curVar.data.get.get;
           j: 0 dynamic;
@@ -763,11 +763,11 @@ makeVarVirtual: [
         curVar.data.getTag VarRef = [
           VarRef curVar.data.get isUnallocable [
           ] [
-            "can not virtualize reference to local variable" makeStringView compilerError
+            "can not virtualize reference to local variable" currentNode compilerError
           ] if
         ] [
           cur staticityOfVar Weak < [
-            "can not virtualize dynamic value" makeStringView compilerError
+            "can not virtualize dynamic value" currentNode compilerError
           ] when
         ] if
       ] if
@@ -796,8 +796,8 @@ makeVarTreeDirty: [
       @unfinishedVars.popBack
 
       var: lastRefToVar getVar;
-      lastRefToVar staticityOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
-      lastRefToVar staticityOfVar Schema = ["can't dynamize schema" makeStringView compilerError] when
+      lastRefToVar staticityOfVar Virtual = ["can't dynamize virtual value" currentNode compilerError] when
+      lastRefToVar staticityOfVar Schema = ["can't dynamize schema" currentNode compilerError] when
 
       compilable [
         var.data.getTag VarStruct = [
@@ -845,7 +845,7 @@ makePointeeDirtyIfRef: [
 makeVarDynamicOrDirty: [
   newStaticity:;
   refToVar:;
-  refToVar staticityOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
+  refToVar staticityOfVar Virtual = ["can't dynamize virtual value" currentNode compilerError] when
 
   refToVar makePointeeDirtyIfRef
   msr: refToVar newStaticity makeStaticity;
@@ -866,7 +866,7 @@ makeVarTreeDynamicWith: [
       @unfinishedVars.popBack
 
       var: lastRefToVar getVar;
-      lastRefToVar staticityOfVar Virtual = ["can't dynamize virtual value" makeStringView compilerError] when
+      lastRefToVar staticityOfVar Virtual = ["can't dynamize virtual value" currentNode compilerError] when
 
       var.data.getTag VarStruct = [
         struct: VarStruct var.data.get.get;
@@ -930,7 +930,7 @@ createNamedVariable: [
 
     currentNode.nextLabelIsVirtual [
       refToVar isVirtual not [
-        staticity Dynamic > not ["value for virtual label must be static" makeStringView compilerError] when
+        staticity Dynamic > not ["value for virtual label must be static" currentNode compilerError] when
         staticity Weak    =     [Static @var.@staticity set] when
       ] when
     ] when
@@ -1036,13 +1036,13 @@ processListNode: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Cref;
   multiParserResult: MultiParserResult Cref;
   message: StringView Cref;
 } () {convention: cdecl;} [
   processorResult:;
   processor:;
-  currentNode:;
+  block:;
   multiParserResult:;
   failProc: @failProcForProcessor;
   message:;
@@ -1059,15 +1059,12 @@ processListNode: [
 
       processor.depthOfPre 0 = [processorResult.passErrorThroughPRE copy] || [
         message toString @processorResult.@errorInfo.@message set
-        nodeIndex: currentNode.id copy;
-
         [
-          node: nodeIndex processor.blocks.at.get;
-          node.root [
+          block.root [
             FALSE
           ] [
-            node.position @processorResult.@errorInfo.@position.pushBack
-            node.parent @nodeIndex set
+            block.position @processorResult.@errorInfo.@position.pushBack
+            block.parent processor.blocks.at.get !block
             TRUE
           ] if
         ] loop
@@ -1130,7 +1127,7 @@ getNameAs: [
   unknownName: [
     forMatching [
     ] [
-      ("unknown name:" name) assembleString compilerError
+      ("unknown name:" name) assembleString currentNode compilerError
     ] if
   ];
 
@@ -1167,7 +1164,7 @@ getNameAs: [
             nameInfoEntry.index fields.at.refToVar @result.@refToVar set
             object.mutable @result.@refToVar.@mutable set
           ] [
-            ("Internal error, mismatch structures for name:" name) assembleString compilerError
+            ("Internal error, mismatch structures for name:" name) assembleString currentNode compilerError
           ] if
         ] [
           nameCase NameCaseSelfObject = [nameCase NameCaseClosureObject =] || [
@@ -1206,7 +1203,7 @@ getNameAs: [
         unknownName
       ] if
     ] [
-      ("Internal error, mismatch structures for name:" name) assembleString compilerError
+      ("Internal error, mismatch structures for name:" name) assembleString currentNode compilerError
     ] if
   ] [
     unknownName
@@ -1402,7 +1399,7 @@ captureName: [
     ] if
 
     captureError [
-      "real function can not have real local capture" compilerError
+      "real function can not have real local capture" currentNode compilerError
     ] when
   ] [
     getNameResult.refToVar @result.@refToVar set
@@ -1514,7 +1511,7 @@ callCallableStruct: [
     refToVar unregNamesClosure
     object unregNamesSelf
   ] [
-    "CALL field is not a code" compilerError
+    "CALL field is not a code" currentNode compilerError
   ] if
 ];
 
@@ -1560,7 +1557,7 @@ callCallableStructWithPre: [
         preVar.data.getTag VarCode = [
           VarCode preVar.data.get.index processPre not @needPre set
         ] [
-          "PRE field must be a code" compilerError
+          "PRE field must be a code" currentNode compilerError
         ] if
       ] when
 
@@ -1581,7 +1578,7 @@ callCallableStructWithPre: [
           overload: nameInfo getOverloadCount 1 - overloadShift -;
           overload 0 < [
             name: nameInfo processor.nameInfos.at.name makeStringView;
-            ("cant call overload for name: " name) assembleString compilerError
+            ("cant call overload for name: " name) assembleString currentNode compilerError
           ] when
 
           compilable [
@@ -1608,7 +1605,7 @@ callCallableStructWithPre: [
         object unregNamesSelf
       ] if
     ] [
-      "CALL field is not a code" compilerError
+      "CALL field is not a code" currentNode compilerError
     ] if
 
     nextIteration [compilable] &&
@@ -1712,11 +1709,11 @@ setRef: [
   var: refToVar getVar;
   var.data.getTag VarRef = [
     refToVar isSchema [
-      "can not write to virtual" makeStringView compilerError
+      "can not write to virtual" currentNode compilerError
     ] [
       pointee: VarRef var.data.get;
       pointee.mutable not [
-        FALSE defaultMakeConstWith #source
+        FALSE currentNode defaultMakeConstWith #source
       ] when
 
       compilable [
@@ -1726,11 +1723,11 @@ setRef: [
             src push
             TRUE defaultRef #source
             refToVar push
-            defaultSet
+            currentNode defaultSet
           ] [
             src push
             refToVar push
-            defaultSet
+            currentNode defaultSet
           ] if
         ] when
       ] when
@@ -1742,9 +1739,9 @@ setRef: [
       src getVar.temporary [
         src push
         refToVar push
-        defaultSet
+        currentNode defaultSet
       ] [
-        "rewrite value works only with temporary values" compilerError
+        "rewrite value works only with temporary values" currentNode compilerError
       ] if
     ] when
   ] if
@@ -2135,7 +2132,7 @@ processNameReadNode: [
   compilable [
     var: refToVar getVar;
     var.data.getTag VarBuiltin = [
-      "can't use @name for builtins, use [name] instead" makeStringView compilerError
+      "can't use @name for builtins, use [name] instead" currentNode compilerError
     ] [
       var.data.getTag VarImport = [
         RefToVar refToVar 1 data.nameInfo pushName
@@ -2187,12 +2184,12 @@ processMember: [
 
   compilable [
     fieldError: [
-      (refToStruct getMplType " has no field " nameInfo processor.nameInfos.at.name) assembleString compilerError
+      (refToStruct getMplType " has no field " nameInfo processor.nameInfos.at.name) assembleString currentNode compilerError
     ];
 
     refToStruct isSchema [
       read -1 = [
-        "can not write to field of struct schema" makeStringView compilerError
+        "can not write to field of struct schema" currentNode compilerError
       ] [
         structVar: refToStruct getVar;
         pointee: VarRef structVar.data.get;
@@ -2210,7 +2207,7 @@ processMember: [
             fieldError
           ] if
         ] [
-          "not a combined" makeStringView compilerError
+          "not a combined" currentNode compilerError
         ] if
       ] if
     ] [
@@ -2224,7 +2221,7 @@ processMember: [
           fieldError
         ] if
       ] [
-        "not a combined" makeStringView compilerError
+        "not a combined" currentNode compilerError
       ] if
     ] if
   ] when
@@ -2324,13 +2321,13 @@ callInit: [
               fieldRef getVar.data.getTag VarCode = [
                 current fieldRef @initName callCallableField
                 compilable [currentNode.state NodeStateNoOutput = not] && [currentNode.stack.dataSize stackSize = not] && [
-                  ("Struct " current getMplType "'s INIT method dont save stack") assembleString compilerError
+                  ("Struct " current getMplType "'s INIT method dont save stack") assembleString currentNode compilerError
                 ] when
               ] [
-                ("Struct " current getMplType "'s INIT method is not a CODE") assembleString compilerError
+                ("Struct " current getMplType "'s INIT method is not a CODE") assembleString currentNode compilerError
               ] if
             ] [
-              ("Struct " current getMplType " is automatic, but has not INIT field") assembleString compilerError
+              ("Struct " current getMplType " is automatic, but has not INIT field") assembleString currentNode compilerError
             ] if
           ] when
         ] when
@@ -2375,19 +2372,19 @@ callAssign: [
 
               fieldRef getVar.data.getTag VarCode = [
                 curDst isVirtual [
-                  "unable to copy virtual autostruct" compilerError
+                  "unable to copy virtual autostruct" currentNode compilerError
                 ] [
                   curSrc push
                   curDst fieldRef @assignName callCallableField
                   compilable [currentNode.state NodeStateNoOutput = not] && [currentNode.stack.dataSize stackSize = not] && [
-                    ("Struct " curSrc getMplType "'s ASSIGN method dont save stack") assembleString compilerError
+                    ("Struct " curSrc getMplType "'s ASSIGN method dont save stack") assembleString currentNode compilerError
                   ] when
                 ] if
               ] [
-                ("Struct " curSrc getMplType "'s ASSIGN method is not a CODE") assembleString compilerError
+                ("Struct " curSrc getMplType "'s ASSIGN method is not a CODE") assembleString currentNode compilerError
               ] if
             ] [
-              ("Struct " curSrc getMplType " is automatic, but has not ASSIGN field") assembleString compilerError
+              ("Struct " curSrc getMplType " is automatic, but has not ASSIGN field") assembleString currentNode compilerError
             ] if
           ] [
             structSrc: VarStruct curSrcVar.data.get.get;
@@ -2435,10 +2432,10 @@ callDie: [
             fieldRef getVar.data.getTag VarCode = [
               last fieldRef @dieName callCallableField
               compilable [currentNode.state NodeStateNoOutput = not] && [currentNode.stack.dataSize stackSize = not] && [
-                ("Struct " last getMplType "'s DIE method dont save stack") assembleString compilerError
+                ("Struct " last getMplType "'s DIE method dont save stack") assembleString currentNode compilerError
               ] when
             ] [
-              ("Struct " last getMplType "'s DIE method is not a CODE") assembleString compilerError
+              ("Struct " last getMplType "'s DIE method is not a CODE") assembleString currentNode compilerError
             ] if
           ] when
 
@@ -3047,8 +3044,8 @@ makeCompilerPosition: [
   compilerPositionInfo:;
   functionName:;
 
-  currentNode.nextLabelIsVirtual ["unused virtual specifier" makeStringView compilerError] when
-  currentNode.nextLabelIsSchema["unused schema specifier" makeStringView compilerError] when
+  currentNode.nextLabelIsVirtual ["unused virtual specifier" currentNode compilerError] when
+  currentNode.nextLabelIsSchema["unused schema specifier" currentNode compilerError] when
 
   currentNode.nodeCase NodeCaseList   = [finalizeListNode] when
   currentNode.nodeCase NodeCaseObject = [finalizeObjectNode] when
@@ -3227,7 +3224,7 @@ makeCompilerPosition: [
   String @currentNode.@signature set
 
   inputCountMismatch: [
-    ("In signature there are " forcedSignature.inputs.getSize " inputs, but really here " currentNode.buildingMatchingInfo.inputs.getSize " inputs") assembleString compilerError
+    ("In signature there are " forcedSignature.inputs.getSize " inputs, but really here " currentNode.buildingMatchingInfo.inputs.getSize " inputs") assembleString currentNode compilerError
   ];
 
   hasForcedSignature [
@@ -3266,7 +3263,7 @@ makeCompilerPosition: [
             ] if;
 
             needToCopy [current.refToVar argAbleToCopy not] && [isRealFunction copy] && [
-              "getting huge agrument by copy; mpl's export function can not have this signature" compilerError
+              "getting huge agrument by copy; mpl's export function can not have this signature" currentNode compilerError
             ] when
 
             needToCopy [
@@ -3292,7 +3289,7 @@ makeCompilerPosition: [
 
   currentNode.parent 0 =
   [currentNode.stack.dataSize 0 >] && [
-    "module can not have inputs or outputs" compilerError
+    "module can not have inputs or outputs" currentNode compilerError
   ] when
 
   @currentNode.@outputs.clear
@@ -3313,7 +3310,7 @@ makeCompilerPosition: [
         isDeclaration [output isTinyArg [hasRet not] &&] ||;
 
         passAsRet not [isRealFunction copy] && [
-          "returning two arguments or non-primitive object; mpl's function can not have this signature" compilerError
+          "returning two arguments or non-primitive object; mpl's function can not have this signature" currentNode compilerError
         ] when
 
         compilable [
@@ -3354,7 +3351,7 @@ makeCompilerPosition: [
       current.refToVar.hostId 0 < not [
         current.argCase ArgRef = [
           isRealFunction [
-            ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name "; type=" current.refToVar getMplType) assembleString compilerError
+            ("real function can not have local capture; name=" current.nameInfo processor.nameInfos.at.name "; type=" current.refToVar getMplType) assembleString currentNode compilerError
           ] when
 
           current.refToVar FALSE addRefArg
@@ -3380,7 +3377,7 @@ makeCompilerPosition: [
         ", ..." @argumentList.cat
       ] if
     ] [
-      "export function cannot be variadic" compilerError
+      "export function cannot be variadic" currentNode compilerError
     ] if
   ] when
 
@@ -3576,7 +3573,7 @@ makeCompilerPosition: [
               ] when
             ] each
           ] [
-            ("Wrong function name encoding:" functionName) assembleString compilerError
+            ("Wrong function name encoding:" functionName) assembleString currentNode compilerError
           ] if
         ] when
       ] if
@@ -3608,10 +3605,10 @@ makeCompilerPosition: [
         prevNode: fr.value @processor.@blocks.at.get;
         prevNode.state NodeStateCompiled = [
           prevNode.signature currentNode.signature = not [
-            ("node " functionName " was defined with another signature") assembleString compilerError
+            ("node " functionName " was defined with another signature") assembleString currentNode compilerError
           ] [
             prevNode.mplConvention currentNode.mplConvention = not [
-              ("node " functionName " was defined with another convention") assembleString compilerError
+              ("node " functionName " was defined with another convention") assembleString currentNode compilerError
             ] [
               currentNode.nodeCase NodeCaseDeclaration = [
                 TRUE @currentNode.@emptyDeclaration set
@@ -3620,7 +3617,7 @@ makeCompilerPosition: [
                   TRUE @prevNode.@emptyDeclaration set
                   currentNode.id @fr.@value set
                 ] [
-                  "dublicated func implementation" compilerError
+                  "dublicated func implementation" currentNode compilerError
                 ] if
               ] if
             ] if
@@ -3726,12 +3723,12 @@ nodeHasCode: [
 
   processor.depthOfRecursion processor.options.recursionDepthLimit > [
     TRUE dynamic @processorResult.@passErrorThroughPRE set
-    ("Recursion depth limit (" processor.options.recursionDepthLimit ") exceeded. It can be changed using -recursion_depth_limit option.") assembleString compilerError
+    ("Recursion depth limit (" processor.options.recursionDepthLimit ") exceeded. It can be changed using -recursion_depth_limit option.") assembleString currentNode compilerError
   ] when
 
   processor.depthOfPre processor.options.preRecursionDepthLimit > [
     TRUE dynamic @processorResult.@passErrorThroughPRE set
-    ("PRE recursion depth limit (" processor.options.preRecursionDepthLimit  ") exceeded. It can be changed using -pre_recursion_depth_limit option.") assembleString compilerError
+    ("PRE recursion depth limit (" processor.options.preRecursionDepthLimit  ") exceeded. It can be changed using -pre_recursion_depth_limit option.") assembleString currentNode compilerError
   ] when
 
   #add to match table
@@ -3782,7 +3779,7 @@ nodeHasCode: [
     ] if
 
     recursionTries 1 + @recursionTries set
-    recursionTries 64 > ["recursion processing loop length too big" compilerError] when
+    recursionTries 64 > ["recursion processing loop length too big" currentNode compilerError] when
 
     compilable [
       currentNode.recursionState NodeRecursionStateNo > [currentNode.state NodeStateCompiled = not] &&

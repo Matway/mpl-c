@@ -257,7 +257,7 @@ getOverload: [
   maxOverloadCountCur: cap.nameInfo getOverloadCount;
   maxOverloadCountNes: cap.cntNameOverloadParent copy;
   overload maxOverloadCountCur + maxOverloadCountNes < [
-    ("while matching cant call overload for name: " cap.nameInfo processor.nameInfos.at.name) assembleString compilerError
+    ("while matching cant call overload for name: " cap.nameInfo processor.nameInfos.at.name) assembleString currentNode compilerError
     0
   ] [
     overload maxOverloadCountCur + maxOverloadCountNes -
@@ -335,7 +335,7 @@ tryMatchNode: [
         ] if
 
         (s) addLog
-        s compilerError
+        s currentNode compilerError
       ] call
     ];
 
@@ -422,7 +422,7 @@ tryMatchNode: [
             i 1 + @i set
           ] [
             currentMatchingNode.nodeCompileOnce [
-              ("in compiled-once func fieldCapture " currentFieldCapture.nameInfo processor.nameInfos.at.name "\" mismatch") assembleString compilerError
+              ("in compiled-once func fieldCapture " currentFieldCapture.nameInfo processor.nameInfos.at.name "\" mismatch") assembleString currentNode compilerError
             ] when
 
             FALSE dynamic @success set
@@ -466,7 +466,7 @@ tryMatchNode: [
 
           currentMatchingNode tryMatchNode [
             currentMatchingNodeIndex @result set
-            currentMatchingNode.uncompilable ["nested node error" compilerError] when
+            currentMatchingNode.uncompilable ["nested node error" currentNode compilerError] when
 
             FALSE
           ] [
@@ -601,7 +601,7 @@ fixRef: [
   ] [
     # dont have shadow - to deref of captured dynamic pointer
     # must by dynamic
-    var.staticity Static = [pointeeVar.storageStaticity Static =] && ["returning pointer to local variable" compilerError] when
+    var.staticity Static = [pointeeVar.storageStaticity Static =] && ["returning pointer to local variable" currentNode compilerError] when
     pointee copyVarFromChild @fixed set
     TRUE dynamic @makeDynamic set
   ] if
@@ -642,7 +642,7 @@ applyOnePair: [
     fr: stackEntry @appliedVars.@curToNested.find;
     fr.success [
       fr.value cacheEntry getVar.shadowEnd variablesAreEqual not [
-        "variable changes to incompatible values by two different ways" makeStringView compilerError
+        "variable changes to incompatible values by two different ways" currentNode compilerError
       ] when
     ] [
       [
@@ -665,7 +665,7 @@ applyOnePair: [
       fr: stackEntry @appliedVars.@curToNested.find;
       fr.success [
         fr.value cacheEntry getVar.shadowEnd variablesAreEqual not [
-          "ref variable changes to incompatible values by two different ways" makeStringView compilerError
+          "ref variable changes to incompatible values by two different ways" currentNode compilerError
         ] when
       ] [
         cacheEntry noMatterToCopy not [
@@ -1402,7 +1402,7 @@ processCallByNode: [
         VarCond top getVar.data.get copy
       ] [
         TRUE dynamic @processorResult.@passErrorThroughPRE set
-        "PRE code must fail or return static Cond" compilerError
+        "PRE code must fail or return static Cond" currentNode compilerError
         FALSE dynamic
       ] if
     ] &&
@@ -1480,10 +1480,10 @@ processIf: [
         appliedVarsElse: newNodeElseIndex applyNodeChanges;
 
         stackDepth: currentNode getStackDepth;
-        newNodeThen.matchingInfo.inputs.dataSize stackDepth > ["then branch stack underflow" makeStringView compilerError] when
-        newNodeElse.matchingInfo.inputs.dataSize stackDepth > ["else branch stack underflow" makeStringView compilerError] when
+        newNodeThen.matchingInfo.inputs.dataSize stackDepth > ["then branch stack underflow" currentNode compilerError] when
+        newNodeElse.matchingInfo.inputs.dataSize stackDepth > ["else branch stack underflow" currentNode compilerError] when
         stackDepth newNodeThen.matchingInfo.inputs.dataSize - newNodeThen.outputs.dataSize +
-        stackDepth newNodeElse.matchingInfo.inputs.dataSize - newNodeElse.outputs.dataSize + = not ["if branches stack size mismatch" makeStringView compilerError] when
+        stackDepth newNodeElse.matchingInfo.inputs.dataSize - newNodeElse.outputs.dataSize + = not ["if branches stack size mismatch" currentNode compilerError] when
 
         compilable [
           longestInputSize: newNodeThen.matchingInfo.inputs.dataSize copy;
@@ -1653,12 +1653,12 @@ processIf: [
                   i newNodeElse.outputs.dataSize + longestOutputSize < not [newOutput @outputsElse.pushBack] when
                   newOutput createAllocIR @outputs.pushBack
                 ] [
-                  ("branch types mismatch; in 'then' type is " outputThen getMplType "; in 'else' type is " outputElse getMplType) assembleString compilerError
+                  ("branch types mismatch; in 'then' type is " outputThen getMplType "; in 'else' type is " outputElse getMplType) assembleString currentNode compilerError
                 ] if
 
                 isOutputImplicitDerefThen @implicitDerefInfo.pushBack
               ] [
-                "branch return cases mismatch" compilerError
+                "branch return cases mismatch" currentNode compilerError
               ] if
 
               i 1 + @i set compilable
@@ -1707,7 +1707,7 @@ processIf: [
                     curInput: i branch compiledOutputs getCompiledInput;
 
                     current.varId curInput.varId = not [
-                      curInput isVirtual not ["variable states in branches mismatch" compilerError] when
+                      curInput isVirtual not ["variable states in branches mismatch" currentNode compilerError] when
                       FALSE curInput getVar.@temporary set
                       curInput current createCheckedCopyToNewNoDie
                     ] when
@@ -1776,11 +1776,11 @@ processLoop: [
         newNode.state NodeStateHasOutput = [NodeStateHasOutput @currentNode.@state set] when
         appliedVars: newNodeIndex applyNodeChanges;
 
-        appliedVars.fixedOutputs.getSize 0 = ["loop body must return Cond" makeStringView compilerError] when
+        appliedVars.fixedOutputs.getSize 0 = ["loop body must return Cond" currentNode compilerError] when
         compilable [
           condition: newNode.outputs.last.refToVar;
           condVar: condition getVar;
-          condVar.data.getTag VarCond = not ["loop body must return Cond" makeStringView compilerError] when
+          condVar.data.getTag VarCond = not ["loop body must return Cond" currentNode compilerError] when
 
           compilable [
             condition staticityOfVar Weak > [
@@ -1804,7 +1804,7 @@ processLoop: [
     iterationNumber 1 + @iterationNumber set
     iterationNumber processor.options.staticLoopLengthLimit > [
       TRUE @processorResult.!passErrorThroughPRE
-      ("Static loop length limit (" processor.options.staticLoopLengthLimit ") exceeded. Dynamize loop or increase limit using -static_loop_lenght_limit option") assembleString compilerError
+      ("Static loop length limit (" processor.options.staticLoopLengthLimit ") exceeded. Dynamize loop or increase limit using -static_loop_lenght_limit option") assembleString currentNode compilerError
     ] when
 
     compilable and
@@ -1857,7 +1857,7 @@ processDynamicLoop: [
               TRUE @result set
             ] when
           ] [
-            "loop body changes stack types" makeStringView compilerError
+            "loop body changes stack types" currentNode compilerError
           ] if
 
           result
@@ -1877,11 +1877,11 @@ processDynamicLoop: [
           ] when
         ] each
 
-        newNode.outputs.dataSize newNode.matchingInfo.inputs.dataSize 1 + = not ["loop body must save stack values and return Cond" makeStringView compilerError] when
+        newNode.outputs.dataSize newNode.matchingInfo.inputs.dataSize 1 + = not ["loop body must save stack values and return Cond" currentNode compilerError] when
         compilable [
           condition: newNode.outputs.last.refToVar;
           condVar: condition getVar;
-          condVar.data.getTag VarCond = not ["loop body must return Cond" makeStringView compilerError] when
+          condVar.data.getTag VarCond = not ["loop body must return Cond" currentNode compilerError] when
 
           i: 0 dynamic;
           [
@@ -1963,13 +1963,13 @@ processDynamicLoop: [
 
         needToRemake [
           newNodeIndex processor.blocks.at.get.nodeCompileOnce [
-            "loop body compileOnce directive fail" compilerError
+            "loop body compileOnce directive fail" currentNode compilerError
           ] when
 
           newNodeIndex deleteNode
 
           iterationNumber processor.options.staticLoopLengthLimit > [
-            "loop dynamisation iteration count so big" compilerError
+            "loop dynamisation iteration count so big" currentNode compilerError
           ] when
         ] when
 
@@ -1999,7 +1999,7 @@ processDynamicLoop: [
   compileOnce
 
   signature.variadic [
-    "export function cannot be variadic" compilerError
+    "export function cannot be variadic" currentNode compilerError
   ] when
 
   ("process export: " makeStringView name makeStringView) addLog
@@ -2035,11 +2035,11 @@ processDynamicLoop: [
     newNodeIndex changeNewExportNodeState
 
     newNode: newNodeIndex processor.blocks.at.get;
-    newNode.outputs.getSize 1 > ["export function cant have 2 or more outputs" compilerError] when
-    newNode.outputs.getSize 1 = [signature.outputs.getSize 0 =] && ["signature is void, export function must be without output" compilerError] when
-    newNode.outputs.getSize 0 = [signature.outputs.getSize 1 =] && ["signature is not void, export function must have output" compilerError] when
+    newNode.outputs.getSize 1 > ["export function cant have 2 or more outputs" currentNode compilerError] when
+    newNode.outputs.getSize 1 = [signature.outputs.getSize 0 =] && ["signature is void, export function must be without output" currentNode compilerError] when
+    newNode.outputs.getSize 0 = [signature.outputs.getSize 1 =] && ["signature is not void, export function must have output" currentNode compilerError] when
     newNode.state NodeStateCompiled = not [
-      "can not implement lambda inside itself body" compilerError
+      "can not implement lambda inside itself body" currentNode compilerError
       FALSE @oldSuccess set
     ] when
 
@@ -2058,7 +2058,7 @@ processDynamicLoop: [
 
         currentInNode currentInSignature variablesAreSame not [
           ("export function output mismatch, expected " currentInSignature getMplType ";" LF
-            "but found " currentInNode getMplType) assembleString compilerError
+            "but found " currentInNode getMplType) assembleString currentNode compilerError
         ] when
       ] times
     ] when
@@ -2154,12 +2154,12 @@ callImportWith: [
                 lambdaCastResult.success [
                   lambdaCastResult.refToVar @input set
                 ] [
-                  ("cant call import, variable types of argument #" i " are incorrect, expected " nodeEntry getMplType ";" LF "but found " stackEntry getMplType) assembleString compilerError
+                  ("cant call import, variable types of argument #" i " are incorrect, expected " nodeEntry getMplType ";" LF "but found " stackEntry getMplType) assembleString currentNode compilerError
                 ] if
               ] when
             ] [
               stackEntry.mutable not nodeMutable and [
-                ("cant call import, expected mutable argument #" i " with type " nodeEntry getMplType) assembleString compilerError
+                ("cant call import, expected mutable argument #" i " with type " nodeEntry getMplType) assembleString currentNode compilerError
               ] when
             ] [
               nodeMutable [stackEntry makeVarTreeDirty] when
@@ -2176,7 +2176,7 @@ callImportWith: [
           [refToVarargs: pop;]
           [
             varargs: refToVarargs getVar;
-            varargs.data.getTag VarStruct = not ["varargs must be a struct" compilerError] when
+            varargs.data.getTag VarStruct = not ["varargs must be a struct" currentNode compilerError] when
           ] [
             varStruct: VarStruct varargs.data.get.get;
             varStruct.fields.getSize [
@@ -2247,7 +2247,7 @@ callImportWith: [
   dynamicFunc: refToVar staticityOfVar Dynamic > not;
   dynamicFunc not [
     node.nodeCase NodeCaseCodeRefDeclaration = [
-      "nullpointer call" compilerError
+      "nullpointer call" currentNode compilerError
     ] when
   ] when
 
