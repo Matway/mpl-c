@@ -114,9 +114,7 @@ getPointerTypeDebugDeclaration: [
 ];
 
 addMemberInfo: [
-  copy fieldNumber:;
-  field:;
-  offset:;
+  offset: field: fieldNumber: block:;;;;
 
   debugDeclarationIndex: field.refToVar getMplSchema.dbgTypeDeclarationId copy;
   [debugDeclarationIndex -1 = ~] "Field has not debug info about type!" assert
@@ -131,24 +129,24 @@ addMemberInfo: [
   name: field.nameInfo processor.nameInfos.at.name makeStringView;
 
   name "" = [
-    ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"f" fieldNumber "\", scope: !" currentNode.funcDbgIndex
-      ", file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
-      ", line: " currentNode.position.line ", baseType: !" debugDeclarationIndex ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
+    ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"f" fieldNumber "\", scope: !" block.funcDbgIndex
+      ", file: !" block.position.fileNumber processor.debugInfo.fileNameIds.at
+      ", line: " block.position.line ", baseType: !" debugDeclarationIndex ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
   ] [
-    ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"" name "\", scope: !" currentNode.funcDbgIndex
-      ", file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
-      ", line: " currentNode.position.line ", baseType: !" debugDeclarationIndex ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
+    ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"" name "\", scope: !" block.funcDbgIndex
+      ", file: !" block.position.fileNumber processor.debugInfo.fileNameIds.at
+      ", line: " block.position.line ", baseType: !" debugDeclarationIndex ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
   ] if
 
   @processor.@debugInfo.@strings.pushBack
-  index currentNode.funcDbgIndex @processor.@debugInfo.@locationIds.insert
+  index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
 
   offset fsize + @offset set
   index
 ];
 
 getTypeDebugDeclaration: [
-  refToVar:;
+  refToVar: block:;;
   var: refToVar getVar;
   refToVar isVirtualType [
     [FALSE] "virtual type has not debug declaration" assert
@@ -173,7 +171,7 @@ getTypeDebugDeclaration: [
               f struct.fields.dataSize < [
                 field: f struct.fields.at;
                 field.refToVar isVirtual not [
-                  memberInfo: @offset field f addMemberInfo;
+                  memberInfo: @offset field f block addMemberInfo;
                   memberInfo @members.pushBack
                 ] when
                 f 1 + @f set TRUE
@@ -196,15 +194,15 @@ getTypeDebugDeclaration: [
             "}" @newDebugInfo.cat
             @newDebugInfo move @processor.@debugInfo.@strings.pushBack
 
-            index currentNode.funcDbgIndex @processor.@debugInfo.@locationIds.insert
+            index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
 
             index: processor.debugInfo.lastId copy;
             processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
-            ("!" index " = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
-              ", name: \"" refToVar getDebugType "\", line: " currentNode.position.line ", size: " refToVar getStorageSize 0ix cast 0 cast 8 * ", elements: !" index 1 -
+            ("!" index " = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !" block.position.fileNumber processor.debugInfo.fileNameIds.at
+              ", name: \"" refToVar getDebugType "\", line: " block.position.line ", size: " refToVar getStorageSize 0ix cast 0 cast 8 * ", elements: !" index 1 -
               ")") assembleString @processor.@debugInfo.@strings.pushBack
-            index currentNode.funcDbgIndex @processor.@debugInfo.@locationIds.insert
+            index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
             index
           ] [
             [FALSE] "Unknown type in getTypeDebugDeclaration!" assert
@@ -217,18 +215,16 @@ getTypeDebugDeclaration: [
 ];
 
 addVariableDebugInfo: [
-  refToVar:;
-  copy nameInfo:;
-
+  nameInfo: refToVar: block:;;;
   refToVar isVirtualType not [
     debugDeclarationIndex: refToVar getMplSchema.dbgTypeDeclarationId copy;
     [debugDeclarationIndex -1 = ~] "There is no debug declaration for this type!" assert
     index: processor.debugInfo.lastId copy;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
-    ("!" index " = !DILocalVariable(name: \"" nameInfo processor.nameInfos.at.name "\", scope: !" currentNode.funcDbgIndex
-      ", file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
-      ", line: " currentNode.position.line ", type: !" debugDeclarationIndex ")") assembleString @processor.@debugInfo.@strings.pushBack
-    index currentNode.funcDbgIndex @processor.@debugInfo.@locationIds.insert
+    ("!" index " = !DILocalVariable(name: \"" nameInfo processor.nameInfos.at.name "\", scope: !" block.funcDbgIndex
+      ", file: !" block.position.fileNumber processor.debugInfo.fileNameIds.at
+      ", line: " block.position.line ", type: !" debugDeclarationIndex ")") assembleString @processor.@debugInfo.@strings.pushBack
+    index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
 
     index
   ] [
@@ -237,9 +233,7 @@ addVariableDebugInfo: [
 ];
 
 addGlobalVariableDebugInfo: [
-  refToVar:;
-  copy nameInfo:;
-
+  nameInfo: refToVar: block:;;;
   refToVar isVirtualType not [
     debugDeclarationIndex: refToVar getMplSchema.dbgTypeDeclarationId copy;
     [debugDeclarationIndex -1 = ~] "There is no debug declaration for this type!" assert
@@ -251,8 +245,8 @@ addGlobalVariableDebugInfo: [
     index: processor.debugInfo.lastId copy;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
     ("!" index " = !DIGlobalVariable(name: \"" nameInfo processor.nameInfos.at.name "\", linkageName: \"" refToVar getIrName
-      "\", scope: !" processor.debugInfo.unit ", file: !" currentNode.position.fileNumber processor.debugInfo.fileNameIds.at
-      ", line: " currentNode.position.line ", type: !" debugDeclarationIndex ", isLocal: false, isDefinition: true)") assembleString @processor.@debugInfo.@strings.pushBack
+      "\", scope: !" processor.debugInfo.unit ", file: !" block.position.fileNumber processor.debugInfo.fileNameIds.at
+      ", line: " block.position.line ", type: !" debugDeclarationIndex ", isLocal: false, isDefinition: true)") assembleString @processor.@debugInfo.@strings.pushBack
 
     result: index 1 -;
     result @processor.@debugInfo.@globals.pushBack
@@ -263,11 +257,9 @@ addGlobalVariableDebugInfo: [
 ];
 
 addVariableMetadata: [
-  refToVar:;
-  copy nameInfo:;
-
+  nameInfo: refToVar: block:;;;
   refToVar isVirtualType not [
-    localVariableDebugIndex: nameInfo refToVar addVariableDebugInfo;
+    localVariableDebugIndex: nameInfo refToVar block addVariableDebugInfo;
     ("  call void @llvm.dbg.declare(metadata " refToVar getIrType "* " refToVar getIrName ", metadata !" localVariableDebugIndex ", metadata !" processor.debugInfo.unit 1 + ")"
     ) appendInstruction
   ] when

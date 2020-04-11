@@ -922,7 +922,7 @@ parseSignature: [
       nameInfo refToVar addOverloadForPre
       nameInfo refToVar NameCaseLocal addNameInfo
       processor.options.debug [
-        d: nameInfo refToVar addGlobalVariableDebugInfo;
+        d: nameInfo refToVar currentNode addGlobalVariableDebugInfo;
         globalInstruction: var.globalDeclarationInstructionIndex @processor.@prolog.at;
         ", !dbg !"   @globalInstruction.cat
         d            @globalInstruction.cat
@@ -995,7 +995,7 @@ parseSignature: [
             nameInfo newRefToVar addOverloadForPre
             nameInfo newRefToVar NameCaseLocal addNameInfo
             processor.options.debug [newRefToVar isVirtual not] && [
-              d: nameInfo newRefToVar addGlobalVariableDebugInfo;
+              d: nameInfo newRefToVar currentNode addGlobalVariableDebugInfo;
               globalInstruction: newRefToVar getVar.globalDeclarationInstructionIndex @processor.@prolog.at;
               ", !dbg !"   @globalInstruction.cat
               d            @globalInstruction.cat

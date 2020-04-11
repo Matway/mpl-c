@@ -1082,7 +1082,7 @@ makeDbgTypeId: [
   refToVar isVirtualType not [
     varSchema: refToVar getMplSchema;
     varSchema.dbgTypeDeclarationId -1 = [
-      refToVar getTypeDebugDeclaration @varSchema.@dbgTypeDeclarationId set
+      refToVar currentNode getTypeDebugDeclaration @varSchema.@dbgTypeDeclarationId set
     ] when
   ] when
 ];

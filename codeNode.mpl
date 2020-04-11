@@ -974,12 +974,12 @@ createNamedVariable: [
     nameInfo newRefToVar NameCaseLocal addNameInfo
     compilable [processor.options.debug copy] && [newRefToVar isVirtual not] && [
       newRefToVar isGlobal [
-        d: nameInfo newRefToVar addGlobalVariableDebugInfo;
+        d: nameInfo newRefToVar currentNode addGlobalVariableDebugInfo;
         globalInstruction: newRefToVar getVar.globalDeclarationInstructionIndex @processor.@prolog.at;
         ", !dbg !"   @globalInstruction.cat
         d            @globalInstruction.cat
       ] [
-        nameInfo newRefToVar addVariableMetadata
+        nameInfo newRefToVar currentNode addVariableMetadata
       ] if
     ] when
 
@@ -1324,7 +1324,7 @@ captureName: [
           processor.options.debug [shadowEnd isVirtual not] && [shadowEnd isGlobal not] && [
             fakePointer: shadowEnd VarRef createVariable;
             shadowEnd fakePointer createRefOperation
-            nameInfo fakePointer addVariableMetadata
+            nameInfo fakePointer currentNode addVariableMetadata
             programSize: currentNode.program.getSize;
             TRUE programSize 3 - @currentNode.@program.at.@fakePointer set
             TRUE programSize 2 - @currentNode.@program.at.@fakePointer set
