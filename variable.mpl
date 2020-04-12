@@ -187,9 +187,9 @@ processPre:            [multiParserResult @currentNode @processor @processorResu
 processCall:           [multiParserResult @currentNode @processor @processorResult processCallImpl];
 processExportFunction: [block:; multiParserResult @block @processor @processorResult processExportFunctionImpl];
 processImportFunction: [multiParserResult @currentNode @processor @processorResult processImportFunctionImpl];
-compareEntriesRec:     [currentMatchingNodeIndex @nestedToCur @curToNested @comparingMessage multiParserResult @currentNode @processor @processorResult compareEntriesRecImpl];
+compareEntriesRec:     [currentMatchingNode @nestedToCur @curToNested @comparingMessage multiParserResult currentNode @processor @processorResult compareEntriesRecImpl];
 makeVariableType:      [block:; block @processor @processorResult makeVariableTypeImpl];
-compilerError:         [block:; makeStringView block @processor @processorResult compilerErrorImpl];
+compilerError:         [block:; makeStringView block processor @processorResult compilerErrorImpl];
 generateDebugTypeId:   [block:; block @processor @processorResult generateDebugTypeIdImpl];
 generateIrTypeId:      [block:; block @processor @processorResult generateIrTypeIdImpl];
 getMplType: [
@@ -288,13 +288,13 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  currentNode: Block Cref;
   multiParserResult: MultiParserResult Cref;
 
   comparingMessage: String Ref;
   curToNested: RefToVarTable Ref;
   nestedToCur: RefToVarTable Ref;
-  currentMatchingNodeIndex: Int32;
+  currentMatchingNode: Block Cref;
   cacheEntry: RefToVar Cref;
   stackEntry: RefToVar Cref;
 } Cond {convention: cdecl;} "compareEntriesRecImpl" importFunction
@@ -331,7 +331,7 @@ getMplType: [
 
 {
   processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
+  processor: Processor Cref;
   block: Block Cref;
   message: StringView Cref;
 } () {convention: cdecl;} "compilerErrorImpl" importFunction
@@ -361,17 +361,17 @@ getMplType: [
 # these functions require capture "processor"
 variableIsDeleted: [
   refToVar:;
-  refToVar.varId refToVar.hostId @processor.@blocks.at.get.@variables.at.assigned not
+  refToVar.varId refToVar.hostId @processor.@blocks.at.get.@variables.at.assigned ~
 ];
 
 getVar: [
   refToVar:;
 
   [
-    refToVar.hostId 0 < not [refToVar.hostId processor.blocks.dataSize <] && [
+    refToVar.hostId 0 < ~ [refToVar.hostId processor.blocks.dataSize <] && [
       node: refToVar.hostId @processor.@blocks.at.get;
       sz: node.variables.dataSize copy;
-      refToVar.varId 0  < not [refToVar.varId sz <] && [
+      refToVar.varId 0  < ~ [refToVar.varId sz <] && [
         refToVar.varId node.variables.at.assigned [
           TRUE
         ] [
@@ -525,13 +525,13 @@ markAsAbleToDie: [
 ];
 
 isSingle: [
-  isStruct not
+  isStruct ~
 ];
 
 isStaticData: [
   refToVar:;
   var: refToVar getVar;
-  refToVar isVirtual not [var.data.getTag VarStruct =] && [
+  refToVar isVirtual ~ [var.data.getTag VarStruct =] && [
     unfinished: RefToVar Array;
     refToVar @unfinished.pushBack
     result: TRUE dynamic;
@@ -780,10 +780,10 @@ makeStructStorageSize: [
   [
     j struct.fields.dataSize < [
       curField: j struct.fields.at;
-      curField.refToVar isVirtual not [
+      curField.refToVar isVirtual ~ [
         curS: curField.refToVar block getStorageSize;
         curA: curField.refToVar block getAlignment;
-        result curA + 1nx - curA 1nx - not and curS + @result set
+        result curA + 1nx - curA 1nx - ~ and curS + @result set
         curA maxA > [curA @maxA set] when
       ] when
 
@@ -791,7 +791,7 @@ makeStructStorageSize: [
     ] &&
   ] loop
 
-  result maxA + 1nx - maxA 1nx - not and @result set
+  result maxA + 1nx - maxA 1nx - ~ and @result set
   result @struct.@structStorageSize set
 ];
 
@@ -820,7 +820,7 @@ makeStructAlignment: [
   [
     j struct.fields.dataSize < [
       curField: j struct.fields.at;
-      curField.refToVar isVirtual not [
+      curField.refToVar isVirtual ~ [
         curA: curField.refToVar block getAlignment;
         result curA < [curA @result set] when
       ] when
@@ -891,13 +891,13 @@ isVirtual: [
   refToVar:;
 
   var: refToVar getVar;
-  var.staticity Virtual < not
+  var.staticity Virtual < ~
   [refToVar isVirtualType] ||
 ];
 
 noMatterToCopy: [
   refToVar:;
-  refToVar isVirtual [refToVar isAutoStruct not] &&
+  refToVar isVirtual [refToVar isAutoStruct ~] &&
 ];
 
 isForgotten: [
@@ -923,7 +923,7 @@ getVirtualValue: [
 
       struct.fields.getSize [
         i 0 > ["," @result.cat] when
-        i struct.fields @ .refToVar isVirtual not [
+        i struct.fields @ .refToVar isVirtual ~ [
           i struct.fields @ .refToVar getVirtualValue @result.cat
         ] when
       ] times
@@ -1070,7 +1070,7 @@ getFuncDbgType: [
 
 makeDbgTypeId: [
   refToVar: block:;;
-  refToVar isVirtualType not [
+  refToVar isVirtualType ~ [
     varSchema: refToVar getMplSchema;
     varSchema.dbgTypeDeclarationId -1 = [
       refToVar block getTypeDebugDeclaration @varSchema.@dbgTypeDeclarationId set
@@ -1188,7 +1188,7 @@ getPlainConstantIR: [
         realFieldCount 1 + @realFieldCount set
       ] if
 
-      field0.refToVar fieldi.refToVar variablesAreSame not [
+      field0.refToVar fieldi.refToVar variablesAreSame ~ [
         FALSE @branch.@homogeneous set
       ] when
 
@@ -1457,7 +1457,7 @@ getStaticStructIR: [
           [
             currentTerminator: unfinishedTerminators.last;
             currentTerminator @result.cat
-            currentTerminator ", " = not
+            currentTerminator ", " = ~
             @unfinishedTerminators.popBack
           ] loop
         ] [
@@ -1469,7 +1469,7 @@ getStaticStructIR: [
             first: TRUE dynamic;
             struct.fields.getSize [
               current: struct.fields.getSize 1 - i - struct.fields.at.refToVar;
-              current isVirtual not [
+              current isVirtual ~ [
                 current @unfinishedVars.pushBack
                 first [
                   struct.homogeneous ["]" makeStringView] ["}" makeStringView] if @unfinishedTerminators.pushBack
@@ -1497,7 +1497,7 @@ getStaticStructIR: [
 # require captures "processor" and "codeNode"
 generateVariableIRNameWith: [
   hostId: temporaryRegister: block:;;;
-  temporaryRegister not [block.parent 0 =] && [
+  temporaryRegister ~ [block.parent 0 =] && [
     ("@global." processor.globalVarCount) assembleString makeStringId
     processor.globalVarCount 1 + @processor.@globalVarCount set
   ] [
@@ -1513,7 +1513,7 @@ generateRegisterIRName: [block:; block.id TRUE block generateVariableIRNameWith]
 makeVariableIRName: [
   refToVar: block:;;
   var: refToVar getVar;
-  refToVar.hostId refToVar isGlobal not block generateVariableIRNameWith @var.@irNameId set
+  refToVar.hostId refToVar isGlobal ~ block generateVariableIRNameWith @var.@irNameId set
 ];
 
 findFieldWithOverloadShift: [

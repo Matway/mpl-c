@@ -117,7 +117,7 @@
           @processorResult.@errorInfo.@missedModule @a move @dependedFiles.insert
         ] if
 
-        cachedGlobalErrorInfoSize clearProcessorResult
+        cachedGlobalErrorInfoSize @processorResult clearProcessorResult
       ] [
         moduleName: n processor.options.fileNames.at;
         ("compiled file " moduleName) addLog
@@ -177,7 +177,7 @@
         lastFile correctUnitInfo
       ] when
 
-      0 clearProcessorResult
+      0 @processorResult clearProcessorResult
 
       dependedFiles.getSize 0 > [
         hasError: FALSE dynamic;
