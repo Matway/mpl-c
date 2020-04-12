@@ -2229,10 +2229,18 @@ addDebugLocationForLastInstruction: [
     [instruction.codeOffset instruction.codeSize 1 - + block.programTemplate.chars.at 58n8 =  ~] && # label detector, code of ":"
     [block.position.line 0 < ~] &&
     [
-      code: block.programTemplate.getStringView instruction.codeOffset instruction.codeSize slice;
+      @block.@programTemplate.makeNZ
+      offset: block.programTemplate.chars.getSize;
+
+      offset instruction.codeSize + @block.@programTemplate.@chars.enlarge # Make sure the string can be copied without relocation
+      offset @block.@programTemplate.@chars.shrink
+      block.programTemplate.getStringView instruction.codeOffset instruction.codeSize slice @block.@programTemplate.catStringNZ
+
+      @block.@programTemplate.makeZ
+
       locationIndex: block.position block.funcDbgIndex addDebugLocation;
-      offset: block.programTemplate.getTextSize;
-      (code ", !dbg !" locationIndex) @block.@programTemplate.catMany
+      (", !dbg !" locationIndex) @block.@programTemplate.catMany
+
       offset copy @instruction.!codeOffset
       block.programTemplate.getTextSize offset - @instruction.!codeSize
     ] when
@@ -3533,8 +3541,8 @@ makeCompilerPosition: [
         ".lambda" @currentNode.@irName.cat
       ] [
         wasDot: FALSE;
-        functionName.getTextSize 0 > [
-          splitted: functionName.split;
+        functionName.size 0 > [
+          splitted: functionName splitString;
           splitted.success [
             splitted.chars [
               symbol:;

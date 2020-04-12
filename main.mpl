@@ -86,7 +86,7 @@ parseIntegerOption: [
   (
     [result.error "" =]
     [
-      splitResult: text makeStringView.split;
+      splitResult: text splitString;
       splitResult.success ~ [
         "value is not value UTF-8 sequence" toString @result.!error
       ] when
@@ -101,7 +101,7 @@ parseIntegerOption: [
       codepointIndex: 0;
       [result.error "" = [codepointIndex codepoints.getSize <] &&] [
         codepoint: codepointIndex codepoints @;
-        asciiCode: codepoint.dataBegin Nat32 cast;
+        asciiCode: codepoint.data Nat8 addressToReference Nat32 cast;
         asciiCode (
           [code:; asciiCode ascii.zero < [asciiCode ascii.nine >] ||] ["value has non-digit character" toString @result.!error]
           [code:; code ascii.zero = [codepointIndex 0 =] && [codepoints.getSize 1 >] &&] ["value has leading zeros" toString @result.!error]
@@ -177,7 +177,7 @@ processIntegerOption: [
             "Error, argument cannot be empty" print LF print
             FALSE @success set
           ] [
-            splittedOption: option.split;
+            splittedOption: option splitString;
             splittedOption.success not [
               "Invalid argument encoding: " print option print LF print
               FALSE @success set

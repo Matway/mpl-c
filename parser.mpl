@@ -1105,7 +1105,7 @@ parseNode: [
   mainResult: ParserResult Ref;
 } () {convention: cdecl;} [
   copy currentFileNumber:;
-  splittedString: .split;
+  splittedString: splitString;
   mainResult:;
   splittedString.success [
     currentPosition: PositionInfo;

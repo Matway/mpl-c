@@ -403,7 +403,7 @@ getMplTypeId: [getMplType makeStringId];
 getDebugType: [
   refToVar: block:;;
   dbgType: refToVar getDbgType;
-  splitted: dbgType.split;
+  splitted: dbgType splitString;
   splitted.success [
     splitted.chars.getSize 1024 > [
       1024 @splitted.@chars.shrink

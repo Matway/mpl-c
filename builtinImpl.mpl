@@ -1270,7 +1270,7 @@ parseSignature: [
         struct: Struct;
 
         string.chars.dataSize 0 < not [
-          splitted: string makeStringView.split;
+          splitted: string splitString;
           splitted.success [
             splitted.chars [
               element: toString @currentNode makeVarString;

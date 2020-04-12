@@ -2,7 +2,7 @@
 
 slice: [index: size:;; StringView same] [
   view: index: size:;;;
-  size view.dataBegin storageAddress index Natx cast + Nat8 addressToReference makeStringViewRaw
+  view.data index Natx cast + size makeStringView2
 ] pfunc;
 
 head: [size:; StringView same] [

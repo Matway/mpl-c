@@ -96,8 +96,8 @@ getStringImplementation: [
     result: String;
     i: 0 dynamic;
     [
-      i stringView.dataSize < [
-        codeRef: stringView.dataBegin storageAddress i Natx cast + Nat8 addressToReference;
+      i stringView.size < [
+        codeRef: stringView.data i Natx cast + Nat8 addressToReference;
         code: codeRef copy;
         code 32n8 < not [code 127n8 <] && [code 34n8 = not] && [code 92n8 = not] && [  # exclude " and \
           code 0n32 cast @result.catSymbolCode
@@ -123,11 +123,11 @@ createStringIR: [
 
   var: refToVar getVar;
   @stringName findNameInfo @var.@mplNameId set
-  ("getelementptr inbounds ({i32, [" string.dataSize 1 + " x i8]}, {i32, [" string.dataSize 1 + " x i8]}* " stringName ", i32 0, i32 1, i32 0)") assembleString makeStringId @var.@irNameId set
+  ("getelementptr inbounds ({i32, [" string.size 1 + " x i8]}, {i32, [" string.size 1 + " x i8]}* " stringName ", i32 0, i32 1, i32 0)") assembleString makeStringId @var.@irNameId set
 
   valueImplementation: string getStringImplementation;
 
-  (stringName " = private unnamed_addr constant {i32, [" string.dataSize 1 + " x i8]} {i32 " string.dataSize ", [" string.dataSize 1 + " x i8] c\"" valueImplementation "\\00\"}") assembleString @processor.@prolog.pushBack
+  (stringName " = private unnamed_addr constant {i32, [" string.size 1 + " x i8]} {i32 " string.size ", [" string.size 1 + " x i8] c\"" valueImplementation "\\00\"}") assembleString @processor.@prolog.pushBack
 ];
 
 createGetTextSizeIR: [

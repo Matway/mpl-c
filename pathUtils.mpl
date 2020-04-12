@@ -1,7 +1,7 @@
 "control" useModule
 
 extractClearPath: [
-  splittedPath: makeStringView.split;
+  splittedPath: splitString;
   [
     splittedPath.success [
       position: 0;
@@ -21,7 +21,7 @@ extractClearPath: [
 ];
 
 simplifyPath: [
-  splittedPath: makeStringView.split;
+  splittedPath: splitString;
   [
     splittedPath.success [
 
@@ -78,7 +78,7 @@ simplifyPath: [
 ];
 
 stripExtension: [
-  splitResult: makeStringView.split;
+  splitResult: splitString;
   splitResult.success [
     extensionPosition: splitResult.chars.getSize;
     splitResult.chars.getSize [
@@ -98,7 +98,7 @@ stripExtension: [
 ];
 
 stripPath: [
-  splitResult: makeStringView.split;
+  splitResult: splitString;
   splitResult.success [
     filePosition: 0;
     splitResult.chars.getSize [

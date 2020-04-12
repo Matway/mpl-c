@@ -1111,7 +1111,7 @@ applyNamedStackChanges: [
 ];
 
 applyStackChanges: [
-  forcedName: StringView;
+  forcedName: StringView dynamic;
   forcedName applyNamedStackChanges
 ];
 
@@ -1252,7 +1252,7 @@ processNamedCallByNode: [
 ];
 
 processCallByNode: [
-  forcedName: StringView;
+  forcedName: StringView dynamic;
   forcedName processNamedCallByNode
 ];
 
