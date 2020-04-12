@@ -955,7 +955,7 @@ parseSignature: [
     ]
     [
       gnr: block.varNameInfo @currentNode getName;
-      cnr: gnr @block captureName;
+      cnr: gnr @currentNode captureName;
       refToVar: cnr.refToVar copy;
 
       refToVar @currentNode push
@@ -1215,8 +1215,8 @@ parseSignature: [
   TRUE @currentNode.@nextLabelIsSchema set
 ] "mplBuiltinSchema" @declareBuiltin ucall
 
-[TRUE dynamic currentNode defaultUseOrIncludeModule] "mplBuiltinUseModule" @declareBuiltin ucall
-[FALSE dynamic currentNode defaultUseOrIncludeModule] "mplBuiltinIncludeModule" @declareBuiltin ucall
+[TRUE dynamic @currentNode defaultUseOrIncludeModule] "mplBuiltinUseModule" @declareBuiltin ucall
+[FALSE dynamic @currentNode defaultUseOrIncludeModule] "mplBuiltinIncludeModule" @declareBuiltin ucall
 
 [
   refToName: @currentNode pop;
