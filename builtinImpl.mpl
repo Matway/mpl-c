@@ -1534,6 +1534,20 @@ staticityOfBinResult: [
 ] "mplBuiltinPrintVariableCount" @declareBuiltin ucall
 
 [
+  refToName: @block pop;
+  compilable [
+    refToName staticityOfVar Weak < ["name must be static string" block compilerError] when
+    compilable [
+      varName: refToName getVar;
+      varName.data.getTag VarString = ~ ["name must be static string" block compilerError] when
+      compilable [
+        VarString varName.data.get block compilerError
+      ] when
+    ] when
+  ] when
+] "mplBuiltinRaiseStaticError" @declareBuiltin ucall
+
+[
   TRUE dynamic @block.@nodeIsRecursive set
 ] "mplBuiltinRecursive" @declareBuiltin ucall
 

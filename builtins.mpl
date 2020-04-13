@@ -67,6 +67,7 @@ builtins: (
   {name: "printStack"              ; impl: @mplBuiltinPrintStack              ;}
   {name: "printStackTrace"         ; impl: @mplBuiltinPrintStackTrace         ;}
   {name: "printVariableCount"      ; impl: @mplBuiltinPrintVariableCount      ;}
+  {name: "raiseStaticError"        ; impl: @mplBuiltinRaiseStaticError        ;}
   {name: "recursive"               ; impl: @mplBuiltinRecursive               ;}
   {name: "rshift"                  ; impl: @mplBuiltinRShift                  ;}
   {name: "same"                    ; impl: @mplBuiltinSame                    ;}
