@@ -7,14 +7,14 @@ failProcForProcessor: [
   message print LF print
   "While compiling:" print LF print
 
-  test: [FALSE]; test: [block TRUE] [TRUE] pfunc; test [block] [currentNode] uif defaultPrintStackTrace
+  block defaultPrintStackTrace
 
   "Terminating..." print LF print
   2 exit
 ];
 
 defaultFailProc: [
-  text: @currentNode pop;
+  text: @block pop;
 ];
 
 defaultCall: [
@@ -211,10 +211,12 @@ defaultPrintStackTrace: [
     currentBlock.root [
       FALSE
     ] [
-      ("at filename: "   currentBlock.position.fileNumber processor.options.fileNames.at
-        ", token: "      currentBlock.position.token
-        ", line: "       currentBlock.position.line
-        ", column: "     currentBlock.position.column LF) printList
+      (
+        "at filename: " currentBlock.position.fileNumber processor.options.fileNames.at
+        ", token: "     currentBlock.position.token
+        ", line: "      currentBlock.position.line
+        ", column: "    currentBlock.position.column LF
+      ) printList
 
       currentBlock.parent processor.blocks.at.get !currentBlock
       TRUE

@@ -106,7 +106,7 @@ addBuiltin: [
   ] if
   nameId:;
 
-  bvar: @id VarBuiltin @currentNode createVariable Virtual @currentNode makeStaticity;
+  bvar: @id VarBuiltin @block createVariable Virtual @block makeStaticity;
   nameId bvar NameCaseBuiltin addNameInfo
 ];
 
@@ -114,7 +114,7 @@ initBuiltins: [
   processor:;
   processorResult:;
   codeNode: 0 @processor.@blocks.at.get;
-  currentNode: @codeNode;
+  block: @codeNode;
   failProc: @failProcForProcessor;
 
   builtins fieldCount dynamic [

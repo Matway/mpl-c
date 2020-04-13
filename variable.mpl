@@ -182,14 +182,14 @@ Variable: [{
 compilable: [processorResult.success copy];
 
 callBuiltin:           [block:; multiParserResult @block @processor @processorResult callBuiltinImpl];
-processFuncPtr:        [multiParserResult @currentNode @processor @processorResult processFuncPtrImpl];
-processPre:            [multiParserResult @currentNode @processor @processorResult processPreImpl];
-processCall:           [multiParserResult @currentNode @processor @processorResult processCallImpl];
+processFuncPtr:        [multiParserResult @block @processor @processorResult processFuncPtrImpl];
+processPre:            [multiParserResult @block @processor @processorResult processPreImpl];
+processCall:           [multiParserResult @block @processor @processorResult processCallImpl];
 processExportFunction: [block:; multiParserResult @block @processor @processorResult processExportFunctionImpl];
-processImportFunction: [multiParserResult @currentNode @processor @processorResult processImportFunctionImpl];
-compareEntriesRec:     [currentMatchingNode @nestedToCur @curToNested @comparingMessage multiParserResult currentNode @processor @processorResult compareEntriesRecImpl];
+processImportFunction: [multiParserResult @block @processor @processorResult processImportFunctionImpl];
+compareEntriesRec:     [currentMatchingNode @nestedToCur @curToNested @comparingMessage multiParserResult block @processor @processorResult compareEntriesRecImpl];
 makeVariableType:      [block:; block @processor @processorResult makeVariableTypeImpl];
-compilerError:         [block:; makeStringView block processor @processorResult compilerErrorImpl];
+compilerError:         [block:; makeStringView block @processor @processorResult compilerErrorImpl];
 generateDebugTypeId:   [block:; block @processor @processorResult generateDebugTypeIdImpl];
 generateIrTypeId:      [block:; block @processor @processorResult generateIrTypeIdImpl];
 getMplType: [
@@ -223,7 +223,7 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Ref;
   multiParserResult: MultiParserResult Cref;
   positionInfo: CompilerPositionInfo Cref;
   name: StringView Cref;
@@ -242,7 +242,7 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Ref;
   multiParserResult: MultiParserResult Cref;
   refToVar: RefToVar Cref;
 } () {convention: cdecl;} "processFuncPtrImpl" importFunction
@@ -250,7 +250,7 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Ref;
   multiParserResult: MultiParserResult Cref;
   preAstNodeIndex: Int32;
 } Cond {convention: cdecl;} "processPreImpl" importFunction
@@ -258,7 +258,7 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Ref;
   multiParserResult: MultiParserResult Cref;
   name: StringView Cref;
   callAstNodeIndex: Int32;
@@ -267,7 +267,7 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Ref;
   multiParserResult: MultiParserResult Cref;
   asLambda: Cond;
   name: StringView Cref;
@@ -278,7 +278,7 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Ref;
   multiParserResult: MultiParserResult Cref;
   asCodeRef: Cond;
   name: StringView Cref;
@@ -288,7 +288,7 @@ getMplType: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Cref;
+  block: Block Cref;
   multiParserResult: MultiParserResult Cref;
 
   comparingMessage: String Ref;
@@ -320,7 +320,7 @@ getMplType: [
 
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Ref;
+  block: Block Ref;
   multiParserResult: MultiParserResult Cref;
 
   reason: Nat8;
@@ -331,7 +331,7 @@ getMplType: [
 
 {
   processorResult: ProcessorResult Ref;
-  processor: Processor Cref;
+  processor: Processor Ref;
   block: Block Cref;
   message: StringView Cref;
 } () {convention: cdecl;} "compilerErrorImpl" importFunction
@@ -1140,7 +1140,7 @@ getPlainConstantIR: [
 {
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
-  currentNode: Block Cref;
+  block: Block Cref;
   refToVar: RefToVar Cref;
 } () {} [
   processorResult:;
@@ -1401,7 +1401,7 @@ checkValue: [
     VarInt32 [value 0x7FFFFFFFi64 > [value 0x80000000i64 neg <] ||]
     VarIntX  [processor.options.pointerSize 32nx = [value 0x7FFFFFFFi64 > [value 0x80000000i64 neg <] ||] &&]
     [FALSE]
-  ) case ["number constant overflow" currentNode compilerError] when
+  ) case ["number constant overflow" block compilerError] when
   @value
 ];
 
@@ -1551,7 +1551,7 @@ findFieldWithOverloadShift: [
       ] &&
     ] loop
   ] [
-    (refToVar currentNode getMplType " is not combined") assembleString currentNode compilerError
+    (refToVar block getMplType " is not combined") assembleString block compilerError
   ] if
 
   result

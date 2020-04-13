@@ -245,20 +245,20 @@
     i: 1 dynamic; # 0th node is root fake node
     [
       i processor.blocks.dataSize < [
-        currentNode: i @processor.@blocks.at.get;
-        currentNode nodeHasCode [
+        block: i @processor.@blocks.at.get;
+        block nodeHasCode [
           LF makeStringView @processorResult.@program.cat
 
-          currentNode.header makeStringView @processorResult.@program.cat
+          block.header makeStringView @processorResult.@program.cat
 
-          currentNode.nodeCase NodeCaseDeclaration = ~ [
+          block.nodeCase NodeCaseDeclaration = ~ [
             " {" @processorResult.@program.cat
             LF   @processorResult.@program.cat
 
-            currentNode.program [
+            block.program [
               curInstruction:;
               curInstruction.enabled [
-                currentNode.programTemplate.getStringView curInstruction.codeOffset curInstruction.codeSize slice @processorResult.@program.cat
+                block.programTemplate.getStringView curInstruction.codeOffset curInstruction.codeSize slice @processorResult.@program.cat
                 LF @processorResult.@program.cat
               ] [
               ] if
@@ -300,7 +300,7 @@
 
   addBlock
   codeNode: @processor.@blocks.last.get;
-  currentNode: @codeNode;
+  block: @codeNode;
   failProc: @failProcForProcessor;
 
   NodeCaseDtor @codeNode.@nodeCase set
@@ -313,7 +313,7 @@
 
   begin: RefToVar;
   end: RefToVar;
-  refToVar @begin @end ShadowReasonCapture @currentNode makeShadows
+  refToVar @begin @end ShadowReasonCapture @block makeShadows
 
   VarStruct refToVar getVar .data.get.get .unableToDie
   VarStruct      end getVar.@data.get.get.@unableToDie set # fake becouse it is fake shadow

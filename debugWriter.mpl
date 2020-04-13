@@ -160,7 +160,7 @@ getTypeDebugDeclaration: [
         pointee getPointerTypeDebugDeclaration
       ] [
         var.data.getTag VarImport = [
-          addFuncSubroutineInfo
+          block addFuncSubroutineInfo
         ] [
           var.data.getTag VarStruct = [
             struct: VarStruct var.data.get.get;
@@ -308,6 +308,7 @@ addFileDebugInfo: [
 
 addFuncSubroutineInfo: [
   compileOnce
+  block:;
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   ("!" index " = !{null}") assembleString @processor.@debugInfo.@strings.pushBack
@@ -328,7 +329,7 @@ addFuncDebugInfo: [
   funcName:;
   position:;
 
-  subroutineIndex: addFuncSubroutineInfo;
+  subroutineIndex: block addFuncSubroutineInfo;
   funcImplementation: funcName makeStringView getStringImplementation;
 
   (
