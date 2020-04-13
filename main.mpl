@@ -178,7 +178,7 @@ processIntegerOption: [
             FALSE @success set
           ] [
             splittedOption: option splitString;
-            splittedOption.success not [
+            splittedOption.success ~ [
               "Invalid argument encoding: " print option print LF print
               FALSE @success set
             ] [
@@ -267,7 +267,7 @@ processIntegerOption: [
       ] times
     ] if
 
-    nextOption OPT_ANY = not [
+    nextOption OPT_ANY = ~ [
       "Value expected" print LF print
       FALSE @success set
     ] when
@@ -290,7 +290,7 @@ processIntegerOption: [
         printInfo
       ] if
     ] [
-      success not [
+      success ~ [
         printInfo
       ] [
         forceArrayChecks (
@@ -351,7 +351,7 @@ processIntegerOption: [
               ] if
             ] when
 
-            processorResult.success not [
+            processorResult.success ~ [
               processorResult.globalErrorInfo.getSize [
                 current: i processorResult.globalErrorInfo @;
                 i 0 > [LF print] when

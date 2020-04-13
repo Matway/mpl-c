@@ -121,7 +121,7 @@ addMemberInfo: [
 
   fsize: field.refToVar block getStorageSize 0ix cast 0 cast;
   falignment: field.refToVar block getAlignment 0ix cast 0 cast;
-  offset falignment + 1 - 0n32 cast falignment 1 - 0n32 cast not and 0 cast @offset set
+  offset falignment + 1 - 0n32 cast falignment 1 - 0n32 cast ~ and 0 cast @offset set
 
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
@@ -170,7 +170,7 @@ getTypeDebugDeclaration: [
             [
               f struct.fields.dataSize < [
                 field: f struct.fields.at;
-                field.refToVar isVirtual not [
+                field.refToVar isVirtual ~ [
                   memberInfo: @offset field f block addMemberInfo;
                   memberInfo @members.pushBack
                 ] when
@@ -216,7 +216,7 @@ getTypeDebugDeclaration: [
 
 addVariableDebugInfo: [
   nameInfo: refToVar: block:;;;
-  refToVar isVirtualType not [
+  refToVar isVirtualType ~ [
     debugDeclarationIndex: refToVar getMplSchema.dbgTypeDeclarationId copy;
     [debugDeclarationIndex -1 = ~] "There is no debug declaration for this type!" assert
     index: processor.debugInfo.lastId copy;
@@ -234,7 +234,7 @@ addVariableDebugInfo: [
 
 addGlobalVariableDebugInfo: [
   nameInfo: refToVar: block:;;;
-  refToVar isVirtualType not [
+  refToVar isVirtualType ~ [
     debugDeclarationIndex: refToVar getMplSchema.dbgTypeDeclarationId copy;
     [debugDeclarationIndex -1 = ~] "There is no debug declaration for this type!" assert
 
@@ -258,7 +258,7 @@ addGlobalVariableDebugInfo: [
 
 addVariableMetadata: [
   nameInfo: refToVar: block:;;;
-  refToVar isVirtualType not [
+  refToVar isVirtualType ~ [
     localVariableDebugIndex: nameInfo refToVar block addVariableDebugInfo;
     ("  call void @llvm.dbg.declare(metadata " refToVar getIrType "* " refToVar getIrName ", metadata !" localVariableDebugIndex ", metadata !" processor.debugInfo.unit 1 + ")") @block appendInstruction
   ] when

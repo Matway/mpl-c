@@ -164,7 +164,7 @@
       ] &&
     ] loop
 
-    processorResult.success not [
+    processorResult.success ~ [
       @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
     ] when
 
@@ -187,7 +187,7 @@
           pair:;
           pair.value.dataSize 0 > [
             fr: pair.key processor.modules.find;
-            fr.success not [
+            fr.success ~ [
               ("missing module \"" @pair.@key "\" used in file: \"" pair.value.last processor.options.fileNames.at "\"" LF) assembleString @processorResult.@errorInfo.@message.cat
               TRUE @hasErrorMessage set
             ] when
@@ -196,7 +196,7 @@
           ] when
         ] each
 
-        hasError [hasErrorMessage not] && [
+        hasError [hasErrorMessage ~] && [
           String @processorResult.@errorInfo.@message set
           "problem with finding modules" @processorResult.@errorInfo.@message.cat
 
@@ -210,7 +210,7 @@
           ] each
         ] when
 
-        processorResult.success not [
+        processorResult.success ~ [
           @processorResult.@errorInfo move @processorResult.@globalErrorInfo.pushBack
         ] when
       ] when
@@ -219,7 +219,7 @@
 
 
   ("all nodes generated" makeStringView) addLog
-  [compilable not [processor.recursiveNodesStack.getSize 0 =] ||] "Recursive stack is not empty!" assert
+  [compilable ~ [processor.recursiveNodesStack.getSize 0 =] ||] "Recursive stack is not empty!" assert
 
   processorResult.success [
     ("nameCount=" processor.nameInfos.dataSize
@@ -275,7 +275,7 @@
 
     processor.debugInfo.strings [
       s:;
-      s.getTextSize 0 = not [
+      s.getTextSize 0 = ~ [
         s @processorResult.@program.cat
         LF @processorResult.@program.cat
       ] when

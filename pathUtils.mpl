@@ -47,7 +47,7 @@ simplifyPath: [
 
               lastFragment isBack
               [fragments.getSize 1 >] &&
-              [fragments.getSize 2 - @fragments.at isBack not] && [
+              [fragments.getSize 2 - @fragments.at isBack ~] && [
                 @fragments.popBack
                 @fragments.popBack
               ] when

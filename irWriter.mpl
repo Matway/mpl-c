@@ -99,7 +99,7 @@ getStringImplementation: [
       i stringView.size < [
         codeRef: stringView.data i Natx cast + Nat8 addressToReference;
         code: codeRef copy;
-        code 32n8 < not [code 127n8 <] && [code 34n8 = not] && [code 92n8 = not] && [  # exclude " and \
+        code 32n8 < ~ [code 127n8 <] && [code 34n8 = ~] && [code 92n8 = ~] && [  # exclude " and \
           code 0n32 cast @result.catSymbolCode
         ] [
           "\\" @result.cat
@@ -264,7 +264,7 @@ createUnaryOperation: [
 createMemset: [
   srcRef: dstRef: block:;;;
   srcRef dstRef setVar
-  srcRef isVirtual not [
+  srcRef isVirtual ~ [
     loadReg: srcRef @block createDerefToRegister;
     loadReg dstRef @block createStoreFromRegister
   ] when
@@ -376,7 +376,7 @@ createRetValue: [
 
 createCallIR: [
   refToRet: argList: conventionName: funcName: block:;;;;;
-  haveRet: refToRet.varId 0 < not;
+  haveRet: refToRet.varId 0 < ~;
   retName: 0;
 
   processor.options.callTrace [@block createCallTraceProlog] when
@@ -579,7 +579,7 @@ createCallTraceProlog: [
   ("  " ptrNext getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 1") @block appendInstruction
   ("  store %type.callTraceInfo* " ptrNext getNameById ", %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
 
-  block.hasNestedCall not [
+  block.hasNestedCall ~ [
     #ptr->next = ptrNext
     ptrDotNext: block generateRegisterIRName;
     ("  " ptrDotNext getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr getNameById ", i32 0, i32 1") @block appendInstruction

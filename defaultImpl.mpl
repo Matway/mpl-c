@@ -71,7 +71,7 @@ defaultSet: [
           "builtin-strings cannot be copied" block compilerError
         ] [
           refToDst.mutable [
-            [refToDst staticityOfVar Weak = not] "Destination is weak!" assert
+            [refToDst staticityOfVar Weak = ~] "Destination is weak!" assert
             refToSrc refToDst @block createCopyToExists
           ] [
             "destination is immutable" block compilerError
@@ -79,7 +79,7 @@ defaultSet: [
         ] if
       ] if
     ] [
-      refToDst.mutable not [
+      refToDst.mutable ~ [
         "destination is immutable" block compilerError
       ] [
         lambdaCastResult: refToSrc refToDst @block tryImplicitLambdaCast;
@@ -119,18 +119,18 @@ defaultUseOrIncludeModule: [
   asUse: block:;;
   (
     [compilable]
-    [block.parent 0 = not ["module can be used only in top block" block compilerError] when]
+    [block.parent 0 = ~ ["module can be used only in top block" block compilerError] when]
     [refToName: @block pop;]
     [refToName staticityOfVar Weak < ["name must be static string" block compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" block compilerError] when
+      varName.data.getTag VarString = ~ ["name must be static string" block compilerError] when
     ] [
       string: VarString varName.data.get;
       ("use or include module " string) addLog
 
       fr: string makeStringView processor.modules.find;
-      fr.success [fr.value 0 < not] && [
+      fr.success [fr.value 0 < ~] && [
         frn: fr.value block.usedModulesTable.find;
         frn2: fr.value block.directlyIncludedModulesTable.find;
         frn.success frn2.success or [
@@ -177,7 +177,7 @@ getStackDepth: [
   depth: 0 dynamic;
   inputsCount: 0 dynamic;
   [
-    block.root not [
+    block.root ~ [
       depth block.stack.dataSize + @depth set
       inputsCount block.buildingMatchingInfo.inputs.dataSize + @inputsCount set
       block.parent processor.blocks.at.get !block
@@ -185,7 +185,7 @@ getStackDepth: [
     ] &&
   ] loop
 
-  [inputsCount depth > not] "Missed stack overflow!" assert
+  [inputsCount depth > ~] "Missed stack overflow!" assert
 
   depth inputsCount -
 ];

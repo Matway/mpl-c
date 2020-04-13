@@ -343,7 +343,7 @@ inArray: [
 undo: [
   mainResult.success [
     prevPosition @currentPosition set
-    currentPosition.offset 0 < not [
+    currentPosition.offset 0 < ~ [
       currentPosition.offset splittedString.chars.at @currentSymbol set
       currentSymbol stringMemory Nat8 addressToReference Nat32 cast @currentCode set
     ] [
@@ -431,10 +431,10 @@ tryParseNumberAfterSign: [
   ] if
 ];
 
-dCheck: [currentCode pc.digits inArray not ["wrong number constant" lexicalError] when];
+dCheck: [currentCode pc.digits inArray ~ ["wrong number constant" lexicalError] when];
 
 xCheck: [
-  currentCode pc.digits inArray not [
+  currentCode pc.digits inArray ~ [
     currentCode ascii.xCode = [
       -2 @currentArray.pushBack
       iterate
@@ -471,7 +471,7 @@ parseDecNumber: [
       iterate TRUE
     ] [
       currentCode ascii.dot = [
-        stage 0 = not [
+        stage 0 = ~ [
           FALSE
         ] [
           1 @stage set
@@ -486,7 +486,7 @@ parseDecNumber: [
         ] if
       ] [
         currentCode ascii.nCode = [
-          stage 0 = not ["wrong number constant" lexicalError] when
+          stage 0 = ~ ["wrong number constant" lexicalError] when
           3 @stage set
           iterate TRUE
           @afterT !currentArray
@@ -494,21 +494,21 @@ parseDecNumber: [
           1 @typeClass set
         ] [
           currentCode ascii.iCode = [
-            stage 0 = not ["wrong number constant" lexicalError] when
+            stage 0 = ~ ["wrong number constant" lexicalError] when
             3 @stage set
             iterate TRUE
             @afterT !currentArray
             xCheck
           ] [
             currentCode ascii.rCode = [
-              stage 1 = stage 2 = or not ["wrong number constant" lexicalError] when
+              stage 1 = stage 2 = or ~ ["wrong number constant" lexicalError] when
               3 @stage set
               iterate TRUE
               @afterT !currentArray
               dCheck
             ] [
               currentCode pc.begExp inArray [
-                stage 1 = not ["wrong number constant" lexicalError] when
+                stage 1 = ~ ["wrong number constant" lexicalError] when
                 iterate TRUE
                 @afterE !currentArray
                 currentCode pc.numberSigns inArray [
@@ -655,7 +655,7 @@ parseHexNumber: [
         FALSE
       ] [
         currentCode ascii.nCode = [
-          stage 0 = not ["wrong number constant" lexicalError] when
+          stage 0 = ~ ["wrong number constant" lexicalError] when
           3 @stage set
           iterate TRUE
           @afterT !currentArray
@@ -663,7 +663,7 @@ parseHexNumber: [
           1 @typeClass set
         ] [
           currentCode ascii.iCode = [
-            stage 0 = not ["wrong number constant" lexicalError] when
+            stage 0 = ~ ["wrong number constant" lexicalError] when
             3 @stage set
             iterate TRUE
             @afterT !currentArray
@@ -967,7 +967,7 @@ parseIdentifier: [
 parseComment: [
   [
     iterate
-    currentCode ascii.null = currentCode ascii.lf = or not
+    currentCode ascii.null = currentCode ascii.lf = or ~
   ] loop
 ];
 
@@ -1010,7 +1010,7 @@ parseNode: [
             goodTerminator: unfinishedTerminators.last copy;
             lastPosition: unfinishedPositions.last;
 
-            currentCode goodTerminator = not [
+            currentCode goodTerminator = ~ [
               ("wrong terminator of block started at (" lastPosition.line ":" lastPosition.column
                 "), expected \"" goodTerminator ascii.null = ["END" toString] [goodTerminator codepointToString] if
                 "\", but found \"" currentCode ascii.null = ["END" toString] [currentCode codepointToString] if
@@ -1038,7 +1038,7 @@ parseNode: [
                     addToLastUnfinished
                   ] [
                     currentCode ascii.null = [
-                      unfinishedNodes.getSize 1 = not [
+                      unfinishedNodes.getSize 1 = ~ [
                         "unexpected end of the file!" makeStringView lexicalError
                       ] when
                       0 @unfinishedNodes.at @mainResult.@nodes set
@@ -1061,9 +1061,9 @@ parseNode: [
             ] if
             iterate
 
-            currentCode pc.specials inArray not
-            [currentCode ascii.comma = not] &&
-            [currentCode ascii.dot = not] && [
+            currentCode pc.specials inArray ~
+            [currentCode ascii.comma = ~] &&
+            [currentCode ascii.dot = ~] && [
               "wrong symbol after terminator" lexicalError
             ] when
           ] [

@@ -8,8 +8,8 @@ staticCall: [
 
 
   [
-    staticCallIndex staticCallFirst < not staticCallIndex staticCallLast < and r:;
-    r not [
+    staticCallIndex staticCallFirst < ~ staticCallIndex staticCallLast < and r:;
+    r ~ [
       (
         "index=" makeStringView staticCallIndex 0 cast
         "; first=" makeStringView staticCallFirst 0 cast

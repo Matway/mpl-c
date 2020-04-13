@@ -36,14 +36,14 @@ mplBuiltinProcessAtList: [
         [
           pointee: VarRef structVar.data.get;
           pointeeVar: pointee getVar;
-          pointeeVar.data.getTag VarStruct = not ["not a combined" currentNode compilerError] when
+          pointeeVar.data.getTag VarStruct = ~ ["not a combined" currentNode compilerError] when
         ]
-        [indexVar.data.getTag VarInt32 = not ["index must be Int32" currentNode compilerError] when ]
+        [indexVar.data.getTag VarInt32 = ~ ["index must be Int32" currentNode compilerError] when ]
         [refToIndex staticityOfVar Weak < [ "index must be static" currentNode compilerError] when ]
         [
           index: VarInt32 indexVar.data.get 0 cast;
           struct: VarStruct pointeeVar.data.get.get;
-          index 0 < [index struct.fields.getSize < not] || ["index is out of bounds" currentNode compilerError] when
+          index 0 < [index struct.fields.getSize < ~] || ["index is out of bounds" currentNode compilerError] when
         ] [
           field: index struct.fields.at.refToVar;
           field VarRef TRUE dynamic TRUE dynamic TRUE dynamic @currentNode createVariableWithVirtual @result set
@@ -54,8 +54,8 @@ mplBuiltinProcessAtList: [
     ] [
       (
         [compilable]
-        [structVar.data.getTag VarStruct = not [ "not a combined" currentNode compilerError] when]
-        [indexVar.data.getTag VarInt32 = not ["index must be Int32" currentNode compilerError] when]
+        [structVar.data.getTag VarStruct = ~ [ "not a combined" currentNode compilerError] when]
+        [indexVar.data.getTag VarInt32 = ~ ["index must be Int32" currentNode compilerError] when]
         [
           struct: VarStruct structVar.data.get.get;
           refToIndex staticityOfVar Weak < [
@@ -65,14 +65,14 @@ mplBuiltinProcessAtList: [
                 realRefToStruct: refToStruct;
                 realStructVar: structVar;
                 realStruct: struct;
-                refToStruct staticityOfVar Virtual < not [
+                refToStruct staticityOfVar Virtual < ~ [
                   "can't get dynamic index in virtual struct" currentNode compilerError
                 ] when
 
                 refToIndex makeVarRealCaptured
                 firstField: 0 realStruct.fields.at.refToVar;
                 fieldRef: firstField copyVarFromParent;
-                firstField.hostId currentNode.id = not [
+                firstField.hostId currentNode.id = ~ [
                   fBegin: RefToVar;
                   fEnd: RefToVar;
                   fieldRef @fBegin @fEnd ShadowReasonField @currentNode makeShadowsDynamic
@@ -81,7 +81,7 @@ mplBuiltinProcessAtList: [
 
                 refToStruct.mutable @fieldRef.@mutable set
                 fieldRef fullUntemporize
-                fieldRef staticityOfVar Virtual < not [
+                fieldRef staticityOfVar Virtual < ~ [
                   "dynamic index is combined of virtuals" currentNode compilerError
                 ] [
                   fieldRef @currentNode makeVarTreeDynamicStoraged
@@ -127,9 +127,9 @@ mplNumberBinaryOp: [
   compilable [
     var1: arg1 getVar;
     var2: arg2 getVar;
-    var1.data.getTag firstTag < [var1.data.getTag lastTag < not] || ["first argument invalid" currentNode compilerError] [
-      var2.data.getTag firstTag < [var2.data.getTag lastTag < not] || ["second argument invalid" currentNode compilerError] [
-        arg1 arg2 variablesAreSame not [
+    var1.data.getTag firstTag < [var1.data.getTag lastTag < ~] || ["first argument invalid" currentNode compilerError] [
+      var2.data.getTag firstTag < [var2.data.getTag lastTag < ~] || ["second argument invalid" currentNode compilerError] [
+        arg1 arg2 variablesAreSame ~ [
           ("arguments have different schemas, left is " arg1 currentNode getMplType ", right is " arg2 currentNode getMplType) assembleString currentNode compilerError
         ] when
       ] if
@@ -181,7 +181,7 @@ mplNumberBuiltinOp: [
 
   compilable [
     var: arg getVar;
-    arg isReal not ["argument invalid" currentNode compilerError] when
+    arg isReal ~ ["argument invalid" currentNode compilerError] when
 
     compilable [
       arg staticityOfVar Dynamic > [
@@ -238,7 +238,7 @@ mplNumberUnaryOp: [
 
   compilable [
     var: arg getVar;
-    var.data.getTag firstTag < [var.data.getTag lastTag < not] || ["argument invalid" currentNode compilerError] when
+    var.data.getTag firstTag < [var.data.getTag lastTag < ~] || ["argument invalid" currentNode compilerError] when
 
     compilable [
       arg staticityOfVar Dynamic > [
@@ -282,8 +282,8 @@ mplShiftBinaryOp: [
   compilable [
     var1: arg1 getVar;
     var2: arg2 getVar;
-    arg1 isAnyInt not ["first argument invalid" currentNode compilerError] [
-      arg2 isNat not ["second argument invalid" currentNode compilerError] when
+    arg1 isAnyInt ~ ["first argument invalid" currentNode compilerError] [
+      arg2 isNat ~ ["second argument invalid" currentNode compilerError] when
     ] if
 
     compilable [
@@ -335,7 +335,7 @@ parseFieldToSignatureCaptureArray: [
   refToStruct:;
   result: RefToVar Array;
   varStruct: refToStruct getVar;
-  varStruct.data.getTag VarStruct = not ["argument list must be a struct" currentNode compilerError] when
+  varStruct.data.getTag VarStruct = ~ ["argument list must be a struct" currentNode compilerError] when
 
   compilable [
     VarStruct varStruct.data.get.get.fields [
@@ -355,7 +355,7 @@ parseSignature: [
     [options: @currentNode pop;]
     [
       optionsVar: options getVar;
-      optionsVar.data.getTag VarStruct = not ["options must be a struct" currentNode compilerError] when
+      optionsVar.data.getTag VarStruct = ~ ["options must be a struct" currentNode compilerError] when
     ] [
       optionsStruct: VarStruct optionsVar.data.get.get;
       hasConvention: FALSE dynamic;
@@ -367,7 +367,7 @@ parseSignature: [
             variadicVar: variadicRefToVar getVar;
             (
               [compilable]
-              [variadicVar.data.getTag VarCond = not ["value must be Cond" currentNode compilerError] when]
+              [variadicVar.data.getTag VarCond = ~ ["value must be Cond" currentNode compilerError] when]
               [variadicRefToVar staticityOfVar Weak < ["value must be Static" currentNode compilerError] when]
               [VarCond variadicVar.data.get @result.@variadic set]
             ) sequence
@@ -377,12 +377,12 @@ parseSignature: [
             conventionVarRef: conventionRefToVarRef getVar;
             (
               [compilable]
-              [conventionVarRef.data.getTag VarRef = not ["value must be String Ref" currentNode compilerError] when]
+              [conventionVarRef.data.getTag VarRef = ~ ["value must be String Ref" currentNode compilerError] when]
               [conventionRefToVarRef staticityOfVar Weak < ["value must be Static" currentNode compilerError] when]
               [
                 conventionRefToVar: VarRef conventionVarRef.data.get;
                 conventionVar: conventionRefToVar getVar;
-                conventionVar.data.getTag VarString = not ["value must be String Ref" currentNode compilerError] when
+                conventionVar.data.getTag VarString = ~ ["value must be String Ref" currentNode compilerError] when
               ]
               [conventionRefToVar staticityOfVar Weak < ["value must be Static" currentNode compilerError] when]
               [
@@ -398,7 +398,7 @@ parseSignature: [
       ] each
     ]
     [
-      hasConvention not [
+      hasConvention ~ [
         String @result.@convention set
       ] when
 
@@ -406,7 +406,7 @@ parseSignature: [
       compilable [
         return isVirtual [
           returnVar: return getVar;
-          returnVar.data.getTag VarStruct = not [(return currentNode getMplType " can not be a return type") assembleString currentNode compilerError] when
+          returnVar.data.getTag VarStruct = ~ [(return currentNode getMplType " can not be a return type") assembleString currentNode compilerError] when
         ] [
           #todo: detect temporality
           returnVar: return getVar;
@@ -428,7 +428,7 @@ parseSignature: [
 
 staticityOfBinResult: [
   s1:; s2:;
-  s1 Dynamic > not s2 Dynamic > not or [
+  s1 Dynamic > ~ s2 Dynamic > ~ or [
     Dynamic
   ] [
     s1 Weak = s2 Weak = and [
@@ -453,13 +453,13 @@ staticityOfBinResult: [
     [refToStr2 staticityOfVar Weak < ["must be static string" currentNode compilerError] when]
     [
       varStr2: refToStr2 getVar;
-      varStr2.data.getTag VarString = not ["must be static string" currentNode compilerError] when
+      varStr2.data.getTag VarString = ~ ["must be static string" currentNode compilerError] when
     ]
     [refToStr1: @currentNode pop;]
     [refToStr1 staticityOfVar Weak < ["must be static string" currentNode compilerError] when]
     [
       varStr1: refToStr1 getVar;
-      varStr1.data.getTag VarString = not ["must be static string" currentNode compilerError] when
+      varStr1.data.getTag VarString = ~ ["must be static string" currentNode compilerError] when
     ]
     [(VarString varStr1.data.get VarString varStr2.data.get) assembleString @currentNode makeVarString @currentNode push]
   ) sequence
@@ -503,9 +503,9 @@ staticityOfBinResult: [
     var1: arg1 getVar;
     var2: arg2 getVar;
 
-    arg1 comparable not [ "first argument is not comparable" currentNode compilerError ] [
-      arg2 comparable not [ "second argument is not comparable" currentNode compilerError ] [
-        arg1 arg2 variablesAreSame not [
+    arg1 comparable ~ [ "first argument is not comparable" currentNode compilerError ] [
+      arg2 comparable ~ [ "second argument is not comparable" currentNode compilerError ] [
+        arg1 arg2 variablesAreSame ~ [
           ("arguments have different schemas, left is " arg1 currentNode getMplType ", right is " arg2 currentNode getMplType) assembleString currentNode compilerError
         ] when
       ] if
@@ -605,9 +605,9 @@ staticityOfBinResult: [
   compilable [
     var1: arg1 getVar;
     var2: arg2 getVar;
-    arg1 isReal not ["first argument invalid" currentNode compilerError] [
-      arg2 isReal not ["second argument invalid" currentNode compilerError] [
-        arg1 arg2 variablesAreSame not [
+    arg1 isReal ~ ["first argument invalid" currentNode compilerError] [
+      arg2 isReal ~ ["second argument invalid" currentNode compilerError] [
+        arg1 arg2 variablesAreSame ~ [
           ("arguments have different schemas, left is " arg1 currentNode getMplType ", right is " arg2 currentNode getMplType) assembleString currentNode compilerError
         ] when
       ] if
@@ -731,9 +731,9 @@ staticityOfBinResult: [
   compilable [
     refToElement fullUntemporize
     varCount: refToCount getVar;
-    varCount.data.getTag VarInt32 = not ["count must be Int32" currentNode compilerError] when
+    varCount.data.getTag VarInt32 = ~ ["count must be Int32" currentNode compilerError] when
     compilable [
-      refToCount staticityOfVar Dynamic > not ["count must be static" currentNode compilerError] when
+      refToCount staticityOfVar Dynamic > ~ ["count must be static" currentNode compilerError] when
       compilable [
         count: VarInt32 varCount.data.get 0 cast;
         count 0 < [
@@ -758,7 +758,7 @@ staticityOfBinResult: [
           ] loop
 
           result: @struct move owner VarStruct @currentNode createVariable;
-          result isVirtual not [result @currentNode createAllocIR @result set] when
+          result isVirtual ~ [result @currentNode createAllocIR @result set] when
           resultStruct: VarStruct result getVar.data.get.get;
 
           i: 0 dynamic;
@@ -800,7 +800,7 @@ staticityOfBinResult: [
     ]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["method name must be a static string" currentNode compilerError] when
+      varName.data.getTag VarString = ~ ["method name must be a static string" currentNode compilerError] when
     ]
     [
       fieldNameInfo: VarString varName.data.get findNameInfo;
@@ -940,7 +940,7 @@ staticityOfBinResult: [
 [
   refToVar: @currentNode pop;
   compilable [
-    refToVar isVirtual not [refToVar makeVarRealCaptured] when
+    refToVar isVirtual ~ [refToVar makeVarRealCaptured] when
 
     refToVar getVar.temporary [
       "temporary objects cannot be copied" currentNode compilerError
@@ -981,7 +981,7 @@ staticityOfBinResult: [
     ]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" currentNode compilerError] when
+      varName.data.getTag VarString = ~ ["name must be static string" currentNode compilerError] when
     ]
     [
       VarString varName.data.get findNameInfo @currentNode pop @currentNode createNamedVariable
@@ -1000,17 +1000,17 @@ staticityOfBinResult: [
 [
   (
     [compilable]
-    [currentNode.parent 0 = not ["export must be global" currentNode compilerError] when]
+    [currentNode.parent 0 = ~ ["export must be global" currentNode compilerError] when]
     [refToName: @currentNode pop;]
     [refToName staticityOfVar Weak < ["function name must be static string" currentNode compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["function name must be static string" currentNode compilerError] when
+      varName.data.getTag VarString = ~ ["function name must be static string" currentNode compilerError] when
     ]
     [refToBody: @currentNode pop;]
     [
       varBody: refToBody getVar;
-      varBody.data.getTag VarCode = not ["must be a code" currentNode compilerError] when
+      varBody.data.getTag VarCode = ~ ["must be a code" currentNode compilerError] when
     ]
     [signature: parseSignature;]
     [
@@ -1023,17 +1023,17 @@ staticityOfBinResult: [
 [
   (
     [compilable]
-    [currentNode.parent 0 = not ["export must be global" currentNode compilerError] when]
+    [currentNode.parent 0 = ~ ["export must be global" currentNode compilerError] when]
     [refToName: @currentNode pop;]
     [refToVar: @currentNode pop;]
     [refToName staticityOfVar Weak < ["variable name must be static string" currentNode compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["variable name must be static string" currentNode compilerError] when
+      varName.data.getTag VarString = ~ ["variable name must be static string" currentNode compilerError] when
     ] [
       refToVar isVirtual ["cannot export virtual var" currentNode compilerError] when
     ] [
-      refToVar getVar.temporary not [
+      refToVar getVar.temporary ~ [
         refToVar TRUE dynamic @currentNode createRef @refToVar set
       ] when
       var: refToVar getVar;
@@ -1075,12 +1075,12 @@ staticityOfBinResult: [
     refToVar isSchema [
       pointee: VarRef var.data.get;
       pointeeVar: pointee getVar;
-      pointeeVar.data.getTag VarStruct = not ["not a combined" currentNode compilerError] when
+      pointeeVar.data.getTag VarStruct = ~ ["not a combined" currentNode compilerError] when
       compilable [
         VarStruct pointeeVar.data.get.get.fields.dataSize 0i64 cast VarInt32 @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR @currentNode push
       ] when
     ] [
-      var.data.getTag VarStruct = not ["not a combined" currentNode compilerError] when
+      var.data.getTag VarStruct = ~ ["not a combined" currentNode compilerError] when
       compilable [
         VarStruct var.data.get.get.fields.dataSize 0i64 cast VarInt32 @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR @currentNode push
       ] when
@@ -1098,15 +1098,15 @@ staticityOfBinResult: [
     ]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" currentNode compilerError] when
+      varName.data.getTag VarString = ~ ["name must be static string" currentNode compilerError] when
     ]
     [
-      refToStruct getVar.data.getTag VarStruct = not ["not a combined " currentNode compilerError] when
+      refToStruct getVar.data.getTag VarStruct = ~ ["not a combined " currentNode compilerError] when
     ] [
       string: VarString varName.data.get;
       fr: string makeStringView findNameInfo refToStruct findField;
     ] [
-      fr.success not [(refToStruct currentNode getMplType " has no field " string) assembleString currentNode compilerError] when
+      fr.success ~ [(refToStruct currentNode getMplType " has no field " string) assembleString currentNode compilerError] when
     ] [
       fr.index Int64 cast VarInt32 @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR @currentNode push
     ]
@@ -1118,24 +1118,24 @@ staticityOfBinResult: [
   refToVar: @currentNode pop;
   compilable [
     varCount: refToCount getVar;
-    varCount.data.getTag VarInt32 = not ["index must be Int32" currentNode compilerError] when
+    varCount.data.getTag VarInt32 = ~ ["index must be Int32" currentNode compilerError] when
     compilable [
-      refToCount staticityOfVar Dynamic > not ["index must be static" currentNode compilerError] when
+      refToCount staticityOfVar Dynamic > ~ ["index must be static" currentNode compilerError] when
       compilable [
         count: VarInt32 varCount.data.get 0 cast;
         var: refToVar getVar;
         refToVar isSchema [
           pointee: VarRef var.data.get;
           pointeeVar: pointee getVar;
-          pointeeVar.data.getTag VarStruct = not ["not a combined" currentNode compilerError] when
+          pointeeVar.data.getTag VarStruct = ~ ["not a combined" currentNode compilerError] when
           compilable [
             count VarStruct pointeeVar.data.get.get.fields.at.nameInfo processor.nameInfos.at.name @currentNode makeVarString @currentNode push
           ] when
         ] [
-          var.data.getTag VarStruct = not ["not a combined" currentNode compilerError] when
+          var.data.getTag VarStruct = ~ ["not a combined" currentNode compilerError] when
           compilable [
             struct: VarStruct var.data.get.get;
-            count 0 < [count struct.fields.getSize < not] || ["index is out of bounds" currentNode compilerError] when
+            count 0 < [count struct.fields.getSize < ~] || ["index is out of bounds" currentNode compilerError] when
             compilable [
               count struct.fields.at.nameInfo processor.nameInfos.at.name @currentNode makeVarString @currentNode push
             ] when
@@ -1216,7 +1216,7 @@ staticityOfBinResult: [
     ]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" currentNode compilerError] when
+      varName.data.getTag VarString = ~ ["name must be static string" currentNode compilerError] when
     ]
     [
       refToStruct getVar.data.getTag VarStruct = [
@@ -1242,9 +1242,9 @@ staticityOfBinResult: [
     varThen: then getVar;
     varCond: condition getVar;
 
-    varElse.data.getTag VarCode = not ["branch else must be a [CODE]" currentNode compilerError] when
-    varThen.data.getTag VarCode = not ["branch then must be a [CODE]" currentNode compilerError] when
-    varCond.data.getTag VarCond = not [("condition has a wrong type " condition currentNode getMplType) assembleString currentNode compilerError] when
+    varElse.data.getTag VarCode = ~ ["branch else must be a [CODE]" currentNode compilerError] when
+    varThen.data.getTag VarCode = ~ ["branch then must be a [CODE]" currentNode compilerError] when
+    varCond.data.getTag VarCond = ~ [("condition has a wrong type " condition currentNode getMplType) assembleString currentNode compilerError] when
 
     compilable [
       condition staticityOfVar Weak > [
@@ -1267,12 +1267,12 @@ staticityOfBinResult: [
 [
   (
     [compilable]
-    [currentNode.parent 0 = not ["import must be global" currentNode compilerError] when]
+    [currentNode.parent 0 = ~ ["import must be global" currentNode compilerError] when]
     [refToName: @currentNode pop;]
     [refToName staticityOfVar Weak < ["function name must be static string" currentNode compilerError] when]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["function name must be static string" currentNode compilerError] when
+      varName.data.getTag VarString = ~ ["function name must be static string" currentNode compilerError] when
     ]
     [signature: parseSignature;]
     [block: signature VarString varName.data.get makeStringView FALSE dynamic processImportFunction Block addressToReference;]
@@ -1280,7 +1280,7 @@ staticityOfBinResult: [
 ] "mplBuiltinImportFunction" @declareBuiltin ucall
 
 [
-  currentNode.parent 0 = not ["import must be global" currentNode compilerError] when
+  currentNode.parent 0 = ~ ["import must be global" currentNode compilerError] when
   compilable [
     refToName: @currentNode pop;
     refToType: @currentNode pop;
@@ -1288,13 +1288,13 @@ staticityOfBinResult: [
       refToName staticityOfVar Weak < ["variable name must be static string" currentNode compilerError] when
       compilable [
         varName: refToName getVar;
-        varName.data.getTag VarString = not ["variable name must be static string" currentNode compilerError] when
+        varName.data.getTag VarString = ~ ["variable name must be static string" currentNode compilerError] when
         compilable [
           varType: refToType getVar;
           refToType isVirtual [
             "variable cant be virtual" currentNode compilerError
           ] [
-            varType.temporary not [
+            varType.temporary ~ [
               refToType TRUE dynamic @currentNode createRef @refToType set
             ] when
 
@@ -1309,7 +1309,7 @@ staticityOfBinResult: [
             nameInfo: name findNameInfo;
             nameInfo newRefToVar addOverloadForPre
             nameInfo newRefToVar NameCaseLocal addNameInfo
-            processor.options.debug [newRefToVar isVirtual not] && [
+            processor.options.debug [newRefToVar isVirtual ~] && [
               d: nameInfo newRefToVar currentNode addGlobalVariableDebugInfo;
               globalInstruction: newRefToVar getVar.globalDeclarationInstructionIndex @processor.@prolog.at;
               ", !dbg !"   @globalInstruction.cat
@@ -1333,8 +1333,8 @@ staticityOfBinResult: [
       refToVar1 refToVar2 refsAreEqual [
         1 @cmpResult set
       ] [
-        refToVar1 getVar.storageStaticity Dynamic > not
-        refToVar2 getVar.storageStaticity Dynamic > not or [
+        refToVar1 getVar.storageStaticity Dynamic > ~
+        refToVar2 getVar.storageStaticity Dynamic > ~ or [
           0 @cmpResult set
         ] [
           -1 @cmpResult set
@@ -1364,7 +1364,7 @@ staticityOfBinResult: [
 [
   refToVar: @currentNode pop;
   compilable [
-    refToVar.mutable not VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR @currentNode push
+    refToVar.mutable ~ VarCond @currentNode createVariable Static @currentNode makeStaticity @currentNode createPlainIR @currentNode push
   ] when
 ] "mplBuiltinIsConst" @declareBuiltin ucall
 
@@ -1396,7 +1396,7 @@ staticityOfBinResult: [
     [compilable]
     [
       varBody: body getVar;
-      varBody.data.getTag VarCode = not ["body must be [CODE]" currentNode compilerError] when
+      varBody.data.getTag VarCode = ~ ["body must be [CODE]" currentNode compilerError] when
     ] [
       astNode: VarCode varBody.data.get.index @multiParserResult.@memory.at;
       astNode processLoop
@@ -1453,7 +1453,7 @@ staticityOfBinResult: [
   refToCond: @currentNode pop;
   compilable [
     condVar: refToCond getVar;
-    condVar.data.getTag VarCond = not [refToCond staticityOfVar Dynamic > not] || ["not a static Cond" currentNode compilerError] when
+    condVar.data.getTag VarCond = ~ [refToCond staticityOfVar Dynamic > ~] || ["not a static Cond" currentNode compilerError] when
     compilable [
       refToVar: @currentNode pop;
       compilable [
@@ -1492,7 +1492,7 @@ staticityOfBinResult: [
   refToVar: @currentNode pop;
   compilable [
     result: refToVar @currentNode copyVarToNew;
-    result isVirtual not [result isUnallocable not] && [
+    result isVirtual ~ [result isUnallocable ~] && [
       TRUE @result.@mutable set
       result @currentNode createAllocIR callInit
     ] when
@@ -1511,7 +1511,7 @@ staticityOfBinResult: [
     refToName staticityOfVar Weak < ["name must be static string" currentNode compilerError] when
     compilable [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" currentNode compilerError] when
+      varName.data.getTag VarString = ~ ["name must be static string" currentNode compilerError] when
       compilable [
         VarString varName.data.get print LF print
       ] when
@@ -1621,7 +1621,7 @@ staticityOfBinResult: [
     [compilable]
     [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["argument must be string" currentNode compilerError] when
+      varName.data.getTag VarString = ~ ["argument must be string" currentNode compilerError] when
     ]
     [
       refToName staticityOfVar Weak < [
@@ -1642,12 +1642,12 @@ staticityOfBinResult: [
     refToName staticityOfVar Weak < ["name must be static string" currentNode compilerError] when
     compilable [
       varName: refToName getVar;
-      varName.data.getTag VarString = not ["name must be static string" currentNode compilerError] when
+      varName.data.getTag VarString = ~ ["name must be static string" currentNode compilerError] when
       compilable [
         string: VarString varName.data.get;
         struct: Struct;
 
-        string.chars.dataSize 0 < not [
+        string.chars.dataSize 0 < ~ [
           splitted: string splitString;
           splitted.success [
             splitted.chars [
@@ -1659,7 +1659,7 @@ staticityOfBinResult: [
             ] each
 
             result: @struct move owner VarStruct @currentNode createVariable;
-            result isVirtual not [result @currentNode createAllocIR @result set] when
+            result isVirtual ~ [result @currentNode createAllocIR @result set] when
             resultStruct: VarStruct result getVar.data.get.get;
 
             i: 0 dynamic;
@@ -1699,7 +1699,7 @@ staticityOfBinResult: [
   compilable [
     varCode: code getVar;
 
-    varCode.data.getTag VarCode = not ["branch else must be a [CODE]" currentNode compilerError] when
+    varCode.data.getTag VarCode = ~ ["branch else must be a [CODE]" currentNode compilerError] when
 
     compilable [
       codeIndex: VarCode varCode.data.get.index copy;
@@ -1723,9 +1723,9 @@ staticityOfBinResult: [
     varThen: then getVar;
     varCond: condition getVar;
 
-    varElse.data.getTag VarCode = not ["branch else must be a [CODE]" currentNode compilerError] when
-    varThen.data.getTag VarCode = not ["branch then must be a [CODE]" currentNode compilerError] when
-    varCond.data.getTag VarCond = not ["condition has a wrong type" currentNode compilerError] when
+    varElse.data.getTag VarCode = ~ ["branch else must be a [CODE]" currentNode compilerError] when
+    varThen.data.getTag VarCode = ~ ["branch then must be a [CODE]" currentNode compilerError] when
+    varCond.data.getTag VarCond = ~ ["condition has a wrong type" currentNode compilerError] when
 
     compilable [
       condition staticityOfVar Weak > [
@@ -1758,5 +1758,5 @@ staticityOfBinResult: [
 [
   VarCond VarNatX 1 + [a:; "xor" makeStringView] [
     a:; a getVar.data.getTag VarCond = ["true, " makeStringView]["-1, " makeStringView] if
-  ] [not] [x:;] mplNumberUnaryOp
+  ] [~] [x:;] mplNumberUnaryOp
 ] "mplBuiltinNot" @declareBuiltin ucall
