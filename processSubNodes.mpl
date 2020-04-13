@@ -870,7 +870,6 @@ usePreCapturesWith: [
     [
       i currentChangesNode.matchingInfo.fieldCaptures.dataSize < [
         currentFieldCapture: i currentChangesNode.matchingInfo.fieldCaptures.at;
-        fieldName: currentFieldCapture.nameInfo copy;
         overload: currentFieldCapture @currentNode getOverload;
         fieldCnr: currentFieldCapture.nameInfo overload getNameWithOverload @currentNode captureName;
         i 1 + @i set compilable
@@ -958,7 +957,6 @@ applyNodeChanges: [
     i currentChangesNode.matchingInfo.fieldCaptures.dataSize < [
       currentFieldCapture: i currentChangesNode.matchingInfo.fieldCaptures.at;
 
-      fieldName: currentFieldCapture.nameInfo copy;
       overload: currentFieldCapture @currentNode getOverload;
       fieldCnr: currentFieldCapture.nameInfo overload getNameWithOverload @currentNode captureName;
 
