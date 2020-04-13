@@ -919,10 +919,10 @@ staticityOfBinResult: [
     [signature: parseSignature;]
     [
       name: ("null." processor.blocks.getSize) assembleString;
-      block: signature name makeStringView TRUE dynamic processImportFunction Block addressToReference;
+      newBlock: signature name makeStringView TRUE dynamic processImportFunction Block addressToReference;
     ]
     [
-      gnr: block.varNameInfo @block getName;
+      gnr: newBlock.varNameInfo @block getName;
       cnr: gnr @block captureName;
       refToVar: cnr.refToVar copy;
 
@@ -1275,7 +1275,7 @@ staticityOfBinResult: [
       varName.data.getTag VarString = ~ ["function name must be static string" block compilerError] when
     ]
     [signature: parseSignature;]
-    [block: signature VarString varName.data.get makeStringView FALSE dynamic processImportFunction Block addressToReference;]
+    [newBlock: signature VarString varName.data.get makeStringView FALSE dynamic processImportFunction Block addressToReference;]
   ) sequence
 ] "mplBuiltinImportFunction" @declareBuiltin ucall
 

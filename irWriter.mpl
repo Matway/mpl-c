@@ -536,9 +536,9 @@ addAliasesForUsedNodes: [
   String @processor.@prolog.pushBack
   "; Func aliases" toString @processor.@prolog.pushBack
   @processor.@blocks [
-    block: .get;
-    block nodeHasCode [
-      @block.@aliases [move @processor.@prolog.pushBack] each
+    block0: .get;
+    block0 nodeHasCode [
+      @block0.@aliases [move @processor.@prolog.pushBack] each
     ] when
   ] each
 ];
