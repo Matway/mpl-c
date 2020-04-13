@@ -3,6 +3,26 @@
 "String" includeModule
 "astNodeType" includeModule
 
+codepointHex?: [
+  codepoint:;
+  codepoint 48 57 between? [codepoint 65 70 between?] ||
+];
+
+codepointHexValue: [
+  codepoint:;
+  codepoint codepoint 65 < [48] [55] if -
+];
+
+codeunitHead?: [
+  codeunit:;
+  codeunit 0x80n8 < [codeunit 0xC0n8 0xF8n8 within?] ||
+];
+
+codeunitTail?: [
+  codeunit:;
+  codeunit 0xC0n8 and 0x80n8 =
+];
+
 fillPositionInfo: [
   astNode:;
   lastPosition.offset @astNode.@offset set
@@ -383,40 +403,100 @@ lexicalError: [
 
 parseStringConstant: [
   nameSymbols: StringView Array;
-  slashed: FALSE dynamic;
   iterate
-
+  stop: FALSE;
+  error: [lexicalError TRUE !stop];
   [
-    currentCode ascii.backSlash = [
-      slashed [
-        currentSymbol @nameSymbols.pushBack
-        FALSE @slashed set
+    skip: FALSE;
+    term: [body:; [body TRUE !skip] when];
+    (
+      [skip ~] [
+        currentCode ascii.null = ["unterminated string" error] term
       ] [
-        TRUE @slashed set
-      ] if
-      TRUE
-    ] [
-      currentCode ascii.quote = [
-        slashed [
-          currentSymbol @nameSymbols.pushBack
-          TRUE
-        ] [
-          FALSE
-        ] if
-        FALSE @slashed set
+        currentCode ascii.quote = [TRUE !stop] term
       ] [
-        currentCode ascii.null = [
-          "unterminated string" lexicalError
-          FALSE
-        ] [
-          currentSymbol @nameSymbols.pushBack
-          FALSE @slashed set
-          TRUE
-        ] if
-      ] if
-    ] if
+        currentCode ascii.backSlash = ~ [currentSymbol @nameSymbols.pushBack] term
+      ] [
+        iterate
+        currentCode ascii.null = ["unterminated escape sequence" error] term
+      ] [
+        currentCode ascii.quote = [currentSymbol @nameSymbols.pushBack] term
+      ] [
+        currentCode ascii.nCode = [LF makeStringView @nameSymbols.pushBack] term
+      ] [
+        currentCode ascii.rCode = [code: 13n8; code storageAddress 1 makeStringView2 @nameSymbols.pushBack] term
+      ] [
+        currentCode ascii.tCode = [code: 9n8; code storageAddress 1 makeStringView2 @nameSymbols.pushBack] term
+      ] [
+        currentCode ascii.backSlash = [currentSymbol @nameSymbols.pushBack] term
+      ] [
+        currentCode Int32 cast codepointHex? ~ ["invalid escape sequence" error] term
+      ] [
+        first: currentCode Int32 cast codepointHexValue Nat8 cast;
+        iterate
+        currentCode ascii.null = ["unterminated hex sequence" error] term
+      ] [
+        currentCode Int32 cast codepointHex? ~ ["invalid hex sequence" error] term
+      ] [
+        first 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !first
+        first codeunitHead? ~ ["invalid unicode sequence" error] term
+      ] [
+        first storageAddress 1 makeStringView2 @nameSymbols.pushBack
+        first 0x80n8 < [] term
+      ] [
+        iterate
+        currentCode ascii.null = ["unterminated hex sequence" error] term
+      ] [
+        currentCode Int32 cast codepointHex? ~ ["invalid hex sequence" error] term
+      ] [
+        next: currentCode Int32 cast codepointHexValue Nat8 cast;
+        iterate
+        currentCode ascii.null = ["unterminated hex sequence" error] term
+      ] [
+        currentCode Int32 cast codepointHex? ~ ["invalid hex sequence" error] term
+      ] [
+        next 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !next
+        next codeunitTail? ~ ["invalid unicode sequence" error] term
+      ] [
+        next storageAddress 1 makeStringView2 @nameSymbols.pushBack
+        first 0xE0n8 < [] term
+      ] [
+        iterate
+        currentCode ascii.null = ["unterminated hex sequence" error] term
+      ] [
+        currentCode Int32 cast codepointHex? ~ ["invalid hex sequence" error] term
+      ] [
+        next: currentCode Int32 cast codepointHexValue Nat8 cast;
+        iterate
+        currentCode ascii.null = ["unterminated hex sequence" error] term
+      ] [
+        currentCode Int32 cast codepointHex? ~ ["invalid hex sequence" error] term
+      ] [
+        next 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !next
+        next codeunitTail? ~ ["invalid unicode sequence" error] term
+      ] [
+        next storageAddress 1 makeStringView2 @nameSymbols.pushBack
+        first 0xF0n8 < [] term
+      ] [
+        iterate
+        currentCode ascii.null = ["unterminated hex sequence" error] term
+      ] [
+        currentCode Int32 cast codepointHex? ~ ["invalid hex sequence" error] term
+      ] [
+        next: currentCode Int32 cast codepointHexValue Nat8 cast;
+        iterate
+        currentCode ascii.null = ["unterminated hex sequence" error] term
+      ] [
+        currentCode Int32 cast codepointHex? ~ ["invalid hex sequence" error] term
+      ] [
+        next 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !next
+        next codeunitTail? ~ ["invalid unicode sequence" error] term
+      ] [
+        next storageAddress 1 makeStringView2 @nameSymbols.pushBack
+      ]
+    ) sequence
 
-    iterate
+    iterate stop ~
   ] loop
 
   nameSymbols assembleString makeStringNode @mainResult.@memory.pushBack
