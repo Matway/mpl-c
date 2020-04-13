@@ -3,18 +3,22 @@
 
 builtins: (
   {name: "!"                       ; impl: @mplBuiltinExclamation             ;}
-  {name: "@"                       ; impl: @mplBuiltinAt                      ;}
+  {name: "&"                       ; impl: @mplBuiltinStrCat                  ;}
+  {name: "*"                       ; impl: @mplBuiltinMul                     ;}
   {name: "+"                       ; impl: @mplBuiltinAdd                     ;}
   {name: "-"                       ; impl: @mplBuiltinSub                     ;}
-  {name: "*"                       ; impl: @mplBuiltinMul                     ;}
   {name: "/"                       ; impl: @mplBuiltinDiv                     ;}
-  {name: "&"                       ; impl: @mplBuiltinStrCat                  ;}
-  {name: "="                       ; impl: @mplBuiltinEqual                   ;}
   {name: "<"                       ; impl: @mplBuiltinLess                    ;}
+  {name: "="                       ; impl: @mplBuiltinEqual                   ;}
   {name: ">"                       ; impl: @mplBuiltinGreater                 ;}
+  {name: "@"                       ; impl: @mplBuiltinAt                      ;}
+  {name: "COMPILER_VERSION"        ; impl: @mplBuiltinCompilerVersion         ;}
+  {name: "DEBUG"                   ; impl: @mplBuiltinDebug                   ;}
+  {name: "FALSE"                   ; impl: @mplBuiltinFalse                   ;}
+  {name: "HAS_LOGS"                ; impl: @mplBuiltinHasLogs                 ;}
+  {name: "LF"                      ; impl: @mplBuiltinLF                      ;}
+  {name: "TRUE"                    ; impl: @mplBuiltinTrue                    ;}
   {name: "^"                       ; impl: @mplBuiltinPow                     ;}
-  {name: "~"                       ; impl: @mplBuiltinNot                     ;}
-
   {name: "addressToReference"      ; impl: @mplBuiltinAddressToReference      ;}
   {name: "alignment"               ; impl: @mplBuiltinAlignment               ;}
   {name: "and"                     ; impl: @mplBuiltinAnd                     ;}
@@ -24,17 +28,14 @@ builtins: (
   {name: "cast"                    ; impl: @mplBuiltinCast                    ;}
   {name: "ceil"                    ; impl: @mplBuiltinCeil                    ;}
   {name: "codeRef"                 ; impl: @mplBuiltinCodeRef                 ;}
-  {name: "cos"                     ; impl: @mplBuiltinCos                     ;}
   {name: "compileOnce"             ; impl: @mplBuiltinCompileOnce             ;}
-  {name: "COMPILER_VERSION"        ; impl: @mplBuiltinCompilerVersion         ;}
   {name: "const"                   ; impl: @mplBuiltinConst                   ;}
   {name: "copy"                    ; impl: @mplBuiltinCopy                    ;}
-  {name: "DEBUG"                   ; impl: @mplBuiltinDebug                   ;}
+  {name: "cos"                     ; impl: @mplBuiltinCos                     ;}
   {name: "def"                     ; impl: @mplBuiltinDef                     ;}
   {name: "dynamic"                 ; impl: @mplBuiltinDirty                   ;}
   {name: "exportFunction"          ; impl: @mplBuiltinExportFunction          ;}
   {name: "exportVariable"          ; impl: @mplBuiltinExportVariable          ;}
-  {name: "FALSE"                   ; impl: @mplBuiltinFalse                   ;}
   {name: "failProc"                ; impl: @mplBuiltinFailProc                ;}
   {name: "fieldCount"              ; impl: @mplBuiltinFieldCount              ;}
   {name: "fieldIndex"              ; impl: @mplBuiltinFieldIndex              ;}
@@ -42,28 +43,25 @@ builtins: (
   {name: "floor"                   ; impl: @mplBuiltinFloor                   ;}
   {name: "getCallTrace"            ; impl: @mplBuiltinGetCallTrace            ;}
   {name: "has"                     ; impl: @mplBuiltinHas                     ;}
-  {name: "HAS_LOGS"                ; impl: @mplBuiltinHasLogs                 ;}
   {name: "if"                      ; impl: @mplBuiltinIf                      ;}
-  {name: "is"                      ; impl: @mplBuiltinIs                      ;}
-  {name: "isMoved"                 ; impl: @mplBuiltinIsMoved                 ;}
   {name: "importFunction"          ; impl: @mplBuiltinImportFunction          ;}
   {name: "importVariable"          ; impl: @mplBuiltinImportVariable          ;}
   {name: "includeModule"           ; impl: @mplBuiltinIncludeModule           ;}
-  {name: "isConst"                 ; impl: @mplBuiltinIsConst                 ;}
+  {name: "is"                      ; impl: @mplBuiltinIs                      ;}
   {name: "isCombined"              ; impl: @mplBuiltinIsCombined              ;}
-  {name: "LF"                      ; impl: @mplBuiltinLF                      ;}
+  {name: "isConst"                 ; impl: @mplBuiltinIsConst                 ;}
+  {name: "isMoved"                 ; impl: @mplBuiltinIsMoved                 ;}
   {name: "log"                     ; impl: @mplBuiltinLog                     ;}
   {name: "log10"                   ; impl: @mplBuiltinLog10                   ;}
   {name: "loop"                    ; impl: @mplBuiltinLoop                    ;}
   {name: "lshift"                  ; impl: @mplBuiltinLShift                  ;}
-  {name: "manuallyInitVariable"    ; impl: @mplBuiltinManuallyInitVariable    ;}
   {name: "manuallyDestroyVariable" ; impl: @mplBuiltinManuallyDestroyVariable ;}
+  {name: "manuallyInitVariable"    ; impl: @mplBuiltinManuallyInitVariable    ;}
   {name: "mod"                     ; impl: @mplBuiltinMod                     ;}
   {name: "move"                    ; impl: @mplBuiltinMove                    ;}
   {name: "moveIf"                  ; impl: @mplBuiltinMoveIf                  ;}
   {name: "neg"                     ; impl: @mplBuiltinNeg                     ;}
   {name: "newVarOfTheSameType"     ; impl: @mplBuiltinNewVarOfTheSameType     ;}
-  {name: "not"                     ; impl: @mplBuiltinNot                     ;}
   {name: "or"                      ; impl: @mplBuiltinOr                      ;}
   {name: "printCompilerMessage"    ; impl: @mplBuiltinPrintCompilerMessage    ;}
   {name: "printStack"              ; impl: @mplBuiltinPrintStack              ;}
@@ -77,16 +75,16 @@ builtins: (
   {name: "sin"                     ; impl: @mplBuiltinSin                     ;}
   {name: "sqrt"                    ; impl: @mplBuiltinSqrt                    ;}
   {name: "static"                  ; impl: @mplBuiltinStatic                  ;}
-  {name: "storageSize"             ; impl: @mplBuiltinStorageSize             ;}
   {name: "storageAddress"          ; impl: @mplBuiltinStorageAddress          ;}
+  {name: "storageSize"             ; impl: @mplBuiltinStorageSize             ;}
   {name: "textSize"                ; impl: @mplBuiltinTextSize                ;}
   {name: "textSplit"               ; impl: @mplBuiltinTextSplit               ;}
-  {name: "TRUE"                    ; impl: @mplBuiltinTrue                    ;}
-  {name: "uif"                     ; impl: @mplBuiltinUif                     ;}
   {name: "ucall"                   ; impl: @mplBuiltinUcall                   ;}
+  {name: "uif"                     ; impl: @mplBuiltinUif                     ;}
   {name: "useModule"               ; impl: @mplBuiltinUseModule               ;}
   {name: "virtual"                 ; impl: @mplBuiltinVirtual                 ;}
   {name: "xor"                     ; impl: @mplBuiltinXor                     ;}
+  {name: "~"                       ; impl: @mplBuiltinNot                     ;}
 );
 
 builtinFirst: [0 static];
