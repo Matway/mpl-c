@@ -1,7 +1,7 @@
 "control" includeModule
 
 failProcForProcessor: [
-  failProc: [stringMemory printAddr " - fail while handling fail" stringMemory printAddr];
+  failProc: [print " - fail while handling fail" print];
   message:;
   "ASSERTION FAILED!!!" print LF print
   message print LF print

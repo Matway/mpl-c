@@ -123,11 +123,11 @@ createStringIR: [
 
   var: refToVar getVar;
   @stringName findNameInfo @var.@mplNameId set
-  ("getelementptr inbounds ({i32, [" string.size 1 + " x i8]}, {i32, [" string.size 1 + " x i8]}* " stringName ", i32 0, i32 1, i32 0)") assembleString makeStringId @var.@irNameId set
+  ("getelementptr inbounds ({i32, [" string.size " x i8]}, {i32, [" string.size " x i8]}* " stringName ", i32 0, i32 1, i32 0)") assembleString makeStringId @var.@irNameId set
 
   valueImplementation: string getStringImplementation;
 
-  (stringName " = private unnamed_addr constant {i32, [" string.size 1 + " x i8]} {i32 " string.size ", [" string.size 1 + " x i8] c\"" valueImplementation "\\00\"}") assembleString @processor.@prolog.pushBack
+  (stringName " = private unnamed_addr constant {i32, [" string.size " x i8]} {i32 " string.size ", [" string.size " x i8] c\"" valueImplementation "\"}") assembleString @processor.@prolog.pushBack
 ];
 
 createGetTextSizeIR: [

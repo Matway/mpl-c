@@ -1629,6 +1629,7 @@ staticityOfBinResult: [
     0n64 cast VarNatX @block createVariable Static @block makeStaticity @block createPlainIR @block push
   ] when
 ] "mplBuiltinStorageSize" @declareBuiltin ucall
+
 [
   refToName: @block pop;
   (

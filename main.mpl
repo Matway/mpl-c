@@ -16,6 +16,9 @@ printInfo: [
   "  -array_checks 0|1                   Turn off/on array index checks, by default it is on in debug mode and off in release mode" print LF print
   "  -auto_recursion                     Make all code block recursive-by-default" print LF print
   "  -call_trace                         Generate information about call trace" print LF print
+  debugMemory [
+    "  -debug_memory                       Produce memory usage information" print LF print
+  ] when
   "  -dynalit                            Number literals are dynamic constants, which are not used in analysis; default mode is static literals" print LF print
   "  -linker_option                      Add linker option for LLVM" print LF print
   "  -logs                               Value of \"HAS_LOGS\" constant in code turn to TRUE" print LF print
@@ -185,23 +188,26 @@ processIntegerOption: [
               nextOption (
                 OPT_ANY [
                   option (
-                    "-auto_recursion"            [TRUE              @options.!autoRecursion]
-                    "-ndebug"                    [FALSE             @options.!debug]
-                    "-logs"                      [TRUE              @options.!logs]
-                    "-statlit"                   [TRUE              @options.!staticLiterals]
-                    "-dynalit"                   [FALSE             @options.!staticLiterals]
-                    "-32bits"                    [32nx              @options.!pointerSize]
-                    "-64bits"                    [64nx              @options.!pointerSize]
-                    "-verbose_ir"                [TRUE              @options.!verboseIR]
-                    "-version"                   [TRUE                          !hasVersion]
-                    "-linker_option"             [OPT_LINKER_OPTION             !nextOption]
-                    "-o"                         [OPT_OUTPUT_FILE_NAME          !nextOption]
+                    "-32bits"                    [32nx                          @options.!pointerSize]
+                    "-64bits"                    [64nx                          @options.!pointerSize]
                     "-D"                         [OPT_DEFINITION                !nextOption]
                     "-array_checks"              [OPT_ARRAY_CHECK               !nextOption]
+                    "-auto_recursion"            [TRUE                          @options.!autoRecursion]
                     "-call_trace"                [OPT_CALL_TRACE                !nextOption]
+                    debugMemory [
+                      "-debug_memory"            [TRUE                          @options.!debugMemory]
+                    ] when
+                    "-dynalit"                   [FALSE                         @options.!staticLiterals]
+                    "-linker_option"             [OPT_LINKER_OPTION             !nextOption]
+                    "-logs"                      [TRUE                          @options.!logs]
+                    "-ndebug"                    [FALSE                         @options.!debug]
+                    "-o"                         [OPT_OUTPUT_FILE_NAME          !nextOption]
                     "-pre_recursion_depth_limit" [OPT_PRE_RECURSION_DEPTH_LIMIT !nextOption]
                     "-recursion_depth_limit"     [OPT_RECURSION_DEPTH_LIMIT     !nextOption]
                     "-static_loop_length_limit"  [OPT_STATIC_LOOP_LENGTH_LIMIT  !nextOption]
+                    "-verbose_ir"                [TRUE                          @options.!verboseIR]
+                    "-statlit"                   [TRUE                          @options.!staticLiterals]
+                    "-version"                   [TRUE                          !hasVersion]
                     [
                       0 splittedOption.chars.at "-" = [
                         "Invalid argument: " print option print LF print
@@ -379,11 +385,11 @@ processIntegerOption: [
     ] if
 
     success [0][1] if
+    debugMemory [options.debugMemory copy] when
   ] call
 
-  debugMemory [
+  debugMemory [] && [
     (
-      LF
       "allocations: " memoryCurrentAllocationCount copy "/" memoryTotalAllocationCount copy
       ", bytes: " memoryCurrentAllocationSize copy "/" memoryTotalAllocationSize copy
       ", max: " memoryMaxAllocationSize copy

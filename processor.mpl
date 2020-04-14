@@ -23,6 +23,9 @@ ProcessorOptions: [{
   pointerSize:            64nx dynamic;
   staticLiterals:         TRUE dynamic;
   debug:                  TRUE dynamic;
+  debugMemory [
+    debugMemory:            TRUE dynamic;
+  ] [] uif
   arrayChecks:            TRUE dynamic;
   autoRecursion:          FALSE dynamic;
   logs:                   FALSE dynamic;
