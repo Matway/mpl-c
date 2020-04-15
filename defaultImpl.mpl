@@ -150,17 +150,17 @@ defaultUseOrIncludeModule: [
 getStackEntryWith: [
   depth: check: block:;; copy;
   result: RefToVar @block isConst [Cref] [Ref] uif; #ref to 0nx
-  [
-    block.root [
+  currentBlock: @block; [
+    currentBlock.root [
       check ["stack underflow" block compilerError] when
       FALSE
     ] [
-      depth block.stack.dataSize < [
-        block.stack.dataSize 1 - depth - @block.@stack.at !result
+      depth currentBlock.stack.dataSize < [
+        currentBlock.stack.dataSize 1 - depth - @currentBlock.@stack.at !result
         FALSE
       ] [
-        depth block.stack.dataSize - block.buildingMatchingInfo.inputs.dataSize + @depth set
-        block.parent @processor.@blocks.at.get !block
+        depth currentBlock.stack.dataSize - currentBlock.buildingMatchingInfo.inputs.dataSize + @depth set
+        currentBlock.parent @processor.@blocks.at.get !currentBlock
         TRUE
       ] if
     ] if
