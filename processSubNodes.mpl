@@ -158,9 +158,9 @@
     -1 dynamic -1 dynamic StringView makeWayInfo
   ];
 
-  unfinishedStack: RefToVar Array;
-  unfinishedCache: RefToVar Array;
-  unfinishedWay: WayInfo Array;
+  unfinishedStack: @processor.acquireVarRefArray;
+  unfinishedCache: @processor.acquireVarRefArray;
+  unfinishedWay: @processor.@unfinishedWay;
 
   cacheEntry @unfinishedCache.pushBack
   stackEntry @unfinishedStack.pushBack
@@ -239,6 +239,10 @@
       success copy
     ] &&
   ] loop
+
+  @unfinishedStack @processor.releaseVarRefArray
+  @unfinishedCache @processor.releaseVarRefArray
+  @unfinishedWay.clear
 
   success
 ] "compareEntriesRecImpl" exportFunction
@@ -684,8 +688,8 @@ applyEntriesRec: [
   cacheEntry:;
   stackEntry:;
 
-  unfinishedStack: RefToVar Array;
-  unfinishedCache: RefToVar Array;
+  unfinishedStack: @processor.acquireVarRefArray;
+  unfinishedCache: @processor.acquireVarRefArray;
 
   cacheEntry @unfinishedCache.pushBack
   stackEntry @unfinishedStack.pushBack
@@ -730,12 +734,15 @@ applyEntriesRec: [
       i 1 + @i set compilable
     ] &&
   ] loop
+
+  @unfinishedStack @processor.releaseVarRefArray
+  @unfinishedCache @processor.releaseVarRefArray
 ];
 
 fixOutputRefsRec: [
   stackEntry:;
 
-  unfinishedStack: RefToVar Array;
+  unfinishedStack: @processor.acquireVarRefArray;
   stackEntry @unfinishedStack.pushBack
 
   i: 0 dynamic;
@@ -769,6 +776,8 @@ fixOutputRefsRec: [
       i 1 + @i set compilable
     ] &&
   ] loop
+
+  @unfinishedStack @processor.releaseVarRefArray
 ];
 
 fixCaptureRef: [
@@ -821,8 +830,8 @@ usePreCapturesWith: [
         ] [
           stackEntry: gnr @block captureName.refToVar;
 
-          unfinishedStack: RefToVar Array;
-          unfinishedCache: RefToVar Array;
+          unfinishedStack: @processor.acquireVarRefArray;
+          unfinishedCache: @processor.acquireVarRefArray;
           cacheEntry @unfinishedCache.pushBack
           stackEntry @unfinishedStack.pushBack
           i2: 0 dynamic;
@@ -860,6 +869,9 @@ usePreCapturesWith: [
               i2 1 + @i2 set compilable
             ] &&
           ] loop
+
+          @unfinishedStack @processor.releaseVarRefArray
+          @unfinishedCache @processor.releaseVarRefArray
         ] if
 
         i 1 + @i set compilable
@@ -908,10 +920,10 @@ applyNodeChanges: [
   appliedVars: {
     curToNested: RefToVarTable;
     nestedToCur: RefToVarTable;
-    fixedOutputs: RefToVar Array;
+    fixedOutputs: @processor.acquireVarRefArray;
   };
 
-  pops: RefToVar Array;
+  pops: @processor.acquireVarRefArray;
 
   i: 0 dynamic;
   [
@@ -995,6 +1007,8 @@ applyNodeChanges: [
     ] when
   ] each
 
+  @pops @processor.releaseVarRefArray
+
   @appliedVars
 ];
 
@@ -1074,8 +1088,8 @@ applyNamedStackChanges: [
 
   currentChangesNodeIndex usePreInputs
 
-  inputs: RefToVar Array;
-  outputs: RefToVar Array;
+  inputs: @processor.acquireVarRefArray;
+  outputs: @processor.acquireVarRefArray;
 
   i: 0 dynamic;
   [
@@ -1102,10 +1116,14 @@ applyNamedStackChanges: [
   compilable [
     inputs outputs newNode forcedName makeNamedCallInstruction
 
-    implicitDerefInfo: Cond Array;
+    implicitDerefInfo: @processor.@condArray;
     newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
     implicitDerefInfo appliedVars.fixedOutputs.getSize @block derefNEntries
+    @implicitDerefInfo.clear
   ] when
+
+  @inputs @processor.releaseVarRefArray
+  @outputs @processor.releaseVarRefArray
 ];
 
 applyStackChanges: [
@@ -1122,7 +1140,7 @@ makeCallInstructionWith: [
   outputs:;
   inputs:;
   argRet: RefToVar;
-  argList: IRArgument Array;
+  argList: @processor.@irArgumentArray;
 
   [newNode.variadic [inputs.getSize newNode.matchingInfo.inputs.getSize =] ||] "Input count mismatch!" assert
 
@@ -1217,6 +1235,8 @@ makeCallInstructionWith: [
       @retName argRet @block createStoreFromRegister
     ] when
   ] when
+
+  @argList.clear
 ];
 
 makeNamedCallInstruction: [
@@ -1246,6 +1266,8 @@ processNamedCallByNode: [
     ] each
 
     newNode newNodeIndex @appliedVars forcedName applyNamedStackChanges
+
+    @appliedVars.@fixedOutputs @processor.releaseVarRefArray
   ] when
 ];
 
@@ -1551,9 +1573,9 @@ processIf: [
             value2:;
             value1:;
 
-            unfinishedV1: RefToVar Array;
-            unfinishedV2: RefToVar Array;
-            unfinishedD: RefToVar Array;
+            unfinishedV1: @processor.acquireVarRefArray;
+            unfinishedV2: @processor.acquireVarRefArray;
+            unfinishedD:  @processor.acquireVarRefArray;
 
             value1   @unfinishedV1.pushBack
             value2   @unfinishedV2.pushBack
@@ -1592,6 +1614,10 @@ processIf: [
                 TRUE
               ] &&
             ] loop
+
+            @unfinishedV1 @processor.releaseVarRefArray
+            @unfinishedV2 @processor.releaseVarRefArray
+            @unfinishedD  @processor.releaseVarRefArray
           ];
 
           appliedVarsThen.curToNested [
@@ -1615,14 +1641,14 @@ processIf: [
           ] each
 
           # check stack consistency
-          inputsThen:  RefToVar Array;
-          inputsElse:  RefToVar Array;
-          outputsThen: RefToVar Array;
-          outputsElse: RefToVar Array;
-          inputs:      RefToVar Array;
-          outputs:     RefToVar Array;
+          inputsThen:  @processor.acquireVarRefArray;
+          inputsElse:  @processor.acquireVarRefArray;
+          outputsThen: @processor.acquireVarRefArray;
+          outputsElse: @processor.acquireVarRefArray;
+          inputs:      @processor.acquireVarRefArray;
+          outputs:     @processor.acquireVarRefArray;
 
-          implicitDerefInfo: Cond Array;
+          implicitDerefInfo: @processor.@condArray;
 
           i: 0 dynamic;
           [
@@ -1687,7 +1713,6 @@ processIf: [
                 compiledOutputs:;
                 branch:;
 
-                result: Int32 Array;
                 i: 0 dynamic;
                 [
                   i longestOutputSize < [
@@ -1699,23 +1724,22 @@ processIf: [
                       FALSE curInput getVar.@temporary set
                       curInput current @block createCheckedCopyToNewNoDie
                     ] when
-                    -1 @result.pushBack
+
                     i 1 + @i set TRUE
                   ] &&
                 ] loop
-                result
               ];
 
               wasNestedCall: block.hasNestedCall copy;
               0 refToCond @block createBranch
               @block createLabel
               inputsThen outputsThen newNodeThen makeCallInstruction
-              storesThen: newNodeThen outputsThen createStores;
+              newNodeThen outputsThen createStores
               0 @block createJump
               @block createLabel
               wasNestedCall @block.@hasNestedCall set
               inputsElse outputsElse newNodeElse makeCallInstruction
-              storesElse: newNodeElse outputsElse createStores;
+              newNodeElse outputsElse createStores
               1 @block createJump
               @block createLabel
               implicitDerefInfo longestOutputSize @block derefNEntries
@@ -1723,7 +1747,19 @@ processIf: [
               processor.options.verboseIR ["end if" @block createComment] when
             ] when
           ] when
+
+          @inputsThen  @processor.releaseVarRefArray
+          @inputsElse  @processor.releaseVarRefArray
+          @outputsThen @processor.releaseVarRefArray
+          @outputsElse @processor.releaseVarRefArray
+          @inputs      @processor.releaseVarRefArray
+          @outputs     @processor.releaseVarRefArray
+
+          @implicitDerefInfo.clear
         ] when
+
+        @appliedVarsThen.@fixedOutputs @processor.releaseVarRefArray
+        @appliedVarsElse.@fixedOutputs @processor.releaseVarRefArray
       ] if
     ] when
   ] when
@@ -1786,6 +1822,8 @@ processLoop: [
             ] if
           ] &&
         ] &&
+
+        @appliedVars.@fixedOutputs @processor.releaseVarRefArray
       ] if
     ] &&
 
@@ -1886,9 +1924,9 @@ processDynamicLoop: [
         ] when
 
         needToRemake ~ compilable and [
-          inputs:     RefToVar Array;
-          nodeInputs: RefToVar Array;
-          outputs:    RefToVar Array;
+          inputs:     @processor.acquireVarRefArray;
+          nodeInputs: @processor.acquireVarRefArray;
+          outputs:    @processor.acquireVarRefArray;
 
           # apply stack changes
           i: 0 dynamic;
@@ -1941,12 +1979,18 @@ processDynamicLoop: [
           processor.options.verboseIR ["phi nodes prepared" @block createComment] when
           nodeInputs outputs newNode makeCallInstruction
 
-          implicitDerefInfo: Cond Array;
+          implicitDerefInfo: @processor.@condArray;
           newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
           implicitDerefInfo outputs.getSize 1 - @block derefNEntries
           processor.options.verboseIR ["loop end prepare..." @block createComment] when
           1 outputs.last @block createBranch
           @block createLabel
+
+          @inputs     @processor.releaseVarRefArray
+          @nodeInputs @processor.releaseVarRefArray
+          @outputs    @processor.releaseVarRefArray
+
+          @implicitDerefInfo.clear
         ] when
 
         needToRemake [
@@ -1964,6 +2008,8 @@ processDynamicLoop: [
         iterationNumber 1 + @iterationNumber set
 
         needToRemake compilable and
+
+        @appliedVars.@fixedOutputs @processor.releaseVarRefArray
       ] if
     ] &&
   ] loop
@@ -2114,8 +2160,8 @@ processDynamicLoop: [
 
 callImportWith: [
   declarationNode: refToVar: dynamicFunc: block:;;;;
-  inputs:  RefToVar Array;
-  outputs: RefToVar Array;
+  inputs:  @processor.acquireVarRefArray;
+  outputs: @processor.acquireVarRefArray;
   (
     [compilable]
     [
@@ -2198,14 +2244,18 @@ callImportWith: [
         ] &&
       ] loop
     ] [
-      implicitDerefInfo: Cond Array;
+      implicitDerefInfo: @processor.@condArray;
       outputs [
         getVar.data.getTag VarRef = @implicitDerefInfo.pushBack
       ] each
 
       implicitDerefInfo outputs.getSize @block derefNEntries
+      @implicitDerefInfo.clear
     ]
   ) sequence
+
+  @inputs  @processor.releaseVarRefArray
+  @outputs @processor.releaseVarRefArray
 ];
 
 {processorResult: ProcessorResult Ref; processor: Processor Ref; block: Block Ref; multiParserResult: MultiParserResult Cref;

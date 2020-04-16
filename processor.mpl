@@ -184,6 +184,16 @@ MatchingNode: [{
   size: Int32;
 }];
 
+makeWayInfo: [{
+  copy currentName:;
+  copy current:;
+  copy prev:;
+}];
+
+WayInfo: [
+  -1 dynamic -1 dynamic StringView makeWayInfo
+];
+
 Processor: [{
   options: ProcessorOptions;
 
@@ -228,6 +238,30 @@ Processor: [{
   depthOfRecursion:    0 dynamic;
   maxDepthOfRecursion: 0 dynamic;
   depthOfPre:          0 dynamic;
+
+  condArray: Cond Array;
+  irArgumentArray: IRArgument Array;
+
+  varRefArrayCount: 0;
+  varRefArrays: RefToVar Array Array;
+
+  acquireVarRefArray: [
+    varRefArrays.size 0 = [
+      varRefArrayCount 11 = ["Too many varRef arrays requested\00" failProc] when
+      varRefArrayCount 1 + !varRefArrayCount
+      RefToVar Array
+    ] [
+      @varRefArrays.last move copy
+      @varRefArrays.popBack
+    ] if
+  ];
+
+  releaseVarRefArray: [
+    move @varRefArrays.pushBack
+    @varRefArrays.last.clear
+  ];
+
+  unfinishedWay: WayInfo Array;
 
   prolog: String Array;
 
