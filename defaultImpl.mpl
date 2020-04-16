@@ -2,14 +2,24 @@
 
 failProcForProcessor: [
   failProc: [print " - fail while handling fail" print];
-  message:;
-  "ASSERTION FAILED!!!" print LF print
-  message print LF print
-  "While compiling:" print LF print
+  print
 
+  trace: getCallTrace;
+  [
+    trace.first trace.last is [
+      FALSE
+    ] [
+      () "\nin \00" printf
+      trace.last.name print
+      (trace.last.line copy trace.last.column copy) " at %i:%i\00" printf
+      trace.last.prev trace.last addressToReference @trace.!last
+      TRUE
+    ] if
+  ] loop
+
+  "\nWhile compiling:\n" print
   block defaultPrintStackTrace
 
-  "Terminating..." print LF print
   2 exit
 ];
 
