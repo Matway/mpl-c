@@ -120,7 +120,6 @@ CodeNodeInfo: [{
   CODE_NODE_INFO: ();
 
   moduleId: Int32;
-  offset: Int32;
   line: Int32;
   column: Int32;
   index: Int32;

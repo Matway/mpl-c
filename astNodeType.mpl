@@ -4,30 +4,29 @@
 "Variant"   includeModule
 
 AstNodeType: {
-  Empty:           [ 0 static];
-  Label:           [ 1 static];
-  Code:            [ 2 static];
-  Object:          [ 3 static];
-  List:            [ 4 static];
-  Name:            [ 5 static];
-  NameRead:        [ 6 static];
-  NameWrite:       [ 7 static];
-  NameMember:      [ 8 static];
-  NameReadMember:  [ 9 static];
-  NameWriteMember: [10 static];
-  String:          [11 static];
-  Numberi8:        [12 static];
-  Numberi16:       [13 static];
-  Numberi32:       [14 static];
-  Numberi64:       [15 static];
-  Numberix:        [16 static];
-  Numbern8:        [17 static];
-  Numbern16:       [18 static];
-  Numbern32:       [19 static];
-  Numbern64:       [20 static];
-  Numbernx:        [21 static];
-  Real32:          [22 static];
-  Real64:          [23 static];
+  Code:            [ 0];
+  Label:           [ 1];
+  List:            [ 2];
+  Name:            [ 3];
+  NameMember:      [ 4];
+  NameRead:        [ 5];
+  NameReadMember:  [ 6];
+  NameWrite:       [ 7];
+  NameWriteMember: [ 8];
+  Numberi16:       [ 9];
+  Numberi32:       [10];
+  Numberi64:       [11];
+  Numberi8:        [12];
+  Numberix:        [13];
+  Numbern16:       [14];
+  Numbern32:       [15];
+  Numbern64:       [16];
+  Numbern8:        [17];
+  Numbernx:        [18];
+  Object:          [19];
+  Real32:          [20];
+  Real64:          [21];
+  String:          [22];
 };
 
 #AST Nodes
@@ -49,33 +48,31 @@ AstNode: [{
   token:     String;
   column:    -1 dynamic;
   line:      -1 dynamic;
-  offset:    -1 dynamic;
   fileNumber: 0 dynamic;
   data: (
-    Cond                 #EmptyNode:
-    NamedRecursiveBranch #LabelNode:
     IndexArray           #CodeNode:
-    IndexArray           #ObjectNode:
+    NamedRecursiveBranch #LabelNode:
     IndexArray           #ListNode:
     NamedBranch          #NameNode:
-    NamedBranch          #NameReadNode:
-    NamedBranch          #NameWriteNode:
     NamedBranch          #NameMemberNode:
+    NamedBranch          #NameReadNode:
     NamedBranch          #NameReadMemberNode:
+    NamedBranch          #NameWriteNode:
     NamedBranch          #NameWriteMemberNode:
-    String               #StringNode:
-    Int64                #Numberi8Node:
     Int64                #Numberi16Node:
     Int64                #Numberi32Node:
     Int64                #Numberi64Node:
+    Int64                #Numberi8Node:
     Int64                #NumberixNode:
-    Nat64                #Numbern8Node:
     Nat64                #Numbern16Node:
     Nat64                #Numbern32Node:
     Nat64                #Numbern64Node:
+    Nat64                #Numbern8Node:
     Nat64                #NumbernxNode:
+    IndexArray           #ObjectNode:
     Real64               #Real32Node:
     Real64               #Real64Node:
+    String               #StringNode:
   ) Variant;
 
   INIT: []; DIE: []; # default life control, and ban uneffective copy, because object is too big

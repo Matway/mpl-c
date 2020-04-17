@@ -102,51 +102,18 @@ optimizeNamesInCurrentNode: [
     0 @unfinishedIndexes.pushBack
   ];
 
-  node.data.getTag AstNodeType.Name < [
-    node.data.getTag AstNodeType.Label = [
-      AstNodeType.Label @node.@data.get optimizeName # must not have children, it must be after label optimizing
-    ] [
-      node.data.getTag AstNodeType.Code = [
-        AstNodeType.Code @node.@data.get addToProcess # must not have children, it must be after label optimizing
-      ] [
-        node.data.getTag AstNodeType.Object = [
-          AstNodeType.Object @node.@data.get addToProcess # must not have children, it must be after label optimizing
-        ] [
-          node.data.getTag AstNodeType.List = [
-            AstNodeType.List @node.@data.get addToProcess # must not have children, it must be after label optimizing
-          ] [
-            # ok
-          ] if
-        ] if
-      ] if
-    ] if
-  ] [
-    node.data.getTag AstNodeType.Name = [
-      AstNodeType.Name @node.@data.get optimizeName
-    ] [
-      node.data.getTag AstNodeType.NameRead = [
-        AstNodeType.NameRead @node.@data.get optimizeName
-      ] [
-        node.data.getTag AstNodeType.NameWrite = [
-          AstNodeType.NameWrite @node.@data.get optimizeName
-        ] [
-          node.data.getTag AstNodeType.NameMember = [
-            AstNodeType.NameMember @node.@data.get optimizeName
-          ] [
-            node.data.getTag AstNodeType.NameReadMember = [
-              AstNodeType.NameReadMember @node.@data.get optimizeName
-            ] [
-              node.data.getTag AstNodeType.NameWriteMember = [
-                AstNodeType.NameWriteMember @node.@data.get optimizeName
-              ] [
-                # ok
-              ] if
-            ] if
-          ] if
-        ] if
-      ] if
-    ] if
-  ] if
+  (
+    AstNodeType.Label           [optimizeName] # must not have children, it must be after label optimizing
+    AstNodeType.Code            [addToProcess] # must not have children, it must be after label optimizing
+    AstNodeType.Object          [addToProcess] # must not have children, it must be after label optimizing
+    AstNodeType.List            [addToProcess] # must not have children, it must be after label optimizing
+    AstNodeType.Name            [optimizeName]
+    AstNodeType.NameRead        [optimizeName]
+    AstNodeType.NameWrite       [optimizeName]
+    AstNodeType.NameMember      [optimizeName]
+    AstNodeType.NameReadMember  [optimizeName]
+    AstNodeType.NameWriteMember [optimizeName]
+  ) @node.@data.visit
 ];
 
 optimizeNames: [
@@ -227,5 +194,4 @@ concatParserResults: [
 
     shift current.memory.dataSize + @shift set
   ] each
-
 ];

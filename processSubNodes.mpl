@@ -1348,16 +1348,15 @@ processCallByNode: [
 
   positionInfo: astNode makeCompilerPosition;
 
-  astNode.data.getTag AstNodeType.Code AstNodeType.List 1 + [
-    copy tag:;
-    indexArray: tag astNode.data.get;
+  indexArray: Int32 Array Cref;
+  nodeCase: Nat8;
+  (
+    AstNodeType.Code   [!indexArray NodeCaseCode   !nodeCase]
+    AstNodeType.List   [!indexArray NodeCaseList   !nodeCase]
+    AstNodeType.Object [!indexArray NodeCaseObject !nodeCase]
+  ) astNode.data.visit
 
-    nodeCase: NodeCaseCode;
-    tag AstNodeType.List   = [NodeCaseList   @nodeCase set] when
-    tag AstNodeType.Object = [NodeCaseObject @nodeCase set] when
-
-    indexArray nodeCase dynamic name positionInfo processCallByIndexArray
-  ] staticCall
+  indexArray nodeCase dynamic name positionInfo processCallByIndexArray
 ] "processCallImpl" exportFunction
 
 {processorResult: ProcessorResult Ref; processor: Processor Ref; block: Block Ref; multiParserResult: MultiParserResult Cref; preAstNodeIndex: Int32;} Cond {convention: cdecl;} [

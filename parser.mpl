@@ -25,7 +25,6 @@ codeunitTail?: [
 
 fillPositionInfo: [
   astNode:;
-  lastPosition.offset @astNode.@offset set
   lastPosition.line @astNode.@line set
   lastPosition.column @astNode.@column set
   currentFileNumber @astNode.@fileNumber set

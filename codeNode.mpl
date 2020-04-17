@@ -990,7 +990,6 @@ createVarCode: [
 
   astNode.column     @codeInfo.@column set
   astNode.line       @codeInfo.@line set
-  astNode.offset     @codeInfo.@offset set
   astNode.fileNumber @codeInfo.@moduleId set
   indexOfAstNode     @codeInfo.@index set
 
@@ -2458,32 +2457,31 @@ killStruct: [
 
   programSize: block.program.dataSize copy;
 
-  astNode.data.getTag (
-    AstNodeType.Label           [AstNodeType.Label astNode.data.get @block processLabelNode]
-    AstNodeType.Code            [indexOfAstNode processCodeNode]
-    AstNodeType.Object          [AstNodeType.Object astNode.data.get processObjectNode]
-    AstNodeType.List            [AstNodeType.List astNode.data.get processListNode]
-    AstNodeType.Name            [AstNodeType.Name astNode.data.get processNameNode]
-    AstNodeType.NameRead        [AstNodeType.NameRead astNode.data.get processNameReadNode]
-    AstNodeType.NameWrite       [AstNodeType.NameWrite astNode.data.get processNameWriteNode]
-    AstNodeType.NameMember      [AstNodeType.NameMember astNode.data.get processNameMemberNode]
-    AstNodeType.NameReadMember  [AstNodeType.NameReadMember astNode.data.get processNameReadMemberNode]
-    AstNodeType.NameWriteMember [AstNodeType.NameWriteMember astNode.data.get processNameWriteMemberNode]
-    AstNodeType.String          [AstNodeType.String @astNode.@data.get processStringNode]
-    AstNodeType.Numberi8        [AstNodeType.Numberi8 @astNode.@data.get processInt8Node]
-    AstNodeType.Numberi16       [AstNodeType.Numberi16 @astNode.@data.get processInt16Node]
-    AstNodeType.Numberi32       [AstNodeType.Numberi32 @astNode.@data.get processInt32Node]
-    AstNodeType.Numberi64       [AstNodeType.Numberi64 @astNode.@data.get processInt64Node]
-    AstNodeType.Numberix        [AstNodeType.Numberix @astNode.@data.get processIntXNode]
-    AstNodeType.Numbern8        [AstNodeType.Numbern8 @astNode.@data.get processNat8Node]
-    AstNodeType.Numbern16       [AstNodeType.Numbern16 @astNode.@data.get processNat16Node]
-    AstNodeType.Numbern32       [AstNodeType.Numbern32 @astNode.@data.get processNat32Node]
-    AstNodeType.Numbern64       [AstNodeType.Numbern64 @astNode.@data.get processNat64Node]
-    AstNodeType.Numbernx        [AstNodeType.Numbernx @astNode.@data.get processNatXNode]
-    AstNodeType.Real32          [AstNodeType.Real32 @astNode.@data.get processReal32Node]
-    AstNodeType.Real64          [AstNodeType.Real64 @astNode.@data.get processReal64Node]
-    [[FALSE] "Unknown type!" assert]
-  ) case
+  (
+    AstNodeType.Code            [drop indexOfAstNode processCodeNode]
+    AstNodeType.Label           [@block processLabelNode]
+    AstNodeType.List            [processListNode           ]
+    AstNodeType.Name            [processNameNode           ]
+    AstNodeType.NameMember      [processNameMemberNode     ]
+    AstNodeType.NameRead        [processNameReadNode       ]
+    AstNodeType.NameReadMember  [processNameReadMemberNode ]
+    AstNodeType.NameWrite       [processNameWriteNode      ]
+    AstNodeType.NameWriteMember [processNameWriteMemberNode]
+    AstNodeType.Numberi16       [processInt16Node          ]
+    AstNodeType.Numberi32       [processInt32Node          ]
+    AstNodeType.Numberi64       [processInt64Node          ]
+    AstNodeType.Numberi8        [processInt8Node           ]
+    AstNodeType.Numberix        [processIntXNode           ]
+    AstNodeType.Numbern16       [processNat16Node          ]
+    AstNodeType.Numbern32       [processNat32Node          ]
+    AstNodeType.Numbern64       [processNat64Node          ]
+    AstNodeType.Numbern8        [processNat8Node           ]
+    AstNodeType.Numbernx        [processNatXNode           ]
+    AstNodeType.Object          [processObjectNode         ]
+    AstNodeType.Real32          [processReal32Node         ]
+    AstNodeType.Real64          [processReal64Node         ]
+    AstNodeType.String          [processStringNode         ]
+  ) astNode.data.visit
 
   block.program.dataSize programSize > [
     @block addDebugLocationForLastInstruction
@@ -2991,7 +2989,6 @@ makeCompilerPosition: [
 
   astNode.line       @result.@line set
   astNode.column     @result.@column set
-  astNode.offset     @result.@offset set
   astNode.fileNumber @result.@fileNumber set
   astNode.token      @result.@token set
 

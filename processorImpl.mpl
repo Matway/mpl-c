@@ -99,7 +99,6 @@
       rootPositionInfo: CompilerPositionInfo;
       1 dynamic @rootPositionInfo.@column set
       1 dynamic @rootPositionInfo.@line set
-      0 dynamic @rootPositionInfo.@offset set
       n dynamic @rootPositionInfo.@fileNumber set
 
       processorResult.globalErrorInfo.getSize @cachedGlobalErrorInfoSize set
