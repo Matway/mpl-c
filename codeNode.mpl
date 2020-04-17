@@ -1033,7 +1033,7 @@ processListNode: [
     processorResult.findModuleFail ~ [processor.depthOfPre 0 =] && [HAS_LOGS] && [
       ("COMPILER ERROR") addLog
       (message) addLog
-      defaultPrintStackTrace
+      block defaultPrintStackTrace
     ] when
 
     compilable [
@@ -1104,12 +1104,12 @@ getNameAs: [
   copy forMatching:;
   matchingCapture:;
   copy nameInfo:;
-  name: nameInfo processor.nameInfos.at.name;
+  curNameInfo: nameInfo processor.nameInfos.at;
 
   unknownName: [
     forMatching [
     ] [
-      ("unknown name:" name) assembleString block compilerError
+      ("unknown name:" curNameInfo.name) assembleString block compilerError
     ] if
   ];
 
@@ -1123,73 +1123,60 @@ getNameAs: [
     nameCase: NameCaseInvalid;
   };
 
-  nameInfo 0 < ~ [
-    curNameInfo: nameInfo processor.nameInfos.at;
-    curNameInfo.name name = [
-      overload 0 < [curNameInfo.stack.getSize 1 - @overload set] when
+  overload -1 = [curNameInfo.stack.getSize 1 - !overload] when
+  curNameInfo.stack.getSize 0 = [overload curNameInfo.stack.at.getSize 0 =] || [unknownName] [
+    nameInfoEntry: overload curNameInfo.stack.at.last;
+    overload @result.@nameOverload set
+    nameInfoEntry.nameCase   @result.@nameCase   set
+    nameInfoEntry.startPoint @result.@startPoint set
 
-      curNameInfo.stack.getSize 0 > [overload curNameInfo.stack.at.getSize 0 >] && [
-        [curNameInfo.stack.getSize 0 >] "Name info data not initialised!" assert
-        nameInfoEntry: overload curNameInfo.stack.at.last;
-        overload @result.@nameOverload set
-        nameInfoEntry.nameCase   @result.@nameCase set
-        nameInfoEntry.startPoint @result.@startPoint set
-
-        nameCase: matchingCapture.captureCase NameCaseInvalid = [result.nameCase copy] [matchingCapture.captureCase copy] if;
-        nameCase NameCaseSelfMember = [nameCase NameCaseClosureMember =] || [
-          object: nameInfoEntry.refToVar;
-          overloadShift: curNameInfo.stack.dataSize 1 - overload -;
-          fields: VarStruct object getVar.data.get.get.fields;
-          nameInfoEntry.index 0 < ~ [nameInfoEntry.index fields.getSize <] && [nameInfoEntry.index fields.at.nameInfo nameInfo =] && [
-            object nameCase MemberCaseToObjectCase @block findLocalObject @result.@object set
-            nameInfoEntry.index @result.@mplFieldIndex set
-            nameInfoEntry.index fields.at.refToVar @result.@refToVar set
-            object.mutable @result.@refToVar.@mutable set
-          ] [
-            ("Internal error, mismatch structures for name:" name) assembleString block compilerError
-          ] if
-        ] [
-          nameCase NameCaseSelfObject = [nameCase NameCaseClosureObject =] || [
-            forMatching [
-              overload curNameInfo.stack.at matchingCapture.refToVar nameCase findNameStackObject @result.@refToVar set
-            ] [
-              nameInfoEntry.refToVar nameCase @block findLocalObject @result.@refToVar set
-            ] if
-          ] [
-            nameInfoEntry.refToVar @result.@refToVar set
-          ] if
-        ] if
-
-        moveToTail: [
-          refToVar:;
-          refToVar.hostId 0 < ~ [
-            # if var was captured somewhere, we must use it
-            head: refToVar getVar.capturedHead;
-            result: head getVar.capturedTail copy;
-            refToVar.mutable @result.@mutable set # tail cant keep correct staticity in some cases
-
-            block.parent 0 = [nameInfoEntry.startPoint block.id = ~] && [
-              fr: nameInfoEntry.startPoint @block.@usedModulesTable.find;
-              fr.success [TRUE @fr.@value.@used set] when
-            ] when
-
-            result
-          ] [
-            refToVar copy
-          ] if
-        ];
-
-        result.refToVar moveToTail @result.@refToVar set
-        result.object moveToTail @result.@object set
+    nameCase: matchingCapture.captureCase NameCaseInvalid = [result.nameCase copy] [matchingCapture.captureCase copy] if;
+    nameCase NameCaseSelfMember = [nameCase NameCaseClosureMember =] || [
+      object: nameInfoEntry.refToVar;
+      fields: VarStruct object getVar.data.get.get.fields;
+      nameInfoEntry.index 0 < ~ [nameInfoEntry.index fields.getSize <] && [nameInfoEntry.index fields.at.nameInfo nameInfo =] && [
+        object nameCase MemberCaseToObjectCase @block findLocalObject @result.@object set
+        nameInfoEntry.index @result.@mplFieldIndex set
+        nameInfoEntry.index fields.at.refToVar @result.@refToVar set
+        object.mutable @result.@refToVar.@mutable set
       ] [
-        unknownName
+        ("Internal error, mismatch structures for name:" curNameInfo.name) assembleString block compilerError
       ] if
     ] [
-      ("Internal error, mismatch structures for name:" name) assembleString block compilerError
+      nameCase NameCaseSelfObject = [nameCase NameCaseClosureObject =] || [
+        forMatching [
+          overload curNameInfo.stack.at matchingCapture.refToVar nameCase findNameStackObject @result.@refToVar set
+        ] [
+          nameInfoEntry.refToVar nameCase @block findLocalObject @result.@refToVar set
+        ] if
+      ] [
+        nameInfoEntry.refToVar @result.@refToVar set
+      ] if
     ] if
-  ] [
-    unknownName
+
+    moveToTail: [
+      refToVar:;
+      refToVar.hostId 0 < ~ [
+        # if var was captured somewhere, we must use it
+        head: refToVar getVar.capturedHead;
+        result: head getVar.capturedTail copy;
+        refToVar.mutable @result.@mutable set # tail cant keep correct staticity in some cases
+
+        block.parent 0 = [nameInfoEntry.startPoint block.id = ~] && [
+          fr: nameInfoEntry.startPoint @block.@usedModulesTable.find;
+          fr.success [TRUE @fr.@value.@used set] when
+        ] when
+
+        result
+      ] [
+        refToVar copy
+      ] if
+    ];
+
+    result.refToVar moveToTail @result.@refToVar set
+    result.object   moveToTail @result.@object   set
   ] if
+
   result
 ];
 

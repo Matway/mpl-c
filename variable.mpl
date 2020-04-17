@@ -371,7 +371,7 @@ getVar: [
     refToVar.hostId 0 < ~ [refToVar.hostId processor.blocks.dataSize <] && [
       node: refToVar.hostId @processor.@blocks.at.get;
       sz: node.variables.dataSize copy;
-      refToVar.varId 0  < ~ [refToVar.varId sz <] && [
+      refToVar.varId 0 < ~ [refToVar.varId sz <] && [
         refToVar.varId node.variables.at.assigned [
           TRUE
         ] [
