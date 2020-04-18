@@ -591,7 +591,7 @@ createCallTraceProlog: [
     ("  store %type.callTraceInfo* " ptr getNameById ", %type.callTraceInfo** " ptrNextDotPrev getNameById) @block appendInstruction
 
     #ptrNext->fileName = fileName
-    fileNameVar: block.position.fileNumber processor.options.fileNames.at @block makeVarString;
+    fileNameVar: block.position.file.name @block makeVarString;
     ptrNextDotName: block generateRegisterIRName;
     ("  " ptrNextDotName getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext getNameById ", i32 0, i32 2") @block appendInstruction
     ("  store i8* " fileNameVar getIrName ", i8** " ptrNextDotName getNameById) @block appendInstruction

@@ -11,6 +11,7 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG_MEMORY=TRUE -debug
  ../codeNode.mpl^
  ../debugWriter.mpl^
  ../defaultImpl.mpl^
+ ../File.mpl^
  ../irWriter.mpl^
  ../main.mpl^
  ../parser.mpl^

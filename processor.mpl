@@ -1,13 +1,14 @@
 "control" includeModule
 "astNodeType" includeModule
 "Block" includeModule
+"File" includeModule
 "schemas" includeModule
 
 CompilerPositionInfo: [{
-  column:     -1 dynamic;
-  line:       -1 dynamic;
-  fileNumber: 0 dynamic;
-  token:      String;
+  file:   File Cref;
+  column: -1;
+  line:   -1;
+  token:  String;
 }];
 
 StringArray: [String Array];
@@ -196,6 +197,10 @@ WayInfo: [
 Processor: [{
   options: ProcessorOptions;
 
+  files: File Owner Array;
+  #fileStack: File AsRef Array;
+  #file: [@fileStack.last.data]; # Currently processed File
+
   blocks:              Block Owner Array;
   matchingNodes:       Natx MatchingNode HashTable;
   recursiveNodesStack: Int32 Array;
@@ -271,7 +276,6 @@ Processor: [{
     unit:             -1 dynamic;
     unitStringNumber: -1 dynamic;
     cuStringNumber:   -1 dynamic;
-    fileNameIds:      Int32 Array;
     globals:          Int32 Array;
   };
 

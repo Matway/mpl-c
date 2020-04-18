@@ -72,20 +72,21 @@
 
   addLinkerOptionsDebugInfo
 
+  processor.options.fileNames.size @processor.@files.resize
+  processor.options.fileNames.size [
+    File owner i @processor.@files.at set
+    i processor.options.fileNames.at copy i @processor.@files.at.get.!name
+  ] times
+
   processor.options.debug [
     @processor [processor:; addDebugProlog @processor.@debugInfo.@unit set] call
 
-    i: 0 dynamic;
-    [
-      i processor.options.fileNames.dataSize < [
-        id: i processor.options.fileNames.at makeStringView addFileDebugInfo;
-        id @processor.@debugInfo.@fileNameIds.pushBack
-        i 1 + @i set TRUE
-      ] &&
-    ] loop
+    processor.files.size [
+      i processor.files.at.get.name addFileDebugInfo i @processor.@files.at.get.!debugId
+    ] times
   ] when
 
-  lastFile: 0 dynamic;
+  lastFile: File Cref;
 
   multiParserResult.nodes.dataSize 0 > [
 
@@ -93,20 +94,21 @@
     cachedGlobalErrorInfoSize: 0;
 
     runFile: [
-      copy n:;
-      n @lastFile set
+      n:;
+      file: n processor.files.at.get;
+      file !lastFile
       fileNode: n multiParserResult.nodes.at;
       rootPositionInfo: CompilerPositionInfo;
-      1 dynamic @rootPositionInfo.@column set
-      1 dynamic @rootPositionInfo.@line set
-      n dynamic @rootPositionInfo.@fileNumber set
+      file @rootPositionInfo.!file
+      1    @rootPositionInfo.!line
+      1    @rootPositionInfo.!column
 
       processorResult.globalErrorInfo.getSize @cachedGlobalErrorInfoSize set
       topNodeIndex: StringView 0 NodeCaseCode @processorResult @processor fileNode multiParserResult rootPositionInfo CFunctionSignature astNodeToCodeNode;
 
       processorResult.findModuleFail [
         # cant compile this file now, add him to queue
-        ("postpone compilation of \"" n processor.options.fileNames.at "\" because \"" processorResult.errorInfo.missedModule "\" is not compiled yet") addLog
+        ("postpone compilation of \"" file.name "\" because \"" processorResult.errorInfo.missedModule "\" is not compiled yet") addLog
         fr: processorResult.errorInfo.missedModule makeStringView @dependedFiles.find;
         fr.success [
           n @fr.@value.pushBack
@@ -118,7 +120,7 @@
 
         cachedGlobalErrorInfoSize @processorResult clearProcessorResult
       ] [
-        moduleName: n processor.options.fileNames.at;
+        moduleName: file.name;
         ("compiled file " moduleName) addLog
 
         moduleName stripExtension stripPath !moduleName

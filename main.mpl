@@ -366,7 +366,7 @@ processIntegerOption: [
                 ] [
                   current.position.getSize [
                     nodePosition: i current.position @;
-                    (nodePosition.fileNumber options.fileNames.at "(" nodePosition.line  ","  nodePosition.column "): ") printList
+                    (nodePosition.file.name "(" nodePosition.line  ","  nodePosition.column "): ") printList
 
                     i 0 = [
                       ("error, [" nodePosition.token "], " current.message LF) printList

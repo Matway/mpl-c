@@ -222,7 +222,7 @@ defaultPrintStackTrace: [
       FALSE
     ] [
       (
-        "at filename: " currentBlock.position.fileNumber processor.options.fileNames.at
+        "at filename: " currentBlock.position.file.name
         ", token: "     currentBlock.position.token
         ", line: "      currentBlock.position.line
         ", column: "    currentBlock.position.column LF

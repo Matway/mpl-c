@@ -2451,7 +2451,7 @@ killStruct: [
   astNode:;
 
   processor.options.verboseIR [
-    ("filename: " block.position.fileNumber processor.options.fileNames.at
+    ("filename: " block.position.file.name
       ", line: " block.position.line ", column: " block.position.column ", token: " astNode.token) assembleString @block createComment
   ] when
 
@@ -2989,7 +2989,7 @@ makeCompilerPosition: [
 
   astNode.line       @result.@line set
   astNode.column     @result.@column set
-  astNode.fileNumber @result.@fileNumber set
+  astNode.fileNumber processor.files.at.get @result.!file
   astNode.token      @result.@token set
 
   result
