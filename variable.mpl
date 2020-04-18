@@ -376,25 +376,14 @@ getMplType: [
 } () {}  "getMplTypeImpl" importFunction
 
 # these functions require capture "processor"
-variableIsDeleted: [
-  refToVar:;
-  refToVar.varId refToVar.hostId @processor.@blocks.at.get.@variables.at.assigned ~
-];
-
 getVar: [
   refToVar:;
 
   [
     refToVar.hostId 0 < ~ [refToVar.hostId processor.blocks.dataSize <] && [
-      node: refToVar.hostId @processor.@blocks.at.get;
-      sz: node.variables.dataSize copy;
+      sz: processor.variables.dataSize copy;
       refToVar.varId 0 < ~ [refToVar.varId sz <] && [
-        refToVar.varId node.variables.at.assigned [
-          TRUE
-        ] [
-          ("deleted var data=" refToVar.hostId ":" refToVar.varId) addLog
-          FALSE
-        ] if
+        TRUE
       ] [
         ("invalid var id=" refToVar.varId " of " sz) addLog
         FALSE
@@ -405,7 +394,7 @@ getVar: [
     ] if
   ] "Wrong refToVar!" assert
 
-  refToVar.varId refToVar.hostId @processor.@blocks.at.get.@variables.at.get
+  refToVar.varId @processor.@variables.at.get
 ];
 
 getNameById: [processor.nameBuffer.at makeStringView];

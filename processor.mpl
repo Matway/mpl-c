@@ -201,7 +201,10 @@ Processor: [{
   #fileStack: File AsRef Array;
   #file: [@fileStack.last.data]; # Currently processed File
 
-  blocks:              Block Owner Array;
+  blocks: Block Owner Array;
+
+  variables: Variable Owner Array;
+
   matchingNodes:       Natx MatchingNode HashTable;
   recursiveNodesStack: Int32 Array;
   nameInfos:           NameInfo Array;

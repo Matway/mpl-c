@@ -193,12 +193,12 @@ createVariableWithVirtual: [
     processor.globalVarId 1 + @processor.@globalVarId set
   ] when
 
-  @v move owner @block.@variables.pushBack
+  @v move owner @processor.@variables.pushBack
   # now forget about v
 
   result: RefToVar;
 
-  block.variables.dataSize 1 - @result.@varId set
+  processor.variables.dataSize 1 - @result.@varId set
   block.id @result.@hostId set
 
   makeVirtual [
@@ -399,14 +399,12 @@ getFieldForMatching: [
   mplFieldIndex 0 < ~ [
     fieldRefToVar: mplFieldIndex struct.fields.at.refToVar copy;
     refToVar.mutable @fieldRefToVar.@mutable set
-    fieldRefToVar variableIsDeleted ~ [
-      fieldRefToVar block unglobalize
+    fieldRefToVar block unglobalize
 
-      fieldVar: fieldRefToVar getVar;
-      fieldVar.data.getTag VarStruct = [
-        fieldStruct: VarStruct @fieldVar.@data.get.get;
-        struct.forgotten @fieldStruct.@forgotten set
-      ] when
+    fieldVar: fieldRefToVar getVar;
+    fieldVar.data.getTag VarStruct = [
+      fieldStruct: VarStruct @fieldVar.@data.get.get;
+      struct.forgotten @fieldStruct.@forgotten set
     ] when
 
     fieldRefToVar
@@ -1103,6 +1101,7 @@ getNameAs: [
   matchingCapture:;
   copy nameInfo:;
   curNameInfo: nameInfo processor.nameInfos.at;
+  [overload -1 = [overload curNameInfo.stack.size <] ||] "Invalid overload index" assert
 
   unknownName: [
     forMatching [
