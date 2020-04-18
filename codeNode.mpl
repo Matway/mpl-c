@@ -983,37 +983,36 @@ processLabelNode: [
   .nameInfo @block pop @block createNamedVariable
 ];
 
-createVarCode: [
-  indexOfAstNode:;
+processCodeNode: [
+  indexOfAstNode: file:;;
   astNode: indexOfAstNode multiParserResult.memory.at; #we have info from parser anyway
   codeInfo: CodeNodeInfo;
 
-  astNode.column     @codeInfo.@column set
-  astNode.line       @codeInfo.@line set
-  astNode.fileNumber @codeInfo.@moduleId set
-  indexOfAstNode     @codeInfo.@index set
+  file                @codeInfo.!file
+  astNode.line   copy @codeInfo.!line
+  astNode.column copy @codeInfo.!column
+  indexOfAstNode copy @codeInfo.!index
 
-  @codeInfo move makeVarCode
+  @codeInfo move makeVarCode @block push
 ];
 
-processCodeNode: [createVarCode @block push];
-
 processCallByIndexArray: [
-  multiParserResult @block @processor @processorResult processCallByIndexArrayImpl
+  indexArray: file: nodeCase: name: positionInfo:;;;;;
+  indexArray file nodeCase name positionInfo multiParserResult @block @processor @processorResult processCallByIndexArrayImpl
 ];
 
 processObjectNode: [
-  data:;
+  data: file:;;
   position: block.position copy;
   name: "objectInitializer" makeStringView;
-  data NodeCaseObject dynamic name position processCallByIndexArray
+  data file NodeCaseObject dynamic name position processCallByIndexArray
 ];
 
 processListNode: [
-  data:;
+  data: file:;;
   position: block.position copy;
   name: "listInitializer" makeStringView;
-  data NodeCaseList dynamic name position processCallByIndexArray
+  data file NodeCaseList dynamic name position processCallByIndexArray
 ];
 
 {
@@ -1474,7 +1473,7 @@ callCallableStruct: [
   codeVar.data.getTag VarCode = [
     object regNamesSelf
     refToVar regNamesClosure
-    VarCode codeVar.data.get.index name processCall
+    VarCode codeVar.data.get.index VarCode codeVar.data.get.file name processCall
     refToVar unregNamesClosure
     object unregNamesSelf
   ] [
@@ -1490,9 +1489,10 @@ callCallableField: [
 
   var: refToVar getVar;
   code: VarCode var.data.get.index;
+  file: VarCode var.data.get.file;
 
   object regNamesClosure
-  code @name processCall
+  code file @name processCall
   object unregNamesClosure
 ];
 
@@ -1522,7 +1522,7 @@ callCallableStructWithPre: [
         preField: pfr.index struct.fields.at .refToVar;
         preVar: preField getVar;
         preVar.data.getTag VarCode = [
-          VarCode preVar.data.get.index processPre ~ @needPre set
+          VarCode preVar.data.get.index VarCode preVar.data.get.file processPre ~ @needPre set
         ] [
           "PRE field must be a code" block compilerError
         ] if
@@ -1567,7 +1567,7 @@ callCallableStructWithPre: [
         # no need pre, just call it!
         object regNamesSelf
         refToVar regNamesClosure
-        VarCode codeVar.data.get.index nameInfo processor.nameInfos.at.name makeStringView processCall
+        VarCode codeVar.data.get.index VarCode codeVar.data.get.file nameInfo processor.nameInfos.at.name makeStringView processCall
         refToVar unregNamesClosure
         object unregNamesSelf
       ] if
@@ -1591,7 +1591,7 @@ callCallable: [
   ] [
     var.data.getTag VarCode = [
       object regNamesSelf
-      VarCode var.data.get.index @nameInfo processor.nameInfos.at.name makeStringView processCall
+      VarCode var.data.get.index VarCode var.data.get.file @nameInfo processor.nameInfos.at.name makeStringView processCall
       object unregNamesSelf
     ] [
       var.data.getTag VarImport = [
@@ -1639,7 +1639,7 @@ tryImplicitLambdaCast: [
       csignature: declarationNode.csignature;
       implName: ("lambda." block.id "." block.lastLambdaName) assembleString;
       astNode: VarCode refToSrc getVar.data.get.index @multiParserResult.@memory.at;
-      implIndex: csignature astNode implName makeStringView TRUE dynamic @block processExportFunction;
+      implIndex: csignature astNode VarCode refToSrc getVar.data.get.file implName makeStringView TRUE dynamic @block processExportFunction;
 
       compilable [
         implNode: implIndex processor.blocks.at.get;
@@ -2439,6 +2439,7 @@ killStruct: [
   processor: Processor Ref;
   block: Block Ref;
   multiParserResult: MultiParserResult Cref;
+  file: File Cref;
   indexOfAstNode: Int32;
   astNode: AstNode Cref;
 } () {} [
@@ -2447,7 +2448,8 @@ killStruct: [
   block:;
   multiParserResult:;
   failProc: @failProcForProcessor;
-  copy indexOfAstNode:;
+  file:;
+  indexOfAstNode:;
   astNode:;
 
   processor.options.verboseIR [
@@ -2458,9 +2460,9 @@ killStruct: [
   programSize: block.program.dataSize copy;
 
   (
-    AstNodeType.Code            [drop indexOfAstNode processCodeNode]
+    AstNodeType.Code            [drop indexOfAstNode file processCodeNode]
     AstNodeType.Label           [@block processLabelNode]
-    AstNodeType.List            [processListNode           ]
+    AstNodeType.List            [file processListNode]
     AstNodeType.Name            [processNameNode           ]
     AstNodeType.NameMember      [processNameMemberNode     ]
     AstNodeType.NameRead        [processNameReadNode       ]
@@ -2477,10 +2479,10 @@ killStruct: [
     AstNodeType.Numbern64       [processNat64Node          ]
     AstNodeType.Numbern8        [processNat8Node           ]
     AstNodeType.Numbernx        [processNatXNode           ]
-    AstNodeType.Object          [processObjectNode         ]
-    AstNodeType.Real32          [processReal32Node         ]
-    AstNodeType.Real64          [processReal64Node         ]
-    AstNodeType.String          [processStringNode         ]
+    AstNodeType.Object          [file processObjectNode]
+    AstNodeType.Real32          [processReal32Node]
+    AstNodeType.Real64          [processReal64Node]
+    AstNodeType.String          [processStringNode]
   ) astNode.data.visit
 
   block.program.dataSize programSize > [
@@ -2489,7 +2491,8 @@ killStruct: [
 ] "processNodeImpl" exportFunction
 
 processNode: [
-  astNode indexOfAstNode multiParserResult @block @processor @processorResult processNodeImpl
+  token: tokenIndex: file:;;;
+  token tokenIndex file multiParserResult @block @processor @processorResult processNodeImpl
 ];
 
 addNamesFromModule: [
@@ -2984,13 +2987,13 @@ checkRecursionOfCodeNode: [
 ];
 
 makeCompilerPosition: [
-  astNode:;
+  astNode: file:;;
   result: CompilerPositionInfo;
 
-  astNode.line       @result.@line set
-  astNode.column     @result.@column set
-  astNode.fileNumber processor.files.at.get @result.!file
-  astNode.token      @result.@token set
+  file                @result.!file
+  astNode.line   copy @result.!line
+  astNode.column copy @result.!column
+  astNode.token  copy @result.!token
 
   result
 ];
@@ -3632,14 +3635,14 @@ finalizeCodeNode: [
 ];
 
 addIndexArrayToProcess: [
-  indexArray:;
+  indexArray: file:;;
 
   i: indexArray.dataSize copy dynamic;
   [
     i 0 > [
       i 1 - @i set
       indexOfAstNode: i indexArray.at;
-      indexOfAstNode @block.@unprocessedAstNodes.pushBack
+      {file: file; token: indexOfAstNode copy;} @block.@unprocessedAstNodes.pushBack
       TRUE
     ] &&
   ] loop
@@ -3654,6 +3657,7 @@ nodeHasCode: [
   signature: CFunctionSignature Cref;
   compilerPositionInfo: CompilerPositionInfo Cref;
   multiParserResult: MultiParserResult Cref;
+  file: File Cref;
   indexArray: IndexArray Cref;
   processor: Processor Ref;
   processorResult: ProcessorResult Ref;
@@ -3664,6 +3668,7 @@ nodeHasCode: [
   forcedSignature:;
   compilerPositionInfo:;
   multiParserResult:;
+  file:;
   indexArray:;
   processor:;
   processorResult:;
@@ -3721,17 +3726,17 @@ nodeHasCode: [
       addDebugReserve @block.@funcDbgIndex set
     ] when
 
-    indexArray addIndexArrayToProcess
+    indexArray file addIndexArrayToProcess
 
     [
       block.unprocessedAstNodes.dataSize 0 > [
-        indexOfAstNode: block.unprocessedAstNodes.last copy;
+        tokenRef: block.unprocessedAstNodes.last copy;
         @block.@unprocessedAstNodes.popBack
 
-        astNode: indexOfAstNode multiParserResult.memory.at;
-        astNode makeCompilerPosition @block.@position set
+        astNode: tokenRef.token multiParserResult.memory.at;
+        astNode tokenRef.file makeCompilerPosition @block.@position set
 
-        processNode
+        astNode tokenRef.token tokenRef.file processNode
         compilable [block.state NodeStateNoOutput = ~] &&
       ] &&
     ] loop

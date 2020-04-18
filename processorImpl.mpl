@@ -11,16 +11,19 @@
 "irWriter" useModule
 
 {
-  processorResult: ProcessorResult Ref;
+  program: String Ref;
+  result: String Ref;
   unitId: 0;
   options: ProcessorOptions Cref;
   multiParserResult: MultiParserResult Cref;
 } () {convention: cdecl;} [
-  processorResult:;
+  program:;
+  result:;
   copy unitId:;
   options:;
   multiParserResult:;
 
+  processorResult: ProcessorResult;
   processor: Processor;
 
   unitId @processor.@unitId set
@@ -104,7 +107,7 @@
       1    @rootPositionInfo.!column
 
       processorResult.globalErrorInfo.getSize @cachedGlobalErrorInfoSize set
-      topNodeIndex: StringView 0 NodeCaseCode @processorResult @processor fileNode multiParserResult rootPositionInfo CFunctionSignature astNodeToCodeNode;
+      topNodeIndex: StringView 0 NodeCaseCode @processorResult @processor fileNode file multiParserResult rootPositionInfo CFunctionSignature astNodeToCodeNode;
 
       processorResult.findModuleFail [
         # cant compile this file now, add him to queue
@@ -282,6 +285,29 @@
       ] when
     ] each
   ] when
+
+  processorResult.success ~ [
+    processorResult.globalErrorInfo.getSize [
+      current: i processorResult.globalErrorInfo @;
+      i 0 > [LF @result.cat] when
+      current.position.getSize 0 = [
+        ("error, "  current.message LF) [@result.cat] each
+      ] [
+        current.position.getSize [
+          nodePosition: i current.position @;
+          (nodePosition.file.name "(" nodePosition.line  ","  nodePosition.column "): ") [@result.cat] each
+
+          i 0 = [
+            ("error, [" nodePosition.token "], " current.message LF) [@result.cat] each
+          ] [
+            ("[" nodePosition.token "], called from here" LF) [@result.cat] each
+          ] if
+        ] times
+      ] if
+    ] times
+  ] [
+    @processorResult.@program move @program set
+  ] if
 ] "process" exportFunction
 
 {

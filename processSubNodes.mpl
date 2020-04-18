@@ -1277,18 +1277,17 @@ processCallByNode: [
 ];
 
 {processorResult: ProcessorResult Ref; processor: Processor Ref; block: Block Ref; multiParserResult: MultiParserResult Cref;
-  positionInfo: CompilerPositionInfo Cref; name: StringView Cref; nodeCase: NodeCaseCode; indexArray: IndexArray Cref;} () {convention: cdecl;} [
-
+  positionInfo: CompilerPositionInfo Cref; name: StringView Cref; nodeCase: NodeCaseCode; file: File Cref; indexArray: IndexArray Cref;} () {convention: cdecl;} [
   processorResult:;
   processor:;
   block:;
   multiParserResult:;
-  failProc: @failProcForProcessor;
-
   positionInfo:;
   name:;
   copy nodeCase:;
+  file:;
   indexArray:;
+  failProc: @failProcForProcessor;
   compileOnce
 
   forcedNameString: String;
@@ -1301,6 +1300,7 @@ processCallByNode: [
     @processorResult
     @processor
     indexArray
+    file
     multiParserResult
     positionInfo
     CFunctionSignature
@@ -1335,18 +1335,19 @@ processCallByNode: [
   ] if
 ] "processCallByIndexArrayImpl" exportFunction
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; block: Block Ref; multiParserResult: MultiParserResult Cref; name: StringView Cref; callAstNodeIndex: Int32;} () {convention: cdecl;} [
+{processorResult: ProcessorResult Ref; processor: Processor Ref; block: Block Ref; multiParserResult: MultiParserResult Cref; name: StringView Cref; file: File Cref; callAstNodeIndex: Int32;} () {convention: cdecl;} [
   processorResult:;
   processor:;
   block:;
   multiParserResult:;
+  name:;
+  file:;
+  callAstNodeIndex:;
   failProc: @failProcForProcessor;
 
-  name:;
-  callAstNodeIndex:;
   astNode: callAstNodeIndex @multiParserResult.@memory.at;
 
-  positionInfo: astNode makeCompilerPosition;
+  positionInfo: astNode file makeCompilerPosition;
 
   indexArray: Int32 Array Cref;
   nodeCase: Nat8;
@@ -1356,21 +1357,21 @@ processCallByNode: [
     AstNodeType.Object [!indexArray NodeCaseObject !nodeCase]
   ) astNode.data.visit
 
-  indexArray nodeCase dynamic name positionInfo processCallByIndexArray
+  indexArray file nodeCase dynamic name positionInfo processCallByIndexArray
 ] "processCallImpl" exportFunction
 
-{processorResult: ProcessorResult Ref; processor: Processor Ref; block: Block Ref; multiParserResult: MultiParserResult Cref; preAstNodeIndex: Int32;} Cond {convention: cdecl;} [
+{processorResult: ProcessorResult Ref; processor: Processor Ref; block: Block Ref; multiParserResult: MultiParserResult Cref; file: File Cref; preAstNodeIndex: Int32;} Cond {convention: cdecl;} [
   processorResult:;
   processor:;
   block:;
   multiParserResult:;
+  file:;
+  preAstNodeIndex:;
   failProc: @failProcForProcessor;
-
-  copy preAstNodeIndex:;
 
   compilable [
     astNode: preAstNodeIndex @multiParserResult.@memory.at;
-    positionInfo: astNode makeCompilerPosition;
+    positionInfo: astNode file makeCompilerPosition;
     indexArray: AstNodeType.Code @astNode.@data.get;
 
     oldSuccess: compilable;
@@ -1379,7 +1380,7 @@ processCallByNode: [
     newNodeIndex: indexArray tryMatchAllNodes;
     newNodeIndex 0 < [compilable] && [
       processor.depthOfPre 1 + @processor.@depthOfPre set
-      "PRE" makeStringView block.id NodeCaseCode @processorResult @processor indexArray multiParserResult positionInfo CFunctionSignature astNodeToCodeNode @newNodeIndex set
+      "PRE" makeStringView block.id NodeCaseCode @processorResult @processor indexArray file multiParserResult positionInfo CFunctionSignature astNodeToCodeNode @newNodeIndex set
       processor.depthOfPre 1 - @processor.@depthOfPre set
     ] when
 
@@ -1421,15 +1422,17 @@ processCallByNode: [
 ] "processPreImpl" exportFunction
 
 processIf: [
+  fileElse:;
   astNodeElse:;
+  fileThen:;
   astNodeThen:;
   refToCond:;
 
   indexArrayElse: AstNodeType.Code astNodeElse.data.get;
   indexArrayThen: AstNodeType.Code astNodeThen.data.get;
 
-  positionInfoThen: astNodeThen makeCompilerPosition;
-  positionInfoElse: astNodeElse makeCompilerPosition;
+  positionInfoThen: astNodeThen fileThen makeCompilerPosition;
+  positionInfoElse: astNodeElse fileElse makeCompilerPosition;
 
   newNodeThenIndex: @indexArrayThen tryMatchAllNodes;
   newNodeThenIndex 0 < [compilable] && [
@@ -1439,6 +1442,7 @@ processIf: [
     @processorResult
     @processor
     indexArrayThen
+    fileThen
     multiParserResult
     positionInfoThen
     CFunctionSignature astNodeToCodeNode @newNodeThenIndex set
@@ -1456,6 +1460,7 @@ processIf: [
       @processorResult
       @processor
       indexArrayElse
+      fileElse
       multiParserResult
       positionInfoElse
       CFunctionSignature astNodeToCodeNode @newNodeElseIndex set
@@ -1766,9 +1771,9 @@ processIf: [
 ];
 
 processLoop: [
-  astNode:;
+  astNode: file:;;
   indexArray: AstNodeType.Code astNode.data.get;
-  positionInfo: astNode makeCompilerPosition;
+  positionInfo: astNode file makeCompilerPosition;
 
   iterationNumber: 0 dynamic;
   loopIsDynamic: FALSE;
@@ -1782,6 +1787,7 @@ processLoop: [
       @processorResult
       @processor
       indexArray
+      file
       multiParserResult
       positionInfo
       CFunctionSignature astNodeToCodeNode @newNodeIndex set
@@ -1835,12 +1841,11 @@ processLoop: [
     compilable and
   ] loop
 
-  loopIsDynamic [indexArray processDynamicLoop] when
+  loopIsDynamic [indexArray file processDynamicLoop] when
 ];
 
 processDynamicLoop: [
-
-  indexArray:;
+  indexArray: file:;;
 
   iterationNumber: 0 dynamic;
   [
@@ -1853,6 +1858,7 @@ processDynamicLoop: [
       @processorResult
       @processor
       indexArray
+      file
       multiParserResult
       positionInfo
       CFunctionSignature astNodeToCodeNode @newNodeIndex set
@@ -2015,20 +2021,20 @@ processDynamicLoop: [
 ];
 
 {processorResult: ProcessorResult Ref; processor: Processor Ref; block: Block Ref; multiParserResult: MultiParserResult Cref;
-  asLambda: Cond; name: StringView Cref; astNode: AstNode Cref; signature: CFunctionSignature Cref;} Int32 {convention: cdecl;} [
+  asLambda: Cond; name: StringView Cref; file: File Cref; astNode: AstNode Cref; signature: CFunctionSignature Cref;} Int32 {convention: cdecl;} [
   processorResult:;
   processor:;
   block:;
   multiParserResult:;
-  failProc: @failProcForProcessor;
-
   copy asLambda:;
   name:;
+  file:;
   astNode:;
   signature:;
+  failProc: @failProcForProcessor;
 
   indexArray: AstNodeType.Code astNode.data.get;
-  positionInfo: astNode makeCompilerPosition;
+  positionInfo: astNode file makeCompilerPosition;
   compileOnce
 
   signature.variadic [
@@ -2058,7 +2064,7 @@ processDynamicLoop: [
   newNodeIndex 0 < [compilable] && [
     nodeCase: asLambda [NodeCaseLambda][NodeCaseExport] if;
     processor.exportDepth 1 + @processor.@exportDepth set
-    name block.id nodeCase @processorResult @processor indexArray multiParserResult positionInfo signature astNodeToCodeNode @newNodeIndex set
+    name block.id nodeCase @processorResult @processor indexArray file multiParserResult positionInfo signature astNodeToCodeNode @newNodeIndex set
     processor.exportDepth 1 - @processor.@exportDepth set
   ] when
 

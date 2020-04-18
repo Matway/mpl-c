@@ -119,10 +119,10 @@ Struct: [{
 CodeNodeInfo: [{
   CODE_NODE_INFO: ();
 
-  moduleId: Int32;
-  line: Int32;
+  file:   File Cref;
+  line:   Int32;
   column: Int32;
-  index: Int32;
+  index:  Int32;
 }];
 
 Variable: [{
@@ -182,9 +182,22 @@ compilable: [processorResult.success copy];
 
 callBuiltin:           [block:; multiParserResult @block @processor @processorResult callBuiltinImpl];
 processFuncPtr:        [multiParserResult @block @processor @processorResult processFuncPtrImpl];
-processPre:            [multiParserResult @block @processor @processorResult processPreImpl];
-processCall:           [multiParserResult @block @processor @processorResult processCallImpl];
-processExportFunction: [block:; multiParserResult @block @processor @processorResult processExportFunctionImpl];
+
+processPre: [
+  preAstNodeIndex: file:;;
+  preAstNodeIndex file multiParserResult @block @processor @processorResult processPreImpl
+];
+
+processCall: [
+  callAstNodeIndex: file: name:;;;
+  callAstNodeIndex file name multiParserResult @block @processor @processorResult processCallImpl
+];
+
+processExportFunction: [
+  signature: astNode: file: name: asLambda: block:;;;;;;
+  signature astNode file name asLambda multiParserResult @block @processor @processorResult processExportFunctionImpl
+];
+
 processImportFunction: [multiParserResult @block @processor @processorResult processImportFunctionImpl];
 compareEntriesRec:     [currentMatchingNode @nestedToCur @curToNested @comparingMessage multiParserResult block @processor @processorResult compareEntriesRecImpl];
 makeVariableType:      [block:; block @processor @processorResult makeVariableTypeImpl];
@@ -202,6 +215,7 @@ getMplType: [
   signature: CFunctionSignature Cref;
   compilerPositionInfo: CompilerPositionInfo Cref;
   multiParserResult: MultiParserResult Cref;
+  file: File Cref;
   indexArray: IndexArray Cref;
   processor: Processor Ref;
   processorResult: ProcessorResult Ref;
@@ -227,6 +241,7 @@ getMplType: [
   positionInfo: CompilerPositionInfo Cref;
   name: StringView Cref;
   nodeCase: NodeCaseCode;
+  file: File Cref;
   indexArray: IndexArray Cref;
 } () {convention: cdecl;} "processCallByIndexArrayImpl" importFunction
 
@@ -251,6 +266,7 @@ getMplType: [
   processor: Processor Ref;
   block: Block Ref;
   multiParserResult: MultiParserResult Cref;
+  file: File Cref;
   preAstNodeIndex: Int32;
 } Cond {convention: cdecl;} "processPreImpl" importFunction
 
@@ -260,6 +276,7 @@ getMplType: [
   block: Block Ref;
   multiParserResult: MultiParserResult Cref;
   name: StringView Cref;
+  file: File Cref;
   callAstNodeIndex: Int32;
 } () {convention: cdecl;} "processCallImpl" importFunction
 
@@ -270,6 +287,7 @@ getMplType: [
   multiParserResult: MultiParserResult Cref;
   asLambda: Cond;
   name: StringView Cref;
+  file: File Cref;
   astNode: AstNode Cref;
   signature: CFunctionSignature Cref;
 } Int32 {convention: cdecl;} "processExportFunctionImpl" importFunction
@@ -930,7 +948,7 @@ getVirtualValue: [
     ]
     VarCode    [
       info: VarCode    var.data.get;
-      ("\"" info.moduleId processor.options.fileNames.at.getStringView getStringImplementation "\"/" info.line ":" info.column) @result.catMany
+      ("\"" info.file.name getStringImplementation "\"/" info.line ":" info.column) @result.catMany
     ]
     VarBuiltin [VarBuiltin var.data.get @result.cat]
     VarRef     [

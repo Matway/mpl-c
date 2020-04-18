@@ -6,8 +6,8 @@
 
 CompilerPositionInfo: [{
   file:   File Cref;
-  column: -1;
   line:   -1;
+  column: -1;
   token:  String;
 }];
 

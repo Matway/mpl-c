@@ -1015,7 +1015,7 @@ staticityOfBinResult: [
     [signature: parseSignature;]
     [
       astNode: VarCode varBody.data.get.index @multiParserResult.@memory.at;
-      index: signature astNode VarString varName.data.get makeStringView FALSE dynamic @block processExportFunction;
+      index: signature astNode VarCode varBody.data.get.file VarString varName.data.get makeStringView FALSE dynamic @block processExportFunction;
     ]
   ) sequence
 ] "mplBuiltinExportFunction" @declareBuiltin ucall
@@ -1250,14 +1250,16 @@ staticityOfBinResult: [
       condition staticityOfVar Weak > [
         value: VarCond varCond.data.get copy;
         value [
-          VarCode varThen.data.get.index "staticIfThen" makeStringView processCall
+          VarCode varThen.data.get.index VarCode varThen.data.get.file "staticIfThen" makeStringView processCall
         ] [
-          VarCode varElse.data.get.index "staticIfElse" makeStringView processCall
+          VarCode varElse.data.get.index VarCode varElse.data.get.file "staticIfElse" makeStringView processCall
         ] if
       ] [
         condition
         VarCode varThen.data.get.index @multiParserResult.@memory.at
+        VarCode varThen.data.get.file
         VarCode varElse.data.get.index @multiParserResult.@memory.at
+        VarCode varElse.data.get.file
         processIf
       ] if
     ] when
@@ -1399,7 +1401,7 @@ staticityOfBinResult: [
       varBody.data.getTag VarCode = ~ ["body must be [CODE]" block compilerError] when
     ] [
       astNode: VarCode varBody.data.get.index @multiParserResult.@memory.at;
-      astNode processLoop
+      astNode VarCode varBody.data.get.file processLoop
     ]
   ) sequence
 ] "mplBuiltinLoop" @declareBuiltin ucall
@@ -1723,7 +1725,7 @@ staticityOfBinResult: [
       block.countOfUCall 1 + @block.@countOfUCall set
       block.countOfUCall 65535 > ["ucall limit exceeded" block compilerError] when
       indexArray: AstNodeType.Code astNode.data.get;
-      indexArray addIndexArrayToProcess
+      indexArray VarCode varCode.data.get.file addIndexArrayToProcess
     ] when
   ] when
 ] "mplBuiltinUcall" @declareBuiltin ucall
@@ -1745,13 +1747,13 @@ staticityOfBinResult: [
     compilable [
       condition staticityOfVar Weak > [
         value: VarCond varCond.data.get copy;
-        codeIndex: value [VarCode varThen.data.get.index copy] [VarCode varElse.data.get.index copy] if;
-        astNode: codeIndex @multiParserResult.@memory.at;
+        code: value [VarCode varThen.data.get] [VarCode varElse.data.get] if;
+        astNode: code.index @multiParserResult.@memory.at;
         [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
         block.countOfUCall 1 + @block.@countOfUCall set
         block.countOfUCall 65535 > ["ucall limit exceeded" block compilerError] when
         indexArray: AstNodeType.Code astNode.data.get;
-        indexArray addIndexArrayToProcess
+        indexArray code.file addIndexArrayToProcess
       ] [
         "condition must be static" block compilerError
       ] if

@@ -48,7 +48,6 @@ AstNode: [{
   token:     String;
   column:    -1 dynamic;
   line:      -1 dynamic;
-  fileNumber: 0 dynamic;
   data: (
     IndexArray           #CodeNode:
     NamedRecursiveBranch #LabelNode:

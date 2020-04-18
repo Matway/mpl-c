@@ -35,11 +35,10 @@ printInfo: [
 
 addToProcess: [
   fileText:;
-  copy fileNumber:;
   fileName:;
   parserResult: ParserResult;
 
-  @parserResult fileText makeStringView fileNumber parseString
+  @parserResult fileText makeStringView parseString
 
   parserResult.success [
     @parserResult optimizeLabels
@@ -322,13 +321,13 @@ processIntegerOption: [
             filename: i options.fileNames @;
 
             i 0 = [
-              filename i definitions addToProcess
+              filename definitions addToProcess
             ] [
               loadStringResult: filename loadString;
               loadStringResult.success [
                 ("Loaded string from " filename) addLog
                 ("HASH=" loadStringResult.data hash) addLog
-                filename i loadStringResult.data addToProcess
+                filename loadStringResult.data addToProcess
               ] [
                 "Unable to load string:" print filename print LF print
                 FALSE @success set
@@ -346,39 +345,20 @@ processIntegerOption: [
             ("filenames:" makeStringView) addLog
             options.fileNames [fileName:; (fileName) addLog] each
 
-            processorResult: ProcessorResult;
-            multiParserResult options 0 @processorResult process
-            processorResult.success [
-              outputFileName @processorResult.@program saveString [
+            result: String;
+            program: String;
+            multiParserResult options 0 @result @program process
+            result.size 0 = [
+              outputFileName program saveString [
                 ("program written to " outputFileName) addLog
               ] [
                 ("failed to save program" LF) printList
                 FALSE @success set
               ] if
-            ] when
-
-            processorResult.success ~ [
-              processorResult.globalErrorInfo.getSize [
-                current: i processorResult.globalErrorInfo @;
-                i 0 > [LF print] when
-                current.position.getSize 0 = [
-                  ("error, "  current.message) printList LF print
-                ] [
-                  current.position.getSize [
-                    nodePosition: i current.position @;
-                    (nodePosition.file.name "(" nodePosition.line  ","  nodePosition.column "): ") printList
-
-                    i 0 = [
-                      ("error, [" nodePosition.token "], " current.message LF) printList
-                    ] [
-                      ("[" nodePosition.token "], called from here" LF) printList
-                    ] if
-                  ] times
-                ] if
-
-                FALSE @success set
-              ] times
-            ] when
+            ] [
+              result print
+              FALSE @success set
+            ] if
           ] when
         ] if
       ] if

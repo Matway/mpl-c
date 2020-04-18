@@ -1,3 +1,8 @@
+TokenRef: [{
+  file: File Cref;
+  token: Int32;
+}];
+
 Block: [{
   id:              Int32;
   root:            FALSE dynamic;
@@ -50,7 +55,7 @@ Block: [{
   fieldCaptureTable: RefToVar Cond HashTable;
 
   candidatesToDie:     RefToVar Array;
-  unprocessedAstNodes: IndexArray;
+  unprocessedAstNodes: TokenRef Array;
   moduleName:          String;
   includedModules:     Int32 Array; #ids in order
   directlyIncludedModulesTable: Int32 Cond HashTable; # dont include twice plz

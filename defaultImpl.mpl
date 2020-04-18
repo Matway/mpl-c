@@ -34,7 +34,7 @@ defaultCall: [
     var: refToVar getVar;
     var.data.getTag  (
       [VarCode =] [
-        VarCode var.data.get.index "call" makeStringView processCall
+        VarCode var.data.get.index VarCode var.data.get.file "call" makeStringView processCall
       ]
       [VarImport =] [
         refToVar processFuncPtr
