@@ -922,7 +922,7 @@ staticityOfBinResult: [
       newBlock: signature name makeStringView TRUE dynamic processImportFunction Block addressToReference;
     ]
     [
-      gnr: newBlock.varNameInfo @block getName;
+      gnr: newBlock.varNameInfo @block File Ref getName;
       cnr: gnr @block captureName;
       refToVar: cnr.refToVar copy;
 

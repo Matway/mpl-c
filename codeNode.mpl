@@ -280,7 +280,7 @@ makeVarString: [
     refToVar getVar.mplNameId refToVar NameCaseLocal addNameInfo
   ] if
 
-  gnr: refToVar getVar.mplNameId @block getName;
+  gnr: refToVar getVar.mplNameId @block File Ref getName;
   cnr: gnr @block captureName;
 
   cnr.refToVar copy
@@ -1100,7 +1100,7 @@ findNameStackObject: [
 ];
 
 getNameAs: [
-  block:;
+  block: file:;;
   copy overload:;
   copy forMatching:;
   matchingCapture:;
@@ -1126,7 +1126,12 @@ getNameAs: [
   };
 
   overload -1 = [curNameInfo.stack.getSize 1 - !overload] when
-  curNameInfo.stack.getSize 0 = [overload curNameInfo.stack.at.getSize 0 =] || [unknownName] [
+  curNameInfo.stack.getSize 0 = [overload curNameInfo.stack.at.getSize 0 =] || [
+    unknownName
+    #file isNil [unknownName] [
+    #  file.block.labelNames [.nameInfo nameInfo =] find
+    #] if
+  ] [
     nameInfoEntry: overload curNameInfo.stack.at.last;
     overload @result.@nameOverload set
     nameInfoEntry.nameCase   @result.@nameCase   set
@@ -1182,17 +1187,17 @@ getNameAs: [
   result
 ];
 
-getName: [block:; Capture FALSE dynamic -1 dynamic @block getNameAs];
-getNameForMatching: [TRUE dynamic -1 dynamic @block getNameAs];
+getName: [block: file:;; Capture FALSE dynamic -1 dynamic @block file getNameAs];
+getNameForMatching: [TRUE dynamic -1 dynamic @block File Ref getNameAs];
 
 getNameWithOverload: [
   copy overload:;
-  Capture FALSE dynamic overload @block getNameAs
+  Capture FALSE dynamic overload @block File Ref getNameAs
 ];
 
 getNameForMatchingWithOverload: [
   overload: block:;;
-  TRUE dynamic overload @block getNameAs
+  TRUE dynamic overload @block File Ref getNameAs
 ];
 
 captureName: [
@@ -1654,7 +1659,7 @@ tryImplicitLambdaCast: [
         ] when
 
         implNode.varNameInfo 0 < ~ [
-          gnr: implNode.varNameInfo @block getName;
+          gnr: implNode.varNameInfo @block File Ref getName;
           compilable ~ [
             [FALSE] "Name of new lambda is not visible!" assert
           ] [
@@ -2079,8 +2084,8 @@ checkFailedName: [
 ];
 
 processNameNode: [
-  data:;
-  gnr: data.nameInfo @block getName;
+  data: file:;;
+  gnr: data.nameInfo @block file getName;
   data.nameInfo gnr checkFailedName
   cnr: gnr @block captureName;
   refToVar: cnr.refToVar copy;
@@ -2092,7 +2097,7 @@ processNameNode: [
 
 processNameReadNode: [
   data:;
-  gnr: data.nameInfo @block getName;
+  gnr: data.nameInfo @block File Ref getName;
   data.nameInfo gnr checkFailedName
   cnr: gnr @block captureName;
   refToVar: cnr.refToVar;
@@ -2114,7 +2119,7 @@ processNameReadNode: [
 processNameWriteNode: [
   data:;
 
-  gnr: data.nameInfo @block getName;
+  gnr: data.nameInfo @block File Ref getName;
   data.nameInfo gnr checkFailedName
   cnr: gnr @block captureName;
   refToVar: cnr.refToVar;
@@ -2467,7 +2472,7 @@ killStruct: [
     AstNodeType.Code            [drop indexOfAstNode file processCodeNode]
     AstNodeType.Label           [@block processLabelNode]
     AstNodeType.List            [file processListNode]
-    AstNodeType.Name            [processNameNode           ]
+    AstNodeType.Name            [file processNameNode]
     AstNodeType.NameMember      [processNameMemberNode     ]
     AstNodeType.NameRead        [processNameReadNode       ]
     AstNodeType.NameReadMember  [processNameReadMemberNode ]
