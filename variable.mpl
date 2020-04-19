@@ -38,7 +38,12 @@ ShadowReasonPointee: [4n8 dynamic];
 
 RefToVar: [{
   virtual REF_TO_VAR: ();
-  varId: -1 dynamic;
+  var: {
+    data: 0nx;
+    CALL: [data SchemaVariable Ref addressToReference];
+    set: [ref: SchemaVariable Ref; !ref ref storageAddress !data];
+  };
+
   hostId: -1 dynamic;
   mutable: TRUE dynamic;
 }];
@@ -49,7 +54,7 @@ RefToVar: [{
 
 hash: ["REF_TO_VAR" has] [
   refToVar:;
-  refToVar.hostId 0n32 cast 67n32 * refToVar.varId 0n32 cast 17n32 * +
+  refToVar.hostId 0n32 cast 67n32 * refToVar.var storageAddress 0n32 cast 17n32 * +
 ] pfunc;
 
 =: ["CODE_NODE_INFO" has] [
@@ -177,6 +182,8 @@ Variable: [{
   INIT: [];
   DIE: [];
 }];
+
+schema SchemaVariable: Variable;
 
 compilable: [processorResult.success copy];
 
@@ -381,20 +388,14 @@ getVar: [
 
   [
     refToVar.hostId 0 < ~ [refToVar.hostId processor.blocks.dataSize <] && [
-      sz: processor.variables.dataSize copy;
-      refToVar.varId 0 < ~ [refToVar.varId sz <] && [
-        TRUE
-      ] [
-        ("invalid var id=" refToVar.varId " of " sz) addLog
-        FALSE
-      ] if
+      TRUE
     ] [
       ("invalid host id=" refToVar.hostId " of " processor.blocks.dataSize) addLog
       FALSE
     ] if
   ] "Wrong refToVar!" assert
 
-  refToVar.varId @processor.@variables.at.get
+  refToVar.var
 ];
 
 getNameById: [processor.nameBuffer.at makeStringView];
@@ -439,7 +440,7 @@ maxStaticity: [
 refsAreEqual: [
   refToVar1:;
   refToVar2:;
-  refToVar1.hostId refToVar2.hostId = [refToVar1.varId refToVar2.varId =] &&
+  refToVar1.hostId refToVar2.hostId = [refToVar1.var refToVar2.var is] &&
 ];
 
 variablesAreSame: [

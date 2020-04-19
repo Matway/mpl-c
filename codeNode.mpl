@@ -193,12 +193,17 @@ createVariableWithVirtual: [
     processor.globalVarId 1 + @processor.@globalVarId set
   ] when
 
-  @v move owner @processor.@variables.pushBack
+  processor.variables.size 0 = [processor.variables.last.size 4096 =] || [
+    processor.variables.size 1 + @processor.@variables.enlarge
+    4096 @processor.@variables.last.setReserve
+  ] when
+
+  @v move @processor.@variables.last.pushBack
   # now forget about v
 
   result: RefToVar;
 
-  processor.variables.dataSize 1 - @result.@varId set
+  @processor.@variables.last.last @result.@var.set
   block.id @result.@hostId set
 
   makeVirtual [

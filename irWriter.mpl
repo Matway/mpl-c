@@ -376,7 +376,7 @@ createRetValue: [
 
 createCallIR: [
   refToRet: argList: conventionName: funcName: block:;;;;;
-  haveRet: refToRet.varId 0 < ~;
+  haveRet: refToRet.var isNil ~;
   retName: 0;
 
   processor.options.callTrace [@block createCallTraceProlog] when

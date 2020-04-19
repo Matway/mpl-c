@@ -203,7 +203,7 @@ Processor: [{
 
   blocks: Block Owner Array;
 
-  variables: Variable Owner Array;
+  variables: Variable Array Array;
 
   matchingNodes:       Natx MatchingNode HashTable;
   recursiveNodesStack: Int32 Array;

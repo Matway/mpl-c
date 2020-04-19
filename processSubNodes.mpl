@@ -67,7 +67,7 @@
                 checkRefs [cacheEntryVar.data.getTag VarRef =] && [cacheEntry staticityOfVar Virtual <] && [
                   r1: VarRef cacheEntryVar.data.get;
                   r2: VarRef stackEntryVar.data.get;
-                  r1.hostId r2.hostId = [r1.varId r2.varId =] && [r1.mutable r2.mutable =] && [r1 staticityOfVar r2 staticityOfVar =] &&
+                  r1.hostId r2.hostId = [r1.var r2.var is] && [r1.mutable r2.mutable =] && [r1 staticityOfVar r2 staticityOfVar =] &&
                 ] [
                   TRUE # go recursive
                 ] if
@@ -603,7 +603,7 @@ fixRef: [
   ] if
 
   fixed.hostId @pointee.@hostId set
-  fixed.varId  @pointee.@varId  set
+  fixed.var @pointee.@var.set
 
   wasVirtual [refToVar Virtual block makeStaticity @refToVar set] [
     makeDynamic [
@@ -1231,7 +1231,7 @@ makeCallInstructionWith: [
     convName: newNode.convention;
     retName: argRet argList convName funcName @block createCallIR;
 
-    argRet.varId 0 < ~ [
+    argRet.var isNil ~ [
       @retName argRet @block createStoreFromRegister
     ] when
   ] when
@@ -1723,7 +1723,7 @@ processIf: [
                     current: i branch compiledOutputs getCompiledOutput;
                     curInput: i branch compiledOutputs getCompiledInput;
 
-                    current.varId curInput.varId = ~ [
+                    current.var curInput.var is ~ [
                       curInput isVirtual ~ ["variable states in branches mismatch" block compilerError] when
                       FALSE curInput getVar.@temporary set
                       curInput current @block createCheckedCopyToNewNoDie
