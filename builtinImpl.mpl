@@ -1783,14 +1783,19 @@ staticityOfBinResult: [
       fr.success [fr.value 0 < ~] && [
         fileBlock: fr.value processor.blocks.at.get;
         nameInfo: name findNameInfo;
+        labelCount: 0;
         fileBlock.labelNames [
           label:;
-          label.nameInfo nameInfo = [
-            label.refToVar getVar.data.getTag VarCode = [
-              label.nameInfo VarCode label.refToVar getVar.data.get makeVarCode @block createNamedVariable
-            ] when
+          name "*" = [label.nameInfo nameInfo =] || [label.refToVar isVirtual [label.refToVar getVar.data.getTag VarImport =] ||] && [
+            label.nameInfo label.refToVar addOverloadForPre
+            newRefToVar: label.nameInfo label.refToVar copy;
+            block.id copy @newRefToVar.!hostId
+            newRefToVar NameCaseLocal addNameInfo
+            labelCount 1 + !labelCount
           ] when
         ] each
+
+        labelCount 0 = [("no names match \"" name "\"") assembleString block compilerError] when
       ] [
         TRUE dynamic @processorResult.@findModuleFail set
         filename toString @processorResult.@errorInfo.@missedModule set

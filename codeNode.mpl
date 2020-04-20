@@ -1125,17 +1125,6 @@ getNameAs: [
     nameCase: NameCaseInvalid;
   };
 
-  file isNil ~ [file.rootBlock isNil ~ [overload -1 = [forMatching ~ [curNameInfo.stack.getSize 0 = [curNameInfo.stack.last.getSize 0 =] ||] &&] &&] &&] && [
-    file.rootBlock.labelNames [
-      label:;
-      label.nameInfo nameInfo = [
-        label.refToVar getVar.data.getTag VarCode = [
-          label.nameInfo VarCode label.refToVar getVar.data.get makeVarCode @block createNamedVariable
-        ] when
-      ] when
-    ] each
-  ] when
-
   overload -1 = [curNameInfo.stack.getSize 1 - !overload] when
   curNameInfo.stack.getSize 0 = [overload curNameInfo.stack.at.getSize 0 =] || [unknownName] [
     nameInfoEntry: overload curNameInfo.stack.at.last;
@@ -2092,6 +2081,29 @@ checkFailedName: [
 
 processNameNode: [
   data: file:;;
+
+  nameInfo: data.nameInfo processor.nameInfos.at;
+  file isNil ~ [file.rootBlock isNil ~ [nameInfo.stack.getSize 0 = [nameInfo.stack.last.getSize 0 =] ||] &&] && [
+    file.rootBlock.labelNames [
+      label:;
+      label.nameInfo data.nameInfo = [
+        label.refToVar isVirtual [
+          label.refToVar getVar.data.getTag VarCode = [
+            label.nameInfo VarCode label.refToVar getVar.data.get makeVarCode NameCaseLocal addNameInfo
+          ] when
+
+          label.refToVar getVar.data.getTag VarStruct = [
+            label.nameInfo VarStruct label.refToVar getVar.data.get.get copy owner VarStruct block createVariable NameCaseLocal addNameInfo
+          ] when
+        ] when
+
+        label.refToVar getVar.data.getTag VarImport = [
+          label.nameInfo VarImport label.refToVar getVar.data.get VarImport block createVariable NameCaseLocal addNameInfo
+        ] when
+      ] when
+    ] each
+  ] when
+
   gnr: data.nameInfo @block file getName;
   data.nameInfo gnr checkFailedName
   cnr: @gnr @block captureName;
