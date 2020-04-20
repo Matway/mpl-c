@@ -5,6 +5,7 @@
 
 "irWriter"    includeModule
 "debugWriter" includeModule
+"Mref"        includeModule
 "processor"   includeModule
 
 Dirty:           [0n8 dynamic];
@@ -38,12 +39,7 @@ ShadowReasonPointee: [4n8 dynamic];
 
 RefToVar: [{
   virtual REF_TO_VAR: ();
-  var: {
-    data: 0nx;
-    CALL: [data SchemaVariable Ref addressToReference];
-    set: [ref: SchemaVariable Ref; !ref ref storageAddress !data];
-  };
-
+  var: [@SchemaVariable] Mref;
   hostId: -1 dynamic;
   mutable: TRUE dynamic;
 }];
@@ -395,7 +391,7 @@ getVar: [
     ] if
   ] "Wrong refToVar!" assert
 
-  refToVar.var
+  @refToVar.var
 ];
 
 getNameById: [processor.nameBuffer.at makeStringView];
@@ -521,13 +517,13 @@ isAutoStruct: [
 
 markAsUnableToDie: [
   refToVar:;
-  var: refToVar getVar;
+  var: @refToVar getVar;
   var.data.getTag VarStruct = [TRUE VarStruct @var.@data.get.get.@unableToDie set] when
 ];
 
 markAsAbleToDie: [
   refToVar:;
-  var: refToVar getVar;
+  var: @refToVar getVar;
   var.data.getTag VarStruct = [FALSE VarStruct @var.@data.get.get.@unableToDie set] when
 ];
 
@@ -780,7 +776,7 @@ getStructStorageSize: [
 makeStructStorageSize: [
   refToVar: block:;;
   result: 0nx;
-  var: refToVar getVar;
+  var: @refToVar getVar;
   struct: VarStruct @var.@data.get.get;
   maxA: 1nx;
   j: 0;
@@ -821,7 +817,7 @@ getStructAlignment: [
 makeStructAlignment: [
   refToVar: block:;;
   result: 0nx;
-  var: refToVar getVar;
+  var: @refToVar getVar;
   struct: VarStruct @var.@data.get.get;
   j: 0;
   [
@@ -855,23 +851,23 @@ isGlobal: [
 
 unglobalize: [
   refToVar: block:;;
-  var: refToVar getVar;
+  var: @refToVar getVar;
   var.global [
     FALSE @var.@global set
     -1 dynamic @var.@globalId set
-    refToVar block makeVariableIRName
+    @refToVar block makeVariableIRName
   ] when
 ];
 
 untemporize: [
   refToVar:;
-  var: refToVar getVar;
+  var: @refToVar getVar;
   FALSE @var.@temporary set
 ];
 
 fullUntemporize: [
   refToVar:;
-  var: refToVar getVar;
+  var: @refToVar getVar;
   FALSE @var.@temporary set
   var.data.getTag VarStruct = [
     FALSE VarStruct @var.@data.get.get.@forgotten set
@@ -1148,7 +1144,7 @@ getPlainConstantIR: [
   processorResult: ProcessorResult Ref;
   processor: Processor Ref;
   block: Block Cref;
-  refToVar: RefToVar Cref;
+  refToVar: RefToVar Ref;
 } () {} [
   processorResult:;
   processor:;
@@ -1167,7 +1163,7 @@ getPlainConstantIR: [
   #struct.structStorageSize
   #mplSchemaId
 
-  var: refToVar getVar;
+  var: @refToVar getVar;
   var.data.getTag VarStruct = [
     branch: VarStruct @var.@data.get.get;
     realFieldCount: 0;
@@ -1204,8 +1200,8 @@ getPlainConstantIR: [
       ] when
     ] times
 
-    refToVar block makeStructAlignment
-    refToVar block makeStructStorageSize
+    @refToVar block makeStructAlignment
+    @refToVar block makeStructStorageSize
   ] when
 
   var makeVariableSchema getVariableSchemaId @var.!mplSchemaId
@@ -1519,7 +1515,7 @@ generateRegisterIRName: [block:; block.id TRUE block generateVariableIRNameWith]
 
 makeVariableIRName: [
   refToVar: block:;;
-  var: refToVar getVar;
+  var: @refToVar getVar;
   refToVar.hostId refToVar isGlobal ~ block generateVariableIRNameWith @var.@irNameId set
 ];
 

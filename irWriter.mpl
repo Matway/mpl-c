@@ -28,7 +28,7 @@ createDerefToRegister: [
 
 createAllocIR: [
   refToVar: block:;;
-  var: refToVar getVar;
+  var: @refToVar getVar;
   block.parent 0 = [
     (refToVar getIrName " = local_unnamed_addr global " refToVar getIrType " zeroinitializer") assembleString @processor.@prolog.pushBack
     processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
@@ -43,7 +43,7 @@ createAllocIR: [
 
 createStaticInitIR: [
   refToVar: block:;;
-  var: refToVar getVar;
+  var: @refToVar getVar;
   [block.parent 0 =] "Can be used only with global vars!" assert
   (refToVar getIrName " = local_unnamed_addr global " refToVar getStaticStructIR) assembleString @processor.@prolog.pushBack
   processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
@@ -53,7 +53,7 @@ createStaticInitIR: [
 createVarImportIR: [
   refToVar:;
 
-  var: refToVar getVar;
+  var: @refToVar getVar;
 
   (refToVar getIrName " = external global " refToVar getIrType) assembleString @processor.@prolog.pushBack
   processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
@@ -64,7 +64,7 @@ createVarImportIR: [
 createVarExportIR: [
   refToVar:;
 
-  var: refToVar getVar;
+  var: @refToVar getVar;
 
   (refToVar getIrName " = dllexport global " refToVar getIrType " zeroinitializer") assembleString @processor.@prolog.pushBack
   processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
@@ -86,7 +86,7 @@ createStoreConstant: [
 createPlainIR: [
   refToVar: block:;;
   [refToVar isPlain] "Var is not plain" assert
-  refToVar refToVar @block createAllocIR @block createStoreConstant
+  refToVar @refToVar @block createAllocIR @block createStoreConstant
   refToVar copy
 ];
 
@@ -121,7 +121,7 @@ createStringIR: [
 
   processor.lastStringId 1 + @processor.@lastStringId set
 
-  var: refToVar getVar;
+  var: @refToVar getVar;
   @stringName findNameInfo @var.@mplNameId set
   ("getelementptr inbounds ({i32, [" string.size " x i8]}, {i32, [" string.size " x i8]}* " stringName ", i32 0, i32 1, i32 0)") assembleString makeStringId @var.@irNameId set
 
@@ -165,7 +165,7 @@ createStaticGEP: [
 createFailWithMessage: [
   message: block:;;
   gnr: processor.failProcNameInfo @block File Ref getName;
-  cnr: gnr @block captureName;
+  cnr: @gnr @block captureName;
   failProcRefToVar: cnr.refToVar copy;
   message toString @block makeVarString @block push
 
@@ -173,7 +173,7 @@ createFailWithMessage: [
     #no overload
     defaultFailProc
   ] [
-    failProcRefToVar derefAndPush
+    @failProcRefToVar derefAndPush
     @block defaultCall
   ] if
 ];
@@ -200,7 +200,7 @@ createDynamicGEP: [
 
 createGEPInsteadOfAlloc: [
   dstRef: index: struct: block:;;;;
-  dstVar: dstRef getVar;
+  dstVar: @dstRef getVar;
 
   # create GEP instruction
   dstRef index struct @block createStaticGEP
@@ -276,14 +276,14 @@ createCheckedCopyToNewWith: [
     srcRef getVar.temporary [
       loadReg: srcRef @block createDerefToRegister;
       loadReg dstRef @block createStoreFromRegister
-      srcRef markAsUnableToDie
+      @srcRef markAsUnableToDie
     ] [
       srcRef isForgotten [
         srcRef.mutable [
           loadReg: srcRef @block createDerefToRegister;
           loadReg dstRef @block createStoreFromRegister
           srcRef callInit
-          srcRef fullUntemporize
+          @srcRef fullUntemporize
         ] [
           "movable variable is not mutable" block compilerError
         ] if
@@ -311,13 +311,13 @@ createCopyToNew: [
     oldRefToVar:;
     "unable to copy virtual autostruct" block compilerError
   ] [
-    newRefToVar @block createAllocIR @block createCheckedCopyToNew
+    @newRefToVar @block createAllocIR @block createCheckedCopyToNew
   ] if
 ];
 
 createCastCopyToNew: [
   srcRef: dstRef: castName: block:;;;;
-  dstRef @block createAllocIR !dstRef
+  @dstRef @block createAllocIR !dstRef
   loadReg: srcRef @block createDerefToRegister;
   castedReg: block generateRegisterIRName;
   ("  " castedReg getNameById " = " @castName " " srcRef getIrType " " loadReg getNameById " to " dstRef getIrType) @block appendInstruction
@@ -326,7 +326,7 @@ createCastCopyToNew: [
 
 createCastCopyPtrToNew: [
   srcRef: dstRef: castName: block:;;;;
-  dstRef @block createAllocIR !dstRef
+  @dstRef @block createAllocIR !dstRef
   castedReg: block generateRegisterIRName;
   ("  " castedReg getNameById " = " @castName " " srcRef getIrType "* " srcRef getIrName " to " dstRef getIrType) @block appendInstruction
   castedReg dstRef @block createStoreFromRegister
@@ -340,14 +340,14 @@ createCopyToExists: [
       processor.options.verboseIR ["set from temporary" @block createComment] when
       dstRef callDie
       srcRef dstRef @block createMemset
-      srcRef markAsUnableToDie
+      @srcRef markAsUnableToDie
     ] [
       srcRef isForgotten [
         processor.options.verboseIR ["set from moved" @block createComment] when
         dstRef callDie
         srcRef dstRef @block createMemset
         srcRef callInit
-        srcRef fullUntemporize
+        @srcRef fullUntemporize
       ] [
         processor.options.verboseIR ["set; call ASSIGN" @block createComment] when
         srcRef isVirtual [
@@ -364,7 +364,7 @@ createCopyToExists: [
 
 createRefOperation: [
   srcRef: dstRef: block:;;;
-  dstRef @block createAllocIR !dstRef
+  @dstRef @block createAllocIR !dstRef
   srcRef getVar.irNameId dstRef @block createStoreFromRegister
 ];
 

@@ -47,7 +47,7 @@ defaultCall: [
             nameInfo: VarString var.data.get findNameInfo;
             getNameResult: nameInfo @block File Ref getName;
             nameInfo getNameResult checkFailedName
-            captureNameResult: getNameResult @block captureName;
+            captureNameResult: @getNameResult @block captureName;
             refToName: captureNameResult.refToVar copy;
           ]
           [
@@ -70,8 +70,8 @@ defaultSet: [
   refToDst: @block pop;
   refToSrc: @block pop;
   compilable [
-    refToSrc makeVarRealCaptured
-    refToDst makeVarRealCaptured
+    @refToSrc makeVarRealCaptured
+    @refToDst makeVarRealCaptured
 
     refToDst refToSrc variablesAreSame [
       refToSrc getVar.data.getTag VarImport = [
@@ -82,7 +82,7 @@ defaultSet: [
         ] [
           refToDst.mutable [
             [refToDst staticityOfVar Weak = ~] "Destination is weak!" assert
-            refToSrc refToDst @block createCopyToExists
+            @refToSrc refToDst @block createCopyToExists
           ] [
             "destination is immutable" block compilerError
           ] if
@@ -92,10 +92,10 @@ defaultSet: [
       refToDst.mutable ~ [
         "destination is immutable" block compilerError
       ] [
-        lambdaCastResult: refToSrc refToDst @block tryImplicitLambdaCast;
+        lambdaCastResult: refToSrc @refToDst @block tryImplicitLambdaCast;
         lambdaCastResult.success [
-          newSrc: lambdaCastResult.refToVar TRUE @block createRef;
-          newSrc refToDst @block createCopyToExists
+          newSrc: @lambdaCastResult.@refToVar TRUE @block createRef;
+          @newSrc refToDst @block createCopyToExists
         ] [
           ("types mismatch, src is " refToSrc block getMplType "," LF "dst is " refToDst block getMplType) assembleString block compilerError
         ] if
@@ -108,7 +108,7 @@ defaultRef: [
   mutable: block:;;
   refToVar: @block pop;
   compilable [
-    refToVar mutable @block createRef @block push
+    @refToVar mutable @block createRef @block push
   ] when
 ];
 

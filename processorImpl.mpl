@@ -342,8 +342,8 @@
   end: RefToVar;
   refToVar @begin @end ShadowReasonCapture @block makeShadows
 
-  VarStruct refToVar getVar .data.get.get .unableToDie
-  VarStruct      end getVar.@data.get.get.@unableToDie set # fake becouse it is fake shadow
+  VarStruct refToVar getVar.data .get.get .unableToDie
+  VarStruct @end     getVar.@data.get.get.@unableToDie set # fake becouse it is fake shadow
 
   end killStruct
   dtorName: ("dtor." refToVar getVar.globalId) assembleString;
