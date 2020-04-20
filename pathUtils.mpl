@@ -77,38 +77,58 @@ simplifyPath: [
   ] call
 ];
 
-stripExtension: [
-  splitResult: splitString;
-  splitResult.success [
-    extensionPosition: splitResult.chars.getSize;
-    splitResult.chars.getSize [
-      i splitResult.chars @ "/" = [i splitResult.chars @ "\\" =] || [
-        splitResult.chars.getSize !extensionPosition
+findExtensionPosition: [
+  view: makeStringView;
+  extensionPosition: view.size copy;
+  i: view.size 1 -; [
+    i -1 = [FALSE] [
+      codeunit: view.data i Natx cast + Nat8 addressToReference;
+      codeunit 46n8 = [ # '.'
+        i copy !extensionPosition FALSE
       ] [
-        i splitResult.chars @ "." = [
-          i copy !extensionPosition
-        ] when
+        codeunit 47n8 = [codeunit 92n8 =] || [FALSE] [ # '/' or '\\'
+          i 1 - !i TRUE
+        ] if
       ] if
-    ] times
+    ] if
+  ] loop
 
-    0 extensionPosition splitResult.chars makeSubRange assembleString
-  ] [
-    String
-  ] if
+  extensionPosition
 ];
 
-stripPath: [
-  splitResult: splitString;
-  splitResult.success [
-    filePosition: 0;
-    splitResult.chars.getSize [
-      i splitResult.chars @ "/" = [i splitResult.chars @ "\\" =] || [
-        i 1 + !filePosition
-      ] when
-    ] times
+findFilenamePosition: [
+  view: makeStringView;
+  filenamePosition: 0;
+  i: view.size 1 -; [
+    i -1 = [FALSE] [
+      codeunit: view.data i Natx cast + Nat8 addressToReference;
+      codeunit 47n8 = [codeunit 92n8 =] || [ # '/' or '\\'
+        i 1 + !filenamePosition FALSE
+      ] [
+        i 1 - !i TRUE
+      ] if
+    ] if
+  ] loop
 
-    filePosition splitResult.chars.getSize splitResult.chars makeSubRange assembleString
-  ] [
-    String
-  ] if
+  filenamePosition
+];
+
+extractExtension: [
+  view: makeStringView;
+  view view findExtensionPosition 1 + view.size min unhead
+];
+
+extractFilename: [
+  view: makeStringView;
+  view view findFilenamePosition unhead
+];
+
+stripExtension: [
+  view: makeStringView;
+  view view findExtensionPosition head
+];
+
+stripFilename: [
+  view: makeStringView;
+  view view findFilenamePosition 1 - 0 max head
 ];

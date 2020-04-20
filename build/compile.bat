@@ -22,7 +22,6 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG=FALSE -D DEBUG_MEM
  ../processSubNodes.mpl^
  ../schemas.mpl^
  ../staticCall.mpl^
- ../stringTools.mpl^
  ../Var.mpl^
  ../variable.mpl^
  ../sl/ascii.mpl^

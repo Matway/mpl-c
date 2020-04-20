@@ -3,6 +3,7 @@
 "codeNode" includeModule
 "defaultImpl" includeModule
 "processSubNodes" includeModule
+"pathUtils" useModule
 "Var" useModule
 
 declareBuiltin: [
@@ -1761,6 +1762,43 @@ staticityOfBinResult: [
     ] when
   ] when
 ] "mplBuiltinUif" @declareBuiltin ucall
+
+[
+  (
+    [compilable]
+    [refToName: @block pop;]
+    [refToName staticityOfVar Weak < ["path must be static string" block compilerError] when]
+    [
+      varName: refToName getVar;
+      varName.data.getTag VarString = ~ ["path must be static string" block compilerError] when
+    ] [
+      string: VarString varName.data.get;
+      filename: string stripExtension;
+      filename "" = ["invalid filename" block compilerError] when
+    ] [
+      name: string extractExtension;
+      name "" = ["invalid identifier" block compilerError] when
+    ] [
+      fr: filename processor.modules.find;
+      fr.success [fr.value 0 < ~] && [
+        fileBlock: fr.value processor.blocks.at.get;
+        nameInfo: name findNameInfo;
+        fileBlock.labelNames [
+          label:;
+          label.nameInfo nameInfo = [
+            label.refToVar getVar.data.getTag VarCode = [
+              label.nameInfo VarCode label.refToVar getVar.data.get makeVarCode @block createNamedVariable
+            ] when
+          ] when
+        ] each
+      ] [
+        TRUE dynamic @processorResult.@findModuleFail set
+        filename toString @processorResult.@errorInfo.@missedModule set
+        ("module not found: " filename) assembleString block compilerError
+      ] if
+    ]
+  ) sequence
+] "mplBuiltinUse" @declareBuiltin ucall
 
 [TRUE dynamic @block defaultUseOrIncludeModule] "mplBuiltinUseModule" @declareBuiltin ucall
 

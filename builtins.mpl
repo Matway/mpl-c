@@ -84,6 +84,7 @@ builtins: (
   {name: "textSplit"               ; impl: @mplBuiltinTextSplit               ;}
   {name: "ucall"                   ; impl: @mplBuiltinUcall                   ;}
   {name: "uif"                     ; impl: @mplBuiltinUif                     ;}
+  {name: "use"                     ; impl: @mplBuiltinUse                     ;}
   {name: "useModule"               ; impl: @mplBuiltinUseModule               ;}
   {name: "virtual"                 ; impl: @mplBuiltinVirtual                 ;}
   {name: "xor"                     ; impl: @mplBuiltinXor                     ;}

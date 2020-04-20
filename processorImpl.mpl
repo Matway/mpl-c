@@ -129,7 +129,7 @@
 
         topNodeIndex @processor.@blocks.at.get @file.@rootBlock.set
 
-        moduleName stripExtension stripPath !moduleName
+        moduleName stripExtension extractFilename toString !moduleName
         moduleName topNodeIndex @processor.@modules.insert
         moduleName copy topNodeIndex @processor.@blocks.at.get.!moduleName
 
@@ -265,7 +265,7 @@
             block.program [
               curInstruction:;
               curInstruction.enabled [
-                block.programTemplate.getStringView curInstruction.codeOffset curInstruction.codeSize slice @processorResult.@program.cat
+                block.programTemplate.getStringView curInstruction.codeOffset curInstruction.codeSize view @processorResult.@program.cat
                 LF @processorResult.@program.cat
               ] [
               ] if

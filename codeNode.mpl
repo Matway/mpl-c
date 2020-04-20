@@ -3,7 +3,6 @@
 "staticCall" includeModule
 "variable" includeModule
 "processor" includeModule
-"stringTools" includeModule
 "Var" useModule
 
 addOverload: [
@@ -1126,13 +1125,19 @@ getNameAs: [
     nameCase: NameCaseInvalid;
   };
 
+  file isNil ~ [file.rootBlock isNil ~ [overload -1 = [forMatching ~ [curNameInfo.stack.getSize 0 = [curNameInfo.stack.last.getSize 0 =] ||] &&] &&] &&] && [
+    file.rootBlock.labelNames [
+      label:;
+      label.nameInfo nameInfo = [
+        label.refToVar getVar.data.getTag VarCode = [
+          label.nameInfo VarCode label.refToVar getVar.data.get makeVarCode @block createNamedVariable
+        ] when
+      ] when
+    ] each
+  ] when
+
   overload -1 = [curNameInfo.stack.getSize 1 - !overload] when
-  curNameInfo.stack.getSize 0 = [overload curNameInfo.stack.at.getSize 0 =] || [
-    unknownName
-    #file isNil [unknownName] [
-    #  file.block.labelNames [.nameInfo nameInfo =] find
-    #] if
-  ] [
+  curNameInfo.stack.getSize 0 = [overload curNameInfo.stack.at.getSize 0 =] || [unknownName] [
     nameInfoEntry: overload curNameInfo.stack.at.last;
     overload @result.@nameOverload set
     nameInfoEntry.nameCase   @result.@nameCase   set
@@ -2231,7 +2236,7 @@ addDebugLocationForLastInstruction: [
 
       offset instruction.codeSize + @block.@programTemplate.@chars.enlarge # Make sure the string can be copied without relocation
       offset @block.@programTemplate.@chars.shrink
-      block.programTemplate.getStringView instruction.codeOffset instruction.codeSize slice @block.@programTemplate.catStringNZ
+      block.programTemplate.getStringView instruction.codeOffset instruction.codeSize view @block.@programTemplate.catStringNZ
 
       @block.@programTemplate.makeZ
 
