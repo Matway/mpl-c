@@ -1,5 +1,7 @@
 "control" includeModule
+
 "builtinImpl" useModule
+"Var" useModule
 
 builtins: (
   {name: "!"                       ; impl: @mplBuiltinExclamation             ;}

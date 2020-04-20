@@ -1,5 +1,7 @@
 "control" useModule
+
 "codeNode" includeModule
+"Var" useModule
 
 {processorResult: ProcessorResult Ref; cachedGlobalErrorInfoSize: Int32;} () {} [
   cachedGlobalErrorInfoSize: processorResult:;;

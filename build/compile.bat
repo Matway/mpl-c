@@ -2,7 +2,7 @@
 
 FOR /F "tokens=*" %%v IN ('git log --date^=format:%%y%%m%%d --format^=%%cd -1') DO SET SOURCE_VERSION=%%v
 
-mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG_MEMORY=TRUE -debug_memory -ndebug -o mplc.ll^
+mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG=FALSE -D DEBUG_MEMORY=TRUE -call_trace 0 -debug_memory -ndebug -o mplc.ll^
  ../astNodeType.mpl^
  ../astOptimizers.mpl^
  ../Block.mpl^
@@ -14,6 +14,7 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG_MEMORY=TRUE -debug
  ../File.mpl^
  ../irWriter.mpl^
  ../main.mpl^
+ ../Mref.mpl^
  ../parser.mpl^
  ../pathUtils.mpl^
  ../processor.mpl^
@@ -22,6 +23,7 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG_MEMORY=TRUE -debug
  ../schemas.mpl^
  ../staticCall.mpl^
  ../stringTools.mpl^
+ ../Var.mpl^
  ../variable.mpl^
  ../sl/ascii.mpl^
  ../sl/Array.mpl^

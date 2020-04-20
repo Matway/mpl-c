@@ -4,13 +4,6 @@
 "File" includeModule
 "schemas" includeModule
 
-CompilerPositionInfo: [{
-  file:   File Cref;
-  line:   -1;
-  column: -1;
-  token:  String;
-}];
-
 StringArray: [String Array];
 
 DEFAULT_STATIC_LOOP_LENGTH_LIMIT: [64];
@@ -53,90 +46,15 @@ ProcessorResult: [{
   globalErrorInfo: ProcessorErrorInfo Array;
 }];
 
-makeInstruction: [{
-  enabled: TRUE dynamic;
-  alloca: FALSE dynamic;
-  fakePointer: FALSE dynamic;
-  codeOffset: copy;
-  codeSize: copy;
-}];
-
-Instruction: [0 0 makeInstruction];
-
-ArgVirtual:       [0n8 dynamic];
-ArgGlobal:        [1n8 dynamic];
-ArgRef:           [2n8 dynamic];
-ArgCopy:          [3n8 dynamic];
-ArgReturn:        [4n8 dynamic];
-ArgRefDeref:      [5n8 dynamic];
-ArgReturnDeref:   [6n8 dynamic];
-
-Argument: [{
-  refToVar: RefToVar;
-  argCase: ArgRef;
-}];
-
-Capture: [{
-  refToVar: RefToVar;
-  argCase: ArgRef;
-  captureCase: NameCaseInvalid;
-  nameInfo: -1 dynamic;
-  nameOverload: -1 dynamic;
-  cntNameOverload: -1 dynamic;
-  cntNameOverloadParent: -1 dynamic;
-}];
-
-FieldCapture: [{
-  object: RefToVar;
-  capturingPoint: -1 dynamic; #index of code node where it was
-  captureCase: NameCaseInvalid;
-  nameInfo: -1 dynamic;
-  nameOverload: -1 dynamic;
-  cntNameOverload: -1 dynamic;
-  cntNameOverloadParent: -1 dynamic;
-}];
-
 IndexInfo: [{
   overload: -1 dynamic;
   index: -1 dynamic;
 }];
 
-NodeCaseEmpty:                 [0n8 dynamic];
-NodeCaseCode:                  [1n8 dynamic];
-NodeCaseDtor:                  [2n8 dynamic];
-NodeCaseDeclaration:           [3n8 dynamic];
-NodeCaseCodeRefDeclaration:    [4n8 dynamic];
-NodeCaseExport:                [5n8 dynamic];
-NodeCaseLambda:                [6n8 dynamic];
-NodeCaseList:                  [7n8 dynamic];
-NodeCaseObject:                [8n8 dynamic];
-
-NodeStateNew:         [0n8 dynamic];
-NodeStateNoOutput:    [1n8 dynamic]; #after calling NodeStateNew recursion with unknown output, node is uncompilable
-NodeStateHasOutput:   [2n8 dynamic]; #after merging "if" with output and without output, node can be compiled
-NodeStateCompiled:    [3n8 dynamic]; #node finished
-NodeStateFailed:      [4n8 dynamic]; #node finished
-
-NodeRecursionStateNo:       [0n8 dynamic];
-NodeRecursionStateFail:     [1n8 dynamic];
-NodeRecursionStateNew:      [2n8 dynamic];
-NodeRecursionStateOld:      [3n8 dynamic];
-NodeRecursionStateFailDone: [4n8 dynamic];
-
 NameWithOverload: [{
   virtual NAME_WITH_OVERLOAD: ();
   nameInfo: -1 dynamic;
   nameOverload: -1 dynamic;
-}];
-
-NameWithOverloadAndRefToVar: [{
-  virtual NAME_WITH_OVERLOAD_AND_REF_TO_VAR: ();
-  nameInfo: -1 dynamic;
-  nameOverload: -1 dynamic;
-  cntNameOverload: -1 dynamic;
-  cntNameOverloadParent: -1 dynamic;
-  refToVar: RefToVar;
-  startPoint: -1 dynamic;
 }];
 
 =: ["NAME_WITH_OVERLOAD" has] [
@@ -152,27 +70,6 @@ hash: ["NAME_WITH_OVERLOAD" has] [
 RefToVarTable: [
   RefToVar RefToVar HashTable
 ];
-
-MatchingInfo: [{
-  inputs: Argument Array;
-  preInputs: RefToVar Array;
-  captures: Capture Array;
-  fieldCaptures: FieldCapture Array;
-  hasStackUnderflow: FALSE dynamic;
-  unfoundedNames: Int32 Cond HashTable; #nameInfos
-}];
-
-CFunctionSignature: [{
-  inputs: RefToVar Array;
-  outputs: RefToVar Array;
-  variadic: FALSE dynamic;
-  convention: String;
-}];
-
-UsedModuleInfo: [{
-  used: FALSE dynamic;
-  position: CompilerPositionInfo;
-}];
 
 MatchingNode: [{
   unknownMplType: IndexArray;

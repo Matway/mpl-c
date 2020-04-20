@@ -1,6 +1,121 @@
+"HashTable" useModule
+"String" useModule
+
+"Mref" useModule
+"Var" useModule
+
+ArgVirtual:     [0n8 dynamic];
+ArgGlobal:      [1n8 dynamic];
+ArgRef:         [2n8 dynamic];
+ArgCopy:        [3n8 dynamic];
+ArgReturn:      [4n8 dynamic];
+ArgRefDeref:    [5n8 dynamic];
+ArgReturnDeref: [6n8 dynamic];
+
+NameCaseInvalid:    [0n8 dynamic];
+NameCaseBuiltin:    [1n8 dynamic];
+NameCaseLocal:      [2n8 dynamic];
+NameCaseFromModule: [3n8 dynamic];
+NameCaseCapture:    [4n8 dynamic];
+
+NodeCaseEmpty:              [0n8 dynamic];
+NodeCaseCode:               [1n8 dynamic];
+NodeCaseDtor:               [2n8 dynamic];
+NodeCaseDeclaration:        [3n8 dynamic];
+NodeCaseCodeRefDeclaration: [4n8 dynamic];
+NodeCaseExport:             [5n8 dynamic];
+NodeCaseLambda:             [6n8 dynamic];
+NodeCaseList:               [7n8 dynamic];
+NodeCaseObject:             [8n8 dynamic];
+
+NodeRecursionStateNo:       [0n8 dynamic];
+NodeRecursionStateFail:     [1n8 dynamic];
+NodeRecursionStateNew:      [2n8 dynamic];
+NodeRecursionStateOld:      [3n8 dynamic];
+NodeRecursionStateFailDone: [4n8 dynamic];
+
+NodeStateNew:       [0n8 dynamic];
+NodeStateNoOutput:  [1n8 dynamic]; #after calling NodeStateNew recursion with unknown output, node is uncompilable
+NodeStateHasOutput: [2n8 dynamic]; #after merging "if" with output and without output, node can be compiled
+NodeStateCompiled:  [3n8 dynamic]; #node finished
+NodeStateFailed:    [4n8 dynamic]; #node finished
+
+Argument: [{
+  refToVar: RefToVar;
+  argCase: ArgRef;
+}];
+
+Capture: [{
+  refToVar: RefToVar;
+  argCase: ArgRef;
+  captureCase: NameCaseInvalid;
+  nameInfo: -1 dynamic;
+  nameOverload: -1 dynamic;
+  cntNameOverload: -1 dynamic;
+  cntNameOverloadParent: -1 dynamic;
+}];
+
+CFunctionSignature: [{
+  inputs: RefToVar Array;
+  outputs: RefToVar Array;
+  variadic: FALSE dynamic;
+  convention: String;
+}];
+
+CompilerPositionInfo: [{
+  file:   [FileSchema] Mref;
+  line:   -1;
+  column: -1;
+  token:  String;
+}];
+
+FieldCapture: [{
+  object: RefToVar;
+  capturingPoint: -1 dynamic; #index of code node where it was
+  captureCase: NameCaseInvalid;
+  nameInfo: -1 dynamic;
+  nameOverload: -1 dynamic;
+  cntNameOverload: -1 dynamic;
+  cntNameOverloadParent: -1 dynamic;
+}];
+
+makeInstruction: [{
+  enabled: TRUE dynamic;
+  alloca: FALSE dynamic;
+  fakePointer: FALSE dynamic;
+  codeOffset: copy;
+  codeSize: copy;
+}];
+
+Instruction: [0 0 makeInstruction];
+
+MatchingInfo: [{
+  inputs: Argument Array;
+  preInputs: RefToVar Array;
+  captures: Capture Array;
+  fieldCaptures: FieldCapture Array;
+  hasStackUnderflow: FALSE dynamic;
+  unfoundedNames: Int32 Cond HashTable; #nameInfos
+}];
+
+NameWithOverloadAndRefToVar: [{
+  virtual NAME_WITH_OVERLOAD_AND_REF_TO_VAR: ();
+  nameInfo: -1 dynamic;
+  nameOverload: -1 dynamic;
+  cntNameOverload: -1 dynamic;
+  cntNameOverloadParent: -1 dynamic;
+  refToVar: RefToVar;
+  startPoint: -1 dynamic;
+}];
+
 TokenRef: [{
-  file: File Cref;
+  file: [FileSchema] Mref;
   token: Int32;
+}];
+
+UsedModuleInfo: [{
+  used: FALSE dynamic;
+  position: CompilerPositionInfo;
 }];
 
 Block: [{
@@ -78,3 +193,5 @@ Block: [{
   INIT: [];
   DIE: [];
 }];
+
+schema BlockSchema: Block;

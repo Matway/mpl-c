@@ -4,6 +4,7 @@
 "variable" includeModule
 "processor" includeModule
 "stringTools" includeModule
+"Var" useModule
 
 addOverload: [
   copy nameInfo:;
@@ -991,7 +992,7 @@ processCodeNode: [
   astNode: indexOfAstNode multiParserResult.memory.at; #we have info from parser anyway
   codeInfo: CodeNodeInfo;
 
-  file                @codeInfo.!file
+  file                @codeInfo.@file.set
   astNode.line   copy @codeInfo.!line
   astNode.column copy @codeInfo.!column
   indexOfAstNode copy @codeInfo.!index
@@ -3000,7 +3001,7 @@ makeCompilerPosition: [
   astNode: file:;;
   result: CompilerPositionInfo;
 
-  file                @result.!file
+  file                @result.@file.set
   astNode.line   copy @result.!line
   astNode.column copy @result.!column
   astNode.token  copy @result.!token
@@ -3652,7 +3653,10 @@ addIndexArrayToProcess: [
     i 0 > [
       i 1 - @i set
       indexOfAstNode: i indexArray.at;
-      {file: file; token: indexOfAstNode copy;} @block.@unprocessedAstNodes.pushBack
+      block.unprocessedAstNodes.size 1 + @block.@unprocessedAstNodes.enlarge
+      unprocessedAstNode: @block.@unprocessedAstNodes.last;
+      file @unprocessedAstNode.@file.set
+      indexOfAstNode copy @unprocessedAstNode.!token
       TRUE
     ] &&
   ] loop

@@ -3,6 +3,7 @@
 "codeNode" includeModule
 "defaultImpl" includeModule
 "processSubNodes" includeModule
+"Var" useModule
 
 declareBuiltin: [
   virtual declareBuiltinName:;

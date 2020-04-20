@@ -1,14 +1,15 @@
 "astNodeType" useModule
-"variable" useModule
-"codeNode" useModule
-"pathUtils" useModule
-"staticCall" useModule
-"processSubNodes" useModule
 "builtinImpl" useModule
 "builtins" useModule
+"codeNode" useModule
 "debugWriter" useModule
-"processor" useModule
 "irWriter" useModule
+"pathUtils" useModule
+"processor" useModule
+"processSubNodes" useModule
+"staticCall" useModule
+"Var" useModule
+"variable" useModule
 
 {
   program: String Ref;
@@ -98,11 +99,11 @@
 
     runFile: [
       n:;
-      file: n processor.files.at.get;
+      file: n @processor.@files.at.get;
       file !lastFile
       fileNode: n multiParserResult.nodes.at;
       rootPositionInfo: CompilerPositionInfo;
-      file @rootPositionInfo.!file
+      file @rootPositionInfo.@file.set
       1    @rootPositionInfo.!line
       1    @rootPositionInfo.!column
 
@@ -125,6 +126,8 @@
       ] [
         moduleName: file.name;
         ("compiled file " moduleName) addLog
+
+        topNodeIndex @processor.@blocks.at.get @file.@rootBlock.set
 
         moduleName stripExtension stripPath !moduleName
         moduleName topNodeIndex @processor.@modules.insert
