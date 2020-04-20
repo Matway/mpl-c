@@ -2093,6 +2093,7 @@ processNameNode: [
           ] when
 
           label.refToVar getVar.data.getTag VarStruct = [
+            label.nameInfo label.refToVar addOverloadForPre
             label.nameInfo VarStruct label.refToVar getVar.data.get.get copy owner VarStruct block createVariable NameCaseLocal addNameInfo
           ] when
         ] when
