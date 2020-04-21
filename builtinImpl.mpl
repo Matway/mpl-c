@@ -1777,8 +1777,6 @@ staticityOfBinResult: [
       filename "" = ["invalid filename" block compilerError] when
     ] [
       name: string extractExtension;
-      name "" = ["invalid identifier" block compilerError] when
-    ] [
       fr: filename processor.modules.find;
       fr.success [fr.value 0 < ~] && [
         fileBlock: fr.value processor.blocks.at.get;
@@ -1786,11 +1784,9 @@ staticityOfBinResult: [
         labelCount: 0;
         fileBlock.labelNames [
           label:;
-          name "*" = [label.nameInfo nameInfo =] || [label.refToVar isVirtual [label.refToVar getVar.data.getTag VarImport =] ||] && [
+          name "" = [label.nameInfo nameInfo =] || [label.refToVar isVirtual [label.refToVar getVar.data.getTag VarImport =] ||] && [
             label.nameInfo label.refToVar addOverloadForPre
-            newRefToVar: label.nameInfo label.refToVar copy;
-            block.id copy @newRefToVar.!hostId
-            newRefToVar NameCaseLocal addNameInfo
+            label.nameInfo label.refToVar NameCaseFromModule addNameInfo
             labelCount 1 + !labelCount
           ] when
         ] each

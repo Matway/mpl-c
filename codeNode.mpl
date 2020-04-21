@@ -2084,18 +2084,26 @@ processNameNode: [
 
   nameInfo: data.nameInfo processor.nameInfos.at;
   file isNil ~ [file.rootBlock isNil ~ [nameInfo.stack.getSize 0 = [nameInfo.stack.last.getSize 0 =] ||] &&] && [
+    file.rootBlock.fromModuleNames [
+      label:;
+      label.nameInfo data.nameInfo = [
+        label.refToVar isVirtual [
+          label.nameInfo label.refToVar addOverloadForPre
+          label.nameInfo label.refToVar NameCaseFromModule addNameInfo
+        ] when
+
+        label.refToVar getVar.data.getTag VarImport = [
+          label.nameInfo VarImport label.refToVar getVar.data.get VarImport block createVariable NameCaseLocal addNameInfo
+        ] when
+      ] when
+    ] each
+
     file.rootBlock.labelNames [
       label:;
       label.nameInfo data.nameInfo = [
         label.refToVar isVirtual [
-          label.refToVar getVar.data.getTag VarCode = [
-            label.nameInfo VarCode label.refToVar getVar.data.get makeVarCode NameCaseLocal addNameInfo
-          ] when
-
-          label.refToVar getVar.data.getTag VarStruct = [
-            label.nameInfo label.refToVar addOverloadForPre
-            label.nameInfo VarStruct label.refToVar getVar.data.get.get copy owner VarStruct block createVariable NameCaseLocal addNameInfo
-          ] when
+          label.nameInfo label.refToVar addOverloadForPre
+          label.nameInfo label.refToVar NameCaseFromModule addNameInfo
         ] when
 
         label.refToVar getVar.data.getTag VarImport = [
@@ -2672,7 +2680,6 @@ unregCodeNodeNames: [
   @block.@fromModuleNames unregisterNamesIn
   @block.@fieldCaptureNames unregisterNamesIn
 
-  @block.@fromModuleNames.release
   @block.@fieldCaptureNames.release
 
   @block.@capturedVars [

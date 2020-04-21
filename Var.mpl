@@ -1,6 +1,8 @@
+"Array" useModule
 "Owner" useModule
 "String" useModule
 "Variant" useModule
+"control" useModule
 
 "Mref" useModule
 

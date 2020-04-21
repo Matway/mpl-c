@@ -1,7 +1,8 @@
 "HashTable" includeModule
-"String"    includeModule
 "Variant"   includeModule
 "Owner"     includeModule
+"control" useModule
+"String" useModule
 
 "irWriter"    includeModule
 "debugWriter" includeModule

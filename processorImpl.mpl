@@ -1,3 +1,5 @@
+"control" useModule
+
 "astNodeType" useModule
 "builtinImpl" useModule
 "builtins" useModule

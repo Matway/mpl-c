@@ -1,5 +1,7 @@
+"Array" useModule
 "HashTable" useModule
 "String" useModule
+"control" useModule
 
 "Mref" useModule
 "Var" useModule

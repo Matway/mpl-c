@@ -1,3 +1,5 @@
+"memory" includeModule
+
 "control" includeModule
 "astNodeType" includeModule
 "Block" includeModule
