@@ -1,7 +1,38 @@
-"control" includeModule
-"ascii" includeModule
-"String" includeModule
-"astNodeType" includeModule
+"Array.Array" use
+"Array.makeSubRange" use
+"String.String" use
+"String.StringView" use
+"String.assembleString" use
+"String.codepointToString" use
+"String.makeStringView" use
+"String.makeStringView2" use
+"String.splitString" use
+"String.toString" use
+"ascii.ascii" use
+"control.&&" use
+"control.=" use
+"control.Cref" use
+"control.Cond" use
+"control.Int32" use
+"control.Nat32" use
+"control.Nat8" use
+"control.Ref" use
+"control.between?" use
+"control.case" use
+"control.each" use
+"control.enum" use
+"control.sequence" use
+"control.times" use
+"control.when" use
+"control.within?" use
+"control.||" use
+"conventions.cdecl" use
+
+"astNodeType.AstNode" use
+"astNodeType.AstNodeType" use
+"astNodeType.IndexArray" use
+"astNodeType.ParserResult" use
+"astNodeType.PositionInfo" use
 
 codepointHex?: [
   codepoint:;
@@ -320,7 +351,7 @@ makeParserConstants: [{
     256 @result.resize
 
     result.getSize [
-      i left.at i right.at or i @result @ set
+      i left.at i right.at or i @result.at set
     ] times
 
     result
@@ -363,7 +394,7 @@ undo: [
     prevPosition @currentPosition set
     currentPosition.offset 0 < ~ [
       currentPosition.offset splittedString.chars.at @currentSymbol set
-      currentSymbol stringMemory Nat8 addressToReference Nat32 cast @currentCode set
+      currentSymbol.data Nat8 addressToReference Nat32 cast @currentCode set
     ] [
       StringView @currentSymbol set
       ascii.null @currentCode set
@@ -385,7 +416,7 @@ iterate: [
 
     currentPosition.offset splittedString.chars.getSize < [
       currentPosition.offset splittedString.chars.at @currentSymbol set
-      currentSymbol stringMemory Nat8 addressToReference Nat32 cast @currentCode set
+      currentSymbol.data Nat8 addressToReference Nat32 cast @currentCode set
     ] [
       StringView @currentSymbol set
       ascii.null @currentCode set

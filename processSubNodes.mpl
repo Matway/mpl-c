@@ -1,7 +1,80 @@
-"control" useModule
+"Array.Array" use
+"HashTable.hash" use
+"String.String" use
+"String.StringView" use
+"String.addLog" use
+"String.asView" use
+"String.assembleString" use
+"String.hash" use
+"String.makeStringView" use
+"String.print" use
+"String.toString" use
+"control" use
+"conventions.cdecl" use
 
-"codeNode" includeModule
-"Var" useModule
+"Block.ArgCopy" use
+"Block.ArgGlobal" use
+"Block.ArgRef" use
+"Block.ArgRefDeref" use
+"Block.ArgReturn" use
+"Block.ArgReturnDeref" use
+"Block.ArgVirtual" use
+"Block.Block" use
+"Block.BlockSchema" use
+"Block.Capture" use
+"Block.CFunctionSignature" use
+"Block.CompilerPositionInfo" use
+"Block.NameCaseLocal" use
+"Block.NodeCaseCode" use
+"Block.NodeCaseCodeRefDeclaration" use
+"Block.NodeCaseDeclaration" use
+"Block.NodeCaseExport" use
+"Block.NodeCaseLambda" use
+"Block.NodeCaseList" use
+"Block.NodeCaseObject" use
+"Block.NodeStateCompiled" use
+"Block.NodeStateFailed" use
+"Block.NodeStateHasOutput" use
+"Block.NodeStateNew" use
+"Block.NodeStateNoOutput" use
+"Block.NodeRecursionStateFail" use
+"Block.NodeRecursionStateNew" use
+"Block.NodeRecursionStateNo" use
+"Block.NodeRecursionStateOld" use
+"File.File" use
+"Var.Dynamic" use
+"Var.RefToVar" use
+"Var.Static" use
+"Var.VarBuiltin" use
+"Var.VarCond" use
+"Var.VarImport" use
+"Var.VarRef" use
+"Var.VarString" use
+"Var.VarStruct" use
+"Var.Virtual" use
+"Var.Weak" use
+"astNodeType.AstNode" use
+"astNodeType.AstNodeType" use
+"astNodeType.IndexArray" use
+"astNodeType.MultiParserResult" use
+"codeNode" use
+"debugWriter.addDebugReserve" use
+"defaultImpl.failProcForProcessor" use
+"defaultImpl.findNameInfo" use
+"defaultImpl.getStackDepth" use
+"defaultImpl.getStackEntry" use
+"irWriter.IRArgument" use
+"irWriter.createAllocIR" use
+"irWriter.createCallIR" use
+"irWriter.createDerefToRegister" use
+"irWriter.createStaticInitIR" use
+"irWriter.createStoreFromRegister" use
+"processor.Processor" use
+"processor.ProcessorErrorInfo" use
+"processor.ProcessorResult" use
+"processor.RefToVarTable" use
+"staticCall.staticCall" use
+"variable" use
 
 {processorResult: ProcessorResult Ref; cachedGlobalErrorInfoSize: Int32;} () {} [
   cachedGlobalErrorInfoSize: processorResult:;;
@@ -69,7 +142,7 @@
                 checkRefs [cacheEntryVar.data.getTag VarRef =] && [cacheEntry staticityOfVar Virtual <] && [
                   r1: VarRef cacheEntryVar.data.get;
                   r2: VarRef stackEntryVar.data.get;
-                  r1.hostId r2.hostId = [r1.var r2.var is] && [r1.mutable r2.mutable =] && [r1 staticityOfVar r2 staticityOfVar =] &&
+                  r1.var r2.var is [r1.mutable r2.mutable =] && [r1 staticityOfVar r2 staticityOfVar =] &&
                 ] [
                   TRUE # go recursive
                 ] if
@@ -94,7 +167,7 @@
 
 {processor: Processor Cref; currentMatchingNode: Block Cref; refToVar: RefToVar Cref;} Cond {} [
   refToVar: currentMatchingNode: processor:;;;
-  refToVar.hostId processor.blocks.at.get currentMatchingNode is ~ [refToVar noMatterToCopy ~] &&
+  refToVar getVar.host currentMatchingNode is ~ [refToVar noMatterToCopy ~] &&
 ] "variableIsUnused" exportFunction
 
 {processor: Processor Cref; nestedToCur: RefToVarTable Ref; curToNested: RefToVarTable Ref; currentMatchingNode: Block Cref; comparingMessage: String Ref; cacheEntry: RefToVar Cref; stackEntry: RefToVar Cref;} Cond {} [
@@ -305,7 +378,7 @@ tryMatchNode: [
     currentMatchingNode.refToVar @matchingCapture.@refToVar set
     NameCaseLocal                @matchingCapture.@captureCase set
     gnr: currentMatchingNode.varNameInfo matchingCapture getNameForMatching;
-    gnr.refToVar.hostId 0 <
+    gnr.refToVar.assigned ~
   ] &&;
 
   canMatch invisibleName ~ and goodReality and [
@@ -317,7 +390,7 @@ tryMatchNode: [
         @msg                        @s.cat
         @idadd call
         " mismatch" makeStringView  @s.cat
-        stackEntry.hostId 0 < [
+        stackEntry.assigned ~ [
           ", stack entry not found" @s.cat
         ] [
           stackEntry cacheEntry variablesAreSame ~ [
@@ -366,7 +439,7 @@ tryMatchNode: [
           stackEntry: i currentMatchingNode.matchingInfo.inputs.dataSize + block getStackEntry copy;
           cacheEntry: i currentMatchingNode.matchingInfo.preInputs.at;
 
-          cacheEntry.hostId 0 < ~ [stackEntry cacheEntry compareEntriesRec] && [
+          cacheEntry.assigned [stackEntry cacheEntry compareEntriesRec] && [
             i 1 + @i set
           ] [
             currentMatchingNode.nodeCompileOnce [
@@ -387,11 +460,11 @@ tryMatchNode: [
         i currentMatchingNode.matchingInfo.captures.dataSize < [
           currentCapture: i currentMatchingNode.matchingInfo.captures.at;
           cacheEntry: currentCapture.refToVar;
-          overload: currentCapture.refToVar.hostId 0 < [-1] [currentCapture @block getOverload] if;
+          overload: currentCapture.refToVar.assigned ~ [-1] [currentCapture @block getOverload] if;
           stackEntry: currentCapture.nameInfo currentCapture overload @block getNameForMatchingWithOverload.refToVar;
 
-          stackEntry.hostId 0 < cacheEntry.hostId 0 < and [
-            stackEntry.hostId 0 < ~ cacheEntry.hostId 0 < ~ and [stackEntry cacheEntry compareEntriesRec] &&
+          stackEntry.assigned ~ cacheEntry.assigned ~ and [
+            stackEntry.assigned cacheEntry.assigned and [stackEntry cacheEntry compareEntriesRec] &&
           ] || [
             i 1 + @i set
           ] [
@@ -584,7 +657,7 @@ fixRef: [
   makeDynamic: FALSE dynamic;
   pointee: VarRef @var.@data.get;
   pointeeVar: pointee getVar;
-  pointeeIsLocal: pointeeVar.capturedHead.hostId currentChangesNodeIndex =;
+  pointeeIsLocal: pointeeVar.capturedHead getVar.host currentChangesNode is;
 
   fixed: pointee copy;
   pointeeIsLocal ~ [ # has shadow - captured from top
@@ -604,8 +677,7 @@ fixRef: [
     TRUE dynamic @makeDynamic set
   ] if
 
-  fixed.hostId @pointee.@hostId set
-  @fixed.var @pointee.@var.set
+  @fixed.var @pointee.setVar
 
   wasVirtual [@refToVar Virtual block makeStaticity @refToVar set] [
     makeDynamic [
@@ -626,7 +698,7 @@ applyOnePair: [
       FALSE
     ] if
   ] "Applying var has wrong type!" assert
-  [cacheEntry noMatterToCopy [cacheEntry.hostId currentChangesNodeIndex =] ||] "Applying unused var!" assert
+  [cacheEntry noMatterToCopy [cacheEntry getVar.host currentChangesNode is] ||] "Applying unused var!" assert
 
   cacheEntryVar: cacheEntry  getVar;
   stackEntryVar: @stackEntry getVar;
@@ -654,7 +726,7 @@ applyOnePair: [
         ] if
       ] "Applying var has wrong value!" assert
       cacheEntry noMatterToCopy ~ [
-        [cacheEntryVar.shadowEnd.hostId 0 < ~] "Cache entry has no shadow end!" assert
+        [cacheEntryVar.shadowEnd.assigned] "Cache entry has no shadow end!" assert
         stackEntry cacheEntryVar.shadowEnd @appliedVars.@curToNested.insert
         cacheEntry stackEntry @appliedVars.@nestedToCur.insert
       ] when
@@ -668,7 +740,7 @@ applyOnePair: [
         ] when
       ] [
         cacheEntry noMatterToCopy ~ [
-          [cacheEntryVar.shadowEnd.hostId 0 < ~] "Cache entry has no shadow end!" assert
+          [cacheEntryVar.shadowEnd.assigned] "Cache entry has no shadow end!" assert
           stackEntry cacheEntryVar.shadowEnd @appliedVars.@curToNested.insert
           cacheEntry stackEntry @appliedVars.@nestedToCur.insert
         ] when
@@ -712,7 +784,7 @@ applyEntriesRec: [
 
       cacheEntryVar.data.getTag VarRef = [currentFromCache staticityOfVar Virtual <] && [currentFromCache staticityOfVar Dynamic >] && [
         clearPointee: VarRef cacheEntryVar.data.get copy; # if captured, host index will be currentChangesNodeIndex
-        clearPointee.hostId currentChangesNodeIndex = [ # we captured it
+        clearPointee getVar.host currentChangesNode is [ # we captured it
           clearPointee @unfinishedCache.pushBack
           @currentFromStack getPointeeNoDerefIR @unfinishedStack.pushBack
         ] when
@@ -724,7 +796,7 @@ applyEntriesRec: [
           [
             j cacheStruct.fields.dataSize < [
               cacheFieldRef: j currentFromCache block getFieldForMatching;
-              cacheFieldRef.hostId currentChangesNodeIndex = [ # we captured it
+              cacheFieldRef getVar.host currentChangesNode is [ # we captured it
                 cacheFieldRef @unfinishedCache.pushBack
                 j @currentFromStack @block getField @unfinishedStack.pushBack
               ] when
@@ -757,7 +829,7 @@ fixOutputRefsRec: [
       stackEntryVar.data.getTag VarRef = [
         currentFromStack isSchema ~ [
           stackPointee: VarRef @stackEntryVar.@data.get;
-          stackPointee.hostId currentChangesNodeIndex = [
+          stackPointee getVar.host currentChangesNode is [
             fixed: @currentFromStack fixRef getPointeeNoDerefIR;
             fixed @unfinishedStack.pushBack
           ] when
@@ -826,9 +898,9 @@ usePreCapturesWith: [
       i currentChangesNode.matchingInfo.captures.dataSize < [
         currentCapture: i currentChangesNode.matchingInfo.captures.at;
         cacheEntry: currentCapture.refToVar;
-        overload: currentCapture.refToVar.hostId 0 < [-1] [currentCapture @block getOverload] if;
+        overload: currentCapture.refToVar.assigned ~ [-1] [currentCapture @block getOverload] if;
         gnr: currentCapture.nameInfo currentCapture overload @block getNameForMatchingWithOverload;
-        gnr.refToVar.hostId 0 < [
+        gnr.refToVar.assigned ~ [
           # it is failed capture
         ] [
           stackEntry: @gnr @block captureName.refToVar;
@@ -847,7 +919,7 @@ usePreCapturesWith: [
 
               cacheEntryVar.data.getTag VarRef = [currentFromCache staticityOfVar Virtual <] && [currentFromCache staticityOfVar Dynamic >] && [
                 clearPointee: VarRef cacheEntryVar.data.get copy; # if captured, host index will be currentChangesNodeIndex
-                clearPointee.hostId currentChangesNodeIndex = [ # we captured it
+                clearPointee getVar.host currentChangesNode is [ # we captured it
                   clearPointee                          @unfinishedCache.pushBack
                   @currentFromStack getPointeeNoDerefIR @unfinishedStack.pushBack
                 ] when
@@ -859,7 +931,7 @@ usePreCapturesWith: [
                   [
                     j cacheStruct.fields.dataSize < [
                       cacheFieldRef: j currentFromCache block getFieldForMatching;
-                      cacheFieldRef.hostId currentChangesNodeIndex = [ # we captured it
+                      cacheFieldRef getVar.host currentChangesNode is [ # we captured it
                         cacheFieldRef @unfinishedCache.pushBack
                         j @currentFromStack @block getField @unfinishedStack.pushBack
                       ] when
@@ -955,7 +1027,7 @@ applyNodeChanges: [
       currentCapture: i currentChangesNode.matchingInfo.captures.at;
 
       cacheEntry: currentCapture.refToVar;
-      cacheEntry.hostId 0 < [
+      cacheEntry.assigned ~ [
         currentCapture.nameInfo addFailedCapture
       ] [
         overload: currentCapture @block getOverload;
@@ -1208,7 +1280,7 @@ makeCallInstructionWith: [
     i newNode.matchingInfo.captures.dataSize < [
       currentCapture: i newNode.matchingInfo.captures.at;
 
-      currentCapture.refToVar.hostId 0 < ~ [
+      currentCapture.refToVar.assigned [
         currentCapture.argCase ArgRef = [
           overload: currentCapture block getOverload;
           refToVar: currentCapture.nameInfo currentCapture overload @block getNameForMatchingWithOverload @block captureName.refToVar;
@@ -1316,7 +1388,7 @@ processCallByNode: [
       realCapturesCount: 0;
       newNode.matchingInfo.captures [
         capture:;
-        capture.refToVar.hostId 0 < ~ [
+        capture.refToVar.assigned [
           capture.refToVar isVirtual ~ [realCapturesCount 1 + @realCapturesCount set] when
         ] when
       ] each
@@ -1668,7 +1740,7 @@ processIf: [
               isOutputImplicitDerefThen isOutputImplicitDerefElse = [
                 outputThen outputElse variablesAreSame [
                   newOutput: outputThen copy;
-                  outputElse.mutable outputThen.mutable and @newOutput.@mutable set
+                  outputElse.mutable outputThen.mutable and @newOutput.setMutable
                   outputThen outputElse newOutput mergeValuesRec
                   i newNodeThen.outputs.dataSize + longestOutputSize < ~ [newOutput @outputsThen.pushBack] when
                   i newNodeElse.outputs.dataSize + longestOutputSize < ~ [newOutput @outputsElse.pushBack] when
@@ -2054,7 +2126,7 @@ processDynamicLoop: [
     r getVar.data.getTag VarRef = [
       @r getPointeeNoDerefIR @block push
     ] [
-      FALSE @r.@mutable set
+      FALSE @r.setMutable
       r @block push
     ] if
   ] times
@@ -2095,7 +2167,7 @@ processDynamicLoop: [
 
       signature.outputs.getSize [
         currentInNode: i newNode.outputs.at.refToVar;
-        currentInSignature: i signature.outputs @;
+        currentInSignature: i signature.outputs.at;
 
         currentInNode currentInSignature variablesAreSame ~ [
           ("export function output mismatch, expected " currentInSignature block getMplType ";" LF
@@ -2142,7 +2214,7 @@ processDynamicLoop: [
   signature.inputs.getSize [
     r: signature.inputs.getSize 1 - i - signature.inputs.at @block copyVarFromChild;
     @r block unglobalize
-    FALSE @r.@mutable set
+    FALSE @r.setMutable
     r @block push
   ] times
 
@@ -2182,7 +2254,7 @@ callImportWith: [
               input: stackEntry copy;
               @input makeVarRealCaptured
               nodeEntry: i @declarationNode.@matchingInfo.@inputs.at.@refToVar;
-              nodeMutable: nodeEntry.mutable copy;
+              nodeMutable: nodeEntry.mutable;
               i declarationNode.csignature.inputs.at getVar.data.getTag VarRef = [
                 TRUE @stackEntry getVar.@capturedAsMutable set
               ] when

@@ -1,4 +1,17 @@
-"control" includeModule
+"String.addLog" use
+"String.print" use
+"String.printList" use
+"String.toString" use
+"control.&&" use
+"control.assert" use
+"control.cond" use
+"control.exit" use
+"control.print" use
+"control.printf" use
+"control.when" use
+
+"Var.RefToVar" use
+"irWriter.createCopyToExists" use
 
 failProcForProcessor: [
   failProc: [print " - fail while handling fail" print];
@@ -119,7 +132,7 @@ defaultMakeConstWith: [
     check [refToVar getVar.temporary copy] && [
       "temporary objects cannot be set const" block compilerError
     ] [
-      FALSE @refToVar.@mutable set
+      FALSE @refToVar.setMutable
       refToVar @block push
     ] if
   ] when

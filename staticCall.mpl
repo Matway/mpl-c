@@ -1,4 +1,4 @@
-"control" useModule
+"control.assert" use
 
 staticCall: [
   staticCallBody:;

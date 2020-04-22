@@ -1,17 +1,5 @@
-"control" useModule
-
-"astNodeType" useModule
-"builtinImpl" useModule
-"builtins" useModule
-"codeNode" useModule
-"debugWriter" useModule
-"irWriter" useModule
-"pathUtils" useModule
-"processor" useModule
 "processSubNodes" useModule
-"staticCall" useModule
-"Var" useModule
-"variable" useModule
+"builtins" useModule
 
 {
   program: String Ref;

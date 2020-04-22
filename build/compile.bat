@@ -15,6 +15,7 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG=FALSE -D DEBUG_MEM
  ../irWriter.mpl^
  ../main.mpl^
  ../Mref.mpl^
+ ../NameManager.mpl^
  ../parser.mpl^
  ../pathUtils.mpl^
  ../processor.mpl^
@@ -24,8 +25,8 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG=FALSE -D DEBUG_MEM
  ../staticCall.mpl^
  ../Var.mpl^
  ../variable.mpl^
- ../sl/ascii.mpl^
  ../sl/Array.mpl^
+ ../sl/ascii.mpl^
  ../sl/control.mpl^
  ../sl/conventions.mpl^
  ../sl/file.mpl^

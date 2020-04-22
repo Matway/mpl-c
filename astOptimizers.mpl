@@ -1,4 +1,5 @@
-"control" useModule
+"Array.Array" use
+"Array.makeArrayRange" use
 
 optimizeLabelsInCurrentNode: [
   node:;

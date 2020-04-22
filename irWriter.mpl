@@ -1,5 +1,15 @@
-"control" includeModule
-"defaultImpl" includeModule
+"String.String" use
+"String.toString" use
+"control.&&" use
+"control.Nat8" use
+"control.Natx" use
+"control.assert" use
+"control.isNil" use
+
+"Block.Instruction" use
+"Block.makeInstruction" use
+"File.File" use
+"Var.VarBuiltin" use
 
 appendInstruction: [
   list: block:;;
@@ -21,7 +31,7 @@ createDerefTo: [
 
 createDerefToRegister: [
   block:;
-  derefName: block generateRegisterIRName;
+  derefName: @block generateRegisterIRName;
   derefName @block createDerefTo
   derefName
 ];
@@ -288,11 +298,11 @@ createCheckedCopyToNewWith: [
           "movable variable is not mutable" block compilerError
         ] if
       ] [
-        prevMut: dstRef.mutable copy;
-        TRUE @dstRef.@mutable set
+        prevMut: dstRef.mutable;
+        TRUE @dstRef.setMutable
         dstRef callInit
         srcRef dstRef callAssign
-        prevMut @dstRef.@mutable set
+        prevMut @dstRef.setMutable
       ] if
     ] if
     doDie [dstRef @block.@candidatesToDie.pushBack] when
@@ -509,7 +519,7 @@ sortInstructions: [
   fakePointers:       Instruction Array;
   noallocs:           Instruction Array;
   block.program.getSize [
-    program: i @block.@program @;
+    program: i @block.@program.at;
     i 0 = [program.alloca copy] || [
       program.fakePointer [
         @program move @fakePointersAllocs.pushBack

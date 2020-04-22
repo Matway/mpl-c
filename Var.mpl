@@ -1,10 +1,16 @@
-"Array" useModule
-"Owner" useModule
-"String" useModule
-"Variant" useModule
-"control" useModule
+"Array.Array" use
+"String.String" use
+"Owner.Owner" use
+"Variant.Variant" use
+"control.Cond" use
+"control.Nat8" use
+"control.Int32" use
+"control.Int64" use
+"control.Nat64" use
+"control.Natx" use
+"control.Real64" use
 
-"Mref" useModule
+"Mref.Mref" use
 
 Dirty:   [0n8 dynamic];
 Dynamic: [1n8 dynamic];
@@ -42,12 +48,12 @@ VarStruct:  [19 static];
 VarEnd:     [20 static];
 
 CodeNodeInfo: [{
-  CODE_NODE_INFO: ();
-
-  file:   [FileSchema] Mref;
+  file:   ["File.FileSchema" use FileSchema] Mref;
   line:   Int32;
   column: Int32;
   index:  Int32;
+
+  equal: [other:; index other.index =];
 }];
 
 Field: [{
@@ -72,15 +78,39 @@ Struct: [{
 }]; #IDs of pointee vars
 
 RefToVar: [{
-  virtual REF_TO_VAR: ();
-  var: [@VarSchema] Mref;
-  hostId: -1 dynamic;
-  mutable: TRUE dynamic;
+  data: Natx;
+
+  var: [
+    data 1nx ~ and @VarSchema addressToReference
+  ];
+
+  mutable: [
+    data 1nx and 0nx = ~
+  ];
+
+  setVar: [
+    newVar:;
+    newVar VarSchema Ref same ~ ["variable expected" raiseStaticError] when
+    newVar isConst ~ ["mutable variable expected" raiseStaticError] when
+    address: newVar storageAddress;
+    [address 1nx and 0nx =] "Address is not aligned!" assert
+    address data 1nx and or !data
+  ];
+
+  setMutable: [
+    copy newMutable:;
+    newMutable [1nx] [0nx] if data 1nx ~ and or !data
+  ];
+
+  assigned: [var isNil ~];
+  equal: [other:; var other.var is];
+  hash: [address: var storageAddress; address 32n32 rshift address + Nat32 cast];
 }];
 
 Variable: [{
   VARIABLE: ();
 
+  host:                              [@BlockSchema] Mref;
   mplNameId:                         -1 dynamic;
   irNameId:                          -1 dynamic;
   mplSchemaId:                       -1 dynamic;

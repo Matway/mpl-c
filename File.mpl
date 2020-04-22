@@ -1,7 +1,8 @@
-"String" useModule
-"control" useModule
+"String.String" use
+"control.Int32" use
 
-"Mref" useModule
+"Block.BlockSchema" use
+"Mref.Mref" use
 
 File: [{
   name: String;

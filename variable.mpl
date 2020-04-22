@@ -1,15 +1,60 @@
-"HashTable" includeModule
-"Variant"   includeModule
-"Owner"     includeModule
-"control" useModule
-"String" useModule
+"Array.Array" use
+"HashTable.hash" use
+"String.String" use
+"String.StringView" use
+"String.addLog" use
+"String.asView" use
+"String.assembleString" use
+"String.hash" use
+"String.makeStringView" use
+"String.print" use
+"String.splitString" use
+"String.toString" use
+"control" use
+"conventions.cdecl" use
 
-"irWriter"    includeModule
-"debugWriter" includeModule
-"Mref"        includeModule
-"processor"   includeModule
-"File"        useModule
-"Var"         useModule
+"Block.Block" use
+"Block.CFunctionSignature" use
+"Block.CompilerPositionInfo" use
+"Block.NameCaseInvalid" use
+"Block.NodeCaseCode" use
+"File.File" use
+"Var.RefToVar" use
+"Var.Schema" use
+"Var.VarBuiltin" use
+"Var.VarCode" use
+"Var.VarCond" use
+"Var.VarImport" use
+"Var.VarInt8" use
+"Var.VarInt16" use
+"Var.VarInt32" use
+"Var.VarInt64" use
+"Var.VarIntX" use
+"Var.VarNat8" use
+"Var.VarNat16" use
+"Var.VarNat32" use
+"Var.VarNat64" use
+"Var.VarNatX" use
+"Var.VarReal32" use
+"Var.VarReal64" use
+"Var.VarRef" use
+"Var.VarString" use
+"Var.VarStruct" use
+"Var.Variable" use
+"Var.Virtual" use
+"astNodeType.AstNode" use
+"astNodeType.IndexArray" use
+"astNodeType.MultiParserResult" use
+"debugWriter.getTypeDebugDeclaration" use
+"defaultImpl.failProcForProcessor" use
+"irWriter.createTypeDeclaration" use
+"irWriter.getStringImplementation" use
+"processor.Processor" use
+"processor.ProcessorResult" use
+"processor.RefToVarTable" use
+"schemas.getVariableSchemaId" use
+"schemas.hash" use
+"schemas.makeVariableSchema" use
 
 NameCaseSelfMember:            [ 5n8 dynamic];
 NameCaseClosureMember:         [ 6n8 dynamic];
@@ -20,20 +65,6 @@ NameCaseClosureObjectCapture:  [10n8 dynamic];
 
 MemberCaseToObjectCase:        [2n8 +];
 MemberCaseToObjectCaptureCase: [4n8 +];
-
-=: ["REF_TO_VAR" has] [
-  refsAreEqual
-] pfunc;
-
-hash: ["REF_TO_VAR" has] [
-  refToVar:;
-  refToVar.hostId 0n32 cast 67n32 * refToVar.var storageAddress 0n32 cast 17n32 * +
-] pfunc;
-
-=: ["CODE_NODE_INFO" has] [
-  l:r:;;
-  l.index r.index =
-] pfunc;
 
 NameInfoEntry: [{
   refToVar: RefToVar;
@@ -251,22 +282,13 @@ getMplType: [
 # these functions require capture "processor"
 getVar: [
   refToVar:;
-
-  [
-    refToVar.hostId 0 < ~ [refToVar.hostId processor.blocks.dataSize <] && [
-      TRUE
-    ] [
-      ("invalid host id=" refToVar.hostId " of " processor.blocks.dataSize) addLog
-      FALSE
-    ] if
-  ] "Wrong refToVar!" assert
-
+  [refToVar.assigned] "Wrong refToVar!" assert
   @refToVar.var
 ];
 
 getNameById: [processor.nameBuffer.at makeStringView];
 getMplName:  [getVar.mplNameId processor.nameInfos.at.name makeStringView];
-getMplSchema: [getVar.mplSchemaId @processor.@schemaBuffer @];
+getMplSchema: [getVar.mplSchemaId @processor.@schemaBuffer.at];
 
 getDbgType:  [getMplSchema.dbgTypeId getNameById];
 getIrName:   [getVar.irNameId getNameById];
@@ -306,7 +328,7 @@ maxStaticity: [
 refsAreEqual: [
   refToVar1:;
   refToVar2:;
-  refToVar1.hostId refToVar2.hostId = [refToVar1.var refToVar2.var is] &&
+  refToVar1.var refToVar2.var is
 ];
 
 variablesAreSame: [
@@ -796,8 +818,8 @@ getVirtualValue: [
 
       struct.fields.getSize [
         i 0 > ["," @result.cat] when
-        i struct.fields @ .refToVar isVirtual ~ [
-          i struct.fields @ .refToVar getVirtualValue @result.cat
+        i struct.fields.at .refToVar isVirtual ~ [
+          i struct.fields.at .refToVar getVirtualValue @result.cat
         ] when
       ] times
       "}" @result.cat
@@ -816,7 +838,7 @@ getVirtualValue: [
         pointeeVar.data.getTag (
           VarString  [
             string: VarString pointeeVar.data.get.getStringView;
-            (string textSize "_" string getStringImplementation) @result.catMany
+            (string.size "_" string getStringImplementation) @result.catMany
           ]
           VarImport  [VarImport  pointeeVar.data.get @result.cat]
           [[FALSE] "Wrong type for virtual reference!" assert]
@@ -1369,24 +1391,23 @@ getStaticStructIR: [
 
 # require captures "processor" and "codeNode"
 generateVariableIRNameWith: [
-  hostId: temporaryRegister: block:;;;
+  hostOfVariable: temporaryRegister: block:;;;
   temporaryRegister ~ [block.parent 0 =] && [
     ("@global." processor.globalVarCount) assembleString makeStringId
     processor.globalVarCount 1 + @processor.@globalVarCount set
   ] [
-    hostNode: hostId @processor.@blocks.at.get;
-    ("%var." hostNode.lastVarName) assembleString makeStringId
-    hostNode.lastVarName 1 + @hostNode.@lastVarName set
+    ("%var." hostOfVariable.lastVarName) assembleString makeStringId
+    hostOfVariable.lastVarName 1 + @hostOfVariable.@lastVarName set
   ] if
 ];
 
 generateVariableIRName: [FALSE generateVariableIRNameWith];
-generateRegisterIRName: [block:; block.id TRUE block generateVariableIRNameWith];
+generateRegisterIRName: [block:; @block TRUE block generateVariableIRNameWith];
 
 makeVariableIRName: [
   refToVar: block:;;
   var: @refToVar getVar;
-  refToVar.hostId refToVar isGlobal ~ block generateVariableIRNameWith @var.@irNameId set
+  @var.host refToVar isGlobal ~ block generateVariableIRNameWith @var.@irNameId set
 ];
 
 findFieldWithOverloadShift: [

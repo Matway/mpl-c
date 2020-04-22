@@ -1,7 +1,11 @@
-"Array"     includeModule
-"HashTable" includeModule
-"String"    includeModule
-"Variant"   includeModule
+"Array.Array" use
+"HashTable.HashTable" use
+"String.String" use
+"Variant.Variant" use
+"control.Int32" use
+"control.Int64" use
+"control.Nat64" use
+"control.Real64" use
 
 AstNodeType: {
   Code:            [ 0];

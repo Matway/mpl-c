@@ -1,4 +1,8 @@
-"control" useModule
+"control.&&" use
+"control.Natx" use
+"control.head" use
+"control.min" use
+"control.unhead" use
 
 extractClearPath: [
   splittedPath: splitString;
@@ -8,7 +12,7 @@ extractClearPath: [
       lastPosition: -1;
 
       splittedPath.chars.getSize [
-        i splittedPath.chars @ "\\" = i splittedPath.chars @ "/" = or [
+        i splittedPath.chars.at "\\" = i splittedPath.chars.at "/" = or [
           i @lastPosition set
         ] when
       ] times
@@ -41,7 +45,7 @@ simplifyPath: [
           lastFragment: @fragments.last;
 
           char "\\" = char "/" = or [  # slash
-            lastFragment textSize 0nx > [
+            lastFragment.size 0 > [
 
               lastFragment isCurrent [ @fragments.popBack ] when
 
@@ -62,9 +66,9 @@ simplifyPath: [
         fragments.getSize [
           i 1 + fragments.dataSize < [
             i 0 > ["/" @resultPath.cat] when
-            i fragments @ @resultPath.cat
+            i fragments.at @resultPath.cat
           ] [
-            i fragments @ @resultFileName.cat
+            i fragments.at @resultFileName.cat
           ] if
         ] times
       ] when

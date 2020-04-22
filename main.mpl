@@ -6,6 +6,11 @@
 "processor" useModule
 "processorImpl" useModule
 "file" useModule
+"memory" useModule
+
+"Array.makeSubRange" use
+"ascii.ascii" use
+"memory.debugMemory" use
 
 printInfo: [
   "USAGE: mplc.exe [options] <inputs>" print LF print
@@ -175,7 +180,7 @@ processIntegerOption: [
           addr: 0nx storageSize i 0ix cast 0nx cast * argv + Natx addressToReference;
           option: addr makeStringViewByAddress;
 
-          option textSize 0nx = [
+          option.size 0 = [
             "Error, argument cannot be empty" print LF print
             FALSE @success set
           ] [

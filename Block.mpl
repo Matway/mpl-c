@@ -1,10 +1,12 @@
-"Array" useModule
-"HashTable" useModule
-"String" useModule
-"control" useModule
+"Array.Array" use
+"HashTable.HashTable" use
+"String.String" use
+"control.Cond" use
+"control.Int32" use
 
-"Mref" useModule
-"Var" useModule
+"Mref.Mref" use
+"Var.RefToVar" use
+"Var.Struct" use
 
 ArgVirtual:     [0n8 dynamic];
 ArgGlobal:      [1n8 dynamic];
@@ -65,7 +67,7 @@ CFunctionSignature: [{
 }];
 
 CompilerPositionInfo: [{
-  file:   [FileSchema] Mref;
+  file:   ["File.FileSchema" use FileSchema] Mref;
   line:   -1;
   column: -1;
   token:  String;
@@ -111,7 +113,7 @@ NameWithOverloadAndRefToVar: [{
 }];
 
 TokenRef: [{
-  file: [FileSchema] Mref;
+  file: ["File.FileSchema" use FileSchema] Mref;
   token: Int32;
 }];
 

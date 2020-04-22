@@ -1,5 +1,12 @@
-"control" includeModule
-"String" includeModule
+"Array.Array" use
+"String.hash" use
+"Variant.Variant" use
+"control.Cond" use
+"control.Int32" use
+"control.Nat32" use
+"control.bind" use
+"control.enum" use
+"control.pfunc" use
 
 makeVariableSchema: [
   var:;
@@ -13,12 +20,12 @@ makeVariableSchema: [
       signature: node.csignature;
       signature.inputs.getSize @functionSchema.@inputSchemaIds.resize
       signature.inputs.getSize [
-        i signature.inputs @ getVar.mplSchemaId copy i @functionSchema.@inputSchemaIds !
+        i signature.inputs.at getVar.mplSchemaId copy i @functionSchema.@inputSchemaIds.at set
       ] times
 
       signature.outputs.getSize @functionSchema.@outputSchemaIds.resize
       signature.outputs.getSize [
-        i signature.outputs @ getVar.mplSchemaId copy i @functionSchema.@outputSchemaIds !
+        i signature.outputs.at getVar.mplSchemaId copy i @functionSchema.@outputSchemaIds.at set
       ] times
 
       signature.variadic copy @functionSchema.!variadic
@@ -29,7 +36,7 @@ makeVariableSchema: [
       refSchema: VariableSchemaTags.REF_SCHEMA @varSchema.@data.get;
       ref: VarRef var.data.get;
       pointee: ref getVar;
-      ref.mutable copy @refSchema.!mutable
+      ref.mutable @refSchema.!mutable
       pointee.mplSchemaId copy @refSchema.!pointeeSchemaId
     ]
     VarStruct [
@@ -38,11 +45,11 @@ makeVariableSchema: [
       struct: VarStruct var.data.get.get;
       struct.fields.getSize @structSchema.@data.resize
       struct.fields.getSize [
-        field: i struct.fields @;
+        field: i struct.fields.at;
         fieldSchema: FieldSchema;
         field.refToVar getVar.mplSchemaId @fieldSchema.@valueSchemaId set
         field.nameInfo copy @fieldSchema.!nameInfo
-        @fieldSchema i @structSchema.@data @ set
+        @fieldSchema i @structSchema.@data.at set
       ] times
     ]
     [
@@ -89,6 +96,26 @@ VariableSchema: [{
     StructSchema
     VirtualValueSchema
   ) Variant;
+
+  equal: [
+    other:;
+    data.getTag other.data.getTag = ~ [FALSE] [
+      data.getTag (
+        VariableSchemaTags fieldCount [
+          i copy i copy [
+            tag:;
+            tag data.get
+            tag other.data.get =
+          ] bind
+        ] times
+
+        [
+          [FALSE] "invalid tag in VariableSchema" assert
+          FALSE
+        ]
+      ) case
+    ] if
+  ];
 }];
 
 VariableSchemaTags: (
@@ -102,37 +129,58 @@ VariableSchemaTags: (
 BuiltinTypeSchema: [{
   BUILTIN_TYPE_SCHEMA: ();
   tag: Int32;
+
+  equal: [other:; tag other.tag =];
 }];
 
 RefSchema: [{
   REF_SCHEMA: ();
   pointeeSchemaId: Int32;
   mutable: Cond;
+
+  equal: [other:; pointeeSchemaId other.pointeeSchemaId = [mutable other.mutable =] &&];
 }];
 
 FieldSchema: [{
   FIELD_SCHEMA: ();
   nameInfo: Int32;
   valueSchemaId: Int32;
+
+  equal: [other:; nameInfo other.nameInfo = [valueSchemaId other.valueSchemaId =] &&];
 }];
 
 FunctionSchema: [{
   FUNCTION_SCHEMA: ();
-  inputSchemaIds: Int32 Array;
+  inputSchemaIds:  Int32 Array;
   outputSchemaIds: Int32 Array;
   convention: String;
   variadic: Cond;
+
+  equal: [
+    other:;
+    convention other.convention = [
+      variadic other.variadic = [
+        inputSchemaIds other.inputSchemaIds = [
+          outputSchemaIds other.outputSchemaIds =
+        ] &&
+      ] &&
+    ] &&
+  ];
 }];
 
 VirtualValueSchema: [{
   VIRTUAL_VALUE_SCHEMA: ();
   schemaId: Int32;
   vitrualValue: String;
+
+  equal: [other:; schemaId other.schemaId = [vitrualValue other.vitrualValue =] &&];
 }];
 
 StructSchema: [{
   STRUCT_SCHEMA: ();
   data: FieldSchema Array;
+
+  equal: [other:; data other.data =];
 }];
 
 twoWith: [
@@ -141,99 +189,6 @@ twoWith: [
   @x predicate
   @y predicate and
 ];
-
-=: [["VARIABLE_SCHEMA" has] twoWith] [
-  x: .data;
-  y: .data;
-  tag: x.getTag;
-  tag y.getTag = [
-    tag (
-      VariableSchemaTags fieldCount [
-        i copy i copy [
-          tag:;
-          tag x.get
-          tag y.get =
-        ] bind
-      ] times
-      [
-        [FALSE] "invalid tag in VariableSchema" assert
-        FALSE
-      ]
-    ) case
-  ] [
-    FALSE
-  ] if
-] pfunc;
-
-=: [["REF_SCHEMA" has] twoWith] [
-  x:y:;;
-  x.pointeeSchemaId y.pointeeSchemaId = [x.mutable y.mutable =] &&
-] pfunc;
-
-=: [["STRUCT_SCHEMA" has] twoWith] [
-  x: .data;
-  y: .data;
-  result: x.getSize y.getSize =;
-  fieldIndex0: 0;
-  [result [fieldIndex0 x.getSize <] &&] [
-    fieldIndex0 x @ fieldIndex0 y @ = !result
-    fieldIndex0 1 + !fieldIndex0
-  ] while
-
-  result
-] pfunc;
-
-=: [["FIELD_SCHEMA" has] twoWith] [
-  x:y:;;
-  x.nameInfo y.nameInfo = [x.valueSchemaId y.valueSchemaId =] &&
-] pfunc;
-
-=: [["FUNCTION_SCHEMA" has] twoWith] [
-  x:y:;;
-  result: TRUE;
-  (
-    [result]
-    [x.convention y.convention = !result]
-    [x.variadic y.variadic = !result]
-    [
-      x.inputSchemaIds.getSize
-      y.inputSchemaIds.getSize = !result
-    ]
-    [
-      x.outputSchemaIds.getSize
-      y.outputSchemaIds.getSize = !result
-    ]
-    [
-      inputIndex: 0;
-      [result [inputIndex x.inputSchemaIds.getSize <] &&] [
-        inputIndex x.inputSchemaIds @
-        inputIndex y.inputSchemaIds @ = !result
-        inputIndex 1 + !inputIndex
-      ] while
-    ]
-    [
-      outputIndex: 0;
-      [result [outputIndex x.outputSchemaIds.getSize <] &&] [
-        outputIndex x.outputSchemaIds @
-        outputIndex y.outputSchemaIds @ = !result
-        outputIndex 1 + !outputIndex
-      ] while
-    ]
-  ) sequence
-
-  result
-] pfunc;
-
-=: [["VIRTUAL_VALUE_SCHEMA" has] twoWith] [
-  x:y:;;
-  x.schemaId y.schemaId = [x.vitrualValue y.vitrualValue =] &&
-] pfunc;
-
-=: [["BUILTIN_TYPE_SCHEMA" has] twoWith] [
-  x:;
-  y:;
-  x.tag y.tag =
-] pfunc;
 
 hash: ["VARIABLE_SCHEMA" has] [
   variableSchema: .data;

@@ -1,4 +1,11 @@
-"control" useModule
+"Array.Array" use
+"String.assembleString" use
+"String.toString" use
+"control.times" use
+
+"irWriter.appendInstruction" use
+"irWriter.getStringImplementation" use
+"pathUtils.simplifyPath" use
 
 addDebugProlog: [
   "declare void @llvm.dbg.declare(metadata, metadata, metadata)" toString @processor.@debugInfo.@strings.pushBack
@@ -60,7 +67,7 @@ addLinkerOptionsDebugInfo: [
       i 0 > [
         ", " @optionsList.cat
       ] when
-      ("!\"" i processor.options.linkerOptions @ "\"") @optionsList.catMany
+      ("!\"" i processor.options.linkerOptions.at "\"") @optionsList.catMany
     ] times
     "}" @optionsList.cat
     @optionsList move @processor.@debugInfo.@strings.pushBack
@@ -376,7 +383,7 @@ correctUnitInfo: [
   processor.debugInfo.globals.getSize [
     i 0 > [", "  @newDebugInfo.cat] when
     "!" @newDebugInfo.cat
-    i processor.debugInfo.globals @ @newDebugInfo.cat
+    i processor.debugInfo.globals.at @newDebugInfo.cat
   ] times
   "}"                       @newDebugInfo.cat
 

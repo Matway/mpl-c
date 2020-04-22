@@ -1,10 +1,22 @@
+"Array" includeModule
+"HashTable" includeModule
+"Owner" includeModule
+"String" includeModule
 "control" includeModule
 
+"Block" includeModule
+"File" includeModule
+"Var" includeModule
+"astNodeType" includeModule
 "codeNode" includeModule
+"debugWriter" includeModule
 "defaultImpl" includeModule
+"irWriter" includeModule
+"pathUtils" includeModule
 "processSubNodes" includeModule
-"pathUtils" useModule
-"Var" useModule
+"processor" includeModule
+"staticCall" includeModule
+"variable" includeModule
 
 declareBuiltin: [
   virtual declareBuiltinName:;
@@ -49,7 +61,7 @@ mplBuiltinProcessAtList: [
         ] [
           field: index struct.fields.at.refToVar;
           field VarRef TRUE dynamic TRUE dynamic TRUE dynamic @block createVariableWithVirtual @result set
-          refToStruct.mutable @result.@mutable set
+          refToStruct.mutable @result.setMutable
           @result fullUntemporize
         ]
       ) sequence
@@ -74,17 +86,17 @@ mplBuiltinProcessAtList: [
                 @refToIndex makeVarRealCaptured
                 firstField: 0 realStruct.fields.at.refToVar;
                 fieldRef: firstField copyVarFromParent;
-                firstField.hostId block.id = ~ [
+                firstField getVar.host block is ~ [
                   fBegin: RefToVar;
                   fEnd: RefToVar;
                   fieldRef @fBegin @fEnd ShadowReasonField @block makeShadowsDynamic
                   fEnd @fieldRef set
                 ] when
 
-                refToStruct.mutable @fieldRef.@mutable set
+                refToStruct.mutable @fieldRef.setMutable
                 @fieldRef fullUntemporize
                 fieldRef staticityOfVar Virtual < ~ [
-                  "dynamic index is combined of virtuals" block compilerError
+                  "dynamic index in combined of virtuals" block compilerError
                 ] [
                   fieldRef @block makeVarTreeDynamicStoraged
                   @fieldRef block unglobalize
@@ -679,7 +691,7 @@ staticityOfBinResult: [
       varSchema.data.getTag VarRef = [
         refToSchema isSchema [
           VarRef varSchema.data.get @block copyVarFromChild @schemaOfResult set
-          refToSchema.mutable schemaOfResult.mutable and @schemaOfResult.@mutable set
+          refToSchema.mutable schemaOfResult.mutable and @schemaOfResult.setMutable
         ] [
           [FALSE] "Unable in current semantic!" assert
         ] if
@@ -957,7 +969,7 @@ staticityOfBinResult: [
           result isVirtual [
             result isAutoStruct ["unable to copy virtual autostruct" block compilerError] when
           ] [
-            TRUE @result.@mutable set
+            TRUE @result.setMutable
             @refToVar @result @block createCopyToNew
           ] if
 
@@ -1049,7 +1061,7 @@ staticityOfBinResult: [
       @refToVar createVarExportIR drop
       @processor.@prolog.last move @instruction set
       @processor.@prolog.popBack
-      TRUE @refToVar.@mutable set
+      TRUE @refToVar.setMutable
       oldIrNameId var.irNameId refToVar getMplSchema.irTypeId createGlobalAliasIR
       oldInstructionIndex @var.@globalDeclarationInstructionIndex set
 
@@ -1305,7 +1317,7 @@ staticityOfBinResult: [
             name: VarString varName.data.get;
             newRefToVar: refToType @block copyVar;
             newVar: @newRefToVar getVar;
-            TRUE @newRefToVar.@mutable set
+            TRUE @newRefToVar.setMutable
             FALSE @newVar.@temporary set
             ("@" name) assembleString makeStringId @newVar.@irNameId set
             @newRefToVar createVarImportIR makeVarTreeDynamic
@@ -1497,7 +1509,7 @@ staticityOfBinResult: [
   compilable [
     result: refToVar @block copyVarToNew;
     result isVirtual ~ [result isUnallocable ~] && [
-      TRUE @result.@mutable set
+      TRUE @result.setMutable
       @result @block createAllocIR callInit
     ] when
 
