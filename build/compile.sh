@@ -9,6 +9,7 @@ mplc -D COMPILER_SOURCE_VERSION=$SOURCE_VERSION -ndebug -o mplc.ll\
  ../builtins.mpl\
  ../codeNode.mpl\
  ../debugWriter.mpl\
+ ../declarations.mpl\
  ../defaultImpl.mpl\
  ../irWriter.mpl\
  ../main.mpl\

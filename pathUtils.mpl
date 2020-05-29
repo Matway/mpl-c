@@ -1,8 +1,10 @@
-"control.&&" use
-"control.Natx" use
-"control.head" use
-"control.min" use
-"control.unhead" use
+"Array.Array" use
+"Array.makeSubRange" use
+"String.String" use
+"String.assembleString" use
+"String.makeStringView" use
+"String.splitString" use
+"control" use
 
 extractClearPath: [
   splittedPath: splitString;

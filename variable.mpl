@@ -19,21 +19,26 @@
 "Block.NameCaseInvalid" use
 "Block.NodeCaseCode" use
 "File.File" use
+"Var.Dirty" use
+"Var.Dynamic" use
 "Var.RefToVar" use
 "Var.Schema" use
+"Var.Schema" use
+"Var.Static" use
 "Var.VarBuiltin" use
 "Var.VarCode" use
 "Var.VarCond" use
 "Var.VarImport" use
-"Var.VarInt8" use
 "Var.VarInt16" use
 "Var.VarInt32" use
 "Var.VarInt64" use
+"Var.VarInt8" use
 "Var.VarIntX" use
-"Var.VarNat8" use
+"Var.VarInvalid" use
 "Var.VarNat16" use
 "Var.VarNat32" use
 "Var.VarNat64" use
+"Var.VarNat8" use
 "Var.VarNatX" use
 "Var.VarReal32" use
 "Var.VarReal64" use
@@ -42,36 +47,45 @@
 "Var.VarStruct" use
 "Var.Variable" use
 "Var.Virtual" use
+"Var.Virtual" use
+"Var.Weak" use
+"Var.getAlignment" use
+"Var.getSingleDataStorageSize" use
+"Var.getStorageSize" use
+"Var.getStringImplementation" use
+"Var.getStructStorageSize" use
+"Var.getVar" use
+"Var.getVirtualValue" use
+"Var.isAutoStruct" use
+"Var.isNonrecursiveType" use
+"Var.isPlain" use
+"Var.isSingle" use
+"Var.isStruct" use
+"Var.isVirtual" use
+"Var.isVirtualType" use
+"Var.makeStringId" use
+"Var.staticityOfVar" use
+"Var.variablesAreSame" use
 "astNodeType.AstNode" use
 "astNodeType.IndexArray" use
-"astNodeType.MultiParserResult" use
+"debugWriter.getDbgType" use
 "debugWriter.getTypeDebugDeclaration" use
-"defaultImpl.failProcForProcessor" use
+"declarations.compilerError" use
+"declarations.generateDebugTypeId" use
+"declarations.generateIrTypeId" use
+"declarations.getMplType" use
+"defaultImpl.FailProcForProcessor" use
 "irWriter.createTypeDeclaration" use
-"irWriter.getStringImplementation" use
+"irWriter.generateRegisterIRName" use
+"irWriter.generateVariableIRNameWith" use
+"irWriter.getIrType" use
+"irWriter.getMplSchema" use
+"irWriter.getNameById" use
 "processor.Processor" use
 "processor.ProcessorResult" use
 "processor.RefToVarTable" use
 "schemas.getVariableSchemaId" use
-"schemas.hash" use
 "schemas.makeVariableSchema" use
-
-NameCaseSelfMember:            [ 5n8 dynamic];
-NameCaseClosureMember:         [ 6n8 dynamic];
-NameCaseSelfObject:            [ 7n8 dynamic];
-NameCaseClosureObject:         [ 8n8 dynamic];
-NameCaseSelfObjectCapture:     [ 9n8 dynamic];
-NameCaseClosureObjectCapture:  [10n8 dynamic];
-
-MemberCaseToObjectCase:        [2n8 +];
-MemberCaseToObjectCaptureCase: [4n8 +];
-
-NameInfoEntry: [{
-  refToVar: RefToVar;
-  startPoint: -1 dynamic; # id of node
-  nameCase: NameCaseInvalid;
-  index: -1 dynamic; # for NameCaseSelfMember
-}];
 
 Overload: [NameInfoEntry Array];
 
@@ -82,242 +96,8 @@ makeNameInfo: [{
 
 NameInfo: [String makeNameInfo];
 
-compilable: [processorResult.success copy];
-
-callBuiltin:           [block:; multiParserResult @block @processor @processorResult callBuiltinImpl];
-processFuncPtr:        [multiParserResult @block @processor @processorResult processFuncPtrImpl];
-
-processPre: [
-  preAstNodeIndex: file:;;
-  preAstNodeIndex file multiParserResult @block @processor @processorResult processPreImpl
-];
-
-processCall: [
-  callAstNodeIndex: file: name:;;;
-  callAstNodeIndex file name multiParserResult @block @processor @processorResult processCallImpl
-];
-
-processExportFunction: [
-  signature: astNode: file: name: asLambda: block:;;;;;;
-  signature astNode file name asLambda multiParserResult @block @processor @processorResult processExportFunctionImpl
-];
-
-processImportFunction: [multiParserResult @block @processor @processorResult processImportFunctionImpl];
-compareEntriesRec:     [currentMatchingNode @nestedToCur @curToNested @comparingMessage multiParserResult block @processor @processorResult compareEntriesRecImpl];
-makeVariableType:      [block:; block @processor @processorResult makeVariableTypeImpl];
-compilerError:         [block:; makeStringView block @processor @processorResult compilerErrorImpl];
-generateDebugTypeId:   [block:; block @processor @processorResult generateDebugTypeIdImpl];
-generateIrTypeId:      [block:; block @processor @processorResult generateIrTypeIdImpl];
-getMplType: [
-  block:;
-  result: String;
-  @result block @processor @processorResult getMplTypeImpl
-  @result
-];
-
-{
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
-  multiParserResult: MultiParserResult Cref;
-  file: File Cref;
-  indexArray: IndexArray Cref;
-  processor: Processor Ref;
-  processorResult: ProcessorResult Ref;
-  nodeCase: NodeCaseCode;
-  parentIndex: 0;
-  functionName: StringView Cref;
-} 0 {convention: cdecl;} "astNodeToCodeNode" importFunction
-
-{
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
-  multiParserResult: MultiParserResult Cref;
-  processor: Processor Ref;
-  processorResult: ProcessorResult Ref;
-  refToVar: RefToVar Cref;
-} () {convention: cdecl;} "createDtorForGlobalVar" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Ref;
-  multiParserResult: MultiParserResult Cref;
-  positionInfo: CompilerPositionInfo Cref;
-  name: StringView Cref;
-  nodeCase: NodeCaseCode;
-  file: File Cref;
-  indexArray: IndexArray Cref;
-} () {convention: cdecl;} "processCallByIndexArrayImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Ref;
-  multiParserResult: MultiParserResult Cref;
-  index: Int32;
-} () {convention: cdecl;} "callBuiltinImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Ref;
-  multiParserResult: MultiParserResult Cref;
-  refToVar: RefToVar Cref;
-} () {convention: cdecl;} "processFuncPtrImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Ref;
-  multiParserResult: MultiParserResult Cref;
-  file: File Cref;
-  preAstNodeIndex: Int32;
-} Cond {convention: cdecl;} "processPreImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Ref;
-  multiParserResult: MultiParserResult Cref;
-  name: StringView Cref;
-  file: File Cref;
-  callAstNodeIndex: Int32;
-} () {convention: cdecl;} "processCallImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Ref;
-  multiParserResult: MultiParserResult Cref;
-  asLambda: Cond;
-  name: StringView Cref;
-  file: File Cref;
-  astNode: AstNode Cref;
-  signature: CFunctionSignature Cref;
-} Int32 {convention: cdecl;} "processExportFunctionImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Ref;
-  multiParserResult: MultiParserResult Cref;
-  asCodeRef: Cond;
-  name: StringView Cref;
-  signature: CFunctionSignature Cref;
-} Natx {convention: cdecl;} "processImportFunctionImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Cref;
-  multiParserResult: MultiParserResult Cref;
-
-  comparingMessage: String Ref;
-  curToNested: RefToVarTable Ref;
-  nestedToCur: RefToVarTable Ref;
-  currentMatchingNode: Block Cref;
-  cacheEntry: RefToVar Cref;
-  stackEntry: RefToVar Cref;
-} Cond {convention: cdecl;} "compareEntriesRecImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Cref;
-  refToVar: RefToVar Cref;
-} () {convention: cdecl;} "makeVariableTypeImpl" importFunction
-
-{
-  forMatching: Cond;
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Ref;
-  multiParserResult: MultiParserResult Cref;
-  result: RefToVar Ref;
-} () {convention: cdecl;} "popImpl" importFunction
-
-{
-  dynamicStoraged: Cond;
-
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Ref;
-  multiParserResult: MultiParserResult Cref;
-
-  reason: Nat8;
-  end: RefToVar Ref;
-  begin: RefToVar Ref;
-  refToVar: RefToVar Cref;
-} () {convention: cdecl;} "makeShadowsImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Cref;
-  message: StringView Cref;
-} () {convention: cdecl;} "compilerErrorImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Cref;
-  refToVar: RefToVar Cref;
-} Int32 {} "generateDebugTypeIdImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Cref;
-  refToVar: RefToVar Cref;
-} Int32 {} "generateIrTypeIdImpl" importFunction
-
-{
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
-  block: Block Cref;
-  resultMPL: String Ref;
-  refToVar: RefToVar Cref;
-} () {}  "getMplTypeImpl" importFunction
-
-# these functions require capture "processor"
-getVar: [
-  refToVar:;
-  [refToVar.assigned] "Wrong refToVar!" assert
-  @refToVar.var
-];
-
-getNameById: [processor.nameBuffer.at makeStringView];
-getMplName:  [getVar.mplNameId processor.nameInfos.at.name makeStringView];
-getMplSchema: [getVar.mplSchemaId @processor.@schemaBuffer.at];
-
-getDbgType:  [getMplSchema.dbgTypeId getNameById];
-getIrName:   [getVar.irNameId getNameById];
-getIrType:   [getMplSchema.irTypeId getNameById];
-getMplTypeId: [getMplType makeStringId];
-
-getDebugType: [
-  refToVar: block:;;
-  dbgType: refToVar getDbgType;
-  splitted: dbgType splitString;
-  splitted.success [
-    splitted.chars.getSize 1024 > [
-      1024 @splitted.@chars.shrink
-      "..." makeStringView @splitted.@chars.pushBack
-    ] when
-  ] [
-    ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString block compilerError
-  ] if
-
-  result: (dbgType hash ".") assembleString;
-  splitted.chars @result.catMany
-  @result
-];
-
-staticityOfVar: [
-  refToVar:;
-  var: refToVar getVar;
-  var.staticity copy
-];
+getMplName:  [getVar.mplNameId processor.nameManager.getText];
+getMplTypeId: [@processor getMplType makeStringId];
 
 maxStaticity: [
   copy s1:;
@@ -331,96 +111,10 @@ refsAreEqual: [
   refToVar1.var refToVar2.var is
 ];
 
-variablesAreSame: [
-  refToVar1:;
-  refToVar2:;
-  refToVar1 getVar.mplSchemaId refToVar2 getVar.mplSchemaId = # id compare better than string compare!
-];
-
-isInt: [
-  var: getVar;
-  var.data.getTag VarInt8 =
-  [var.data.getTag VarInt16 =] ||
-  [var.data.getTag VarInt32 =] ||
-  [var.data.getTag VarInt64 =] ||
-  [var.data.getTag VarIntX =] ||
-];
-
-isNat: [
-  var: getVar;
-  var.data.getTag VarNat8 =
-  [var.data.getTag VarNat16 =] ||
-  [var.data.getTag VarNat32 =] ||
-  [var.data.getTag VarNat64 =] ||
-  [var.data.getTag VarNatX =] ||
-];
-
-isAnyInt: [
-  refToVar:;
-  refToVar isInt
-  [refToVar isNat] ||
-];
-
-isReal: [
-  var: getVar;
-  var.data.getTag VarReal32 =
-  [var.data.getTag VarReal64 =] ||
-];
-
-isNumber: [
-  refToVar:;
-  refToVar isReal
-  [refToVar isAnyInt] ||
-];
-
-isPlain: [
-  refToVar:;
-  refToVar isNumber [
-    var: refToVar getVar;
-    var.data.getTag VarCond =
-  ] ||
-];
-
-isTinyArg: [
-  refToVar:;
-  refToVar isPlain [
-    var: refToVar getVar;
-    var.data.getTag VarRef =
-  ] ||
-];
-
-isUnallocable: [
-  var: getVar;
-  var.data.getTag VarString =
-  [var.data.getTag VarImport =] ||
-];
-
-isStruct: [
-  var: getVar;
-  var.data.getTag VarStruct =
-];
-
-isAutoStruct: [
-  refToVar:;
-  var: refToVar getVar;
-  var.data.getTag VarStruct =
-  [VarStruct var.data.get.get.hasDestructor copy] &&
-];
-
-markAsUnableToDie: [
-  refToVar:;
-  var: @refToVar getVar;
-  var.data.getTag VarStruct = [TRUE VarStruct @var.@data.get.get.@unableToDie set] when
-];
-
 markAsAbleToDie: [
   refToVar:;
   var: @refToVar getVar;
   var.data.getTag VarStruct = [FALSE VarStruct @var.@data.get.get.@unableToDie set] when
-];
-
-isSingle: [
-  isStruct ~
 ];
 
 isStaticData: [
@@ -459,55 +153,17 @@ isStaticData: [
   ] if
 ];
 
-getSingleDataStorageSize: [
-  refToVar: block:;;
-  var: refToVar getVar;
-  var.data.getTag (
-    VarCond    [1nx]
-    VarInt8    [1nx]
-    VarInt16   [2nx]
-    VarInt32   [4nx]
-    VarInt64   [8nx]
-    VarIntX    [processor.options.pointerSize 8nx /]
-    VarNat8    [1nx]
-    VarNat16   [2nx]
-    VarNat32   [4nx]
-    VarNat64   [8nx]
-    VarNatX    [processor.options.pointerSize 8nx /]
-    VarReal32  [4nx]
-    VarReal64  [8nx]
-    VarRef     [processor.options.pointerSize 8nx /]
-    VarString  [
-      "strings dont have storageSize and alignment" block compilerError
-      0nx
+checkUnsizedData: [
+  refToVar: processor: block: ;;;
+  refToVar getVar.data.getTag (
+    VarString [
+      "strings dont have storageSize and alignment" @processor block compilerError
     ]
-    VarImport  [
-      "functions dont have storageSize and alignment" block compilerError
-      0nx
+    VarImport [
+      "functions dont have storageSize and alignment" @processor block compilerError
     ]
-    [0nx]
+    []
   ) case
-];
-
-isNonrecursiveType: [
-  refToVar:;
-  refToVar isPlain [
-    var: refToVar getVar;
-    var.data.getTag VarString =
-    [var.data.getTag VarCode =] ||
-    [var.data.getTag VarBuiltin =] ||
-    [var.data.getTag VarImport =] ||
-  ] ||
-];
-
-isSemiplainNonrecursiveType: [
-  refToVar:;
-  refToVar isPlain [
-    var: refToVar getVar;
-    var.data.getTag VarCode =
-    [var.data.getTag VarBuiltin =] ||
-    [var.data.getTag VarImport =] ||
-  ] ||
 ];
 
 getPlainDataIRType: [
@@ -582,16 +238,20 @@ getNonrecursiveDataIRType: [
   ] [
     result: String;
     var: refToVar getVar;
-    var.data.getTag VarString = [
-      "i8" toString @result set
+    var.data.getTag VarInvalid = [
+      "INVALID" toString @result set
     ] [
-      var.data.getTag VarImport = [
-        VarImport var.data.get getFuncIrType toString @result set
+      var.data.getTag VarString = [
+        "i8" toString @result set
       ] [
-        var.data.getTag VarCode = [var.data.getTag VarBuiltin =] ||  [
-          "ERROR" toString @result set
+        var.data.getTag VarImport = [
+          VarImport var.data.get getFuncIrType toString @result set
         ] [
-          "Unknown nonrecursive struct" block compilerError
+          var.data.getTag VarCode = [var.data.getTag VarBuiltin =] ||  [
+            "ERROR" toString @result set
+          ] [
+            "Unknown nonrecursive struct" @processor block compilerError
+          ] if
         ] if
       ] if
     ] if
@@ -616,10 +276,14 @@ getNonrecursiveDataMPLType: [
         var.data.getTag VarBuiltin = [
           "b" toString @result set
         ] [
-          var.data.getTag VarImport = [
-            ("F" VarImport var.data.get block getFuncMplType) assembleString @result set
+          var.data.getTag VarInvalid = [
+            "I" toString @result set
           ] [
-            "Unknown nonrecursive struct" block compilerError
+            var.data.getTag VarImport = [
+              ("F" VarImport var.data.get block getFuncMplType) assembleString @result set
+            ] [
+              "ERROR" toString @result set #it is not user error
+            ] if
           ] if
         ] if
       ] if
@@ -639,16 +303,20 @@ getNonrecursiveDataDBGType: [
     var.data.getTag VarString = [
       "s" toString @result set
     ] [
-      var.data.getTag VarCode = [
-        "c" toString @result set
+      var.data.getTag VarInvalid = [
+        "I" toString @result set
       ] [
-        var.data.getTag VarBuiltin = [
-          "b" toString @result set
+        var.data.getTag VarCode = [
+          "c" toString @result set
         ] [
-          var.data.getTag VarImport = [
-            ("F" VarImport var.data.get getFuncDbgType) assembleString @result set
+          var.data.getTag VarBuiltin = [
+            "b" toString @result set
           ] [
-            "Unknown nonrecursive struct" block compilerError
+            var.data.getTag VarImport = [
+              ("F" VarImport var.data.get getFuncDbgType) assembleString @result set
+            ] [
+              "Unknown nonrecursive struct" @processor block compilerError
+            ] if
           ] if
         ] if
       ] if
@@ -658,15 +326,8 @@ getNonrecursiveDataDBGType: [
   ] if
 ];
 
-getStructStorageSize: [
-  refToVar:;
-  var: refToVar getVar;
-  struct: VarStruct var.data.get.get;
-  struct.structStorageSize copy
-];
-
 makeStructStorageSize: [
-  refToVar: block:;;
+  refToVar: processor: ;;
   result: 0nx;
   var: @refToVar getVar;
   struct: VarStruct @var.@data.get.get;
@@ -676,8 +337,8 @@ makeStructStorageSize: [
     j struct.fields.dataSize < [
       curField: j struct.fields.at;
       curField.refToVar isVirtual ~ [
-        curS: curField.refToVar block getStorageSize;
-        curA: curField.refToVar block getAlignment;
+        curS: curField.refToVar @processor getStorageSize;
+        curA: curField.refToVar @processor getAlignment;
         result curA + 1nx - curA 1nx - ~ and curS + @result set
         curA maxA > [curA @maxA set] when
       ] when
@@ -690,24 +351,8 @@ makeStructStorageSize: [
   result @struct.@structStorageSize set
 ];
 
-getStorageSize: [
-  refToVar: block:;;
-  refToVar isSingle [
-    refToVar block getSingleDataStorageSize
-  ] [
-    refToVar getStructStorageSize
-  ] if
-];
-
-getStructAlignment: [
-  refToVar:;
-  var: refToVar getVar;
-  struct: VarStruct var.data.get.get;
-  struct.structAlignment copy
-];
-
 makeStructAlignment: [
-  refToVar: block:;;
+  refToVar: processor: ;;
   result: 0nx;
   var: @refToVar getVar;
   struct: VarStruct @var.@data.get.get;
@@ -716,7 +361,7 @@ makeStructAlignment: [
     j struct.fields.dataSize < [
       curField: j struct.fields.at;
       curField.refToVar isVirtual ~ [
-        curA: curField.refToVar block getAlignment;
+        curA: curField.refToVar @processor getAlignment;
         result curA < [curA @result set] when
       ] when
       j 1 + @j set TRUE
@@ -726,15 +371,6 @@ makeStructAlignment: [
   result @struct.@structAlignment set
 ];
 
-getAlignment: [
-  refToVar: block:;;
-  refToVar isSingle [
-    refToVar block getSingleDataStorageSize
-  ] [
-    refToVar getStructAlignment
-  ] if
-];
-
 isGlobal: [
   refToVar:;
   var: refToVar getVar;
@@ -742,12 +378,12 @@ isGlobal: [
 ];
 
 unglobalize: [
-  refToVar: block:;;
+  refToVar: processor: block:;;;
   var: @refToVar getVar;
   var.global [
     FALSE @var.@global set
     -1 dynamic @var.@globalId set
-    @refToVar block makeVariableIRName
+    @refToVar @processor block makeVariableIRName
   ] when
 ];
 
@@ -757,124 +393,15 @@ untemporize: [
   FALSE @var.@temporary set
 ];
 
-fullUntemporize: [
-  refToVar:;
-  var: @refToVar getVar;
-  FALSE @var.@temporary set
-  var.data.getTag VarStruct = [
-    FALSE VarStruct @var.@data.get.get.@forgotten set
-  ] when
-];
-
-isSchema: [
-  refToVar:;
-  var: refToVar getVar;
-  var.data.getTag VarRef = [var.staticity Schema =] &&
-];
-
-isVirtualType: [
-  refToVar:;
-
-  var: refToVar getVar;
-  var.data.getTag VarBuiltin =
-  [var.data.getTag VarCode =] ||
-  [var.data.getTag VarStruct = [VarStruct var.data.get.get.fullVirtual copy] &&] ||
-  [refToVar isSchema] ||
-];
-
-isVirtual: [
-  refToVar:;
-
-  var: refToVar getVar;
-  var.staticity Virtual < ~
-  [refToVar isVirtualType] ||
-];
-
 noMatterToCopy: [
   refToVar:;
   refToVar isVirtual [refToVar isAutoStruct ~] &&
 ];
 
-isForgotten: [
-  refToVar:;
-  var: refToVar getVar;
-  var.data.getTag VarStruct = [
-    VarStruct var.data.get.get.forgotten copy
-  ] [
-    FALSE
-  ] if
-];
-
-getVirtualValue: [
-  refToVar:;
-  recursive
-  var: refToVar getVar;
-  result: String;
-
-  var.data.getTag (
-    VarStruct [
-      "{" @result.cat
-      struct: VarStruct var.data.get.get;
-
-      struct.fields.getSize [
-        i 0 > ["," @result.cat] when
-        i struct.fields.at .refToVar isVirtual ~ [
-          i struct.fields.at .refToVar getVirtualValue @result.cat
-        ] when
-      ] times
-      "}" @result.cat
-    ]
-    VarCode    [
-      info: VarCode    var.data.get;
-      ("\"" info.file.name getStringImplementation "\"/" info.line ":" info.column) @result.catMany
-    ]
-    VarBuiltin [VarBuiltin var.data.get @result.cat]
-    VarRef     [
-      pointee: VarRef var.data.get;
-      pointeeVar: pointee getVar;
-      var.staticity Schema = [
-        "." @result.cat
-      ] [
-        pointeeVar.data.getTag (
-          VarString  [
-            string: VarString pointeeVar.data.get.getStringView;
-            (string.size "_" string getStringImplementation) @result.catMany
-          ]
-          VarImport  [VarImport  pointeeVar.data.get @result.cat]
-          [[FALSE] "Wrong type for virtual reference!" assert]
-        ) case
-      ] if
-    ]
-    [
-      refToVar isPlain [
-        refToVar getPlainConstantIR @result.cat
-      ] [
-        ("Tag = " var.data.getTag) addLog
-        [FALSE] "Wrong type for virtual value!" assert
-      ] if
-    ]
-  ) case
-
-  result
-];
-
-makeStringId: [
-  string:;
-  fr: string @processor.@nameTable.find;
-  fr.success [
-    fr.value copy
-  ] [
-    result: processor.nameBuffer.dataSize copy;
-    string makeStringView result @processor.@nameTable.insert
-    @string move @processor.@nameBuffer.pushBack
-    result
-  ] if
-];
-
 makeTypeAliasId: [
   irTypeName:;
 
-  irTypeName.getTextSize 0 > [
+  irTypeName.size 0 > [
 
     fr: irTypeName makeStringView @processor.@typeNames.find;
     fr.success [
@@ -883,21 +410,21 @@ makeTypeAliasId: [
       newTypeName: ("%type." processor.lastTypeId) assembleString;
       processor.lastTypeId 1 + @processor.@lastTypeId set
 
-      newTypeName irTypeName createTypeDeclaration
-      result: @newTypeName makeStringId;
+      newTypeName irTypeName @processor createTypeDeclaration
+      result: @newTypeName @processor makeStringId;
       @irTypeName move result @processor.@typeNames.insert
       result
     ] if
   ] [
-    @irTypeName makeStringId
+    @irTypeName @processor makeStringId
   ] if
 ];
 
 getFuncIrType: [
   funcIndex:;
   node: funcIndex processor.blocks.at.get;
-  resultId: node.signature toString makeStringId;
-  resultId getNameById
+  resultId: node.signature toString @processor makeStringId;
+  resultId processor getNameById
 ];
 
 getFuncMplType: [
@@ -913,7 +440,7 @@ getFuncMplType: [
     [
       i args.getSize < [
         current: i args.at;
-        current block getMplType @result.cat
+        current @processor block getMplType @result.cat
         i 1 + args.getSize < [
           "," @result.cat
         ] when
@@ -944,9 +471,9 @@ getFuncDbgType: [
     [
       i args.getSize < [
         current: i args.at;
-        current getDbgType                                            @result.cat
+        current @processor getDbgType @result.cat
         i 1 + args.getSize < [
-          ","                                                         @result.cat
+          "," @result.cat
         ] when
         i 1 + @i set TRUE
       ] &&
@@ -959,90 +486,28 @@ getFuncDbgType: [
   node.csignature.inputs catData
   node.csignature.outputs catData
 
-  resultId: @result makeStringId;
-  resultId getNameById
+  resultId: @result @processor makeStringId;
+  resultId @processor getNameById
 ];
 
 makeDbgTypeId: [
-  refToVar: block:;;
+  refToVar: processor: block: ;;;
   refToVar isVirtualType ~ [
-    varSchema: refToVar getMplSchema;
+    varSchema: refToVar @processor getMplSchema;
     varSchema.dbgTypeDeclarationId -1 = [
-      refToVar block getTypeDebugDeclaration @varSchema.@dbgTypeDeclarationId set
+      refToVar @processor block getTypeDebugDeclaration @varSchema.@dbgTypeDeclarationId set
     ] when
   ] when
 ];
 
-bitView: [
-  copy f:;
-  buffer: f storageAddress (0n8 0n8 0n8 0n8 0n8 0n8 0n8 0n8) addressToReference;
-  result: String;
-  "0x" @result.cat
-  hexToStr: (
-    "0" makeStringView "1" makeStringView "2" makeStringView "3" makeStringView "4" makeStringView
-    "5" makeStringView "6" makeStringView "7" makeStringView "8" makeStringView "9" makeStringView
-    "A" makeStringView "B" makeStringView "C" makeStringView "D" makeStringView "E" makeStringView "F" makeStringView);
-  i: 0 dynamic;
-  [
-    i 0ix cast 0nx cast f storageSize < [
-      d: f storageSize 0ix cast 0 cast i - 1 - buffer @ 0n32 cast;
-      d 4n32 rshift 0 cast @hexToStr @ @result.cat
-      d 15n32 and 0 cast @hexToStr @ @result.cat
-      i 1 + @i set TRUE
-    ] &&
-  ] loop
-
-  result
-];
-
-getPlainConstantIR: [
-  var: getVar;
-  result: String;
-  var.data.getTag VarCond = [
-    VarCond var.data.get ["true" toString] ["false" toString] if @result set
-  ] [
-    var.data.getTag VarInt8 = [VarInt8 var.data.get toString @result set] [
-      var.data.getTag VarInt16 = [VarInt16 var.data.get toString @result set] [
-        var.data.getTag VarInt32 = [VarInt32 var.data.get toString @result set] [
-          var.data.getTag VarInt64 = [VarInt64 var.data.get toString @result set] [
-            var.data.getTag VarIntX = [VarIntX var.data.get toString @result set] [
-              var.data.getTag VarNat8 = [VarNat8 var.data.get toString @result set] [
-                var.data.getTag VarNat16 = [VarNat16 var.data.get toString @result set] [
-                  var.data.getTag VarNat32 = [VarNat32 var.data.get toString @result set] [
-                    var.data.getTag VarNat64 = [VarNat64 var.data.get toString @result set] [
-                      var.data.getTag VarNatX = [VarNatX var.data.get toString @result set] [
-                        var.data.getTag VarReal32 = [VarReal32 var.data.get 0.0r32 cast 0.0r64 cast bitView @result set] [
-                          var.data.getTag VarReal64 = [VarReal64 var.data.get bitView @result set] [
-                            ("Tag = " makeStringView var.data.getTag 0 cast) addLog
-                            [FALSE] "Unknown plain struct while getting IR value" assert
-                          ] if
-                        ] if
-                      ] if
-                    ] if
-                  ] if
-                ] if
-              ] if
-            ] if
-          ] if
-        ] if
-      ] if
-    ] if
-  ] if
-
-  result
-];
-
 {
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
   block: Block Cref;
+  processor: Processor Ref;
+
   refToVar: RefToVar Ref;
 } () {} [
-  processorResult:;
-  processor:;
-  block:;
-  refToVar:;
-  failProc: @failProcForProcessor;
+  refToVar: processor: block: ;;;
+  overload failProc: processor block FailProcForProcessor;
 
   #fill info:
 
@@ -1092,41 +557,39 @@ getPlainConstantIR: [
       ] when
     ] times
 
-    @refToVar block makeStructAlignment
-    @refToVar block makeStructStorageSize
+    @refToVar @processor makeStructAlignment
+    @refToVar @processor makeStructStorageSize
   ] when
 
-  var makeVariableSchema getVariableSchemaId @var.!mplSchemaId
-  varSchema: refToVar getMplSchema;
+  refToVar @processor makeVariableSchema @processor getVariableSchemaId @var.!mplSchemaId
+  varSchema: refToVar @processor getMplSchema;
   varSchema.irTypeId -1 = [
-    refToVar block generateIrTypeId @varSchema.!irTypeId
+    refToVar @processor block generateIrTypeId @varSchema.!irTypeId
   ] when
 
   processor.options.debug [varSchema.dbgTypeId -1 =] && [
-    refToVar block generateDebugTypeId @varSchema.!dbgTypeId
-    refToVar block makeDbgTypeId
+    refToVar @processor block generateDebugTypeId @varSchema.!dbgTypeId
+    refToVar @processor block makeDbgTypeId
   ] when
-] "makeVariableTypeImpl" exportFunction
+] "makeVariableType" exportFunction
 
 {
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
   block: Block Cref;
+  processor: Processor Ref;
+
   refToVar: RefToVar Cref;
 } Int32 {} [
-  processorResult:;
-  processor:;
-  block:;
-  refToVar:;
-  failProc: @failProcForProcessor;
+  refToVar: processor: block: ;;;
+  overload failProc: processor block FailProcForProcessor;
+
   var: refToVar getVar;
   resultDBG: String;
   var.data.getTag (
     [drop refToVar isNonrecursiveType] [refToVar block getNonrecursiveDataDBGType @resultDBG set]
     [VarRef =] [
       branch: VarRef var.data.get;
-      pointee: branch getVar;
-      branch getDbgType @resultDBG.cat
+      pointee: branch.refToVar getVar;
+      branch.refToVar @processor getDbgType @resultDBG.cat
       "*" @resultDBG.cat
     ]
     [VarStruct =] [
@@ -1136,9 +599,9 @@ getPlainConstantIR: [
         branch.fields [
           curField:;
           curField.refToVar isVirtual ~ [
-            (curField.nameInfo processor.nameInfos.at.name ":" curField.refToVar getDbgType ";") @resultDBG.catMany
+            (curField.nameInfo processor.nameManager.getText ":" curField.refToVar @processor getDbgType ";") @resultDBG.catMany
           ] [
-            (curField.nameInfo processor.nameInfos.at.name ".") @resultDBG.catMany
+            (curField.nameInfo processor.nameManager.getText ".") @resultDBG.catMany
           ] if
         ] each
 
@@ -1148,20 +611,17 @@ getPlainConstantIR: [
     [[FALSE] "Unknown variable for IR type" assert]
   ) cond
 
-  @resultDBG makeStringId
-] "generateDebugTypeIdImpl" exportFunction
+  @resultDBG @processor makeStringId
+] "generateDebugTypeId" exportFunction
 
 {
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
   block: Block Cref;
+  processor: Processor Ref;
+
   refToVar: RefToVar Cref;
 } Int32 {} [
-  processorResult:;
-  processor:;
-  block:;
-  refToVar:;
-  failProc: @failProcForProcessor;
+  refToVar: processor: block: ;;;
+
   var: refToVar getVar;
   resultIR: String;
 
@@ -1169,16 +629,16 @@ getPlainConstantIR: [
     [drop refToVar isNonrecursiveType] [refToVar block getNonrecursiveDataIRType @resultIR set]
     [VarRef =] [
       branch: VarRef var.data.get;
-      pointee: branch getVar;
+      pointee: branch.refToVar getVar;
 
-      branch getIrType @resultIR.cat
+      branch.refToVar processor getIrType @resultIR.cat
       "*"  @resultIR.cat
     ]
     [VarStruct =] [
       branch: VarStruct @var.@data.get.get;
       branch.fullVirtual ~ [
         branch.homogeneous [
-          ("[" branch.fields.dataSize " x " 0 branch.fields.at.refToVar getIrType "]") @resultIR.catMany
+          ("[" branch.fields.dataSize " x " 0 branch.fields.at.refToVar @processor getIrType "]") @resultIR.catMany
         ] [
           "{" @resultIR.cat
           firstGood: TRUE;
@@ -1189,7 +649,7 @@ getPlainConstantIR: [
                 ", " @resultIR.cat
               ] when
 
-              field.refToVar getIrType @resultIR.cat
+              field.refToVar @processor getIrType @resultIR.cat
               FALSE @firstGood set
             ] when
           ] each
@@ -1205,26 +665,22 @@ getPlainConstantIR: [
   var.data.getTag VarStruct = [var.data.getTag VarImport =] || [
     @resultIR makeTypeAliasId @irTypeId set
   ] [
-    @resultIR makeStringId @irTypeId set
+    @resultIR @processor makeStringId @irTypeId set
   ] if
 
   irTypeId
-] "generateIrTypeIdImpl" exportFunction
+] "generateIrTypeId" exportFunction
 
 {
-  processorResult: ProcessorResult Ref;
-  processor: Processor Ref;
   block: Block Cref;
+  processor: Processor Cref;
+
   resultMPL: String Ref;
   refToVar: RefToVar Cref;
 } () {} [
-  processorResult:;
-  processor:;
-  block:;
-  resultMPL:;
-  failProc: @failProcForProcessor;
+  refToVar: resultMPL: processor: block: ;;;;
+  overload failProc: processor block FailProcForProcessor;
 
-  refToVar:;
   var: refToVar getVar;
 
   refToVar isNonrecursiveType [
@@ -1232,9 +688,9 @@ getPlainConstantIR: [
   ] [
     var.data.getTag VarRef = [
       branch: VarRef var.data.get;
-      pointee: branch getVar;
-      branch block getMplType @resultMPL.cat
-      branch.mutable [
+      pointee: branch.refToVar getVar;
+      branch.refToVar @processor block getMplType @resultMPL.cat
+      branch.refToVar.mutable [
         "R" @resultMPL.cat
       ] [
         "C" @resultMPL.cat
@@ -1248,8 +704,8 @@ getPlainConstantIR: [
           i branch.fields.dataSize < [
             curField: i branch.fields.at;
             (
-              curField.nameInfo processor.nameInfos.at.name ":"
-              curField.refToVar block getMplType ";") @resultMPL.catMany
+              curField.nameInfo processor.nameManager.getText ":"
+              curField.refToVar @processor block getMplType ";") @resultMPL.catMany
             i 1 + @i set TRUE
           ] &&
         ] loop
@@ -1268,6 +724,8 @@ getPlainConstantIR: [
 ] "getMplTypeImpl" exportFunction
 
 cutValue: [
+  processor:;
+
   copy tag:;
   copy value:;
   tag (
@@ -1284,6 +742,7 @@ cutValue: [
 ];
 
 checkValue: [
+  processor: block: ;;
   copy tag:;
   copy value:;
   tag (
@@ -1296,7 +755,7 @@ checkValue: [
     VarInt32 [value 0x7FFFFFFFi64 > [value 0x80000000i64 neg <] ||]
     VarIntX  [processor.options.pointerSize 32nx = [value 0x7FFFFFFFi64 > [value 0x80000000i64 neg <] ||] &&]
     [FALSE]
-  ) case ["number constant overflow" block compilerError] when
+  ) case ["number constant overflow" @processor block compilerError] when
   @value
 ];
 
@@ -1332,88 +791,14 @@ zeroValue: [
   ] if
 ];
 
-getStaticStructIR: [
-  refToVar:;
-  result: String;
-  unfinishedVars: RefToVar Array;
-  unfinishedTerminators: StringView Array;
-  refToVar @unfinishedVars.pushBack
-  ", " makeStringView @unfinishedTerminators.pushBack
-  [
-    unfinishedVars.getSize 0 > [
-      current: unfinishedVars.last copy;
-      @unfinishedVars.popBack
-
-      current isVirtual [
-        [FALSE] "Virtual field cannot be processed in static array constant!" assert
-      ] [
-        current isPlain [
-          (current getIrType " " current getPlainConstantIR) @result.catMany
-          [
-            currentTerminator: unfinishedTerminators.last;
-            currentTerminator @result.cat
-            currentTerminator ", " = ~
-            @unfinishedTerminators.popBack
-          ] loop
-        ] [
-          curVar: current getVar;
-          curVar.data.getTag VarStruct = [
-            (current getIrType " ") @result.catMany
-            struct: VarStruct curVar.data.get.get;
-            struct.homogeneous ["[" makeStringView] ["{" makeStringView] if @result.cat
-            first: TRUE dynamic;
-            struct.fields.getSize [
-              current: struct.fields.getSize 1 - i - struct.fields.at.refToVar;
-              current isVirtual ~ [
-                current @unfinishedVars.pushBack
-                first [
-                  struct.homogeneous ["]" makeStringView] ["}" makeStringView] if @unfinishedTerminators.pushBack
-                  FALSE dynamic @first set
-                ] [
-                  ", " makeStringView @unfinishedTerminators.pushBack
-                ] if
-              ] when
-            ] times
-          ] [
-            [FALSE] "Unknown type in static struct!" assert
-          ] if
-        ] if
-      ] if
-
-      TRUE
-    ] &&
-  ] loop
-
-  result.getTextSize 2 - @result.@chars.shrink
-  @result.makeZ
-  result
-];
-
-# require captures "processor" and "codeNode"
-generateVariableIRNameWith: [
-  hostOfVariable: temporaryRegister: block:;;;
-  temporaryRegister ~ [block.parent 0 =] && [
-    ("@global." processor.globalVarCount) assembleString makeStringId
-    processor.globalVarCount 1 + @processor.@globalVarCount set
-  ] [
-    ("%var." hostOfVariable.lastVarName) assembleString makeStringId
-    hostOfVariable.lastVarName 1 + @hostOfVariable.@lastVarName set
-  ] if
-];
-
-generateVariableIRName: [FALSE generateVariableIRNameWith];
-generateRegisterIRName: [block:; @block TRUE block generateVariableIRNameWith];
-
 makeVariableIRName: [
-  refToVar: block:;;
+  refToVar: processor: block: ;;;
   var: @refToVar getVar;
-  @var.host refToVar isGlobal ~ block generateVariableIRNameWith @var.@irNameId set
+  @var.host refToVar isGlobal ~ @processor block generateVariableIRNameWith @var.@irNameId set
 ];
 
-findFieldWithOverloadShift: [
-  copy overloadShift:;
-  refToVar:;
-  copy fieldNameInfo:;
+findFieldWithOverloadDepth: [
+  fieldNameInfo: refToVar: overloadDepth: processor: block: ;; copy;;;
 
   var: refToVar getVar;
 
@@ -1431,12 +816,12 @@ findFieldWithOverloadShift: [
         i 1 - @i set
 
         i struct.fields.at .nameInfo fieldNameInfo = [
-          overloadShift 0 = [
+          overloadDepth 0 = [
             TRUE @result.@success set
             i @result.@index set
             FALSE
           ] [
-            overloadShift 1 - @overloadShift set
+            overloadDepth 1 - @overloadDepth set
             TRUE
           ] if
         ] [
@@ -1445,10 +830,10 @@ findFieldWithOverloadShift: [
       ] &&
     ] loop
   ] [
-    (refToVar block getMplType " is not combined") assembleString block compilerError
+    (refToVar @processor block getMplType " is not combined") assembleString @processor block compilerError
   ] if
 
   result
 ];
 
-findField: [0 dynamic findFieldWithOverloadShift];
+findField: [processor: block: ;; 0 dynamic @processor block findFieldWithOverloadDepth];

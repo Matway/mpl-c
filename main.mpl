@@ -1,16 +1,43 @@
-"control" useModule
-"pathUtils" useModule
-"astNodeType" useModule
-"parser" useModule
-"astOptimizers" useModule
-"processor" useModule
-"processorImpl" useModule
-"file" useModule
-"memory" useModule
-
 "Array.makeSubRange" use
+"HashTable.hash" use
+"String.String" use
+"String.addLog" use
+"String.assembleString" use
+"String.hash" use
+"String.makeStringView" use
+"String.makeStringViewByAddress" use
+"String.print" use
+"String.printList" use
+"String.splitString" use
+"String.toString" use
 "ascii.ascii" use
+"control" use
+"conventions.cdecl" use
+"conventions.stdcall" use
+"file.loadString" use
+"file.saveString" use
 "memory.debugMemory" use
+
+"NameManager.NameManager" use
+"astNodeType.MultiParserResult" use
+"astNodeType.ParserResult" use
+"astNodeType.ParserResults" use
+"astOptimizers.concatParserResults" use
+"astOptimizers.optimizeLabels" use
+"astOptimizers.optimizeNames" use
+"parser.parseString" use
+"pathUtils.extractClearPath" use
+"processor.DEFAULT_PRE_RECURSION_DEPTH_LIMIT" use
+"processor.DEFAULT_RECURSION_DEPTH_LIMIT" use
+"processor.DEFAULT_STATIC_LOOP_LENGTH_LIMIT" use
+"processor.NameInfoEntry" use
+"processor.Processor" use
+"processor.ProcessorOptions" use
+"processorImpl.process" use
+
+debugMemory [
+  "memory.getMemoryMetrics" use
+] [] uif
 
 printInfo: [
   "USAGE: mplc.exe [options] <inputs>" print LF print
@@ -138,7 +165,9 @@ processIntegerOption: [
 ];
 
 {argc: 0; argv: 0nx;} 0 {convention: cdecl;} [
+  #debugMemory [TRUE !memoryDebugEnabled] when
   ("Start mplc compiler") addLog
+
   [
     argc:;
     argv:;
@@ -342,9 +371,10 @@ processIntegerOption: [
 
           success [
             multiParserResult: MultiParserResult;
+            nameManager: NameInfoEntry NameManager;
             @parserResults @multiParserResult concatParserResults
             ("trees concated" makeStringView) addLog
-            @multiParserResult optimizeNames
+            @multiParserResult @nameManager optimizeNames
             ("names optimized" makeStringView) addLog
 
             ("filenames:" makeStringView) addLog
@@ -352,7 +382,7 @@ processIntegerOption: [
 
             result: String;
             program: String;
-            multiParserResult options 0 @result @program process
+            multiParserResult @nameManager options 0 @result @program process
             result.size 0 = [
               outputFileName program saveString [
                 ("program written to " outputFileName) addLog
@@ -374,11 +404,12 @@ processIntegerOption: [
   ] call
 
   debugMemory [] && [
+    #mplReleaseCache
     (
-      "allocations: " memoryCurrentAllocationCount copy "/" memoryTotalAllocationCount copy
-      ", bytes: " memoryCurrentAllocationSize copy "/" memoryTotalAllocationSize copy
-      ", max: " memoryMaxAllocationSize copy
-      ", checksum: " memoryChecksum copy
+      "allocations: " getMemoryMetrics.memoryCurrentAllocationCount copy "/" getMemoryMetrics.memoryTotalAllocationCount copy
+      ", bytes: " getMemoryMetrics.memoryCurrentAllocationSize copy "/" getMemoryMetrics.memoryTotalAllocationSize copy
+      ", max: " getMemoryMetrics.memoryMaxAllocationSize copy
+      ", checksum: " getMemoryMetrics.memoryChecksum copy
       LF
     ) printList
   ] when

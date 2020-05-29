@@ -1,11 +1,9 @@
+"control" use
+
 "Array.Array" use
 "HashTable.HashTable" use
 "String.String" use
 "Variant.Variant" use
-"control.Int32" use
-"control.Int64" use
-"control.Nat64" use
-"control.Real64" use
 
 AstNodeType: {
   Code:            [ 0];
@@ -105,7 +103,6 @@ ParserResult: [{
 ParserResults: [ParserResult Array];
 
 MultiParserResult: [{
-  names: String Int32 HashTable;
   memory: AstNode Array;
   nodes: IndexArray Array; # order of going is not defined before compiling
 

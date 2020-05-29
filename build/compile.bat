@@ -10,6 +10,7 @@ mplc.exe -D COMPILER_SOURCE_VERSION=%SOURCE_VERSION% -D DEBUG=FALSE -D DEBUG_MEM
  ../builtins.mpl^
  ../codeNode.mpl^
  ../debugWriter.mpl^
+ ../declarations.mpl^
  ../defaultImpl.mpl^
  ../File.mpl^
  ../irWriter.mpl^

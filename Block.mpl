@@ -1,8 +1,9 @@
+"control" use
+
 "Array.Array" use
 "HashTable.HashTable" use
 "String.String" use
-"control.Cond" use
-"control.Int32" use
+"Variant.Variant" use
 
 "Mref.Mref" use
 "Var.RefToVar" use
@@ -12,15 +13,25 @@ ArgVirtual:     [0n8 dynamic];
 ArgGlobal:      [1n8 dynamic];
 ArgRef:         [2n8 dynamic];
 ArgCopy:        [3n8 dynamic];
-ArgReturn:      [4n8 dynamic];
-ArgRefDeref:    [5n8 dynamic];
-ArgReturnDeref: [6n8 dynamic];
+ArgMeta:        [4n8 dynamic];
+ArgReturn:      [5n8 dynamic];
+ArgRefDeref:    [6n8 dynamic];
+ArgReturnDeref: [7n8 dynamic];
 
-NameCaseInvalid:    [0n8 dynamic];
-NameCaseBuiltin:    [1n8 dynamic];
-NameCaseLocal:      [2n8 dynamic];
-NameCaseFromModule: [3n8 dynamic];
-NameCaseCapture:    [4n8 dynamic];
+NameCaseInvalid:               [ 0n8 dynamic];
+NameCaseBuiltin:               [ 1n8 dynamic];
+NameCaseLocal:                 [ 2n8 dynamic];
+NameCaseFromModule:            [ 3n8 dynamic];
+NameCaseCapture:               [ 4n8 dynamic];
+NameCaseSelfMember:            [ 5n8 dynamic];
+NameCaseClosureMember:         [ 6n8 dynamic];
+NameCaseSelfObject:            [ 7n8 dynamic];
+NameCaseClosureObject:         [ 8n8 dynamic];
+NameCaseSelfObjectCapture:     [ 9n8 dynamic];
+NameCaseClosureObjectCapture:  [10n8 dynamic];
+
+MemberCaseToObjectCase:        [2n8 +];
+MemberCaseToObjectCaptureCase: [4n8 +];
 
 NodeCaseEmpty:              [0n8 dynamic];
 NodeCaseCode:               [1n8 dynamic];
@@ -50,13 +61,12 @@ Argument: [{
 }];
 
 Capture: [{
-  refToVar: RefToVar;
-  argCase: ArgRef;
-  captureCase: NameCaseInvalid;
-  nameInfo: -1 dynamic;
-  nameOverload: -1 dynamic;
-  cntNameOverload: -1 dynamic;
-  cntNameOverloadParent: -1 dynamic;
+  refToVar:          RefToVar;
+  argCase:           ArgRef;
+  captureCase:       NameCaseInvalid;
+  nameInfo:          -1 dynamic;
+  nameOverloadDepth: -1 dynamic;
+  file:              ["File.FileSchema" use FileSchema] Mref;
 }];
 
 CFunctionSignature: [{
@@ -74,13 +84,12 @@ CompilerPositionInfo: [{
 }];
 
 FieldCapture: [{
-  object: RefToVar;
-  capturingPoint: -1 dynamic; #index of code node where it was
-  captureCase: NameCaseInvalid;
-  nameInfo: -1 dynamic;
-  nameOverload: -1 dynamic;
-  cntNameOverload: -1 dynamic;
-  cntNameOverloadParent: -1 dynamic;
+  object:            RefToVar;
+  captureCase:       NameCaseInvalid;
+  nameInfo:          -1 dynamic;
+  nameOverloadDepth: -1 dynamic;
+  fieldIndex:        -1 dynamic;
+  file:              ["File.FileSchema" use FileSchema] Mref;
 }];
 
 makeInstruction: [{
@@ -93,23 +102,34 @@ makeInstruction: [{
 
 Instruction: [0 0 makeInstruction];
 
+ShadowEvent: [(
+  Cond                    #ShadowReasonNo
+  ShadowEventCapture      #ShadowReasonCapture
+  ShadowEventFieldCapture #ShadowReasonFieldCapture
+  ShadowEventInput        #ShadowReasonInput
+  ShadowEventField        #ShadowReasonField
+  ShadowEventPointee      #ShadowReasonPointee
+) Variant];
+
 MatchingInfo: [{
-  inputs: Argument Array;
-  preInputs: RefToVar Array;
-  captures: Capture Array;
-  fieldCaptures: FieldCapture Array;
-  hasStackUnderflow: FALSE dynamic;
-  unfoundedNames: Int32 Cond HashTable; #nameInfos
+  inputs: Argument Array; #for generating signatures
+  captures: Capture Array; #for generating signatures, for finding 'self'
+  shadowEvents: ShadowEvent Array;
+  lastTopologyIndex: 0 dynamic;
+}];
+
+NameWithOverload: [{
+  nameInfo: -1 dynamic;
+  nameOverloadDepth: -1 dynamic;
 }];
 
 NameWithOverloadAndRefToVar: [{
   virtual NAME_WITH_OVERLOAD_AND_REF_TO_VAR: ();
   nameInfo: -1 dynamic;
-  nameOverload: -1 dynamic;
-  cntNameOverload: -1 dynamic;
-  cntNameOverloadParent: -1 dynamic;
-  refToVar: RefToVar;
+  nameOverloadDepth:-1 dynamic;
   startPoint: -1 dynamic;
+  hasOverloadWord: FALSE dynamic;
+  refToVar: RefToVar;
 }];
 
 TokenRef: [{
@@ -122,12 +142,28 @@ UsedModuleInfo: [{
   position: CompilerPositionInfo;
 }];
 
+ShadowEventInput:        [Argument];
+
+ShadowEventCapture:      [Capture];
+
+ShadowEventFieldCapture: [FieldCapture];
+
+ShadowEventField: [{
+  object: RefToVar;
+  field: RefToVar;
+  mplFieldIndex: Int32;
+}];
+
+ShadowEventPointee: [{
+  pointer: RefToVar;
+  pointee: RefToVar;
+}];
+
 Block: [{
   id:              Int32;
   root:            FALSE dynamic;
   parent:          0 dynamic;
   nodeCase:        NodeCaseCode;
-  position:        CompilerPositionInfo;
   stack:           RefToVar Array; # we must compile node without touching parent
   minStackDepth:   0 dynamic;
   programTemplate: String;
@@ -136,27 +172,28 @@ Block: [{
   lastLambdaName:  Int32;
   nextRecLambdaId: -1 dynamic;
 
-  nodeIsRecursive:    FALSE dynamic;
-  nextLabelIsVirtual: FALSE dynamic;
-  nextLabelIsSchema:  FALSE dynamic;
-  nextLabelIsConst:   FALSE dynamic;
-  recursionState:     NodeRecursionStateNo;
-  state:              NodeStateNew;
-  struct:             Struct;
-  irName:             String;
-  header:             String;
-  argTypes:           String;
-  csignature:         CFunctionSignature;
-  convention:         String;
-  mplConvention:      String;
-  signature:          String;
-  nodeCompileOnce:    FALSE dynamic;
-  empty:              FALSE dynamic;
-  deleted:            FALSE dynamic;
-  emptyDeclaration:   FALSE dynamic;
-  uncompilable:       FALSE dynamic;
-  variadic:           FALSE dynamic;
-  hasNestedCall:      FALSE dynamic;
+  nodeIsRecursive:     FALSE dynamic;
+  nextLabelIsVirtual:  FALSE dynamic;
+  nextLabelIsSchema:   FALSE dynamic;
+  nextLabelIsConst:    FALSE dynamic;
+  nextLabelIsOverload: FALSE dynamic;
+  recursionState:      NodeRecursionStateNo;
+  state:               NodeStateNew;
+  struct:              Struct;
+  irName:              String;
+  header:              String;
+  argTypes:            String;
+  csignature:          CFunctionSignature;
+  convention:          String;
+  mplConvention:       String;
+  signature:           String;
+  nodeCompileOnce:     FALSE dynamic;
+  empty:               FALSE dynamic;
+  deleted:             FALSE dynamic;
+  emptyDeclaration:    FALSE dynamic;
+  uncompilable:        FALSE dynamic;
+  variadic:            FALSE dynamic;
+  hasNestedCall:       FALSE dynamic;
 
   countOfUCall:         0 dynamic;
   declarationRefs:      Cond Array;
@@ -169,21 +206,11 @@ Block: [{
   captureNames:      NameWithOverloadAndRefToVar Array;
   fieldCaptureNames: NameWithOverloadAndRefToVar Array;
 
-  captureTable:      RefToVar Cond HashTable;
-  fieldCaptureTable: RefToVar Cond HashTable;
-
   candidatesToDie:     RefToVar Array;
   unprocessedAstNodes: TokenRef Array;
-  moduleName:          String;
-  includedModules:     Int32 Array; #ids in order
-  directlyIncludedModulesTable: Int32 Cond HashTable; # dont include twice plz
-  includedModulesTable:         Int32 UsedModuleInfo HashTable; # dont include twice plz
-  usedModulesTable:             Int32 UsedModuleInfo HashTable; # moduleID, hasUsedVars
-  usedOrIncludedModulesTable:   Int32 Cond HashTable; # moduleID, hasUsedVars
 
   refToVar:           RefToVar; #refToVar of function with compiled node
   varNameInfo:        -1 dynamic; #variable name of imported function
-  moduleId:           -1 dynamic;
   indexArrayAddress:  0nx dynamic;
   matchingInfoIndex:  -1 dynamic;
   exportDepth:        0 dynamic;

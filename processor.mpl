@@ -3,18 +3,19 @@
 "Owner.Owner" use
 "String.String" use
 "String.StringView" use
-"control.Cond" use
-"control.Int32" use
-"control.Natx" use
+"control" use
 "memory.debugMemory" use
 
-"Block.CompilerPositionInfo" use
 "Block.Block" use
+"Block.CompilerPositionInfo" use
+"Block.NameCaseInvalid" use
 "File.File" use
+"Mref.Mref" use
+"NameManager.NameManager" use
 "Var.RefToVar" use
 "Var.Variable" use
 "astNodeType.IndexArray" use
-"irWriter.IRArgument" use
+"astNodeType.MultiParserResult" use
 "schemas.VariableSchema" use
 
 StringArray: [String Array];
@@ -64,17 +65,17 @@ IndexInfo: [{
   index: -1 dynamic;
 }];
 
-NameWithOverload: [{
-  nameInfo: -1 dynamic;
-  nameOverload: -1 dynamic;
-
-  equal: [other:; nameInfo other.nameInfo = [nameOverload other.nameOverload =] &&];
-  hash: [nameInfo 67n32 * nameOverload 17n32 * +];
-}];
-
 RefToVarTable: [
   RefToVar RefToVar HashTable
 ];
+
+NameInfoEntry: [{
+  file: File Cref;
+  refToVar: RefToVar;
+  startPoint: -1 dynamic; # id of node
+  nameCase: NameCaseInvalid;
+  mplFieldIndex: -1 dynamic; # for NameCaseSelfMember
+}];
 
 MatchingNode: [{
   unknownMplType: IndexArray;
@@ -96,22 +97,40 @@ WayInfo: [
   -1 dynamic -1 dynamic StringView makeWayInfo
 ];
 
+IRArgument: [{
+  irTypeId: 0;
+  irNameId: 0;
+  byRef: TRUE;
+}];
+
+NameInfoCoord: [{
+  block: ["Block.BlockSchema" use BlockSchema] Mref;
+  file: ["File.FileSchema" use FileSchema] Mref;
+}];
+
 Processor: [{
   options: ProcessorOptions;
+  multiParserResult: MultiParserResult Cref;
+  result: ProcessorResult;
+  positions: CompilerPositionInfo Array;
 
   files: File Owner Array;
   #fileStack: File AsRef Array;
   #file: [@fileStack.last.data]; # Currently processed File
 
   blocks: Block Owner Array;
-
   variables: Variable Array Array;
 
   matchingNodes:       Natx MatchingNode HashTable;
   recursiveNodesStack: Int32 Array;
-  nameInfos:           NameInfo Array;
+  nameManager:         NameInfoEntry NameManager;
   modules:             String Int32 HashTable; # -1 no module, or Id of codeNode
-  nameToId:            String Int32 HashTable; # id of nameInfo from parser
+
+  captureTable: {
+    simpleNames:  NameInfoCoord Array Array Array; #name; overload; vector of blocks
+    selfNames:    NameInfoCoord Array Array Array; #overload; mplTypeId; vector of blocks
+    closureNames: NameInfoCoord Array Array Array; #overload; mplTypeId; vector of blocks
+  };
 
   emptyNameInfo:               -1 dynamic;
   callNameInfo:                -1 dynamic;
@@ -132,6 +151,7 @@ Processor: [{
   globalVarCount:         0 dynamic;
   globalVarId:            0 dynamic;
   globalInitializer:      -1 dynamic; # index of func for calling all initializers
+  varForFails:            RefToVar;
   globalDestructibleVars: RefToVar Array;
   exportDepth:            0 dynamic;
 
@@ -156,7 +176,7 @@ Processor: [{
 
   acquireVarRefArray: [
     varRefArrays.size 0 = [
-      varRefArrayCount 11 = ["Too many varRef arrays requested\00" failProc] when
+      varRefArrayCount 15 = ["Too many varRef arrays requested\00" failProc] when
       varRefArrayCount 1 + !varRefArrayCount
       RefToVar Array
     ] [

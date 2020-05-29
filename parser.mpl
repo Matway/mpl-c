@@ -6,28 +6,12 @@
 "String.codepointToString" use
 "String.makeStringView" use
 "String.makeStringView2" use
+"String.print" use
 "String.splitString" use
 "String.toString" use
-"ascii.ascii" use
-"control.&&" use
-"control.=" use
-"control.Cref" use
-"control.Cond" use
-"control.Int32" use
-"control.Nat32" use
-"control.Nat8" use
-"control.Ref" use
-"control.between?" use
-"control.case" use
-"control.each" use
-"control.enum" use
-"control.sequence" use
-"control.times" use
-"control.when" use
-"control.within?" use
-"control.||" use
-"conventions.cdecl" use
+"control" use
 
+"ascii.ascii" use
 "astNodeType.AstNode" use
 "astNodeType.AstNodeType" use
 "astNodeType.IndexArray" use
@@ -431,7 +415,7 @@ lexicalError: [
 ];
 
 parseStringConstant: [
-  nameSymbols: StringView Array;
+  nameSymbols: String;
   iterate
   stop: FALSE;
   error: [lexicalError TRUE !stop];
@@ -444,20 +428,20 @@ parseStringConstant: [
       ] [
         currentCode ascii.quote = [TRUE !stop] term
       ] [
-        currentCode ascii.backSlash = ~ [currentSymbol @nameSymbols.pushBack] term
+        currentCode ascii.backSlash = ~ [currentSymbol @nameSymbols.cat] term
       ] [
         iterate
         currentCode ascii.null = ["unterminated escape sequence" error] term
       ] [
-        currentCode ascii.quote = [currentSymbol @nameSymbols.pushBack] term
+        currentCode ascii.quote = [currentSymbol @nameSymbols.cat] term
       ] [
-        currentCode ascii.nCode = [LF makeStringView @nameSymbols.pushBack] term
+        currentCode ascii.nCode = [LF makeStringView @nameSymbols.cat] term
       ] [
-        currentCode ascii.rCode = [code: 13n8; code storageAddress 1 makeStringView2 @nameSymbols.pushBack] term
+        currentCode ascii.rCode = [code: 13n8; code storageAddress 1 makeStringView2 @nameSymbols.cat] term
       ] [
-        currentCode ascii.tCode = [code: 9n8; code storageAddress 1 makeStringView2 @nameSymbols.pushBack] term
+        currentCode ascii.tCode = [code: 9n8; code storageAddress 1 makeStringView2 @nameSymbols.cat] term
       ] [
-        currentCode ascii.backSlash = [currentSymbol @nameSymbols.pushBack] term
+        currentCode ascii.backSlash = [currentSymbol @nameSymbols.cat] term
       ] [
         currentCode Int32 cast codepointHex? ~ ["invalid escape sequence" error] term
       ] [
@@ -470,7 +454,7 @@ parseStringConstant: [
         first 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !first
         first codeunitHead? ~ ["invalid unicode sequence" error] term
       ] [
-        first storageAddress 1 makeStringView2 @nameSymbols.pushBack
+        first storageAddress 1 makeStringView2 @nameSymbols.cat
         first 0x80n8 < [] term
       ] [
         iterate
@@ -487,7 +471,7 @@ parseStringConstant: [
         next 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !next
         next codeunitTail? ~ ["invalid unicode sequence" error] term
       ] [
-        next storageAddress 1 makeStringView2 @nameSymbols.pushBack
+        next storageAddress 1 makeStringView2 @nameSymbols.cat
         first 0xE0n8 < [] term
       ] [
         iterate
@@ -504,7 +488,7 @@ parseStringConstant: [
         next 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !next
         next codeunitTail? ~ ["invalid unicode sequence" error] term
       ] [
-        next storageAddress 1 makeStringView2 @nameSymbols.pushBack
+        next storageAddress 1 makeStringView2 @nameSymbols.cat
         first 0xF0n8 < [] term
       ] [
         iterate
@@ -521,14 +505,14 @@ parseStringConstant: [
         next 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !next
         next codeunitTail? ~ ["invalid unicode sequence" error] term
       ] [
-        next storageAddress 1 makeStringView2 @nameSymbols.pushBack
+        next storageAddress 1 makeStringView2 @nameSymbols.cat
       ]
     ) sequence
 
     iterate stop ~
   ] loop
 
-  nameSymbols assembleString makeStringNode @mainResult.@memory.pushBack
+  @nameSymbols move makeStringNode @mainResult.@memory.pushBack
   TRUE
 ];
 
@@ -1211,15 +1195,17 @@ parseNode: [
 {
   text: StringView Cref;
   mainResult: ParserResult Ref;
-} () {convention: cdecl;} [
+} () {} [
   splittedString: splitString;
   mainResult:;
+
   splittedString.success [
+
     currentPosition: PositionInfo;
     prevPosition: PositionInfo;
 
     currentCode: 0n32 dynamic;
-    currentSymbol: StringView;
+    currentSymbol: StringView dynamic;
 
     pc: makeParserConstants;
 
@@ -1232,7 +1218,8 @@ parseNode: [
     IndexArray @unfinishedNodes.pushBack
     ascii.null @unfinishedTerminators.pushBack
 
-    iterate parseNode
+    iterate
+    parseNode
   ] [
     FALSE @mainResult.@success set
     ("wrong encoding, can not recognize line and column, offset in bytes: " splittedString.errorOffset) assembleString @mainResult.@errorInfo.@message set
