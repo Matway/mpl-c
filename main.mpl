@@ -1,6 +1,7 @@
 "Array.makeSubRange" use
 "HashTable.hash" use
 "String.String" use
+"String.StringView" use
 "String.addLog" use
 "String.assembleString" use
 "String.hash" use

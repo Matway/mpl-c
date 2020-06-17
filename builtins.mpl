@@ -86,12 +86,10 @@ builtins: (
   {name: "printCompilerMessage"          ; impl: @mplBuiltinPrintCompilerMessage    ;}
   {name: "printStack"                    ; impl: @mplBuiltinPrintStack              ;}
   {name: "printStackTrace"               ; impl: @mplBuiltinPrintStackTrace         ;}
-  {name: "printVariableCount"            ; impl: @mplBuiltinPrintVariableCount      ;}
   {name: "raiseStaticError"              ; impl: @mplBuiltinRaiseStaticError        ;}
   {name: "recursive"                     ; impl: @mplBuiltinRecursive               ;}
   {name: "rshift"                        ; impl: @mplBuiltinRShift                  ;}
   {name: "same"                          ; impl: @mplBuiltinSame                    ;}
-  {name: "schema"                        ; impl: @mplBuiltinSchema                  ;}
   {name: "set"                           ; impl: @mplBuiltinSet                     ;}
   {name: "sin"                           ; impl: @mplBuiltinSin                     ;}
   {name: "sqrt"                          ; impl: @mplBuiltinSqrt                    ;}

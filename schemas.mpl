@@ -113,6 +113,7 @@ VariableSchema: [{
   irTypeId: -1;
   dbgTypeId: -1;
   dbgTypeDeclarationId: -1;
+  nilVar: RefToVar;
   data: (
     BuiltinTypeSchema
     FunctionSchema

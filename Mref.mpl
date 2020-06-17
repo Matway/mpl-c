@@ -1,6 +1,6 @@
 Mref: [{
   ObjectSchema:;
-  data: 0nx;
+  data: 0nx dynamic;
 
   CALL: [
     data ObjectSchema addressToReference @closure isConst [const] [] uif

@@ -117,6 +117,7 @@ Processor: [{
   files: File Owner Array;
   #fileStack: File AsRef Array;
   #file: [@fileStack.last.data]; # Currently processed File
+  fileNameIds: String Int32 HashTable;
 
   blocks: Block Owner Array;
   variables: Variable Array Array;
@@ -189,6 +190,11 @@ Processor: [{
     move @varRefArrays.pushBack
     @varRefArrays.last.clear
   ];
+
+  temporaryBuiltinUseData: {
+    indexes: Int32 {index: Int32; depth: Int32;} HashTable;
+    addNameData: {refToVar: RefToVar; nameInfo: Int32; } Array;
+  };
 
   unfinishedWay: WayInfo Array;
 

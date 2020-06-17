@@ -21,6 +21,7 @@
 "Var.VarCode" use
 "Var.VarImport" use
 "Var.VarString" use
+"Var.Virtual" use
 "Var.Weak" use
 "Var.getPlainValueInformation" use
 "Var.getVar" use
@@ -82,8 +83,22 @@ createRefNoOp: [processor: block:;; FALSE dynamic @processor @block createRefWit
 compilable: [processor:; processor.result.success copy];
 
 makeVarRealCaptured: [
-  refToVar:;
+  refToVar: processor: block: ;;;
+  refToVar getVar.storageStaticity Virtual = [
+    "accessing nullptr" @processor @block compilerError
+  ] when
+
   TRUE @refToVar getVar.@capturedAsRealValue set
+];
+
+makeVarPtrCaptured: [
+  refToVar:;
+  TRUE @refToVar getVar.@capturedByPtr set
+];
+
+makeVarDerefCaptured: [
+  refToVar:;
+  TRUE @refToVar getVar.@capturedForDeref set
 ];
 
 defaultFailProc: [
@@ -96,9 +111,6 @@ defaultSet: [
   refToDst: @processor @block pop;
   refToSrc: @processor @block pop;
   processor compilable [
-    @refToSrc makeVarRealCaptured
-    @refToDst makeVarRealCaptured
-
     refToDst refToSrc variablesAreSame [
       refToSrc getVar.data.getTag VarImport = [
         "functions cannot be copied" @processor block compilerError
@@ -118,7 +130,7 @@ defaultSet: [
       refToDst.mutable ~ [
         "destination is immutable" @processor block compilerError
       ] [
-        lambdaCastResult: refToSrc @refToDst @processor @block tryImplicitLambdaCast;
+        lambdaCastResult: @refToSrc @refToDst @processor @block tryImplicitLambdaCast;
         lambdaCastResult.success [
           newSrc: @lambdaCastResult.@refToVar TRUE @processor @block createRef;
           @newSrc @refToDst @processor @block createCopyToExists
@@ -160,11 +172,11 @@ getStackEntryWith: [
       check ["stack underflow" @processor block compilerError] when
       FALSE
     ] [
-      depth currentBlock.stack.dataSize < [
-        currentBlock.stack.dataSize 1 - depth - @currentBlock.@stack.at !result
+      depth currentBlock.stack.size < [
+        currentBlock.stack.size 1 - depth - @currentBlock.@stack.at !result
         FALSE
       ] [
-        depth currentBlock.stack.dataSize - currentBlock.buildingMatchingInfo.inputs.size + @depth set
+        depth currentBlock.stack.size - currentBlock.buildingMatchingInfo.inputs.size + @depth set
         currentBlock.parent @processor.@blocks.at.get !currentBlock
         TRUE
       ] if
@@ -183,7 +195,7 @@ getStackDepth: [
   inputsCount: 0 dynamic;
   [
     block.root ~ [
-      depth block.stack.dataSize + @depth set
+      depth block.stack.size + @depth set
       inputsCount block.buildingMatchingInfo.inputs.size + @inputsCount set
       block.parent processor.blocks.at.get !block
       TRUE
@@ -264,12 +276,12 @@ addEmptyCapture: [
   ShadowReasonCapture @newEvent.setTag
   branch: ShadowReasonCapture @newEvent.get;
 
-  RefToVar          @branch.@refToVar set
-  nameInfo          @branch.@nameInfo set
-  nameOverloadDepth @branch.@nameOverloadDepth set
-  NameCaseInvalid   @branch.@captureCase set
-  file              @branch.@file.set
-  ArgMeta           @branch.@argCase set
+  processor.varForFails @branch.@refToVar set
+  nameInfo              @branch.@nameInfo set
+  nameOverloadDepth     @branch.@nameOverloadDepth set
+  NameCaseInvalid       @branch.@captureCase set
+  file                  @branch.@file.set
+  ArgMeta               @branch.@argCase set
   @newEvent @block addShadowEvent
 ];
 

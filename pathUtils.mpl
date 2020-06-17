@@ -138,3 +138,22 @@ stripFilename: [
   view: makeStringView;
   view view findFilenamePosition 1 - 0 max head
 ];
+
+nameWithoutBadSymbols: [
+  splitted: splitString;
+  result: String;
+
+  splitted.success [
+    splitted.chars [
+      symbol:;
+      codePoint: symbol.data Nat8 addressToReference;
+      codePoint 48n8 < ~ [codePoint 57n8 > ~] &&         #0..9
+      [codePoint 65n8 < ~ [codePoint 90n8 > ~] &&] ||    #A..Z
+      [codePoint 97n8 < ~ [codePoint 122n8 > ~] &&] || [ #a..z
+        symbol @result.cat
+      ] when
+    ] each
+  ] when
+
+  @result
+];

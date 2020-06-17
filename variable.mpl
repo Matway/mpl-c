@@ -22,8 +22,6 @@
 "Var.Dirty" use
 "Var.Dynamic" use
 "Var.RefToVar" use
-"Var.Schema" use
-"Var.Schema" use
 "Var.Static" use
 "Var.VarBuiltin" use
 "Var.VarCode" use
@@ -582,6 +580,7 @@ makeDbgTypeId: [
   refToVar: processor: block: ;;;
   overload failProc: processor block FailProcForProcessor;
 
+
   var: refToVar getVar;
   resultDBG: String;
   var.data.getTag (
@@ -599,9 +598,17 @@ makeDbgTypeId: [
         branch.fields [
           curField:;
           curField.refToVar isVirtual ~ [
-            (curField.nameInfo processor.nameManager.getText ":" curField.refToVar @processor getDbgType ";") @resultDBG.catMany
+            curField.refToVar getVar.data.getTag VarStruct = [
+              (
+                curField.nameInfo processor.nameManager.getText ":{id"
+                curField.refToVar getVar.mplSchemaId "};") @resultDBG.catMany
+            ] [
+              (
+                curField.nameInfo processor.nameManager.getText ":"
+                curField.refToVar @processor getDbgType ";") @resultDBG.catMany
+            ] if
           ] [
-            (curField.nameInfo processor.nameManager.getText ".") @resultDBG.catMany
+            (curField.nameInfo processor.nameManager.getText ":;") @resultDBG.catMany
           ] if
         ] each
 
@@ -703,9 +710,15 @@ makeDbgTypeId: [
         [
           i branch.fields.dataSize < [
             curField: i branch.fields.at;
-            (
-              curField.nameInfo processor.nameManager.getText ":"
-              curField.refToVar @processor block getMplType ";") @resultMPL.catMany
+            curField.refToVar getVar.data.getTag VarStruct = [curField.refToVar isVirtual ~] && [
+              (
+                curField.nameInfo processor.nameManager.getText ":{id"
+                curField.refToVar getVar.mplSchemaId "};") @resultMPL.catMany
+            ] [
+              (
+                curField.nameInfo processor.nameManager.getText ":"
+                curField.refToVar @processor @block getMplType ";") @resultMPL.catMany
+            ] if
             i 1 + @i set TRUE
           ] &&
         ] loop

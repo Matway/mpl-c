@@ -12,6 +12,7 @@
 "Block.Instruction" use
 "Block.makeInstruction" use
 "File.File" use
+"Var.Dynamic" use
 "Var.RefToVar" use
 "Var.VarBuiltin" use
 "Var.VarStruct" use
@@ -26,6 +27,7 @@
 "Var.isVirtual" use
 "Var.makeStringId" use
 "Var.markAsUnableToDie" use
+"Var.staticityOfVar" use
 "Var.varIsMoved" use
 "declarations.addDebugLocationForLastInstruction" use
 "declarations.callAssign" use
@@ -36,7 +38,11 @@
 "declarations.makeVarString" use
 "declarations.setVar" use
 "defaultImpl.findNameInfo" use
+"defaultImpl.makeVarPtrCaptured" use
+"defaultImpl.makeVarRealCaptured" use
 "defaultImpl.nodeHasCode" use
+"pathUtils.nameWithoutBadSymbols" use
+"pathUtils.stripExtension" use
 "processor.Processor" use
 
 appendInstruction: [
@@ -110,16 +116,37 @@ getStaticStructIR: [
   result
 ];
 
+createDerefWith: [
+  refNameId: refTypeId: derefNameId: processor: block: ;;;;;
+  ("  " @derefNameId @processor getNameById " = load " refTypeId @processor getNameById ", " refTypeId @processor getNameById "* " refNameId @processor getNameById) @block appendInstruction
+
+  refNameId   @block.@program.last.@irName1 set
+  derefNameId @block.@program.last.@irName2 set
+];
+
 createDerefTo: [
   refToVar: derefNameId: processor: block: ;;;;
-  ("  " @derefNameId @processor getNameById " = load " refToVar @processor getIrType ", " refToVar @processor getIrType "* " refToVar @processor getIrName) @block appendInstruction
+  refToVar getVar.irNameId refToVar @processor getMplSchema.irTypeId derefNameId @processor @block createDerefWith
 ];
 
 createDerefToRegister: [
   srcRef: processor: block: ;;;
-  derefName: @processor @block generateRegisterIRName;
-  srcRef derefName @processor @block createDerefTo
-  derefName
+  derefNameId: @processor @block generateRegisterIRName;
+  srcRef getVar.irNameId srcRef @processor getMplSchema.irTypeId derefNameId @processor @block createDerefWith
+  derefNameId
+];
+
+createDerefFromRegisterToRegister: [
+  srcNameId: srcTypeId: processor: block: ;;;;
+  derefNameId: @processor @block generateRegisterIRName;
+  srcNameId srcTypeId derefNameId @processor @block createDerefWith
+  derefNameId
+];
+
+createAllocIRByReg: [
+  regNameId: regTypeId: processor: block: ;;;;
+  ("  " regNameId @processor getNameById " = alloca " regTypeId @processor getNameById) @block appendInstruction
+  TRUE @block.@program.last.@alloca set
 ];
 
 createAllocIR: [
@@ -127,12 +154,13 @@ createAllocIR: [
   var: @refToVar getVar;
   block.parent 0 = [
     (refToVar @processor getIrName " = local_unnamed_addr global " refToVar @processor getIrType " zeroinitializer") assembleString @processor.@prolog.pushBack
-    processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
+    processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
   ] [
-    ("  " refToVar @processor getIrName " = alloca " refToVar @processor getIrType) @block appendInstruction
-    TRUE @block.@program.last.@alloca set
-    block.program.dataSize 1 - @var.@allocationInstructionIndex set
+    refToVar getVar.irNameId refToVar @processor getMplSchema.irTypeId @processor @block createAllocIRByReg
+    refToVar getVar.irNameId @block.@program.last.@irName1 set
+    block.program.size 1 - @var.@allocationInstructionIndex set
   ] if
+
 
   refToVar copy
 ];
@@ -142,7 +170,7 @@ createStaticInitIR: [
   var: @refToVar getVar;
   [block.parent 0 =] "Can be used only with global vars!" assert
   (refToVar @processor getIrName " = local_unnamed_addr global " refToVar @processor getStaticStructIR) assembleString @processor.@prolog.pushBack
-  processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
+  processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
   refToVar copy
 ];
 
@@ -152,7 +180,7 @@ createVarImportIR: [
   var: @refToVar getVar;
 
   (refToVar @processor getIrName " = external global " refToVar @processor getIrType) assembleString @processor.@prolog.pushBack
-  processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
+  processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
 
   refToVar copy
 ];
@@ -163,7 +191,7 @@ createVarExportIR: [
   var: @refToVar getVar;
 
   (refToVar @processor getIrName " = dllexport global " refToVar @processor getIrType " zeroinitializer") assembleString @processor.@prolog.pushBack
-  processor.prolog.dataSize 1 - @var.@globalDeclarationInstructionIndex set
+  processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
 
   refToVar copy
 ];
@@ -233,6 +261,9 @@ createStaticGEP: [
   struct: structRefToVar getVar;
   realIndex: index VarStruct struct.data.get.get.realFieldIndexes.at;
   ("  " resultRefToVar @processor getIrName " = getelementptr " structRefToVar @processor getIrType ", " structRefToVar @processor getIrType "* " structRefToVar @processor getIrName ", i32 0, i32 " realIndex) @block appendInstruction
+
+  structRefToVar getVar.irNameId @block.@program.last.@irName1 set
+  resultRefToVar getVar.irNameId @block.@program.last.@irName2 set
 ];
 
 createDynamicGEP: [
@@ -262,7 +293,7 @@ createGEPInsteadOfAlloc: [
   # create GEP instruction
   dstRef index struct @processor @block createStaticGEP
   # change allocation instruction
-  [dstVar.allocationInstructionIndex block.program.dataSize <] "Var is not allocated!" assert
+  [dstVar.allocationInstructionIndex block.program.size <] "Var is not allocated!" assert
   instruction: dstVar.allocationInstructionIndex @block.@program.at;
   block.program.last @instruction set
   FALSE @block.@program.last.@enabled set
@@ -271,25 +302,60 @@ createGEPInsteadOfAlloc: [
   -1 @dstVar.@allocationInstructionIndex set
 ];
 
+createStoreFromRegisterToRegister: [
+  regName: destRegName: regType: processor: block: ;;;;;
+  ("  store " regType @processor getNameById " " @regName @processor getNameById ", " regType @processor getNameById "* " destRegName @processor getNameById) @block appendInstruction
+
+  regName     @block.@program.last.@irName1 set
+  destRegName @block.@program.last.@irName2 set
+];
+
 createStoreFromRegister: [
   regName: destRefToVar: processor: block: ;;;;
-  resultVar: destRefToVar getVar;
-  ("  store " destRefToVar @processor getIrType " " @regName @processor getNameById ", " destRefToVar @processor getIrType "* " destRefToVar @processor getIrName) @block appendInstruction
+  regName destRefToVar getVar.irNameId destRefToVar @processor getMplSchema.irTypeId @processor @block createStoreFromRegisterToRegister
+];
+
+getValueOrDeref: [
+  refToVar:;
+  refToVar staticityOfVar Dynamic > [
+    refToVar getPlainConstantIR
+  ] [
+    @refToVar @processor @block makeVarRealCaptured
+    refToVar @processor @block createDerefToRegister @processor getNameById toString
+  ] if
+];
+
+createStringCompare: [
+  arg1: arg2: result: opName: processor: block: ;;;;;;
+
+  @arg1 @processor @block makeVarRealCaptured
+  @arg2 @processor @block makeVarRealCaptured
+
+  var1name: @arg1 @processor getIrName toString;
+  var2name: @arg2 @processor getIrName toString;
+
+  resultReg: @processor @block generateRegisterIRName;
+  ("  " resultReg @processor getNameById " = " @opName " " arg1 @processor getIrType "* " var1name ", " var2name) @block appendInstruction
+  resultReg result @processor @block createStoreFromRegister
 ];
 
 createBinaryOperation: [
   arg1: arg2: result: opName: processor: block: ;;;;;;
-  var1p: arg1 @processor @block createDerefToRegister;
-  var2p: arg2 @processor @block createDerefToRegister;
+
+  var1name: @arg1 getValueOrDeref;
+  var2name: @arg2 getValueOrDeref;
+
   resultReg: @processor @block generateRegisterIRName;
-  ("  " resultReg @processor getNameById " = " @opName " " arg1 @processor getIrType " " var1p @processor getNameById ", " var2p @processor getNameById) @block appendInstruction
+  ("  " resultReg @processor getNameById " = " @opName " " arg1 @processor getIrType " " var1name ", " var2name) @block appendInstruction
   resultReg result @processor @block createStoreFromRegister
 ];
 
 createBinaryOperationDiffTypes: [
   arg1: arg2: result: opName: processor: block: ;;;;;;
-  var1p: arg1 @processor @block createDerefToRegister;
-  var2p: arg2 @processor @block createDerefToRegister;
+
+  var1name: @arg1 getValueOrDeref;
+  var2name: @arg2 getValueOrDeref;
+
   castedReg: @processor @block generateRegisterIRName;
   castName: arg1 @processor getStorageSize arg2 @processor getStorageSize > [
     arg1 isNat ["zext"] ["sext"] if
@@ -297,9 +363,9 @@ createBinaryOperationDiffTypes: [
     "trunc"
   ] if;
 
-  ("  " castedReg @processor getNameById " = " castName " " arg2 @processor getIrType " " var2p @processor getNameById " to " arg1 @processor getIrType) @block appendInstruction
+  ("  " castedReg @processor getNameById " = " castName " " arg2 @processor getIrType " " var2name " to " arg1 @processor getIrType) @block appendInstruction
   resultReg: @processor @block generateRegisterIRName;
-  ("  " resultReg @processor getNameById " = " opName " " arg1 @processor getIrType " " var1p @processor getNameById ", " castedReg @processor getNameById) @block appendInstruction
+  ("  " resultReg @processor getNameById " = " opName " " arg1 @processor getIrType " " var1name ", " castedReg @processor getNameById) @block appendInstruction
   resultReg result @processor @block createStoreFromRegister
 ];
 
@@ -429,7 +495,7 @@ createCallIR: [
 
   i: 0 dynamic;
   [
-    i argList.dataSize < [
+    i argList.size < [
       currentArg: i argList.at;
       i 0 > [", "  @block.@programTemplate.cat] when
       currentArg.irTypeId @processor getNameById @block.@programTemplate.cat
@@ -542,24 +608,57 @@ createDtors: [
 ];
 
 sortInstructions: [
-  block:;
+  block: processor: ;;
   allocs:             Instruction Array;
   fakePointersAllocs: Instruction Array;
   fakePointers:       Instruction Array;
   noallocs:           Instruction Array;
+
+  bannedIds: Int32 Array;
+
   block.program.getSize [
-    program: i @block.@program.at;
-    i 0 = [program.alloca copy] || [
-      program.fakePointer [
-        @program move @fakePointersAllocs.pushBack
+    current: i @block.@program.at;
+    current.fakeAlloca [
+      current.irName1 @bannedIds.pushBack
+      FALSE @current.!enabled
+    ] when
+  ] times
+
+  [
+    bannedIds.getSize 0 > [
+      bannedId: bannedIds.last copy;
+      @bannedIds.popBack
+
+      block.program.getSize [
+        current: i @block.@program.at;
+        current.enabled [
+          current.irName1 bannedId = [
+            current.irName2 0 < ~ [
+              current.irName2 @bannedIds.pushBack
+            ] when
+
+            FALSE @current.!enabled
+          ] when
+        ] when
+      ] times
+
+      TRUE
+    ] &&
+  ] loop
+
+  block.program.getSize [
+    current: i @block.@program.at;
+    i 0 = [current.alloca copy] || [
+      current.fakePointer [
+        @current move @fakePointersAllocs.pushBack
       ] [
-        @program move @allocs.pushBack
+        @current move @allocs.pushBack
       ] if
     ] [
-      program.fakePointer [
-        @program move @fakePointers.pushBack
+      current.fakePointer [
+        @current move @fakePointers.pushBack
       ] [
-        @program move @noallocs.pushBack
+        @current move @noallocs.pushBack
       ] if
     ] if
   ] times
@@ -613,7 +712,7 @@ createCallTraceData: [
   ] when
 ];
 
-createCallTraceProlog: [ 
+createCallTraceProlog: [
   processor: block: ;;
   ptr: @processor @block generateRegisterIRName;
   ptrNext: @processor @block generateRegisterIRName;
@@ -696,6 +795,7 @@ createGetCallTrace: [
 # require captures "processor" and "codeNode"
 generateVariableIRNameWith: [
   hostOfVariable: temporaryRegister: processor: block: ;;;;
+
   temporaryRegister ~ [block.parent 0 =] && [
     ("@global." processor.globalVarCount) assembleString @processor makeStringId
     processor.globalVarCount 1 + @processor.@globalVarCount set
@@ -715,6 +815,10 @@ generateRegisterIRName: [processor: block: ;; @block TRUE @processor block gener
 } () {} [
   srcRef: dstRef: processor: block: ;;;;
   srcRef isAutoStruct [
+    @srcRef @processor @block makeVarRealCaptured
+    @dstRef @processor @block makeVarRealCaptured
+    @dstRef makeVarPtrCaptured
+
     srcRef getVar.temporary [
       # die-bytemove is faster than assign-die, I think
       processor.options.verboseIR ["set from temporary" @block createComment] when
@@ -738,6 +842,23 @@ generateRegisterIRName: [processor: block: ;; @block TRUE @processor block gener
       ] if
     ] if
   ] [
-    srcRef dstRef @processor @block createMemset
+    srcRef isPlain [
+      srcRef staticityOfVar Dynamic > [
+        srcRef dstRef @processor @block setVar
+        @dstRef @processor @block makeVarRealCaptured
+        @dstRef makeVarPtrCaptured
+        dstRef dstRef @processor @block createStoreConstant
+      ] [
+        @srcRef @processor @block makeVarRealCaptured
+        @dstRef @processor @block makeVarRealCaptured
+        @dstRef makeVarPtrCaptured
+        srcRef dstRef @processor @block createMemset
+      ] if
+    ] [
+      @srcRef @processor @block makeVarRealCaptured
+      @dstRef @processor @block makeVarRealCaptured
+      @dstRef makeVarPtrCaptured
+      srcRef dstRef @processor @block createMemset
+    ] if
   ] if
 ] "createCopyToExists" exportFunction

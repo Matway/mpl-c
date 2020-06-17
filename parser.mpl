@@ -1040,8 +1040,6 @@ parseName: [
 ];
 
 parseIdentifier: [
-  compileOnce
-
   currentCode ascii.quote = [
     parseStringConstant
   ] [

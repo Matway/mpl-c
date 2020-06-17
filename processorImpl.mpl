@@ -136,7 +136,8 @@ debugMemory [
   processor.options.fileNames.size @processor.@files.resize
   processor.options.fileNames.size [
     File owner i @processor.@files.at set
-    i processor.options.fileNames.at copy i @processor.@files.at.get.!name
+    i processor.options.fileNames.at i @processor.@files.at.get.@name set
+    i processor.options.fileNames.at stripExtension extractFilename toString i @processor.@fileNameIds.insert
   ] times
 
   processor.options.debug [
@@ -149,7 +150,7 @@ debugMemory [
 
   lastFile: File Cref;
 
-  multiParserResult.nodes.dataSize 0 > [
+  multiParserResult.nodes.size 0 > [
 
     dependedFiles: String IndexArray HashTable; # string -> array of indexes of dependent files
     cachedGlobalErrorInfoSize: 0;
@@ -195,8 +196,8 @@ debugMemory [
           fr.success [
             i: 0 dynamic;
             [
-              i fr.value.dataSize < [
-                numberOfDependent: fr.value.dataSize 1 - i - fr.value.at;
+              i fr.value.size < [
+                numberOfDependent: fr.value.size 1 - i - fr.value.at;
                 (numberOfDependent processor.files.at.get.name " is dependent from it, try to recompile") addLog
                 numberOfDependent @unfinishedFiles.pushBack
                 i 1 + @i set TRUE
@@ -213,14 +214,14 @@ debugMemory [
     unfinishedFiles: IndexArray;
     n: 0 dynamic;
     [
-      n processor.multiParserResult.nodes.dataSize < [
-        processor.multiParserResult.nodes.dataSize 1 - n - @unfinishedFiles.pushBack
+      n processor.multiParserResult.nodes.size < [
+        processor.multiParserResult.nodes.size 1 - n - @unfinishedFiles.pushBack
         n 1 + @n set TRUE
       ] &&
     ] loop
 
     [
-      0 unfinishedFiles.dataSize < [
+      0 unfinishedFiles.size < [
         n: unfinishedFiles.last copy;
         @unfinishedFiles.popBack
         n runFile
@@ -249,7 +250,7 @@ debugMemory [
         dependedFiles [
           # queue is empty, but has uncompiled files
           pair:;
-          pair.value.dataSize 0 > [
+          pair.value.size 0 > [
             fr: pair.key processor.modules.find;
             fr.success ~ [
               ("missing module \"" @pair.@key "\" used in file: \"" pair.value.last processor.options.fileNames.at "\"" LF) assembleString @processor.@result.@errorInfo.@message.cat
@@ -268,7 +269,7 @@ debugMemory [
           dependedFiles [
             # queue is empty, but has uncompiled files
             pair:;
-            pair.value.dataSize 0 > [
+            pair.value.size 0 > [
               ("need module: " @pair.@key "; used in file: " pair.value.last processor.options.fileNames.at LF) assembleString @processor.@result.@errorInfo.@message.cat
             ] when
           ] each
@@ -286,8 +287,8 @@ debugMemory [
   [processor compilable ~ [processor.recursiveNodesStack.getSize 0 =] ||] "Recursive stack is not empty!" assert
 
   processor.result.success [
-    ("nameCount=" processor.nameManager.names.dataSize
-      "; irNameCount=" processor.nameBuffer.dataSize "; block count=" processor.blocks.getSize "; block size=" BlockSchema storageSize "; est var count=" processor.variables.getSize 4096 * "; var size=" VarSchema storageSize) addLog
+    ("nameCount=" processor.nameManager.names.size
+      "; irNameCount=" processor.nameBuffer.size "; block count=" processor.blocks.getSize "; block size=" BlockSchema storageSize "; est var count=" processor.variables.getSize 4096 * "; var size=" VarSchema storageSize) addLog
 
     ("max depth of recursion=" processor.maxDepthOfRecursion) addLog
 
@@ -363,7 +364,9 @@ debugMemory [
     beventCount: 0;
     meventCount: 0;
     captureCount: 0;
+    globalCaptureCount: 0;
     failedCaptureCount: 0;
+    dependentsSize: 0;
 
     eventTagCount: Int32 6 array;
 
@@ -372,6 +375,7 @@ debugMemory [
       block.buildingMatchingInfo.shadowEvents.size beventCount + !beventCount
       block.matchingInfo.shadowEvents.size meventCount + !meventCount
       block.matchingInfo.captures.size captureCount + !captureCount
+      block.dependentPointers.size dependentsSize + !dependentsSize
 
       block.matchingInfo.shadowEvents [
         event:;
@@ -382,6 +386,10 @@ debugMemory [
           branch: ShadowReasonCapture event.get;
           branch.refToVar getVar processor.varForFails getVar is [
             failedCaptureCount 1 + !failedCaptureCount
+          ] when
+
+          branch.refToVar getVar.global [
+            globalCaptureCount 1 + !globalCaptureCount
           ] when
         ] when
       ] each
@@ -399,8 +407,9 @@ debugMemory [
       "; meventCount=" meventCount
       "; meventCountByTag=" 0 eventTagCount @ ":" 1 eventTagCount @ ":" 2 eventTagCount @ ":" 3 eventTagCount @ ":" 4 eventTagCount @ ":" 5 eventTagCount @
       "; eventSize=" ShadowEvent storageSize
-      "; captureCount=" captureCount "; failedCaptureCount=" failedCaptureCount
+      "; captureCount=" captureCount "; failedCaptureCount=" failedCaptureCount "; globalCaptureCount=" globalCaptureCount
       "; captureSize=" Capture storageSize
+      "; dependentPointersCount=" dependentsSize "; dependentPointer size=" (RefToVar RefToVar FALSE dynamic) storageSize
     ) addLog
 
     processor.usedFloatBuiltins [@processor createFloatBuiltins] when
@@ -411,7 +420,7 @@ debugMemory [
 
     i: 0 dynamic;
     [
-      i processor.prolog.dataSize < [
+      i processor.prolog.size < [
         i @processor.@prolog.at @processor.@result.@program.cat
         LF  @processor.@result.@program.cat
         i 1 + @i set TRUE
@@ -420,7 +429,7 @@ debugMemory [
 
     i: 1 dynamic; # 0th node is root fake node
     [
-      i processor.blocks.dataSize < [
+      i processor.blocks.size < [
         block: i @processor.@blocks.at.get;
         block nodeHasCode [
           LF makeStringView @processor.@result.@program.cat
@@ -496,6 +505,7 @@ debugMemory [
   @processor addBlock
   codeNode: @processor.@blocks.last.get;
   block: @codeNode;
+  compilerPositionInfo @codeNode.@beginPosition set
   overload failProc: processor block FailProcForProcessor;
 
   NodeCaseDtor @codeNode.@nodeCase set

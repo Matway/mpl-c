@@ -13,10 +13,11 @@ ArgVirtual:     [0n8 dynamic];
 ArgGlobal:      [1n8 dynamic];
 ArgRef:         [2n8 dynamic];
 ArgCopy:        [3n8 dynamic];
-ArgMeta:        [4n8 dynamic];
-ArgReturn:      [5n8 dynamic];
-ArgRefDeref:    [6n8 dynamic];
-ArgReturnDeref: [7n8 dynamic];
+ArgDerefCopy:   [4n8 dynamic];
+ArgMeta:        [5n8 dynamic];
+ArgReturn:      [6n8 dynamic];
+ArgRefDeref:    [7n8 dynamic];
+ArgReturnDeref: [8n8 dynamic];
 
 NameCaseInvalid:               [ 0n8 dynamic];
 NameCaseBuiltin:               [ 1n8 dynamic];
@@ -78,8 +79,8 @@ CFunctionSignature: [{
 
 CompilerPositionInfo: [{
   file:   ["File.FileSchema" use FileSchema] Mref;
-  line:   -1;
-  column: -1;
+  line:   -1 dynamic;
+  column: -1 dynamic;
   token:  String;
 }];
 
@@ -96,6 +97,10 @@ makeInstruction: [{
   enabled: TRUE dynamic;
   alloca: FALSE dynamic;
   fakePointer: FALSE dynamic;
+  fakeAlloca: FALSE dynamic;
+  irName1: -1 dynamic;
+  irName2: -1 dynamic;
+  irName3: -1 dynamic;
   codeOffset: copy;
   codeSize: copy;
 }];
@@ -120,7 +125,7 @@ MatchingInfo: [{
 
 NameWithOverload: [{
   nameInfo: -1 dynamic;
-  nameOverloadDepth: -1 dynamic;
+  nameOverloadDepth: -1 dynamic; 
 }];
 
 NameWithOverloadAndRefToVar: [{
@@ -159,9 +164,15 @@ ShadowEventPointee: [{
   pointee: RefToVar;
 }];
 
+ShadowEventStableName: [{
+  nameInfo: Int32;
+}];
+
 Block: [{
   id:              Int32;
   root:            FALSE dynamic;
+  file:            ["File.FileSchema" use FileSchema] Mref;
+  beginPosition:   CompilerPositionInfo;
   parent:          0 dynamic;
   nodeCase:        NodeCaseCode;
   stack:           RefToVar Array; # we must compile node without touching parent
@@ -174,7 +185,6 @@ Block: [{
 
   nodeIsRecursive:     FALSE dynamic;
   nextLabelIsVirtual:  FALSE dynamic;
-  nextLabelIsSchema:   FALSE dynamic;
   nextLabelIsConst:    FALSE dynamic;
   nextLabelIsOverload: FALSE dynamic;
   recursionState:      NodeRecursionStateNo;
@@ -200,6 +210,8 @@ Block: [{
   buildingMatchingInfo: MatchingInfo;
   matchingInfo:         MatchingInfo;
   outputs:              Argument Array;
+  dependentPointers:    (RefToVar RefToVar FALSE dynamic) Array;
+  captureErrors:        Int32 CompilerPositionInfo HashTable;
 
   fromModuleNames:   NameWithOverloadAndRefToVar Array;
   labelNames:        NameWithOverloadAndRefToVar Array;
@@ -225,4 +237,4 @@ Block: [{
   DIE: [];
 }];
 
-schema BlockSchema: Block;
+virtual BlockSchema: Block Ref;

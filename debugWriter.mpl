@@ -132,7 +132,7 @@ getPlainTypeDebugDeclaration: [
                       var.data.getTag VarNatX = [processor.debugInfo.unit 12 +] [
                         var.data.getTag VarReal32 = [processor.debugInfo.unit 13 +] [
                           var.data.getTag VarReal64 = [processor.debugInfo.unit 14 +] [
-                            var.data.getTag VarString = [processor.debugInfo.unit 16 +] [
+                            var.data.getTag VarString = [processor.debugInfo.unit 15 +] [
                               [FALSE] "Unknown plain struct while getting debug declaration index" assert
                               -1
                             ] if
@@ -276,7 +276,7 @@ getDebugType: [
     ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString @processor block compilerError
   ] if
 
-  result: (dbgType hash ".") assembleString;
+  result: (refToVar getVar.mplSchemaId ".") assembleString;
   splitted.chars @result.catMany
   @result
 ];
@@ -333,6 +333,7 @@ addVariableMetadata: [
   refToVar isVirtualType ~ [
     localVariableDebugIndex: nameInfo refToVar @processor block addVariableDebugInfo;
     ("  call void @llvm.dbg.declare(metadata " refToVar @processor getIrType "* " refToVar @processor getIrName ", metadata !" localVariableDebugIndex ", metadata !" processor.debugInfo.unit 1 + ")") @block appendInstruction
+    refToVar getVar.irNameId @block.@program.last.@irName1 set
   ] when
 ];
 
@@ -411,7 +412,7 @@ addFuncDebugInfo: [
   funcImplementation: funcName makeStringView getStringImplementation;
 
   (
-    "!" funcDebugIndex " = distinct !DISubprogram(name: \"" funcImplementation "." funcDebugIndex "\", linkageName: \"" @funcIRName
+    "!" funcDebugIndex " = distinct !DISubprogram(name: \"" funcImplementation ".dbgId" funcDebugIndex "\", linkageName: \"" @funcIRName
     "\", scope: !" position.file.debugId
     ", file: !" position.file.debugId ", line: " position.line  ", type: !" subroutineIndex
     ", scopeLine: " position.line ", unit: !" processor.debugInfo.unit ")") assembleString @processor.@debugInfo.@strings.pushBack

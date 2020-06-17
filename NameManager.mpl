@@ -8,7 +8,7 @@
 "control" use
 
 NameManager: [{
-  schema Item:; # Should have a field named "file", which is used as opaque pointer by NameManager
+  virtual itemSchema: Ref; # Should have a field named "file", which is used as opaque pointer by NameManager
 
   createName: [
     text:;
@@ -65,7 +65,7 @@ NameManager: [{
 
   Name: [{
     text: String;
-    items: Item Array;
+    items: @itemSchema Array;
   }];
 
   names: Name Array;

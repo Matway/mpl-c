@@ -249,8 +249,8 @@ TryImplicitLambdaCastResult: [{
 {
   block: Block Ref;
   processor: Processor Ref;
-  refToDst: RefToVar Cref;
-  refToSrc: RefToVar Cref;
+  refToDst: RefToVar Ref;
+  refToSrc: RefToVar Ref;
   result: TryImplicitLambdaCastResult Ref;
 } () {} "tryImplicitLambdaCastImpl" importFunction
 
@@ -258,7 +258,7 @@ tryImplicitLambdaCast: [
   refToSrc: refToDst: processor: block: ;;;;
   result: TryImplicitLambdaCastResult;
 
-  @result refToSrc refToDst @processor @block tryImplicitLambdaCastImpl
+  @result @refToSrc @refToDst @processor @block tryImplicitLambdaCastImpl
   @result
 ];
 
@@ -307,6 +307,7 @@ copyOneVarWith: [
 ];
 
 copyOneVar: [processor: block:;; 0n8 @processor @block copyOneVarWith];
+copyOneVarFromType: [processor: block:;; CopyVarFlags.FROM_TYPE @processor @block copyOneVarWith];
 
 {
   block: Block Ref;
