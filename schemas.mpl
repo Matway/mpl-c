@@ -4,6 +4,7 @@
 "Variant.Variant" use
 "control" use
 
+"Var.RefToVar"        use
 "Var.VarBuiltin"      use
 "Var.VarCode"         use
 "Var.VarCond"         use
