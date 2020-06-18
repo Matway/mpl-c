@@ -400,18 +400,25 @@ processIntegerOption: [
       ] if
     ] if
 
-    success [0][1] if
-    debugMemory [options.debugMemory copy] when
+    {
+      success?: success copy;
+      hasMemoryInfo?: debugMemory [options.debugMemory copy] [FALSE] if;
+      printInfoIfAny: [
+        hasMemoryInfo? [
+          #mplReleaseCache
+          (
+            "allocations: " getMemoryMetrics.memoryCurrentAllocationCount copy "/" getMemoryMetrics.memoryTotalAllocationCount copy
+            ", bytes: " getMemoryMetrics.memoryCurrentAllocationSize copy "/" getMemoryMetrics.memoryTotalAllocationSize copy
+            ", max: " getMemoryMetrics.memoryMaxAllocationSize copy
+            ", checksum: " getMemoryMetrics.memoryChecksum copy
+            LF
+          ) printList
+        ] when
+      ];
+    }
   ] call
 
-  debugMemory [] && [
-    #mplReleaseCache
-    (
-      "allocations: " getMemoryMetrics.memoryCurrentAllocationCount copy "/" getMemoryMetrics.memoryTotalAllocationCount copy
-      ", bytes: " getMemoryMetrics.memoryCurrentAllocationSize copy "/" getMemoryMetrics.memoryTotalAllocationSize copy
-      ", max: " getMemoryMetrics.memoryMaxAllocationSize copy
-      ", checksum: " getMemoryMetrics.memoryChecksum copy
-      LF
-    ) printList
-  ] when
+  result:;
+  result.printInfoIfAny
+  result.success? [0] [1] if
 ] "main" exportFunction
