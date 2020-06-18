@@ -303,16 +303,16 @@ createGEPInsteadOfAlloc: [
 ];
 
 createStoreFromRegisterToRegister: [
-  regName: destRegName: regType: processor: block: ;;;;;
-  ("  store " regType @processor getNameById " " @regName @processor getNameById ", " regType @processor getNameById "* " destRegName @processor getNameById) @block appendInstruction
+  regNameId: destRegNameId: regType: processor: block: ;;;;;
+  ("  store " regType @processor getNameById " " @regNameId @processor getNameById ", " regType @processor getNameById "* " destRegNameId @processor getNameById) @block appendInstruction
 
-  regName     @block.@program.last.@irName1 set
-  destRegName @block.@program.last.@irName2 set
+  regNameId     @block.@program.last.@irName1 set
+  destRegNameId @block.@program.last.@irName2 set
 ];
 
 createStoreFromRegister: [
-  regName: destRefToVar: processor: block: ;;;;
-  regName destRefToVar getVar.irNameId destRefToVar @processor getMplSchema.irTypeId @processor @block createStoreFromRegisterToRegister
+  regNameId: destRefToVar: processor: block: ;;;;
+  regNameId destRefToVar getVar.irNameId destRefToVar @processor getMplSchema.irTypeId @processor @block createStoreFromRegisterToRegister
 ];
 
 getValueOrDeref: [
@@ -427,8 +427,15 @@ createCheckedCopyToNewWith: [
     ] if
     doDie [dstRef @block.@candidatesToDie.pushBack] when
   ] [
-    loadReg: srcRef @processor @block createDerefToRegister;
-    loadReg dstRef @processor @block createStoreFromRegister
+    srcRef isPlain [srcRef staticityOfVar Dynamic >] && [
+      srcRef dstRef @processor @block createStoreConstant
+    ] [
+      @srcRef @processor @block makeVarRealCaptured
+      loadReg: srcRef @processor @block createDerefToRegister;
+      loadReg dstRef @processor @block createStoreFromRegister
+    ] if
+
+    @dstRef makeVarPtrCaptured
   ] if
 ];
 
