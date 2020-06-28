@@ -1,40 +1,18 @@
-"Array.makeSubRange" use
-"HashTable.hash" use
-"String.String" use
-"String.StringView" use
-"String.addLog" use
-"String.assembleString" use
-"String.hash" use
-"String.makeStringView" use
-"String.makeStringViewByAddress" use
-"String.print" use
-"String.printList" use
-"String.splitString" use
-"String.toString" use
-"ascii.ascii" use
+"Array" use
+"HashTable" use
+"String" use
+"ascii" use
 "control" use
-"conventions.cdecl" use
-"conventions.stdcall" use
-"file.loadString" use
-"file.saveString" use
-"memory.debugMemory" use
+"conventions" use
+"file" use
+"memory" use
 
-"NameManager.NameManager" use
-"astNodeType.MultiParserResult" use
-"astNodeType.ParserResult" use
-"astNodeType.ParserResults" use
-"astOptimizers.concatParserResults" use
-"astOptimizers.optimizeLabels" use
-"astOptimizers.optimizeNames" use
-"parser.parseString" use
-"pathUtils.extractClearPath" use
-"processor.DEFAULT_PRE_RECURSION_DEPTH_LIMIT" use
-"processor.DEFAULT_RECURSION_DEPTH_LIMIT" use
-"processor.DEFAULT_STATIC_LOOP_LENGTH_LIMIT" use
-"processor.NameInfoEntry" use
-"processor.Processor" use
-"processor.ProcessorOptions" use
-"processorImpl.process" use
+"NameManager" use
+"astNodeType" use
+"declarations" use
+"pathUtils" use
+"processor" use
+"processorImpl" use
 
 debugMemory [
   "memory.getMemoryMetrics" use
@@ -46,6 +24,7 @@ printInfo: [
   "  -32bits                             Set 32-bit mode, default mode is 64-bit" print LF print
   "  -64bits                             Set 64-bit mode, default mode is 64-bit" print LF print
   "  -D <name[ =value]>                  Define global name with value, default value is ()" print LF print
+  "  -I <path>                           Add include path to find files" print LF print
   "  -array_checks 0|1                   Turn off/on array index checks, by default it is on in debug mode and off in release mode" print LF print
   "  -auto_recursion                     Make all code block recursive-by-default" print LF print
   "  -call_trace                         Generate information about call trace" print LF print
@@ -54,9 +33,9 @@ printInfo: [
   ] when
   "  -dynalit                            Number literals are dynamic constants, which are not used in analysis; default mode is static literals" print LF print
   "  -linker_option                      Add linker option for LLVM" print LF print
-  "  -logs                               Value of \"HAS_LOGS\" constant in code turn to TRUE" print LF print
   "  -ndebug                             Disable debug info; value of \"DEBUG\" constant in code turn to FALSE" print LF print
   "  -o <file>                           Write output to <file>, default output file is \"mpl.ll\"" print LF print
+  "  -part                               Create ll only for files in cmd line" print LF print
   "  -pre_recursion_depth_limit <number> Set PRE recursion depth limit, default value is " print DEFAULT_PRE_RECURSION_DEPTH_LIMIT print LF print
   "  -recursion_depth_limit <number>     Set recursion depth limit, default value is " print DEFAULT_RECURSION_DEPTH_LIMIT print LF print
   "  -static_loop_length_limit <number>  Set static loop length limit, default value is " print DEFAULT_STATIC_LOOP_LENGTH_LIMIT print LF print
@@ -64,25 +43,6 @@ printInfo: [
   "  -verbose_ir                         Print information about current token in IR" print LF print
   "  -version                            Print compiler version while compiling" print LF print
   FALSE @success set
-];
-
-addToProcess: [
-  fileText:;
-  fileName:;
-  parserResult: ParserResult;
-
-  @parserResult fileText makeStringView parseString
-
-  parserResult.success [
-    @parserResult optimizeLabels
-    @parserResult move @parserResults.pushBack
-  ] [
-    ("ERROR") addLog
-
-    (fileName "(" parserResult.errorInfo.position.line "," makeStringView parserResult.errorInfo.position.column "): syntax error, "
-      parserResult.errorInfo.message) assembleString print LF print
-    FALSE @success set
-  ] if
 ];
 
 createDefinition: [
@@ -165,6 +125,14 @@ processIntegerOption: [
   ] if
 ];
 
+addToProcessAndCheck: [
+  errorMessage: addToProcess;
+  errorMessage "" = ~ [
+    errorMessage print LF print
+    FALSE !success
+  ] when
+];
+
 {argc: 0; argv: 0nx;} 0 {convention: cdecl;} [
   #debugMemory [TRUE !memoryDebugEnabled] when
   ("Start mplc compiler") addLog
@@ -184,12 +152,12 @@ processIntegerOption: [
     OPT_RECURSION_DEPTH_LIMIT:     [7 dynamic];
     OPT_PRE_RECURSION_DEPTH_LIMIT: [8 dynamic];
     OPT_STATIC_LOOP_LENGTH_LIMIT:  [9 dynamic];
+    OPT_INCLUDE_PATH:              [10 dynamic];
 
     nextOption: OPT_ANY;
 
     options: ProcessorOptions;
     hasVersion: FALSE dynamic;
-    parserResults: ParserResults;
     definitions: String;
     hasVersion: FALSE dynamic;
     outputFileName: "mpl.ll" toString;
@@ -197,6 +165,10 @@ processIntegerOption: [
     forceArrayChecks: -1 dynamic;
     forceCallTrace: -1 dynamic;
 
+    multiParserResult: MultiParserResult;
+    nameManager: NameInfoEntry NameManager;
+
+    "*builtins"    toString @options.@fileNames.pushBack
     "*definitions" toString @options.@fileNames.pushBack
 
     argc 1 = [
@@ -225,6 +197,7 @@ processIntegerOption: [
                     "-32bits"                    [32nx                          @options.!pointerSize]
                     "-64bits"                    [64nx                          @options.!pointerSize]
                     "-D"                         [OPT_DEFINITION                !nextOption]
+                    "-I"                         [OPT_INCLUDE_PATH              !nextOption]
                     "-array_checks"              [OPT_ARRAY_CHECK               !nextOption]
                     "-auto_recursion"            [TRUE                          @options.!autoRecursion]
                     "-call_trace"                [OPT_CALL_TRACE                !nextOption]
@@ -233,9 +206,9 @@ processIntegerOption: [
                     ] when
                     "-dynalit"                   [FALSE                         @options.!staticLiterals]
                     "-linker_option"             [OPT_LINKER_OPTION             !nextOption]
-                    "-logs"                      [TRUE                          @options.!logs]
                     "-ndebug"                    [FALSE                         @options.!debug]
                     "-o"                         [OPT_OUTPUT_FILE_NAME          !nextOption]
+                    "-part"                      [TRUE                          @options.!partial]
                     "-pre_recursion_depth_limit" [OPT_PRE_RECURSION_DEPTH_LIMIT !nextOption]
                     "-recursion_depth_limit"     [OPT_RECURSION_DEPTH_LIMIT     !nextOption]
                     "-static_loop_length_limit"  [OPT_STATIC_LOOP_LENGTH_LIMIT  !nextOption]
@@ -247,7 +220,7 @@ processIntegerOption: [
                         "Invalid argument: " print option print LF print
                         FALSE @success set
                       ] [
-                        option toString @options.@fileNames.pushBack
+                        option simplifyFileName @options.@fileNames.pushBack
                       ] if
                     ]
                   ) case
@@ -299,6 +272,10 @@ processIntegerOption: [
                   option @options.@staticLoopLengthLimit processIntegerOption
                   OPT_ANY !nextOption
                 ]
+                OPT_INCLUDE_PATH [
+                  option simplifyFileName @options.@includePaths.pushBack
+                  OPT_ANY !nextOption
+                ]
                 []
               ) case
             ] if
@@ -317,7 +294,7 @@ processIntegerOption: [
       FALSE @success set
     ] when
 
-    options.fileNames.getSize 1 = [
+    options.fileNames.getSize 2 = [
       hasVersion [
         DEBUG [
           ("MPL compiler version " COMPILER_SOURCE_VERSION " debug" LF) printList
@@ -343,7 +320,7 @@ processIntegerOption: [
           0 [FALSE]
           1 [TRUE]
           2 [TRUE]
-          [options.debug copy]
+          [FALSE]
         ) case @options.@callTrace set
 
         forceCallTrace 2 = [1 @options.@threadModel set] when
@@ -353,37 +330,36 @@ processIntegerOption: [
           "Input files ignored" print LF print
         ] [
           options.fileNames.getSize [
-            filename: i options.fileNames @;
+            fileName: i options.fileNames @;
 
             i 0 = [
-              filename definitions addToProcess
+              #builtins
             ] [
-              loadStringResult: filename loadString;
-              loadStringResult.success [
-                ("Loaded string from " filename) addLog
-                ("HASH=" loadStringResult.data hash) addLog
-                filename loadStringResult.data addToProcess
+              i 1 = [
+                fileName makeStringView definitions makeStringView @multiParserResult @nameManager addToProcessAndCheck
               ] [
-                "Unable to load string:" print filename print LF print
-                FALSE @success set
+                loadStringResult: fileName loadString;
+                loadStringResult.success [
+                  ("Loaded string from " fileName) addLog
+                  ("HASH=" loadStringResult.data hash) addLog
+                  fileName makeStringView loadStringResult.data makeStringView @multiParserResult @nameManager addToProcessAndCheck
+                ] [
+                  "Unable to load string:" print fileName print LF print
+                  FALSE @success set
+                ] if
               ] if
             ] if
           ] times
 
           success [
-            multiParserResult: MultiParserResult;
-            nameManager: NameInfoEntry NameManager;
-            @parserResults @multiParserResult concatParserResults
-            ("trees concated" makeStringView) addLog
-            @multiParserResult @nameManager optimizeNames
-            ("names optimized" makeStringView) addLog
 
+            ("trees concated" makeStringView) addLog
             ("filenames:" makeStringView) addLog
             options.fileNames [fileName:; (fileName) addLog] each
 
             result: String;
             program: String;
-            multiParserResult @nameManager options 0 @result @program process
+            @multiParserResult @nameManager options 0 @result @program process
             result.size 0 = [
               outputFileName program saveString [
                 ("program written to " outputFileName) addLog
@@ -406,12 +382,21 @@ processIntegerOption: [
 
   debugMemory [] && [
     #mplReleaseCache
-    (
-      "allocations: " getMemoryMetrics.memoryCurrentAllocationCount copy "/" getMemoryMetrics.memoryTotalAllocationCount copy
-      ", bytes: " getMemoryMetrics.memoryCurrentAllocationSize copy "/" getMemoryMetrics.memoryTotalAllocationSize copy
-      ", max: " getMemoryMetrics.memoryMaxAllocationSize copy
-      ", checksum: " getMemoryMetrics.memoryChecksum copy
-      LF
-    ) printList
+    getMemoryMetrics.memoryChecksum 0nx = ~ [
+      (
+        "allocations: " getMemoryMetrics.memoryCurrentAllocationCount copy By3 "/" getMemoryMetrics.memoryTotalAllocationCount copy By3
+        ", bytes: " getMemoryMetrics.memoryCurrentAllocationSize copy By3 "/" getMemoryMetrics.memoryTotalAllocationSize copy By3
+        ", max: " getMemoryMetrics.memoryMaxAllocationSize copy By3
+        ", checksum: " getMemoryMetrics.memoryChecksum copy By3
+        LF
+      ) printList
+    ] [
+      (
+        "allocations: " getMemoryMetrics.memoryTotalAllocationCount copy By3
+        ", bytes: " getMemoryMetrics.memoryTotalAllocationSize copy By3
+        ", max: " getMemoryMetrics.memoryMaxAllocationSize copy By3
+        LF
+      ) printList
+    ] if
   ] when
 ] "main" exportFunction

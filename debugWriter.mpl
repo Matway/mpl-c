@@ -1,47 +1,12 @@
+"Array" use
+"HashTable" use
+"String" use
 "control" use
-"Array.Array" use
-"HashTable.hash" use
-"String.assembleString" use
-"String.makeStringView" use
-"String.toString" use
-"String.splitString" use
-"String.String" use
 
-"Var.VarBuiltin" use
-"Var.VarCode" use
-"Var.VarCond" use
-"Var.VarEnd" use
-"Var.VarImport" use
-"Var.VarInt16" use
-"Var.VarInt32" use
-"Var.VarInt64" use
-"Var.VarInt8" use
-"Var.VarIntX" use
-"Var.VarInvalid" use
-"Var.VarNat16" use
-"Var.VarNat32" use
-"Var.VarNat64" use
-"Var.VarNat8" use
-"Var.VarNatX" use
-"Var.VarReal32" use
-"Var.VarReal64" use
-"Var.VarRef" use
-"Var.VarString" use
-"Var.VarStruct" use
-"Var.getAlignment" use
-"Var.getStorageSize" use
-"Var.getStringImplementation" use
-"Var.getVar" use
-"Var.isPlain" use
-"Var.isVirtual" use
-"Var.isVirtualType" use
-"declarations.compilerError" use
-"irWriter.appendInstruction" use
-"irWriter.getIrName" use
-"irWriter.getIrType" use
-"irWriter.getMplSchema" use
-"irWriter.getNameById" use
-"pathUtils.simplifyPath" use
+"Var" use
+"declarations" use
+"irWriter" use
+"pathUtils" use
 
 addDebugProlog: [
   processor:;
@@ -412,7 +377,7 @@ addFuncDebugInfo: [
   funcImplementation: funcName makeStringView getStringImplementation;
 
   (
-    "!" funcDebugIndex " = distinct !DISubprogram(name: \"" funcImplementation ".dbgId" funcDebugIndex "\", linkageName: \"" @funcIRName
+    "!" funcDebugIndex " = distinct !DISubprogram(name: \"" funcImplementation "\", linkageName: \"" @funcIRName
     "\", scope: !" position.file.debugId
     ", file: !" position.file.debugId ", line: " position.line  ", type: !" subroutineIndex
     ", scopeLine: " position.line ", unit: !" processor.debugInfo.unit ")") assembleString @processor.@debugInfo.@strings.pushBack

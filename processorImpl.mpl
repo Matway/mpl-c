@@ -1,70 +1,76 @@
-"HashTable.HashTable" use
-"Owner.owner" use
-"String.String" use
-"String.StringView" use
-"String.addLog" use
-"String.assembleString" use
-"String.makeStringView" use
-"String.toString" use
+"HashTable" use
+"Owner" use
+"String" use
 "control" use
-"memory.debugMemory" use
+"memory" use
 
-"Block.BlockSchema" use
-"Block.Capture" use
-"Block.CFunctionSignature" use
-"Block.CompilerPositionInfo" use
-"Block.NodeCaseCode" use
-"Block.NodeCaseDeclaration" use
-"Block.NodeCaseDtor" use
-"Block.ShadowEvent" use
-"File.File" use
-"NameManager.NameManager" use
-"Var.Dirty" use
-"Var.Dynamic" use
-"Var.Field" use
-"Var.RefToVar" use
-"Var.ShadowReasonCapture" use
-"Var.VarInvalid" use
-"Var.VarSchema" use
-"Var.VarStruct" use
-"Var.getVar" use
-"astNodeType.IndexArray" use
-"astNodeType.MultiParserResult" use
-"builtins.initBuiltins" use
-"codeNode.addBlock" use
-"codeNode.astNodeToCodeNode" use
-"codeNode.createVariable" use
-"codeNode.finalizeCodeNode" use
-"codeNode.killStruct" use
-"codeNode.makeStaticity" use
-"codeNode.makeStorageStaticity" use
-"debugWriter.addDebugProlog" use
-"debugWriter.addDebugReserve" use
-"debugWriter.addFileDebugInfo" use
-"debugWriter.addLinkerOptionsDebugInfo" use
-"debugWriter.clearUnusedDebugInfo" use
-"debugWriter.correctUnitInfo" use
-"declarations.makeShadows" use
-"defaultImpl.FailProcForProcessor" use
-"defaultImpl.compilable" use
-"defaultImpl.findNameInfo" use
-"defaultImpl.nodeHasCode" use
-"irWriter.addAliasesForUsedNodes" use
-"irWriter.addStrToProlog" use
-"irWriter.createCallTraceData" use
-"irWriter.createCtors" use
-"irWriter.createDtors" use
-"irWriter.createFloatBuiltins" use
-"pathUtils.extractFilename" use
-"pathUtils.stripExtension" use
-"processSubNodes.clearProcessorResult" use
-"processor.NameInfoEntry" use
-"processor.Processor" use
-"processor.ProcessorOptions" use
+"Block" use
+"MplFile" use
+"NameManager" use
+"Var" use
+"astNodeType" use
+"astOptimizers" use
+"builtins" use
+"codeNode" use
+"debugWriter" use
+"declarations" use
+"defaultImpl" use
+"irWriter" use
+"parser" use
+"pathUtils" use
+"processSubNodes" use
+"processor" use
+"variable" use
 
 debugMemory [
   "memory.getMemoryMetrics" use
 ] [] uif
+
+{
+  nameManager: NameInfoEntry NameManager Ref;
+  multiParserResult: MultiParserResult Ref;
+  fileText: StringView Cref;
+  fileName: StringView Cref;
+  errorMessage: String Ref;
+} () {} [
+  errorMessage: fileName: fileText: multiParserResult: nameManager: ;;;;;
+
+  parserResult: ParserResult;
+  @parserResult fileText makeStringView parseString
+
+  parserResult.success [
+    @parserResult optimizeLabels
+    @parserResult @nameManager optimizeNames
+    @parserResult @multiParserResult concatParserResult
+    String @errorMessage set
+  ] [
+    (fileName "(" parserResult.errorInfo.position.line "," makeStringView parserResult.errorInfo.position.column "): syntax error, "
+      parserResult.errorInfo.message) assembleString @errorMessage set
+  ] if
+] "addToProcessImpl" exportFunction
+
+{
+  processor: Processor Ref;
+  fileName: StringView Cref;
+  fromCmd: Cond;
+} Int32 {} [
+  fromCmd: fileName: processor: ;;;
+  newFile: File;
+
+  fileId: processor.files.getSize;
+  fileId            @newFile.@fileId set
+  fileName toString @newFile.@name set
+  fromCmd           @newFile.@usedInParams set
+  fileName toString fileId @processor.@fileNameIds.insert
+
+  processor.options.debug [
+    newFile.name @processor addFileDebugInfo @newFile.!debugId
+  ] when
+
+  @newFile move owner @processor.@files.pushBack
+  #here we can implement search in cmd
+  fileId
+] "addFileNameToProcessor" exportFunction
 
 {
   program: String Ref;
@@ -72,7 +78,7 @@ debugMemory [
   unitId: 0;
   options: ProcessorOptions Cref;
   nameManager: NameInfoEntry NameManager Ref;
-  multiParserResult: MultiParserResult Cref;
+  multiParserResult: MultiParserResult Ref;
 } () {} [
   program:;
   result:;
@@ -86,7 +92,7 @@ debugMemory [
   unitId @processor.@unitId set
   @nameManager move @processor.@nameManager set
   @options @processor.@options set
-  multiParserResult @processor.!multiParserResult
+  @multiParserResult @processor.!multiParserResult
 
   ""           makeStringView @processor findNameInfo @processor.@emptyNameInfo set
   "CALL"       makeStringView @processor findNameInfo @processor.@callNameInfo set
@@ -105,6 +111,19 @@ debugMemory [
 
   @processor addBlock
   TRUE dynamic @processor.@blocks.last.get.@root set
+
+  errorInCmdNames: FALSE dynamic;
+  processor.options.fileNames [
+    current:;
+    errorInCmdNames ~ [
+      #here set first parameter to TRUE to make cmd files visible
+      TRUE current makeStringView @processor addFileNameToProcessor 0 < [
+        TRUE !errorInCmdNames
+      ] when
+    ] when
+  ] each
+
+  @processor.@blocks.last.get 0 @processor.@files.at.get.@rootBlock.set
 
   @processor initBuiltins
 
@@ -133,25 +152,13 @@ debugMemory [
 
   @processor addLinkerOptionsDebugInfo
 
-  processor.options.fileNames.size @processor.@files.resize
-  processor.options.fileNames.size [
-    File owner i @processor.@files.at set
-    i processor.options.fileNames.at i @processor.@files.at.get.@name set
-    i processor.options.fileNames.at stripExtension extractFilename toString i @processor.@fileNameIds.insert
-  ] times
-
   processor.options.debug [
     @processor [processor:; @processor addDebugProlog @processor.@debugInfo.@unit set] call
-
-    processor.files.size [
-      i processor.files.at.get.name @processor addFileDebugInfo i @processor.@files.at.get.!debugId
-    ] times
   ] when
 
   lastFile: File Cref;
 
   multiParserResult.nodes.size 0 > [
-
     dependedFiles: String IndexArray HashTable; # string -> array of indexes of dependent files
     cachedGlobalErrorInfoSize: 0;
 
@@ -159,7 +166,7 @@ debugMemory [
       n:;
       file: n @processor.@files.at.get;
       file !lastFile
-      fileNode: n processor.multiParserResult.nodes.at;
+      fileNode: n 1 - processor.multiParserResult.nodes.at.get;
       rootPositionInfo: CompilerPositionInfo;
       file @rootPositionInfo.@file.set
       1    @rootPositionInfo.!line
@@ -187,7 +194,6 @@ debugMemory [
 
         topNodeIndex @processor.@blocks.at.get @file.@rootBlock.set
 
-        moduleName stripExtension extractFilename toString !moduleName
         moduleName topNodeIndex @processor.@modules.insert
 
         # call files which depends from this module
@@ -199,7 +205,7 @@ debugMemory [
               i fr.value.size < [
                 numberOfDependent: fr.value.size 1 - i - fr.value.at;
                 (numberOfDependent processor.files.at.get.name " is dependent from it, try to recompile") addLog
-                numberOfDependent @unfinishedFiles.pushBack
+                numberOfDependent @processor.@unfinishedFiles.pushBack
                 i 1 + @i set TRUE
               ] &&
             ] loop
@@ -211,19 +217,18 @@ debugMemory [
       ] if
     ];
 
-    unfinishedFiles: IndexArray;
     n: 0 dynamic;
     [
       n processor.multiParserResult.nodes.size < [
-        processor.multiParserResult.nodes.size 1 - n - @unfinishedFiles.pushBack
+        processor.multiParserResult.nodes.size n - @processor.@unfinishedFiles.pushBack
         n 1 + @n set TRUE
       ] &&
     ] loop
 
     [
-      0 unfinishedFiles.size < [
-        n: unfinishedFiles.last copy;
-        @unfinishedFiles.popBack
+      0 processor.unfinishedFiles.size < [
+        n: processor.unfinishedFiles.last copy;
+        @processor.@unfinishedFiles.popBack
         n runFile
         processor.result.success copy
       ] &&
@@ -292,125 +297,149 @@ debugMemory [
 
     ("max depth of recursion=" processor.maxDepthOfRecursion) addLog
 
-    varHeadMemory: 0nx;
-    varShadowMemory: 0nx;
-    totalFieldCount: 0;
+    hasLogs [
+      varHeadMemory: 0nx;
+      varShadowMemory: 0nx;
+      totalFieldCount: 0;
 
-    varStaticStoragedMemory:  0nx;
-    varDynamicStoragedHeadMemory:  0nx;
-    varDynamicStoragedShadowMemory:  0nx;
+      varStaticStoragedMemory:  0nx;
+      varDynamicStoragedHeadMemory:  0nx;
+      varDynamicStoragedShadowMemory:  0nx;
 
-    getCoordsMemory: [
-      where:;
+      getCoordsMemory: [
+        where:;
 
-      result: 0nx;
-      where.dataReserve Natx cast where.elementSize * result + !result
-      where [
-        where1:;
-        where1.dataReserve Natx cast where1.elementSize * result + !result
-        where1 [
-          where2:;
-          where2.dataReserve Natx cast where2.elementSize * result + !result
+        result: 0nx;
+        where.dataReserve Natx cast where.elementSize * result + !result
+        where [
+          where1:;
+          where1.dataReserve Natx cast where1.elementSize * result + !result
+          where1 [
+            where2:;
+            where2.dataReserve Natx cast where2.elementSize * result + !result
+          ] each
+        ] each
+
+        result
+      ];
+
+      coordsMemory:
+        processor.captureTable.simpleNames  getCoordsMemory
+        processor.captureTable.selfNames    getCoordsMemory +
+        processor.captureTable.closureNames getCoordsMemory +;
+
+      getVariableUsedMemory: [
+        var:;
+
+        var.data.getTag VarStruct = [
+          struct: VarStruct var.data.get.get;
+          struct storageSize struct.fields.size Natx cast Field storageSize * +
+          var storageSize +
+        ] [
+          var storageSize
+        ] if
+      ];
+
+      processor.variables [
+        [
+          var:;
+          varSize: var getVariableUsedMemory;
+
+          var.capturedHead getVar.host var.host is ~ [
+            varSize varShadowMemory + !varShadowMemory
+          ] [
+            varSize varHeadMemory + !varHeadMemory
+          ] if
+
+          var.data.getTag VarStruct = [
+            VarStruct var.data.get.get.fields.size totalFieldCount + !totalFieldCount
+          ] when
+
+          var.storageStaticity Dynamic = [
+            var.topologyIndex 0 < ~ [
+              varSize varDynamicStoragedShadowMemory + !varDynamicStoragedShadowMemory
+            ] [
+              varSize varDynamicStoragedHeadMemory + !varDynamicStoragedHeadMemory
+            ] if
+          ] [
+            varSize varStaticStoragedMemory + !varStaticStoragedMemory
+          ] if
         ] each
       ] each
 
-      result
-    ];
+      beventCount: 0;
+      meventCount: 0;
+      captureCount: 0;
+      virtualCaptureCount: 0;
+      stringCaptureCount: 0;
+      failedCaptureCount: 0;
+      dependentsSize: 0;
+      failedCaptureNames: StringView Int32 HashTable;
 
-    coordsMemory:
-      processor.captureTable.simpleNames  getCoordsMemory
-      processor.captureTable.selfNames    getCoordsMemory +
-      processor.captureTable.closureNames getCoordsMemory +;
+      eventTagCount: Int32 ShadowEvent.typeList fieldCount array;
 
-    getVariableUsedMemory: [
-      var:;
+      processor.blocks [
+        block: .get;
+        block.buildingMatchingInfo.shadowEvents.size beventCount + !beventCount
+        block.matchingInfo.shadowEvents.size meventCount + !meventCount
+        block.matchingInfo.captures.size captureCount + !captureCount
+        block.dependentPointers.size dependentsSize + !dependentsSize
 
-      var.data.getTag VarStruct = [
-        struct: VarStruct var.data.get.get;
-        struct storageSize struct.fields.size Natx cast Field storageSize * +
-        var storageSize +
-      ] [
-        var storageSize
-      ] if
-    ];
+        block.matchingInfo.shadowEvents [
+          event:;
+          src: event.getTag @eventTagCount @;
+          src 1 + @src set
 
-    processor.variables [
-      [
-        var:;
-        varSize: var getVariableUsedMemory;
+          event.getTag ShadowReasonCapture = [
+            branch: ShadowReasonCapture event.get;
+            branch.refToVar getVar processor.varForFails getVar is [
+              failedCaptureCount 1 + !failedCaptureCount
+              name: branch.nameInfo processor.nameManager.getText;
+              fr: name @failedCaptureNames.find;
+              fr.success [
+                fr.value 1 + @fr.@value set
+              ] [
+                name 1 @failedCaptureNames.insert
+              ] if
+            ] when
 
-        var.capturedHead getVar.host var.host is ~ [
-          varSize varShadowMemory + !varShadowMemory
-        ] [
-          varSize varHeadMemory + !varHeadMemory
-        ] if
+            branch.refToVar isGlobal [branch.refToVar isUnallocable] && [
+              stringCaptureCount 1 + !stringCaptureCount
+            ] when
 
-        var.data.getTag VarStruct = [
-          VarStruct var.data.get.get.fields.size totalFieldCount + !totalFieldCount
-        ] when
-
-        var.storageStaticity Dynamic = [
-          var.topologyIndex 0 < ~ [
-            varSize varDynamicStoragedShadowMemory + !varDynamicStoragedShadowMemory
-          ] [
-            varSize varDynamicStoragedHeadMemory + !varDynamicStoragedHeadMemory
-          ] if
-        ] [
-          varSize varStaticStoragedMemory + !varStaticStoragedMemory
-        ] if
-      ] each
-    ] each
-
-    beventCount: 0;
-    meventCount: 0;
-    captureCount: 0;
-    globalCaptureCount: 0;
-    failedCaptureCount: 0;
-    dependentsSize: 0;
-
-    eventTagCount: Int32 6 array;
-
-    processor.blocks [
-      block: .get;
-      block.buildingMatchingInfo.shadowEvents.size beventCount + !beventCount
-      block.matchingInfo.shadowEvents.size meventCount + !meventCount
-      block.matchingInfo.captures.size captureCount + !captureCount
-      block.dependentPointers.size dependentsSize + !dependentsSize
-
-      block.matchingInfo.shadowEvents [
-        event:;
-        src: event.getTag @eventTagCount @;
-        src 1 + @src set
-
-        event.getTag ShadowReasonCapture = [
-          branch: ShadowReasonCapture event.get;
-          branch.refToVar getVar processor.varForFails getVar is [
-            failedCaptureCount 1 + !failedCaptureCount
+            branch.refToVar isGlobal [branch.refToVar isVirtual] && [
+              virtualCaptureCount 1 + !virtualCaptureCount
+            ] when
           ] when
-
-          branch.refToVar getVar.global [
-            globalCaptureCount 1 + !globalCaptureCount
-          ] when
-        ] when
+        ] each
       ] each
-    ] each
 
-    (
-      debugMemory ["; currentAllocationSize=" getMemoryMetrics.memoryCurrentAllocationSize] [] uif
-      "; coordsMemory=" coordsMemory
-      "; varShadowMemory=" varShadowMemory "; varHeadMemory=" varHeadMemory
-      "; varDynamicStoragedHeadMemory=" varDynamicStoragedHeadMemory
-      "; varDynamicStoragedShadowMemory=" varDynamicStoragedShadowMemory
-      "; varStaticStoragedMemory=" varStaticStoragedMemory
-      "; totalFieldCount=" totalFieldCount "; fieldSize=" Field storageSize
-      "; beventCount=" beventCount
-      "; meventCount=" meventCount
-      "; meventCountByTag=" 0 eventTagCount @ ":" 1 eventTagCount @ ":" 2 eventTagCount @ ":" 3 eventTagCount @ ":" 4 eventTagCount @ ":" 5 eventTagCount @
-      "; eventSize=" ShadowEvent storageSize
-      "; captureCount=" captureCount "; failedCaptureCount=" failedCaptureCount "; globalCaptureCount=" globalCaptureCount
-      "; captureSize=" Capture storageSize
-      "; dependentPointersCount=" dependentsSize "; dependentPointer size=" (RefToVar RefToVar FALSE dynamic) storageSize
-    ) addLog
+      (
+        debugMemory ["; currentAllocationSize=" getMemoryMetrics.memoryCurrentAllocationSize] [] uif
+        "; coordsMemory=" coordsMemory
+        "; varShadowMemory=" varShadowMemory "; varHeadMemory=" varHeadMemory
+        "; varDynamicStoragedHeadMemory=" varDynamicStoragedHeadMemory
+        "; varDynamicStoragedShadowMemory=" varDynamicStoragedShadowMemory
+        "; varStaticStoragedMemory=" varStaticStoragedMemory
+        "; totalFieldCount=" totalFieldCount "; fieldSize=" Field storageSize
+        "; beventCount=" beventCount
+        "; meventCount=" meventCount
+        "; meventCountByTag=" 0 eventTagCount @ ":" 1 eventTagCount @ ":" 2 eventTagCount @ ":" 3 eventTagCount @ ":" 4 eventTagCount @ ":" 5 eventTagCount @
+        "; eventSize=" ShadowEvent storageSize
+      ) addLog
+
+      (
+        "; captureCount=" captureCount "; failedCaptureCount=" failedCaptureCount "; stringCaptureCount=" stringCaptureCount "; virtualCaptureCount=" virtualCaptureCount
+        "; captureSize=" Capture storageSize
+        "; dependentPointersCount=" dependentsSize "; dependentPointer size=" (RefToVar RefToVar FALSE dynamic) storageSize
+      ) addLog
+
+      ("failed captureNames:") addLog
+      failedCaptureNames [
+        pair:;
+        ("name=" pair.key "; count=" pair.value) addLog
+      ] each
+    ] when
 
     processor.usedFloatBuiltins [@processor createFloatBuiltins] when
     processor.options.callTrace processor.options.threadModel 1 = and @processor createCtors
@@ -493,11 +522,13 @@ debugMemory [
 
 {
   processor: Processor Ref;
+  file: File Cref;
   signature: CFunctionSignature Cref;
   compilerPositionInfo: CompilerPositionInfo Cref;
   refToVar: RefToVar Cref;
 } () {} [
   processor:;
+  file:;
   forcedSignature:;
   compilerPositionInfo:;
   refToVar:;
@@ -505,11 +536,12 @@ debugMemory [
   @processor addBlock
   codeNode: @processor.@blocks.last.get;
   block: @codeNode;
-  compilerPositionInfo @codeNode.@beginPosition set
   overload failProc: processor block FailProcForProcessor;
 
-  NodeCaseDtor @codeNode.@nodeCase set
-  0 dynamic @codeNode.@parent set
+  NodeCaseDtor                    @codeNode.@nodeCase set
+  0 dynamic                       @codeNode.@parent set
+  file                            @codeNode.@file.set
+  @processor @codeNode getTopNode @codeNode.@topNode.set
   @compilerPositionInfo @processor.@positions.last set
 
   processor.options.debug [

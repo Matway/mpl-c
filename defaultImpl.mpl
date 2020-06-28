@@ -1,45 +1,11 @@
-"String.String" use
-"String.StringView" use
-"String.addLog" use
-"String.assembleString" use
-"String.makeStringView" use
-"String.print" use
-"String.printList" use
-"String.toString" use
+"String" use
 "control" use
-"conventions.cdecl" use
+"conventions" use
 
-"Block.ArgMeta" use
-"Block.Block" use
-"Block.NameCaseInvalid" use
-"Block.NodeCaseCodeRefDeclaration" use
-"Block.NodeStateNew" use
-"Block.ShadowEvent" use
-"Var.RefToVar" use
-"Var.ShadowReasonCapture" use
-"Var.ShadowReasonInput" use
-"Var.VarCode" use
-"Var.VarImport" use
-"Var.VarString" use
-"Var.Virtual" use
-"Var.Weak" use
-"Var.getPlainValueInformation" use
-"Var.getVar" use
-"Var.isPlain" use
-"Var.staticityOfVar" use
-"Var.variablesAreSame" use
-"declarations.compilerError" use
-"declarations.createCopyToExists" use
-"declarations.createRefWith" use
-"declarations.defaultPrintStack" use
-"declarations.defaultPrintStackTrace" use
-"declarations.getMplType" use
-"declarations.popWith" use
-"declarations.processCall" use
-"declarations.processFuncPtr" use
-"declarations.push" use
-"declarations.tryImplicitLambdaCast" use
-"processor.Processor" use
+"Block" use
+"Var" use
+"declarations" use
+"processor" use
 
 FailProcForProcessor: [{
   processor: block: ;;
@@ -150,6 +116,53 @@ defaultRef: [
   ] when
 ];
 
+setRef: [
+  processor: block: ;;
+  refToVar:; # destination
+  compileOnce
+
+  var: refToVar getVar;
+  var.data.getTag VarRef = [
+    refToVar isVirtual [
+      "can not write to virtual" @processor block compilerError
+    ] [
+      pointee: VarRef var.data.get.refToVar;
+      pointee.mutable ~ [
+        FALSE @processor @block defaultMakeConstWith #source
+      ] when
+
+      processor compilable [
+        src: @processor @block pop;
+        processor compilable [
+          src pointee variablesAreSame [
+            src @block push
+            @src makeVarPtrCaptured
+            TRUE @processor @block defaultRef #source
+            refToVar @block push
+            @processor @block defaultSet
+          ] [
+            src @block push
+            refToVar @block push
+            @processor @block defaultSet
+          ] if
+        ] when
+      ] when
+    ] if
+  ] [
+    #rewrite value case!
+    src: @processor @block pop;
+    processor compilable [
+      src getVar.temporary [
+        src @block push
+        refToVar @block push
+        @processor @block defaultSet
+      ] [
+        "rewrite value works only with temporary values" @processor block compilerError
+      ] if
+    ] when
+  ] if
+];
+
 defaultMakeConstWith: [
   check: processor: block: ;;;
   refToVar: @processor @block pop;
@@ -220,7 +233,7 @@ getStackDepth: [
     i @processor block getStackDepth < [
       entry: i @processor block getStackEntryUnchecked;
       (entry @processor block getMplType entry.mutable ["R"] ["C"] if entry getVar.temporary ["T"] [""] if
-       entry isPlain [entry getPlainValueInformation] [String] if LF) printList
+        entry isPlain [entry getPlainValueInformation] [String] if LF) printList
       i 1 + @i set TRUE
     ] &&
   ] loop
@@ -236,7 +249,7 @@ getStackDepth: [
     currentPosition: processor.positions.getSize 1 - i - processor.positions.at;
 
     (
-      "at filename: " currentPosition.file.name
+      "at fileName: " currentPosition.file.name
       ", token: "     currentPosition.token
       ", line: "      currentPosition.line
       ", column: "    currentPosition.column LF
@@ -267,22 +280,80 @@ nodeHasCode: [
   node.emptyDeclaration ~ [node.uncompilable ~] && [node.empty ~] && [node.deleted ~] && [node.nodeCase NodeCaseCodeRefDeclaration = ~] &&
 ];
 
+addBlockIdTo: [
+  whereNames: nameInfo: nameOverloadDepth: captureCase: mplSchemaId: file: processor: block: ;;;;;;;;
+
+  addToLine: [
+    line:;
+    index: line.size 1 -;
+    result: TRUE dynamic;
+
+    [
+      index 0 < [index line.at.block block is ~] || [
+        FALSE #no such item
+      ] [
+        index line.at.file file is [
+          FALSE !result #we have such item
+          FALSE
+        ] [
+          index 1 - !index
+          TRUE #find deeper
+        ] if
+      ] if
+    ] loop
+
+    result [
+      NameInfoCoord @line.pushBack
+      block @line.last.@block.set
+      file  @line.last.@file.set
+    ] when
+
+    result
+  ];
+
+  addBlockToObjectCase: [
+    nameOverloadDepth: mplSchemaId: table: ;;;
+
+    nameOverloadDepth table.size < ~ [nameOverloadDepth 1 + @table.resize] when
+    whereTypes: nameOverloadDepth @table.at;
+    mplSchemaId whereTypes.size < ~ [mplSchemaId 1 + @whereTypes.resize] when
+    whereIds: mplSchemaId @whereTypes.at;
+    @whereIds addToLine
+  ];
+
+  nameInfo processor.selfNameInfo = [
+    nameOverloadDepth mplSchemaId @whereNames.@selfNames addBlockToObjectCase
+  ] [
+    nameInfo processor.closureNameInfo =  [
+      nameOverloadDepth mplSchemaId @whereNames.@closureNames addBlockToObjectCase
+    ] [
+      nameInfo whereNames.simpleNames.size < ~ [nameInfo 1 + @whereNames.@simpleNames.resize] when
+      whereOverloads: nameInfo @whereNames.@simpleNames.at;
+      nameOverloadDepth whereOverloads.size < ~ [nameOverloadDepth 1 + @whereOverloads.resize] when
+      whereIds: nameOverloadDepth @whereOverloads.at;
+      @whereIds addToLine
+    ] if
+  ] if
+];
+
 addEmptyCapture: [
   processor: block: ;;
   nameInfo: nameOverloadDepth: ;;
   file:;
 
-  newEvent: ShadowEvent;
-  ShadowReasonCapture @newEvent.setTag
-  branch: ShadowReasonCapture @newEvent.get;
+  @processor.@captureTable nameInfo nameOverloadDepth NameCaseInvalid processor.varForFails getVar.mplSchemaId file @processor @block addBlockIdTo [
+    newEvent: ShadowEvent;
+    ShadowReasonCapture @newEvent.setTag
+    branch: ShadowReasonCapture @newEvent.get;
 
-  processor.varForFails @branch.@refToVar set
-  nameInfo              @branch.@nameInfo set
-  nameOverloadDepth     @branch.@nameOverloadDepth set
-  NameCaseInvalid       @branch.@captureCase set
-  file                  @branch.@file.set
-  ArgMeta               @branch.@argCase set
-  @newEvent @block addShadowEvent
+    processor.varForFails @branch.@refToVar set
+    nameInfo              @branch.@nameInfo set
+    nameOverloadDepth     @branch.@nameOverloadDepth set
+    NameCaseInvalid       @branch.@captureCase set
+    file                  @branch.@file.set
+    ArgMeta               @branch.@argCase set
+    @newEvent @block addShadowEvent
+  ] when
 ];
 
 addShadowEvent: [
@@ -295,4 +366,13 @@ addShadowEvent: [
   block.state NodeStateNew = [
     event @block.@matchingInfo.@shadowEvents.pushBack
   ] when
+];
+
+getTopNode: [
+  processor: topNode:;;
+  [topNode.parent 0 = ~] [
+    topNode.parent @processor.@blocks.at.get !topNode
+  ] while
+
+  @topNode
 ];

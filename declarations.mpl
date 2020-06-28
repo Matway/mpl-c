@@ -1,20 +1,12 @@
-"String.String" use
-"String.StringView" use
-"String.makeStringView" use
-"String.toString" use
+"String" use
 "control" use
 
-"Block.Block" use
-"Block.CFunctionSignature" use
-"Block.CompilerPositionInfo" use
-"Block.NodeCaseCode" use
-"File.File" use
-"Var.RefToVar" use
-"Var.Variable" use
-"astNodeType.AstNode" use
-"astNodeType.IndexArray" use
-"processor.Processor" use
-"processor.RefToVarTable" use
+"Block" use
+"MplFile" use
+"NameManager" use
+"Var" use
+"astNodeType" use
+"processor" use
 
 {
   processor: Processor Ref;
@@ -38,7 +30,7 @@ compilerError: [processor: block:;; makeStringView block @processor compilerErro
 
 {
   processor: Processor Ref;
-
+  file: File Cref;
   signature: CFunctionSignature Cref;
   compilerPositionInfo: CompilerPositionInfo Cref;
   refToVar: RefToVar Cref;
@@ -97,7 +89,7 @@ compilerError: [processor: block:;; makeStringView block @processor compilerErro
   asCodeRef: Cond;
   name: StringView Cref;
   signature: CFunctionSignature Cref;
-} Natx {} "processImportFunction" importFunction
+} Int32 {} "processImportFunction" importFunction
 
 {
   block: Block Ref;
@@ -349,3 +341,25 @@ createFailWithMessage: [
   string: text String same [@text] [text toString] uif;
   @string @processor @block createFailWithMessageImpl
 ];
+
+{
+  nameManager: NameInfoEntry NameManager Ref;
+  multiParserResult: MultiParserResult Ref;
+  fileText: StringView Cref;
+  fileName: StringView Cref;
+  errorMessage: String Ref;
+} () {} "addToProcessImpl" importFunction
+
+addToProcess: [
+  result: String;
+  fileName: fileText: multiParserResult: nameManager: ;;;;
+  @result fileName fileText @multiParserResult @nameManager addToProcessImpl
+  @result
+];
+
+{
+  processor: Processor Ref;
+  fileName: StringView Cref;
+  fromCmd: Cond;
+} Int32 {} "addFileNameToProcessor" importFunction
+

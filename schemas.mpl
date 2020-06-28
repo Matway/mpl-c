@@ -1,34 +1,9 @@
-"Array.Array" use
-"String.String" use
-"String.hash" use
-"Variant.Variant" use
+"Array" use
+"String" use
+"Variant" use
 "control" use
 
-"Var.RefToVar"        use
-"Var.VarBuiltin"      use
-"Var.VarCode"         use
-"Var.VarCond"         use
-"Var.VarEnd"          use
-"Var.VarImport"       use
-"Var.VarInt16"        use
-"Var.VarInt32"        use
-"Var.VarInt64"        use
-"Var.VarInt8"         use
-"Var.VarIntX"         use
-"Var.VarInvalid"      use
-"Var.VarNat16"        use
-"Var.VarNat32"        use
-"Var.VarNat64"        use
-"Var.VarNat8"         use
-"Var.VarNatX"         use
-"Var.VarReal32"       use
-"Var.VarReal64"       use
-"Var.VarRef"          use
-"Var.VarString"       use
-"Var.VarStruct"       use
-"Var.getVar"          use
-"Var.getVirtualValue" use
-"Var.isVirtual"       use
+"Var" use
 
 makeVariableSchema: [
   refToVar: processor: ;;
@@ -293,11 +268,11 @@ hashValue: [Int8 same] [Nat32 cast] pfunc;
 hashValue: [Int16 same] [Nat32 cast] pfunc;
 hashValue: [Int32 same] [Nat32 cast] pfunc;
 hashValue: [Int64 same] [Nat64 cast Nat32 cast] pfunc;
-hashValue: [IntX same] [Nat64 cast Nat32 cast] pfunc;
+hashValue: [Intx same] [Nat64 cast Nat32 cast] pfunc;
 hashValue: [Nat8 same] [Nat32 cast] pfunc;
 hashValue: [Nat16 same] [Nat32 cast] pfunc;
 hashValue: [Nat32 same] [Nat32 cast] pfunc;
 hashValue: [Nat32 same] [Nat32 cast] pfunc;
 hashValue: [Nat64 same] [Nat32 cast] pfunc;
-hashValue: [NatX same] [Nat32 cast] pfunc;
+hashValue: [Natx same] [Nat32 cast] pfunc;
 hashValue: [Cond same] [[1n32] [0n32] if] pfunc;

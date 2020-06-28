@@ -1,22 +1,9 @@
-"Array.Array" use
-"Array.makeSubRange" use
-"String.String" use
-"String.StringView" use
-"String.assembleString" use
-"String.codepointToString" use
-"String.makeStringView" use
-"String.makeStringView2" use
-"String.print" use
-"String.splitString" use
-"String.toString" use
+"Array" use
+"String" use
+"ascii" use
 "control" use
 
-"ascii.ascii" use
-"astNodeType.AstNode" use
-"astNodeType.AstNodeType" use
-"astNodeType.IndexArray" use
-"astNodeType.ParserResult" use
-"astNodeType.PositionInfo" use
+"astNodeType" use
 
 codepointHex?: [
   codepoint:;

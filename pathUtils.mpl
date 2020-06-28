@@ -1,9 +1,5 @@
-"Array.Array" use
-"Array.makeSubRange" use
-"String.String" use
-"String.assembleString" use
-"String.makeStringView" use
-"String.splitString" use
+"Array" use
+"String" use
 "control" use
 
 extractClearPath: [
@@ -81,6 +77,15 @@ simplifyPath: [
       String String
     ] if
   ] call
+];
+
+simplifyFileName: [
+  path: name: simplifyPath;;
+  path "" = [
+    @name move copy
+  ] [
+    (path "/" name) assembleString
+  ] if
 ];
 
 findExtensionPosition: [

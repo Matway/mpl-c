@@ -1,9 +1,9 @@
-"Array.Array" use
-"Array.makeArrayRange" use
-"String.makeStringView" use
-"astNodeType.AstNodeType" use
-"astNodeType.IndexArray" use
+"Array" use
+"Owner" use
+"String" use
 "control" use
+
+"astNodeType" use
 
 optimizeLabelsInCurrentNode: [
   node:;
@@ -117,47 +117,37 @@ optimizeNamesInCurrentNode: [
 ];
 
 optimizeNames: [
-  multiParserResult: nameManager: ;;
+  current: nameManager: ;;
 
-  i: 0 dynamic;
+  unfinishedNodes: IndexArray AsRef Array;
+  unfinishedIndexes: Int32 Array;
+  @current.@nodes AsRef @unfinishedNodes.pushBack
+  0 dynamic @unfinishedIndexes.pushBack
+
   [
-    i multiParserResult.nodes.dataSize < [
-      currentNodesArray: i @multiParserResult.@nodes.at;
+    uSize: unfinishedIndexes.dataSize 1 -;
+    index: uSize unfinishedIndexes.at copy;
+    nodes: unfinishedNodes.last.data;
 
-      unfinishedNodes: IndexArray AsRef Array;
-      unfinishedIndexes: Int32 Array;
-      @currentNodesArray AsRef @unfinishedNodes.pushBack
-      0 dynamic @unfinishedIndexes.pushBack
+    index nodes.dataSize < [
+      index nodes.at @current.@memory.at optimizeNamesInCurrentNode # reallocation here
 
-      [
-        uSize: unfinishedIndexes.dataSize 1 -;
-        index: uSize unfinishedIndexes.at copy;
-        nodes: unfinishedNodes.last.data;
+      indexAfter: uSize @unfinishedIndexes.at;
+      indexAfter 1 + @indexAfter set
+      TRUE
+    ] [
+      @unfinishedIndexes.popBack
+      @unfinishedNodes.popBack
 
-        index nodes.dataSize < [
-          index nodes.at @multiParserResult.@memory.at optimizeNamesInCurrentNode # reallocation here
-
-          indexAfter: uSize @unfinishedIndexes.at;
-          indexAfter 1 + @indexAfter set
-          TRUE
-        ] [
-          @unfinishedIndexes.popBack
-          @unfinishedNodes.popBack
-
-          unfinishedNodes.getSize 0 >
-        ] if
-      ] loop
-
-      i 1 + @i set TRUE
-    ] &&
+      unfinishedNodes.getSize 0 >
+    ] if
   ] loop
 ];
 
-concatParserResults: [
+concatParserResult: [
   mresult:;
-  results:;
-  p: 0;
-  shift: 0;
+  current:;
+  shift: mresult.memory.getSize;
 
   adjustArray: [
     indexArray:;
@@ -167,30 +157,23 @@ concatParserResults: [
     ] each
   ];
 
-  r: @results makeArrayRange;
-
-  @results [
-    current:;
-    @current.@nodes adjustArray
-    @current.@memory [
-      currentNode:;
-      currentNode.data.getTag AstNodeType.Code = [
-        AstNodeType.Code @currentNode.@data.get adjustArray
+  @current.@nodes adjustArray
+  @current.@memory [
+    currentNode:;
+    currentNode.data.getTag AstNodeType.Code = [
+      AstNodeType.Code @currentNode.@data.get adjustArray
+    ] [
+      currentNode.data.getTag AstNodeType.List = [
+        AstNodeType.List @currentNode.@data.get adjustArray
       ] [
-        currentNode.data.getTag AstNodeType.List = [
-          AstNodeType.List @currentNode.@data.get adjustArray
-        ] [
-          currentNode.data.getTag AstNodeType.Object = [
-            AstNodeType.Object @currentNode.@data.get adjustArray
-          ] when
-        ] if
+        currentNode.data.getTag AstNodeType.Object = [
+          AstNodeType.Object @currentNode.@data.get adjustArray
+        ] when
       ] if
+    ] if
 
-      @currentNode move @mresult.@memory.pushBack
-    ] each
-
-    @current.@nodes move @mresult.@nodes.pushBack
-
-    shift current.memory.dataSize + @shift set
+    @currentNode move owner @mresult.@memory.pushBack
   ] each
+
+  @current.@nodes move owner @mresult.@nodes.pushBack
 ];

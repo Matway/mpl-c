@@ -1,22 +1,17 @@
-"Array.Array" use
-"HashTable.HashTable" use
-"Owner.Owner" use
-"String.String" use
-"String.StringView" use
+"Array" use
+"HashTable" use
+"Owner" use
+"String" use
 "control" use
-"memory.debugMemory" use
+"memory" use
 
-"Block.Block" use
-"Block.CompilerPositionInfo" use
-"Block.NameCaseInvalid" use
-"File.File" use
-"Mref.Mref" use
-"NameManager.NameManager" use
-"Var.RefToVar" use
-"Var.Variable" use
-"astNodeType.IndexArray" use
-"astNodeType.MultiParserResult" use
-"schemas.VariableSchema" use
+"Block" use
+"MplFile" use
+"Mref" use
+"NameManager" use
+"Var" use
+"astNodeType" use
+"schemas" use
 
 StringArray: [String Array];
 
@@ -27,15 +22,16 @@ DEFAULT_PRE_RECURSION_DEPTH_LIMIT: [64];
 ProcessorOptions: [{
   mainPath:               String;
   fileNames:              StringArray;
+  includePaths:           StringArray;
   pointerSize:            64nx dynamic;
   staticLiterals:         TRUE dynamic;
   debug:                  TRUE dynamic;
   debugMemory [
-    debugMemory:            TRUE dynamic;
+    debugMemory:            FALSE dynamic;
   ] [] uif
   arrayChecks:            TRUE dynamic;
+  partial:                FALSE dynamic;
   autoRecursion:          FALSE dynamic;
-  logs:                   FALSE dynamic;
   verboseIR:              FALSE dynamic;
   callTrace:              FALSE dynamic;
   threadModel:            0 dynamic;
@@ -73,8 +69,9 @@ NameInfoEntry: [{
   file: File Cref;
   refToVar: RefToVar;
   startPoint: -1 dynamic; # id of node
-  nameCase: NameCaseInvalid;
   mplFieldIndex: -1 dynamic; # for NameCaseSelfMember
+  isLocal: FALSE dynamic;
+  nameCase: NameCaseInvalid;
 }];
 
 MatchingNode: [{
@@ -105,19 +102,20 @@ IRArgument: [{
 
 NameInfoCoord: [{
   block: ["Block.BlockSchema" use BlockSchema] Mref;
-  file: ["File.FileSchema" use FileSchema] Mref;
+  file: ["MplFile.FileSchema" use FileSchema] Mref;
 }];
 
 Processor: [{
   options: ProcessorOptions;
-  multiParserResult: MultiParserResult Cref;
+  multiParserResult: MultiParserResult Ref;
   result: ProcessorResult;
   positions: CompilerPositionInfo Array;
+  unfinishedFiles: IndexArray;
 
   files: File Owner Array;
-  #fileStack: File AsRef Array;
-  #file: [@fileStack.last.data]; # Currently processed File
   fileNameIds: String Int32 HashTable;
+  cmdFileNameIds: String String HashTable;
+  exportVarIds: Int32 RefToVar HashTable;
 
   blocks: Block Owner Array;
   variables: Variable Array Array;
@@ -131,6 +129,7 @@ Processor: [{
     simpleNames:  NameInfoCoord Array Array Array; #name; overload; vector of blocks
     selfNames:    NameInfoCoord Array Array Array; #overload; mplTypeId; vector of blocks
     closureNames: NameInfoCoord Array Array Array; #overload; mplTypeId; vector of blocks
+    stableNames:  Int32 Array Array; #vector of vector of blockId
   };
 
   emptyNameInfo:               -1 dynamic;
@@ -153,6 +152,7 @@ Processor: [{
   globalVarId:            0 dynamic;
   globalInitializer:      -1 dynamic; # index of func for calling all initializers
   varForFails:            RefToVar;
+  varForCallTrace:        RefToVar;
   globalDestructibleVars: RefToVar Array;
   exportDepth:            0 dynamic;
 
@@ -162,8 +162,9 @@ Processor: [{
   schemaBuffer: VariableSchema Array;
   schemaTable: VariableSchema Int32 HashTable;
 
-  nameBuffer:  String Array;
-  nameTable:   StringView Int32 HashTable;       #strings->nameTag; strings from nameBuffer
+  nameBuffer:      String Array;
+  nameTable:       StringView Int32 HashTable;       #strings->nameTag; strings from nameBuffer
+  defaultVarNames: Int32 Array;
 
   depthOfRecursion:    0 dynamic;
   maxDepthOfRecursion: 0 dynamic;
@@ -177,7 +178,7 @@ Processor: [{
 
   acquireVarRefArray: [
     varRefArrays.size 0 = [
-      varRefArrayCount 15 = ["Too many varRef arrays requested\00" failProc] when
+      varRefArrayCount 20 = ["Too many varRef arrays requested\00" failProc] when
       varRefArrayCount 1 + !varRefArrayCount
       RefToVar Array
     ] [
@@ -214,9 +215,10 @@ Processor: [{
   lastTypeId:   0 dynamic;
   unitId:       0 dynamic; # number of compiling unit
 
-  namedFunctions:  String Int32 HashTable; # name -> node ID
-  moduleFunctions: Int32 Array;
-  dtorFunctions:   Int32 Array;
+  namedFunctions:    String Int32 HashTable; # name -> node ID
+  moduleFunctions:   Int32 Array;
+  dtorFunctions:     Int32 Array;
+  possibleUnstables: Int32 Array Array; #name -> array of blocks
 
   varCount: 0 dynamic;
 

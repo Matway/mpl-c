@@ -1,9 +1,9 @@
+"Array" use
+"HashTable" use
+"Owner" use
+"String" use
+"Variant" use
 "control" use
-
-"Array.Array" use
-"HashTable.HashTable" use
-"String.String" use
-"Variant.Variant" use
 
 AstNodeType: {
   Code:            [ 0];
@@ -103,8 +103,8 @@ ParserResult: [{
 ParserResults: [ParserResult Array];
 
 MultiParserResult: [{
-  memory: AstNode Array;
-  nodes: IndexArray Array; # order of going is not defined before compiling
+  memory: AstNode Owner Array;
+  nodes: IndexArray Owner Array; # order of going is not defined before compiling
 
   INIT: []; DIE: []; # default life control, and ban uneffective copy, because object is too big
 }];

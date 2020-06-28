@@ -1,10 +1,6 @@
-"Array.Array" use
-"HashTable.HashTable" use
-"HashTable.hash" use
-"String.String" use
-"String.StringView" use
-"String.hash" use
-"String.toString" use
+"Array" use
+"HashTable" use
+"String" use
 "control" use
 
 NameManager: [{
@@ -19,6 +15,8 @@ NameManager: [{
       nameId 1 + @names.enlarge
       string.getStringView nameId @textNameIds.insertUnsafe # Make StringView using the source String object, reference should remain valid when we move String
       @string move @names.last.@text set
+      0 @names.last.!overloadCount
+      0 @names.last.!localCount
       nameId
     ] if
   ];
@@ -26,7 +24,10 @@ NameManager: [{
   addItem: [
     item: nameId:;;
 
-    @item move nameId @names.at.@items.pushBack
+    current: nameId @names.at;
+    item.file isNil [current.overloadCount 1 + @current.!overloadCount] when
+    item.isLocal [current.localCount 1 + @current.!localCount] when
+    @item move @current.@items.pushBack
   ];
 
   findItem: [
@@ -45,6 +46,16 @@ NameManager: [{
     index
   ];
 
+  hasOverload: [
+    nameId: copy;
+    nameId @names.at.overloadCount 0 >
+  ];
+
+  hasLocalDefinition: [
+    nameId: copy;
+    nameId @names.at.localCount 0 >
+  ];
+
   getItem: [
     index: nameId:;;
     index nameId @names.at.@items.at
@@ -58,7 +69,12 @@ NameManager: [{
   removeItem: [
     nameId:;
 
-    nameId @names.at.@items.popBack
+    current: nameId @names.at;
+    current.items.last.file isNil [current.overloadCount 1 - @current.!overloadCount] when
+    current.items.last.isLocal [current.localCount 1 - @current.!localCount] when
+
+    @current.@items.popBack
+
   ];
 
   # Private
@@ -66,6 +82,8 @@ NameManager: [{
   Name: [{
     text: String;
     items: @itemSchema Array;
+    overloadCount: Int32;
+    localCount: Int32;
   }];
 
   names: Name Array;

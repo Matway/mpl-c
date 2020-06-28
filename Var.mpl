@@ -1,17 +1,11 @@
-
-"Array.Array" use
-"Owner.Owner" use
-"String.String" use
-"String.StringView" use
-"String.addLog" use
-"String.assembleString" use
-"String.makeStringView" use
-"String.toString" use
-"Variant.Variant" use
+"Array" use
+"Owner" use
+"String" use
+"Variant" use
 "control" use
 
-"Mref.Mref" use
-"staticCall.staticCall" use
+"Mref" use
+"staticCall" use
 
 Dirty:   [0n8 dynamic];
 Dynamic: [1n8 dynamic];
@@ -21,10 +15,11 @@ Virtual: [4n8 dynamic];
 
 ShadowReasonNo:           [0];
 ShadowReasonCapture:      [1];
-ShadowReasonFieldCapture: [2];
-ShadowReasonInput:        [3];
-ShadowReasonField:        [4];
-ShadowReasonPointee:      [5];
+ShadowReasonStableName:   [2];
+ShadowReasonFieldCapture: [3];
+ShadowReasonInput:        [4];
+ShadowReasonField:        [5];
+ShadowReasonPointee:      [6];
 
 VarInvalid: [ 0 static];
 VarCond:    [ 1 static];
@@ -49,7 +44,7 @@ VarStruct:  [19 static];
 VarEnd:     [20 static];
 
 CodeNodeInfo: [{
-  file:   ["File.FileSchema" use FileSchema] Mref;
+  file:   ["MplFile.FileSchema" use FileSchema] Mref;
   line:   Int32;
   column: Int32;
   index:  Int32;
@@ -341,7 +336,6 @@ getVirtualValue: [
       refToVar isPlain [
         refToVar getPlainConstantIR @result.cat
       ] [
-        ("Tag = " var.data.getTag) addLog
         [FALSE] "Wrong type for virtual value!" assert
       ] if
     ]
@@ -542,6 +536,18 @@ makeStringId: [
     @string move @processor.@nameBuffer.pushBack
     result
   ] if
+];
+
+makeDefaultVarId: [
+  varId: processor: ;;
+
+  [varId processor.defaultVarNames.getSize < ~] [
+    -1 @processor.@defaultVarNames.pushBack
+  ] while
+
+  result: varId @processor.@defaultVarNames.at;
+  result 0 < [("%var." varId) assembleString @processor makeStringId @result set] when
+  result copy
 ];
 
 markAsUnableToDie: [

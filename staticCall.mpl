@@ -1,5 +1,4 @@
-"String.addLog" use
-"String.makeStringView" use
+"String" use
 "control" use
 
 staticCall: [

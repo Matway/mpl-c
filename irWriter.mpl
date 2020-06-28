@@ -1,49 +1,15 @@
-"Array.Array" use
-"String.String" use
-"String.StringView" use
-"String.assembleString" use
-"String.makeStringView" use
-"String.print" use
-"String.toString" use
+"Array" use
+"String" use
 "control" use
-"conventions.cdecl" use
+"conventions" use
 
-"Block.Block" use
-"Block.Instruction" use
-"Block.makeInstruction" use
-"File.File" use
-"Var.Dynamic" use
-"Var.RefToVar" use
-"Var.VarBuiltin" use
-"Var.VarStruct" use
-"Var.fullUntemporize" use
-"Var.getPlainConstantIR" use
-"Var.getStorageSize" use
-"Var.getStringImplementation" use
-"Var.getVar" use
-"Var.isAutoStruct" use
-"Var.isNat" use
-"Var.isPlain" use
-"Var.isVirtual" use
-"Var.makeStringId" use
-"Var.markAsUnableToDie" use
-"Var.staticityOfVar" use
-"Var.varIsMoved" use
-"declarations.addDebugLocationForLastInstruction" use
-"declarations.callAssign" use
-"declarations.callDie" use
-"declarations.callInit" use
-"declarations.compilerError" use
-"declarations.createFailWithMessage" use
-"declarations.makeVarString" use
-"declarations.setVar" use
-"defaultImpl.findNameInfo" use
-"defaultImpl.makeVarPtrCaptured" use
-"defaultImpl.makeVarRealCaptured" use
-"defaultImpl.nodeHasCode" use
-"pathUtils.nameWithoutBadSymbols" use
-"pathUtils.stripExtension" use
-"processor.Processor" use
+"Block" use
+"MplFile" use
+"Var" use
+"declarations" use
+"defaultImpl" use
+"pathUtils" use
+"processor" use
 
 appendInstruction: [
   list: block:;;
@@ -153,14 +119,22 @@ createAllocIR: [
   refToVar: processor: block: ;;;
   var: @refToVar getVar;
   block.parent 0 = [
-    (refToVar @processor getIrName " = local_unnamed_addr global " refToVar @processor getIrType " zeroinitializer") assembleString @processor.@prolog.pushBack
+    processor.options.partial copy [
+      varBlock: block;
+      [varBlock.file isNil ~] "Topnode in nil file!" assert
+      varBlock.file.usedInParams ~
+    ] && [
+      "; global var from another file" toString @processor.@prolog.pushBack
+    ] [
+      (refToVar @processor getIrName " = private local_unnamed_addr global " refToVar @processor getIrType " zeroinitializer") assembleString @processor.@prolog.pushBack
+    ] if
+
     processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
   ] [
     refToVar getVar.irNameId refToVar @processor getMplSchema.irTypeId @processor @block createAllocIRByReg
     refToVar getVar.irNameId @block.@program.last.@irName1 set
     block.program.size 1 - @var.@allocationInstructionIndex set
   ] if
-
 
   refToVar copy
 ];
@@ -169,7 +143,16 @@ createStaticInitIR: [
   refToVar: processor: block: ;;;
   var: @refToVar getVar;
   [block.parent 0 =] "Can be used only with global vars!" assert
-  (refToVar @processor getIrName " = local_unnamed_addr global " refToVar @processor getStaticStructIR) assembleString @processor.@prolog.pushBack
+
+  processor.options.partial copy [
+    varBlock: block;
+    [varBlock.file isNil ~] "Topnode in nil file!" assert
+    varBlock.file.usedInParams ~
+  ] && [
+    "; global var from another file" toString @processor.@prolog.pushBack
+  ] [
+    (refToVar @processor getIrName " = private local_unnamed_addr global " refToVar @processor getStaticStructIR) assembleString @processor.@prolog.pushBack
+  ] if
   processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
   refToVar copy
 ];
@@ -482,11 +465,11 @@ createRetValue: [
 ];
 
 createCallIR: [
-  refToRet: argList: conventionName: funcName: processor: block: ;;;;;;
+  refToRet: argList: conventionName: funcName: hasCallTrace: processor: block: ;;;;;;;
   haveRet: refToRet.var isNil ~;
   retName: 0;
 
-  processor.options.callTrace [@processor @block createCallTraceProlog] when
+  processor.options.callTrace hasCallTrace and [@processor @block createCallTraceProlog] when
 
   offset: block.programTemplate.size;
 
@@ -520,7 +503,7 @@ createCallIR: [
 
   @processor @block addDebugLocationForLastInstruction
 
-  processor.options.callTrace [@processor @block createCallTraceEpilog] when
+  processor.options.callTrace hasCallTrace and [@processor @block createCallTraceEpilog] when
 
   retName
 ];
@@ -578,11 +561,30 @@ createFloatBuiltins: [
   "declare double @llvm.pow.f64(double, double)" @processor addStrToProlog
 ];
 
+getLLPriority: [
+  processor:;
+
+  priority: 0 dynamic;
+
+  processor.moduleFunctions [
+    currentBlock: processor.blocks.at.get;
+    currentBlock.deleted ~ currentBlock.empty ~ and [
+      currentBlock.globalPriority priority > [
+        currentBlock.globalPriority @priority set
+      ] when
+    ] when
+  ] each
+
+  priority
+];
+
 createCtors: [
   createTlsInit: processor: ; copy;
 
+  priority: @processor getLLPriority;
+
   "" @processor addStrToProlog
-  "@llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 65535, void ()* @global.ctors, i8* null }]" @processor addStrToProlog
+  ("@llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 " priority ", void ()* @global.ctors, i8* null }]") assembleString @processor addStrToProlog
   "" @processor addStrToProlog
   "define internal void @global.ctors() {" @processor addStrToProlog
 
@@ -591,8 +593,10 @@ createCtors: [
   ] when
 
   processor.moduleFunctions [
-    cur: processor.blocks.at.get.irName copy;
-    ("  call void " cur "()") assembleString @processor addStrToProlog
+    currentBlock: processor.blocks.at.get;
+    currentBlock.deleted ~ currentBlock.empty ~ and [
+      ("  call void " currentBlock.irName "()") assembleString @processor addStrToProlog
+    ] when
   ] each
 
   "  ret void" @processor addStrToProlog
@@ -601,9 +605,10 @@ createCtors: [
 
 createDtors: [
   processor:;
+  priority: @processor getLLPriority;
 
   "" @processor addStrToProlog
-  "@llvm.global_dtors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 65535, void ()* @global.dtors, i8* null }]" @processor addStrToProlog
+  ("@llvm.global_dtors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 " 65536 priority + ", void ()* @global.dtors, i8* null }]") assembleString @processor addStrToProlog
   "" @processor addStrToProlog
   "define internal void @global.dtors() {" @processor addStrToProlog
   processor.dtorFunctions [
@@ -807,7 +812,7 @@ generateVariableIRNameWith: [
     ("@global." processor.globalVarCount) assembleString @processor makeStringId
     processor.globalVarCount 1 + @processor.@globalVarCount set
   ] [
-    ("%var." hostOfVariable.lastVarName) assembleString @processor makeStringId
+    hostOfVariable.lastVarName @processor makeDefaultVarId
     hostOfVariable.lastVarName 1 + @hostOfVariable.@lastVarName set
   ] if
 ];

@@ -1,13 +1,11 @@
+"Array" use
+"HashTable" use
+"String" use
+"Variant" use
 "control" use
 
-"Array.Array" use
-"HashTable.HashTable" use
-"String.String" use
-"Variant.Variant" use
-
-"Mref.Mref" use
-"Var.RefToVar" use
-"Var.Struct" use
+"Mref" use
+"Var" use
 
 ArgVirtual:     [0n8 dynamic];
 ArgGlobal:      [1n8 dynamic];
@@ -67,7 +65,7 @@ Capture: [{
   captureCase:       NameCaseInvalid;
   nameInfo:          -1 dynamic;
   nameOverloadDepth: -1 dynamic;
-  file:              ["File.FileSchema" use FileSchema] Mref;
+  file:              ["MplFile.FileSchema" use FileSchema] Mref;
 }];
 
 CFunctionSignature: [{
@@ -78,7 +76,7 @@ CFunctionSignature: [{
 }];
 
 CompilerPositionInfo: [{
-  file:   ["File.FileSchema" use FileSchema] Mref;
+  file:   ["MplFile.FileSchema" use FileSchema] Mref;
   line:   -1 dynamic;
   column: -1 dynamic;
   token:  String;
@@ -90,7 +88,7 @@ FieldCapture: [{
   nameInfo:          -1 dynamic;
   nameOverloadDepth: -1 dynamic;
   fieldIndex:        -1 dynamic;
-  file:              ["File.FileSchema" use FileSchema] Mref;
+  file:              ["MplFile.FileSchema" use FileSchema] Mref;
 }];
 
 makeInstruction: [{
@@ -110,6 +108,7 @@ Instruction: [0 0 makeInstruction];
 ShadowEvent: [(
   Cond                    #ShadowReasonNo
   ShadowEventCapture      #ShadowReasonCapture
+  ShadowEventStableName   #ShadowReasonStableName
   ShadowEventFieldCapture #ShadowReasonFieldCapture
   ShadowEventInput        #ShadowReasonInput
   ShadowEventField        #ShadowReasonField
@@ -125,7 +124,7 @@ MatchingInfo: [{
 
 NameWithOverload: [{
   nameInfo: -1 dynamic;
-  nameOverloadDepth: -1 dynamic; 
+  nameOverloadDepth: -1 dynamic;
 }];
 
 NameWithOverloadAndRefToVar: [{
@@ -138,7 +137,7 @@ NameWithOverloadAndRefToVar: [{
 }];
 
 TokenRef: [{
-  file: ["File.FileSchema" use FileSchema] Mref;
+  file: ["MplFile.FileSchema" use FileSchema] Mref;
   token: Int32;
 }];
 
@@ -171,7 +170,9 @@ ShadowEventStableName: [{
 Block: [{
   id:              Int32;
   root:            FALSE dynamic;
-  file:            ["File.FileSchema" use FileSchema] Mref;
+  file:            ["MplFile.FileSchema" use FileSchema] Mref;
+  topNode:         [@BlockSchema] Mref;
+  capturedFiles:   Cond Array;
   beginPosition:   CompilerPositionInfo;
   parent:          0 dynamic;
   nodeCase:        NodeCaseCode;
@@ -182,7 +183,9 @@ Block: [{
   aliases:         String Array;
   lastLambdaName:  Int32;
   nextRecLambdaId: -1 dynamic;
+  globalPriority:  Int32;
 
+  hasEmptyLambdas:     FALSE dynamic;
   nodeIsRecursive:     FALSE dynamic;
   nextLabelIsVirtual:  FALSE dynamic;
   nextLabelIsConst:    FALSE dynamic;
@@ -204,6 +207,8 @@ Block: [{
   uncompilable:        FALSE dynamic;
   variadic:            FALSE dynamic;
   hasNestedCall:       FALSE dynamic;
+  hasCallTrace:        FALSE dynamic;
+  changedStableName:   FALSE dynamic;
 
   countOfUCall:         0 dynamic;
   declarationRefs:      Cond Array;
@@ -217,9 +222,11 @@ Block: [{
   labelNames:        NameWithOverloadAndRefToVar Array;
   captureNames:      NameWithOverloadAndRefToVar Array;
   fieldCaptureNames: NameWithOverloadAndRefToVar Array;
+  stableNames:       Int32 Array;
 
   candidatesToDie:     RefToVar Array;
   unprocessedAstNodes: TokenRef Array;
+  globalVariableNames: Int32 RefToVar Array HashTable;
 
   refToVar:           RefToVar; #refToVar of function with compiled node
   varNameInfo:        -1 dynamic; #variable name of imported function

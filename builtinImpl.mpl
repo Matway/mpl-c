@@ -1,167 +1,24 @@
-"Array.Array" use
-"HashTable.HashTable" use
-"Owner.owner" use
-"String.String" use
-"String.assembleString" use
-"String.makeStringView" use
-"String.print" use
-"String.printList" use
-"String.splitString" use
-"String.toString" use
+"Array" use
+"HashTable" use
+"Owner" use
+"String" use
 "control" use
+"file" use
 
-"Block.Block" use
-"Block.CFunctionSignature" use
-"Block.NameCaseFromModule" use
-"Block.NameCaseLocal" use
-"Var.Dirty" use
-"Var.Dynamic" use
-"Var.Field" use
-"Var.RefToVar" use
-"Var.ShadowReasonCapture" use
-"Var.ShadowReasonField" use
-"Var.Static" use
-"Var.Struct" use
-"Var.VarBuiltin" use
-"Var.VarCode" use
-"Var.VarCond" use
-"Var.VarEnd" use
-"Var.VarImport" use
-"Var.VarInt16" use
-"Var.VarInt32" use
-"Var.VarInt64" use
-"Var.VarInt8" use
-"Var.VarIntX" use
-"Var.VarInvalid" use
-"Var.VarNat16" use
-"Var.VarNat32" use
-"Var.VarNat64" use
-"Var.VarNat8" use
-"Var.VarNatX" use
-"Var.VarReal32" use
-"Var.VarReal64" use
-"Var.VarRef" use
-"Var.VarString" use
-"Var.VarStruct" use
-"Var.Variable" use
-"Var.Virtual" use
-"Var.Virtual" use
-"Var.Weak" use
-"Var.fullUntemporize" use
-"Var.getAlignment" use
-"Var.getStorageSize" use
-"Var.getVar" use
-"Var.isAnyInt" use
-"Var.isAutoStruct" use
-"Var.isNat" use
-"Var.isNumber" use
-"Var.isPlain" use
-"Var.isReal" use
-"Var.isUnallocable" use
-"Var.isVirtual" use
-"Var.makeRefBranch" use
-"Var.makeStringId" use
-"Var.makeValuePair" use
-"Var.markAsUnableToDie" use
-"Var.staticityOfVar" use
-"Var.varIsMoved" use
-"Var.variablesAreSame" use
-"astNodeType.AstNodeType" use
-"codeNode.addIndexArrayToProcess" use
-"codeNode.addNameInfo" use
-"codeNode.captureName" use
-"codeNode.catPossibleModulesList" use
-"codeNode.createNamedVariable" use
-"codeNode.createRefVariable" use
-"codeNode.createVariable" use
-"codeNode.createVariableWithVirtual" use
-"codeNode.derefAndPush" use
-"codeNode.getLastShadow" use
-"codeNode.getNameWithOverloadIndex" use
-"codeNode.getName" use
-"codeNode.getNilVar" use
-"codeNode.makeStaticity" use
-"codeNode.makeStorageStaticity" use
-"codeNode.makeVarDirty" use
-"codeNode.makeVarTreeDirty" use
-"codeNode.makeVarTreeDynamic" use
-"codeNode.makeVarTreeDynamicStoraged" use
-"codeNode.makeVirtualVarReal" use
-"codeNode.processMember" use
-"codeNode.processStaticAt" use
-"codeNode.push" use
-"codeNode.setRef" use
-"debugWriter.addGlobalVariableDebugInfo" use
-"declarations.callAssign" use
-"declarations.callDie" use
-"declarations.callInit" use
-"declarations.compilerError" use
-"declarations.copyOneVar" use
-"declarations.copyOneVarFromType" use
-"declarations.copyVar" use
-"declarations.copyVarFromChild" use
-"declarations.copyVarFromType" use
-"declarations.copyVarToNew" use
-"declarations.defaultCall" use
-"declarations.defaultPrintStack" use
-"declarations.defaultPrintStackTrace" use
-"declarations.getMplType" use
-"declarations.makeShadows" use
-"declarations.makeVarString" use
-"declarations.processCall" use
-"defaultImpl.FailProcForProcessor" use
-"defaultImpl.compilable" use
-"defaultImpl.createRef" use
-"defaultImpl.createRefNoOp" use
-"defaultImpl.defaultFailProc" use
-"defaultImpl.defaultMakeConstWith" use
-"defaultImpl.defaultSet" use
-"defaultImpl.findNameInfo" use
-"defaultImpl.makeVarPtrCaptured" use
-"defaultImpl.makeVarRealCaptured" use
-"defaultImpl.pop" use
-"irWriter.createAllocIR" use
-"irWriter.createBinaryOperation" use
-"irWriter.createBinaryOperationDiffTypes" use
-"irWriter.createCallIR" use
-"irWriter.createCastCopyPtrToNew" use
-"irWriter.createCastCopyToNew" use
-"irWriter.createCheckedCopyToNew" use
-"irWriter.createComment" use
-"irWriter.createCopyToNew" use
-"irWriter.createDerefToRegister" use
-"irWriter.createDirectBinaryOperation" use
-"irWriter.createDynamicGEP" use
-"irWriter.createGEPInsteadOfAlloc" use
-"irWriter.createGetCallTrace" use
-"irWriter.createGetTextSizeIR" use
-"irWriter.createGlobalAliasIR" use
-"irWriter.createPlainIR" use
-"irWriter.createStoreFromRegister" use
-"irWriter.createStringCompare" use
-"irWriter.createUnaryOperation" use
-"irWriter.createVarExportIR" use
-"irWriter.createVarImportIR" use
-"irWriter.getIrType" use
-"irWriter.getMplSchema" use
-"memory.debugMemory" use
-"pathUtils.extractExtension" use
-"pathUtils.stripExtension" use
-"processSubNodes.clearProcessorResult" use
-"processSubNodes.processExportFunction" use
-"processSubNodes.processIf" use
-"processSubNodes.processImportFunction" use
-"processSubNodes.processLoop" use
-"processor.IRArgument" use
-"processor.Processor" use
-"staticCall.staticCall" use
-"variable.checkUnsizedData" use
-"variable.cutValue" use
-"variable.findField" use
-"variable.isGlobal" use
-"variable.refsAreEqual" use
-"variable.unglobalize" use
-"variable.zeroValue" use
+"Block" use
+"Var" use
+"astNodeType" use
+"codeNode" use
+"debugWriter" use
+"declarations" use
+"defaultImpl" use
+"irWriter" use
+"memory" use
+"pathUtils" use
+"processSubNodes" use
+"processor" use
+"staticCall" use
+"variable" use
 
 debugMemory [
   "memory.getMemoryMetrics" use
@@ -346,7 +203,7 @@ mplNumberBuiltinOp: [
           FALSE @irarg.@byRef set
           irarg @args.pushBack
 
-          result args String @opName @processor @block createCallIR retName:;
+          result args String @opName FALSE dynamic @processor @block createCallIR retName:;
 
           retName result @processor @block createStoreFromRegister
 
@@ -711,10 +568,6 @@ staticityOfBinResult: [
 ] "mplBuiltinFalse" @declareBuiltin ucall
 
 [
-  processor.options.logs makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
-] "mplBuiltinHasLogs" @declareBuiltin ucall
-
-[
   LF toString @processor @block makeVarString @block push
 ] "mplBuiltinLF" @declareBuiltin ucall
 
@@ -777,7 +630,7 @@ staticityOfBinResult: [
           arg2 @processor getMplSchema.irTypeId @irarg.@irTypeId set
           irarg @args.pushBack
 
-          result args String tag VarReal32 = ["@llvm.pow.f32" makeStringView] ["@llvm.pow.f64" makeStringView] if @processor @block createCallIR retName:;
+          result args String tag VarReal32 = ["@llvm.pow.f32" makeStringView] ["@llvm.pow.f64" makeStringView] if FALSE dynamic @processor @block createCallIR retName:;
 
           @retName result @processor @block createStoreFromRegister
 
@@ -1045,13 +898,12 @@ staticityOfBinResult: [
     [signature: parseSignature;]
     [
       name: ("null." processor.blocks.getSize) assembleString;
-      newBlock: signature name makeStringView TRUE dynamic @processor @block processImportFunction Block addressToReference;
+      newBlock: signature name makeStringView TRUE dynamic @processor @block processImportFunction @processor.@blocks.at.get;
     ]
     [
       gnr: newBlock.varNameInfo @processor @block getName;
       cnr: @gnr 0 dynamic @processor @block processor.positions.last.file captureName;
       refToVar: cnr.refToVar copy;
-
       refToVar @block push
     ]
   ) sequence
@@ -1153,7 +1005,7 @@ staticityOfBinResult: [
     ]
     [signature: parseSignature;]
     [
-      astNode: VarCode varBody.data.get.index processor.multiParserResult.memory.at;
+      astNode: VarCode varBody.data.get.index processor.multiParserResult.memory.at.get;
       index: signature astNode VarCode varBody.data.get.file VarString varName.data.get makeStringView FALSE dynamic @processor @block processExportFunction;
     ]
   ) sequence
@@ -1178,19 +1030,32 @@ staticityOfBinResult: [
       var: @refToVar getVar;
       FALSE @var.@temporary set
     ] [
+      refToVar @processor @block makeVarTreeDirty
+    ] [
       name: VarString varName.data.get;
+      nameInfo: name makeStringView @processor findNameInfo;
+      fr: nameInfo processor.exportVarIds.find;
+      fr.success ["export variable name used now" @processor block compilerError] when
+    ] [
       oldIrNameId: var.irNameId copy;
+      nameInfo refToVar @processor.@exportVarIds.insert
       oldInstructionIndex: var.globalDeclarationInstructionIndex copy;
       ("@" name) assembleString @processor makeStringId @var.@irNameId set
-      instruction: var.globalDeclarationInstructionIndex @processor.@prolog.at;
-      @refToVar @processor @block createVarExportIR drop
-      @processor.@prolog.last move @instruction set
-      @processor.@prolog.popBack
-      TRUE @refToVar.setMutable
-      oldIrNameId var.irNameId refToVar @processor getMplSchema.irTypeId @processor createGlobalAliasIR
-      oldInstructionIndex @var.@globalDeclarationInstructionIndex set
 
-      nameInfo: name makeStringView @processor findNameInfo;
+      processor.options.partial [
+        [block.file isNil ~] "ExportVariable in nil file!" assert
+        block.file.usedInParams ~
+      ] && [
+        @refToVar @processor @block createVarImportIR drop
+      ] [
+        @refToVar @processor @block createVarExportIR drop
+        instruction: var.globalDeclarationInstructionIndex @processor.@prolog.at;
+        @processor.@prolog.last move @instruction set
+        @processor.@prolog.popBack
+        TRUE @refToVar.setMutable
+        var.irNameId oldIrNameId refToVar @processor getMplSchema.irTypeId @processor createGlobalAliasIR
+        oldInstructionIndex @var.@globalDeclarationInstructionIndex set
+      ] if
 
       {
         addNameCase: NameCaseLocal;
@@ -1279,44 +1144,38 @@ staticityOfBinResult: [
 ] "mplBuiltinFloor" @declareBuiltin ucall
 
 [
-  varPrev:   0n64 makeValuePair VarNatX @processor @block createVariable;
-  varNext:   0n64 makeValuePair VarNatX @processor @block createVariable;
-  varName:   String @processor @block makeVarString TRUE dynamic @processor @block createRefNoOp;
-  varLine:   0i64 makeValuePair VarInt32 @processor @block createVariable;
-  varColumn: 0i64 makeValuePair VarInt32 @processor @block createVariable;
+  processor.varForCallTrace.assigned ~ [
+    varPrev:   0n64 makeValuePair VarNatX @processor @block createVariable;
+    varNext:   0n64 makeValuePair VarNatX @processor @block createVariable;
+    varName:   String @processor @block makeVarString TRUE dynamic @processor @block createRefNoOp;
+    varLine:   0i64 makeValuePair VarInt32 @processor @block createVariable;
+    varColumn: 0i64 makeValuePair VarInt32 @processor @block createVariable;
 
-  @varPrev   @processor @block makeVarDirty
-  @varNext   @processor @block makeVarDirty
-  @varName   @processor @block makeVarDirty
-  @varLine   @processor @block makeVarDirty
-  @varColumn @processor @block makeVarDirty
+    struct: Struct;
+    5 @struct.@fields.resize
 
-  struct: Struct;
-  5 @struct.@fields.resize
+    varPrev 0 @struct.@fields.at.@refToVar set
+    "prev" makeStringView @processor findNameInfo 0 @struct.@fields.at.@nameInfo set
 
-  varPrev 0 @struct.@fields.at.@refToVar set
-  "prev" makeStringView @processor findNameInfo 0 @struct.@fields.at.@nameInfo set
+    varNext 1 @struct.@fields.at.@refToVar set
+    "next" makeStringView @processor findNameInfo 1 @struct.@fields.at.@nameInfo set
 
-  varNext 1 @struct.@fields.at.@refToVar set
-  "next" makeStringView @processor findNameInfo 1 @struct.@fields.at.@nameInfo set
+    varName 2 @struct.@fields.at.@refToVar set
+    "name" makeStringView @processor findNameInfo 2 @struct.@fields.at.@nameInfo set
 
-  varName 2 @struct.@fields.at.@refToVar set
-  "name" makeStringView @processor findNameInfo 2 @struct.@fields.at.@nameInfo set
+    varLine 3 @struct.@fields.at.@refToVar set
+    "line" makeStringView @processor findNameInfo 3 @struct.@fields.at.@nameInfo set
 
-  varLine 3 @struct.@fields.at.@refToVar set
-  "line" makeStringView @processor findNameInfo 3 @struct.@fields.at.@nameInfo set
+    varColumn 4 @struct.@fields.at.@refToVar set
+    "column" makeStringView @processor findNameInfo 4 @struct.@fields.at.@nameInfo set
 
-  varColumn 4 @struct.@fields.at.@refToVar set
-  "column" makeStringView @processor findNameInfo 4 @struct.@fields.at.@nameInfo set
+    @struct move owner VarStruct @processor @block createVariable @processor.@varForCallTrace set
+    Dynamic @processor.@varForCallTrace getVar.@storageStaticity set
+    @processor.@varForCallTrace @processor @block makeVarTreeDirty
+  ] when
 
-  first: @struct move owner VarStruct @processor @block createVariable;
-  last: first @processor @block copyVar;
-
-  firstRef: @first FALSE dynamic @processor @block createRefNoOp;
-  lastRef:  @last  FALSE dynamic @processor @block createRefNoOp;
-
-  @firstRef @processor @block makeVarDirty
-  @lastRef  @processor @block makeVarDirty
+  firstRef: @processor.@varForCallTrace FALSE dynamic @processor @block createRefNoOp;
+  lastRef:  @processor.@varForCallTrace FALSE dynamic @processor @block createRefNoOp;
 
   resultStruct: Struct;
   2 @resultStruct.@fields.resize
@@ -1328,8 +1187,10 @@ staticityOfBinResult: [
   "last" makeStringView @processor findNameInfo 1 @resultStruct.@fields.at.@nameInfo set
 
   result: @resultStruct move owner VarStruct @processor @block createVariable @processor @block createAllocIR;
-  first @processor getIrType result @processor getIrType result @processor @block createGetCallTrace
+  @processor.@varForCallTrace @processor getIrType result @processor getIrType result @processor @block createGetCallTrace
   result @block push
+
+  TRUE @block.!hasCallTrace
 ] "mplBuiltinGetCallTrace" @declareBuiltin ucall
 
 [
@@ -1384,9 +1245,9 @@ staticityOfBinResult: [
         condition @processor @block makeVarRealCaptured
 
         condition
-        VarCode varThen.data.get.index processor.multiParserResult.memory.at
+        VarCode varThen.data.get.index processor.multiParserResult.memory.at.get
         VarCode varThen.data.get.file
-        VarCode varElse.data.get.index processor.multiParserResult.memory.at
+        VarCode varElse.data.get.index processor.multiParserResult.memory.at.get
         VarCode varElse.data.get.file
         @processor @block processIf
       ] if
@@ -1405,7 +1266,7 @@ staticityOfBinResult: [
       varName.data.getTag VarString = ~ ["function name must be static string" @processor block compilerError] when
     ]
     [signature: parseSignature;]
-    [newBlock: signature VarString varName.data.get makeStringView FALSE dynamic @processor @block processImportFunction Block addressToReference;]
+    [newBlockId: signature VarString varName.data.get makeStringView FALSE dynamic @processor @block processImportFunction;]
   ) sequence
 ] "mplBuiltinImportFunction" @declareBuiltin ucall
 
@@ -1533,7 +1394,7 @@ staticityOfBinResult: [
       varBody: body getVar;
       varBody.data.getTag VarCode = ~ ["body must be [CODE]" @processor block compilerError] when
     ] [
-      astNode: VarCode varBody.data.get.index processor.multiParserResult.memory.at;
+      astNode: VarCode varBody.data.get.index processor.multiParserResult.memory.at.get;
       astNode @processor @block VarCode varBody.data.get.file processLoop
     ]
   ) sequence
@@ -1853,7 +1714,7 @@ staticityOfBinResult: [
     processor compilable [
       codeIndex: VarCode varCode.data.get.index copy;
       codeFile: VarCode varCode.data.get.file;
-      astNode: codeIndex processor.multiParserResult.memory.at;
+      astNode: codeIndex processor.multiParserResult.memory.at.get;
       [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
       block.countOfUCall 1 + @block.@countOfUCall set
       block.countOfUCall 65535 > ["ucall limit exceeded" @processor block compilerError] when
@@ -1881,7 +1742,7 @@ staticityOfBinResult: [
       condition staticityOfVar Weak > [
         value: VarCond varCond.data.get.end copy;
         code: value [VarCode varThen.data.get] [VarCode varElse.data.get] if;
-        astNode: code.index processor.multiParserResult.memory.at;
+        astNode: code.index processor.multiParserResult.memory.at.get;
         [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
         block.countOfUCall 1 + @block.@countOfUCall set
         block.countOfUCall 65535 > ["ucall limit exceeded" @processor block compilerError] when
@@ -1894,6 +1755,74 @@ staticityOfBinResult: [
   ] when
 ] "mplBuiltinUif" @declareBuiltin ucall
 
+FindInPathResult: {
+  NO_FILE: [0];
+  FILE_WITH_ERROR: [1];
+  UNCOMPILED_FILE: [2];
+  COMPILED_FILE: [3];
+};
+
+tryFindInPath: [
+  moduleName: path: processor: block: ;;;;
+
+  fullFileName: path "" = [(moduleName ".mpl") assembleString] [(path "/" moduleName ".mpl") assembleString] if;
+
+  result: {
+    success: FindInPathResult.NO_FILE;
+    fullFileName: String;
+    block: Block Cref;
+  };
+
+  checkLoadedFile: [
+    fullFileName:;
+
+    fr: fullFileName processor.fileNameIds.find;
+    fr.success [
+      fr: fullFileName processor.modules.find;
+      fr.success [fr.value 0 < ~] && [
+        fileBlock: fr.value processor.blocks.at.get;
+        fileBlock @result.!block
+        @fullFileName move @result.@fullFileName set
+        FindInPathResult.COMPILED_FILE @result.!success
+      ] [
+        @fullFileName move @result.@fullFileName set
+        FindInPathResult.UNCOMPILED_FILE @result.!success
+      ] if
+
+      TRUE
+    ] &&
+  ];
+
+  @fullFileName checkLoadedFile ~ [
+    loadStringResult: fullFileName loadString;
+    loadStringResult.success [
+      errorInfo: fullFileName makeStringView loadStringResult.data makeStringView @processor.@multiParserResult @processor.@nameManager addToProcess;
+      errorInfo "" = [
+        fileId: FALSE fullFileName makeStringView @processor addFileNameToProcessor;
+        fullFileName @processor.@options.@fileNames.pushBack
+        fileId @processor.@unfinishedFiles.pushBack
+        @fullFileName move @result.@fullFileName set
+        FindInPathResult.UNCOMPILED_FILE @result.!success
+      ] [
+        errorInfo @processor @block compilerError
+        @fullFileName move @result.@fullFileName set
+        FindInPathResult.FILE_WITH_ERROR @result.!success
+      ] if
+    ] [
+      findInCmd: moduleName processor.cmdFileNameIds.find;
+      findInCmd.success [
+        findInCmd.value copy checkLoadedFile ~ [
+          FindInPathResult.NO_FILE @result.!success
+        ] when
+      ] [
+        FindInPathResult.NO_FILE @result.!success
+      ] if
+    ] if
+  ] when
+
+  result
+];
+
 [
   (
     [processor compilable]
@@ -1904,22 +1833,54 @@ staticityOfBinResult: [
       varName.data.getTag VarString = ~ ["path must be static string" @processor block compilerError] when
     ] [
       string: VarString varName.data.get;
-      filename: string stripExtension;
-      filename "" = ["invalid filename" @processor block compilerError] when
+      fileName: string stripExtension;
+      fileName "" = ["invalid fileName" @processor block compilerError] when
     ] [
-      name: string extractExtension;
-      useAll: name "" =;
+      variableName: string extractExtension;
+      useAll: variableName "" =;
+      currentFile: processor.positions.last.file;
+      currentFilePath: currentFile.name stripFilename;
 
-      fr: filename processor.fileNameIds.find;
-      fr.success [
-        fr: filename processor.modules.find;
+      findResult: fileName currentFilePath @processor @block tryFindInPath;
+      findResult.success FindInPathResult.NO_FILE = [
+        processor.options.includePaths [
+          currentPath:;
+          findResult.success FindInPathResult.NO_FILE = [
+            fileName currentPath @processor @block tryFindInPath !findResult
+          ] when
+        ] each
+      ] when
 
-
-        fr.success [fr.value 0 < ~] && [
-          fileBlock: fr.value processor.blocks.at.get;
+      findResult.success (
+        FindInPathResult.NO_FILE [
+          oldSuccess: processor compilable;
+          message: ("module not found: " fileName) assembleString;
+          message @processor block compilerError
+          oldSuccess [
+            @processor.@result.@errorInfo move @processor.@result.@globalErrorInfo.pushBack
+            -1 @processor.@result clearProcessorResult
+          ] when
+        ]
+        FindInPathResult.FILE_WITH_ERROR [
+          #we has error yet
+        ]
+        FindInPathResult.UNCOMPILED_FILE [
+          TRUE dynamic @processor.@result.@findModuleFail set
+          @findResult.@fullFileName move @processor.@result.@errorInfo.@missedModule set
+          ("module not compiled yet: " fileName) assembleString @processor block compilerError
+        ]
+        FindInPathResult.COMPILED_FILE [
+          fileBlock: findResult.block;
           file: fileBlock.file;
 
-          nameInfo: name @processor findNameInfo;
+          block.exportDepth 0 = [
+            topNode: @block.topNode;
+            fileBlock.globalPriority topNode.globalPriority < ~ [
+              fileBlock.globalPriority 1 + @topNode.!globalPriority
+            ] when
+          ] when
+
+          nameInfo: variableName @processor findNameInfo;
           labelCount: 0;
 
           findLabelNames: [
@@ -1950,6 +1911,8 @@ staticityOfBinResult: [
                 nameInfo:    current.nameInfo copy;
                 overload:    block.nextLabelIsOverload;
               } @processor @block addNameInfo
+
+              current.nameInfo @processor @block checkPossibleUnstables
             ] times
 
             @addNameData.clear
@@ -1970,7 +1933,7 @@ staticityOfBinResult: [
                   fr.value.index copy fr.value.depth copy
                 ] [
                   result: -1 file nameInfo @processor.@nameManager.findItem;
-                  nameInfo  {index: result copy; depth: 0;} @indexes.insert
+                  nameInfo {index: result copy; depth: 0;} @indexes.insert
                   result 0
                 ] if
               ];
@@ -1992,12 +1955,11 @@ staticityOfBinResult: [
             } findLabelNames
           ] if
 
-
           FALSE @block.!nextLabelIsOverload
 
           labelCount 0 = [
             oldSuccess: processor compilable;
-            message: ("no names match \"" name "\"") assembleString; 
+            message: ("no names match \"" variableName "\"") assembleString;
 
             useAll ~ [
               @message nameInfo @processor catPossibleModulesList
@@ -2009,21 +1971,10 @@ staticityOfBinResult: [
               -1 @processor.@result clearProcessorResult
             ] when
           ] when
-        ] [
-          TRUE dynamic @processor.@result.@findModuleFail set
-          filename toString @processor.@result.@errorInfo.@missedModule set
-          ("module not found: " filename) assembleString @processor block compilerError
-        ] if
-      ] [
-        #if module name is totally wrong
-        oldSuccess: processor compilable;
-        message: ("module not found: " filename) assembleString;
-        message @processor block compilerError
-        oldSuccess [
-          @processor.@result.@errorInfo move @processor.@result.@globalErrorInfo.pushBack
-          -1 @processor.@result clearProcessorResult
-        ] when
-      ] if
+        ]
+        [
+        ]
+      ) case
     ]
   ) sequence
 ] "mplBuiltinUse" @declareBuiltin ucall

@@ -1,24 +1,16 @@
-"String.makeStringView" use
-"String.print" use
-"String.toString" use
+"String" use
 "control" use
-"conventions.cdecl" use
+"conventions" use
 
-"Block.Block" use
-"Block.NameCaseBuiltin" use
-"File.File" use
-"Var.VarBuiltin" use
-"Var.Virtual" use
-"Var.getVar" use
+"Block" use
+"MplFile" use
+"Var" use
 "builtinImpl" use
-"codeNode.addNameInfo" use
-"codeNode.createVariable" use
-"codeNode.makeStaticity" use
-"declarations.getMplType" use
-"defaultImpl.FailProcForProcessor" use
-"processor.Processor" use
-"processor.ProcessorResult" use
-"variable.NameInfo" use
+"codeNode" use
+"declarations" use
+"defaultImpl" use
+"processor" use
+"variable" use
 
 builtins: (
   {name: "!"                             ; impl: @mplBuiltinExclamation             ;}
@@ -34,7 +26,6 @@ builtins: (
   {name: "COMPILER_VERSION"              ; impl: @mplBuiltinCompilerVersion         ;}
   {name: "DEBUG"                         ; impl: @mplBuiltinDebug                   ;}
   {name: "FALSE"                         ; impl: @mplBuiltinFalse                   ;}
-  {name: "HAS_LOGS"                      ; impl: @mplBuiltinHasLogs                 ;}
   {name: "LF"                            ; impl: @mplBuiltinLF                      ;}
   {name: "TRUE"                          ; impl: @mplBuiltinTrue                    ;}
   {name: "^"                             ; impl: @mplBuiltinPow                     ;}
@@ -117,10 +108,10 @@ addBuiltin: [
   bvar: @id VarBuiltin @processor @block createVariable Virtual @processor @block makeStaticity;
 
   {
-    addNameCase: NameCaseBuiltin;
+    addNameCase: NameCaseLocal;
     refToVar:    bvar copy;
     nameInfo:    nameId copy;
-    file:        File Cref;
+    file:        0 processor.files.at.get;
   } @processor @block addNameInfo
 ];
 
