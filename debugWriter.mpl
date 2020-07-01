@@ -5,37 +5,42 @@
 
 "Var" use
 "declarations" use
+"defaultImpl" use
 "irWriter" use
 "pathUtils" use
 
+addDebugString: [
+  @processor.@debugInfo.@strings.pushBack
+];
+
 addDebugProlog: [
   processor:;
-  "declare void @llvm.dbg.declare(metadata, metadata, metadata)" toString @processor.@debugInfo.@strings.pushBack
+  "declare void @llvm.dbg.declare(metadata, metadata, metadata)" toString addDebugString
 
-  String @processor.@debugInfo.@strings.pushBack
-  String @processor.@debugInfo.@strings.pushBack
+  String addDebugString
+  String addDebugString
   processor.debugInfo.strings.dataSize 1 - @processor.@debugInfo.@cuStringNumber set
 
   indexCodeView: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
-  ("!" indexCodeView " = !{i32 2, !\"CodeView\", i32 1}" ) assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" indexCodeView " = !{i32 2, !\"CodeView\", i32 1}" ) assembleString addDebugString
 
   indexDebug: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
-  ("!" indexDebug " = !{i32 2, !\"Debug Info Version\", i32 3}") assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" indexDebug " = !{i32 2, !\"Debug Info Version\", i32 3}") assembleString addDebugString
 
   indexPIC: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
-  ("!" indexPIC " = !{i32 1, !\"PIC Level\", i32 2}") assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" indexPIC " = !{i32 1, !\"PIC Level\", i32 2}") assembleString addDebugString
 
   ("!llvm.module.flags = !{!" indexCodeView ", !" indexDebug ", !" indexPIC "}") assembleString processor.debugInfo.strings.dataSize 5 - @processor.@debugInfo.@strings.at set
 
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
-  String @processor.@debugInfo.@strings.pushBack
+  String addDebugString
   processor.debugInfo.strings.dataSize 1 - @processor.@debugInfo.@unitStringNumber set
   index #for unit
 
@@ -64,7 +69,7 @@ addLinkerOptionsDebugInfo: [
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
   processor.options.linkerOptions.getSize 0 > [
-    ("!llvm.linker.options = !{!" index "}") assembleString @processor.@debugInfo.@strings.pushBack
+    ("!llvm.linker.options = !{!" index "}") assembleString addDebugString
     optionsList: String;
     ("!" index " = !{") @optionsList.catMany
     processor.options.linkerOptions.getSize [
@@ -74,10 +79,10 @@ addLinkerOptionsDebugInfo: [
       ("!\"" i processor.options.linkerOptions.at "\"") @optionsList.catMany
     ] times
     "}" @optionsList.cat
-    @optionsList move @processor.@debugInfo.@strings.pushBack
+    @optionsList move addDebugString
   ] [
-    String @processor.@debugInfo.@strings.pushBack
-    String @processor.@debugInfo.@strings.pushBack
+    String addDebugString
+    String addDebugString
   ] if
 ];
 
@@ -151,7 +156,7 @@ addMemberInfo: [
       ", line: " processor.positions.last.line ", baseType: !" debugDeclarationIndex ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
   ] if
 
-  @processor.@debugInfo.@strings.pushBack
+  addDebugString
   index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
 
   offset fsize + @offset set
@@ -206,7 +211,7 @@ getTypeDebugDeclaration: [
               ] &&
             ] loop
             "}" @newDebugInfo.cat
-            @newDebugInfo move @processor.@debugInfo.@strings.pushBack
+            @newDebugInfo move addDebugString
 
             index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
 
@@ -215,7 +220,7 @@ getTypeDebugDeclaration: [
 
             ("!" index " = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !" processor.positions.last.file.debugId
               ", name: \"" refToVar @processor block getDebugType "\", line: " processor.positions.last.line ", size: " refToVar @processor getStorageSize 0ix cast 0 cast 8 * ", elements: !" index 1 -
-              ")") assembleString @processor.@debugInfo.@strings.pushBack
+              ")") assembleString addDebugString
             index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
             index
           ] [
@@ -226,6 +231,39 @@ getTypeDebugDeclaration: [
       ] if
     ] if
   ] if
+];
+
+getDbgSchemaNameType: [
+  refToVar: processor: ;;
+  var: refToVar getVar;
+  resultDBG: String;
+  var.data.getTag VarStruct = [
+    mplStruct: VarStruct var.data.get.get;
+    mplStruct.fields [
+      field:;
+      resultDBG "" = [
+        field.nameInfo processor.specialNames.schemaNameNameInfo = [
+          fieldVar: field.refToVar getVar;
+          fieldVar.staticity.end Dynamic > [fieldVar.data.getTag VarRef =] && [
+            fieldDerefVar: VarRef fieldVar.data.get.refToVar getVar;
+            fieldDerefVar.staticity.end Dynamic > [fieldDerefVar.data.getTag VarString =] && [
+              VarString fieldDerefVar.data.get @resultDBG set
+            ] when
+          ] when
+        ] when
+      ] when
+    ] each
+
+    resultDBG "" = [
+      mplStruct.fields.size 0 > [0 mplStruct.fields.at.nameInfo processor.specialNames.emptyNameInfo = ~] && [
+        "object" toString @resultDBG set
+      ] [
+        "list" toString @resultDBG set
+      ] if
+    ] when
+  ] when
+
+  resultDBG
 ];
 
 getDebugType: [
@@ -241,7 +279,12 @@ getDebugType: [
     ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString @processor block compilerError
   ] if
 
-  result: (refToVar getVar.mplSchemaId ".") assembleString;
+  schemaName: refToVar @processor getDbgSchemaNameType;
+  result: schemaName "" = [
+    (refToVar getVar.mplSchemaId ".") assembleString
+  ] [
+    (schemaName "." refToVar getVar.mplSchemaId ".") assembleString
+  ] if;
   splitted.chars @result.catMany
   @result
 ];
@@ -260,7 +303,7 @@ addVariableDebugInfo: [
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
     ("!" index " = !DILocalVariable(name: \"" nameInfo processor.nameManager.getText "\", scope: !" block.funcDbgIndex
       ", file: !" processor.positions.last.file.debugId
-      ", line: " processor.positions.last.line ", type: !" debugDeclarationIndex ")") assembleString @processor.@debugInfo.@strings.pushBack
+      ", line: " processor.positions.last.line ", type: !" debugDeclarationIndex ")") assembleString addDebugString
     index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
 
     index
@@ -277,13 +320,13 @@ addGlobalVariableDebugInfo: [
 
     index: processor.debugInfo.lastId copy;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
-    ("!" index " = !DIGlobalVariableExpression(var: !" index 1 + ", expr: !DIExpression())") assembleString @processor.@debugInfo.@strings.pushBack
+    ("!" index " = !DIGlobalVariableExpression(var: !" index 1 + ", expr: !DIExpression())") assembleString addDebugString
 
     index: processor.debugInfo.lastId copy;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
     ("!" index " = !DIGlobalVariable(name: \"" nameInfo processor.nameManager.getText "\", linkageName: \"" refToVar @processor getIrName
       "\", scope: !" processor.debugInfo.unit ", file: !" processor.positions.last.file.debugId
-      ", line: " processor.positions.last.line ", type: !" debugDeclarationIndex ", isLocal: false, isDefinition: true)") assembleString @processor.@debugInfo.@strings.pushBack
+      ", line: " processor.positions.last.line ", type: !" debugDeclarationIndex ", isLocal: false, isDefinition: true)") assembleString addDebugString
 
     result: index 1 -;
     result @processor.@debugInfo.@globals.pushBack
@@ -307,7 +350,7 @@ addExpression: [
 
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
-  ("!" index " = !DIExpression()") assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" index " = !DIExpression()") assembleString addDebugString
   index
 ];
 
@@ -320,7 +363,7 @@ addTypeInfo: [
 
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
-  ("!" index " = !DIBasicType(name: \"" @name "\", size: " size ", encoding: " @encoding ")") assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" index " = !DIBasicType(name: \"" @name "\", size: " size ", encoding: " @encoding ")") assembleString addDebugString
 
   index
 ];
@@ -333,7 +376,7 @@ addDerivedTypeInfo: [
   tag:;
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
-  ("!" index " = !DIDerivedType(tag: " @tag ", baseType: !" base ", size: " @size ")") assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" index " = !DIDerivedType(tag: " @tag ", baseType: !" base ", size: " @size ")") assembleString addDebugString
 
   index
 ];
@@ -348,7 +391,7 @@ addFileDebugInfo: [
 
   fullPath: (processor.options.mainPath fileName) assembleString;
   onlyPath: onlyFileName: fullPath simplifyPath;;
-  ("!" index " = !DIFile(filename: \"" onlyFileName "\", directory: \"" onlyPath makeStringView getStringImplementation "\")" ) assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" index " = !DIFile(filename: \"" onlyFileName "\", directory: \"" onlyPath makeStringView getStringImplementation "\")" ) assembleString addDebugString
   index
 ];
 
@@ -358,13 +401,13 @@ addFuncSubroutineInfo: [
 
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
-  ("!" index " = !{null}") assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" index " = !{null}") assembleString addDebugString
   types: index copy;
 
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
-  ("!" index " = !DISubroutineType(types: !" types ")") assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" index " = !DISubroutineType(types: !" types ")") assembleString addDebugString
 
   index
 ];
@@ -380,18 +423,40 @@ addFuncDebugInfo: [
     "!" funcDebugIndex " = distinct !DISubprogram(name: \"" funcImplementation "\", linkageName: \"" @funcIRName
     "\", scope: !" position.file.debugId
     ", file: !" position.file.debugId ", line: " position.line  ", type: !" subroutineIndex
-    ", scopeLine: " position.line ", unit: !" processor.debugInfo.unit ")") assembleString @processor.@debugInfo.@strings.pushBack
+    ", scopeLine: " position.line ", unit: !" processor.debugInfo.unit ")") assembleString addDebugString
 ];
 
 addDebugLocation: [
   compileOnce
-  position: funcDbgIndex: processor: ;;;
+  position: scopeDbgIndex: funcDbgIndex: processor: ;;;;
 
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
-  ("!" index " = !DILocation(line: " position.line ", column: " position.column ", scope: !" funcDbgIndex ")") assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" index " = !DILocation(line: " position.line ", column: " position.column ", scope: !" scopeDbgIndex ")") assembleString addDebugString
 
+  index funcDbgIndex @processor.@debugInfo.@locationIds.insert
+  index
+];
+
+addLexicalBlockLocation: [
+  fileDbgIndex: funcDbgIndex: processor: ;;;
+
+  index: processor.debugInfo.lastId copy;
+  processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
+
+  ("!" index " = !DILexicalBlockFile(scope: !" funcDbgIndex ", file: !" fileDbgIndex ", discriminator: 0)")  assembleString addDebugString
+  index funcDbgIndex @processor.@debugInfo.@locationIds.insert
+  index
+];
+
+addLexicalBlockLocation: [
+  fileDbgIndex: funcDbgIndex: processor: ;;;
+
+  index: processor.debugInfo.lastId copy;
+  processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
+
+  ("!" index " = !DILexicalBlockFile(scope: !" funcDbgIndex ", file: !" fileDbgIndex ", discriminator: 0)")  assembleString @processor.@debugInfo.@strings.pushBack
   index funcDbgIndex @processor.@debugInfo.@locationIds.insert
   index
 ];
@@ -401,7 +466,7 @@ addDebugReserve: [
 
   index: processor.debugInfo.lastId copy;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
-  String @processor.@debugInfo.@strings.pushBack
+  String addDebugString
   index
 ];
 
@@ -429,7 +494,7 @@ correctUnitInfo: [
   ] times
   "}"                       @newDebugInfo.cat
 
-  @newDebugInfo move @processor.@debugInfo.@strings.pushBack
+  @newDebugInfo move addDebugString
   globals: index copy;
 
   ("!" processor.debugInfo.unit " = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !" file.debugId

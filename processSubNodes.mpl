@@ -307,12 +307,12 @@ tryMatchNode: [
   ] &&;
 
   goodReality:
-  forceRealFunction ~ [
-    currentMatchingNode.nodeCase NodeCaseDeclaration =
-    [currentMatchingNode.nodeCase NodeCaseCodeRefDeclaration =] ||
-    [currentMatchingNode.nodeCase NodeCaseExport =] ||
-    [currentMatchingNode.nodeCase NodeCaseLambda =] ||
-  ] ||;
+    forceRealFunction ~ [
+      currentMatchingNode.nodeCase NodeCaseDeclaration =
+      [currentMatchingNode.nodeCase NodeCaseCodeRefDeclaration =] ||
+      [currentMatchingNode.nodeCase NodeCaseExport =] ||
+      [currentMatchingNode.nodeCase NodeCaseLambda =] ||
+    ] ||;
 
   invisibleName: currentMatchingNode.nodeCase NodeCaseLambda = [currentMatchingNode.varNameInfo 0 < ~] && [
     matchingCapture: Capture;
@@ -1832,14 +1832,12 @@ useMatchingInfoOnly: [
                 ] loop
               ];
 
-              wasNestedCall: block.hasNestedCall copy;
               0 refToCond @processor @block createBranch
               @block createLabel
               inputsThen @outputsThen newNodeThen makeCallInstruction
               newNodeThen @outputsThen createStores
               0 @block createJump
               @block createLabel
-              wasNestedCall @block.@hasNestedCall set
               inputsElse @outputsElse newNodeElse makeCallInstruction
               newNodeElse @outputsElse createStores
               1 @block createJump

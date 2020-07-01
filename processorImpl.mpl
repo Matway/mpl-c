@@ -94,20 +94,21 @@ debugMemory [
   @options @processor.@options set
   @multiParserResult @processor.!multiParserResult
 
-  ""           makeStringView @processor findNameInfo @processor.@emptyNameInfo set
-  "CALL"       makeStringView @processor findNameInfo @processor.@callNameInfo set
-  "PRE"        makeStringView @processor findNameInfo @processor.@preNameInfo set
-  "DIE"        makeStringView @processor findNameInfo @processor.@dieNameInfo set
-  "INIT"       makeStringView @processor findNameInfo @processor.@initNameInfo set
-  "ASSIGN"     makeStringView @processor findNameInfo @processor.@assignNameInfo set
-  "self"       makeStringView @processor findNameInfo @processor.@selfNameInfo set
-  "closure"    makeStringView @processor findNameInfo @processor.@closureNameInfo set
-  "inputs"     makeStringView @processor findNameInfo @processor.@inputsNameInfo set
-  "outputs"    makeStringView @processor findNameInfo @processor.@outputsNameInfo set
-  "captures"   makeStringView @processor findNameInfo @processor.@capturesNameInfo set
-  "variadic"   makeStringView @processor findNameInfo @processor.@variadicNameInfo set
-  "failProc"   makeStringView @processor findNameInfo @processor.@failProcNameInfo set
-  "convention" makeStringView @processor findNameInfo @processor.@conventionNameInfo set
+  ""            makeStringView @processor findNameInfo @processor.@specialNames.@emptyNameInfo set
+  "CALL"        makeStringView @processor findNameInfo @processor.@specialNames.@callNameInfo set
+  "PRE"         makeStringView @processor findNameInfo @processor.@specialNames.@preNameInfo set
+  "DIE"         makeStringView @processor findNameInfo @processor.@specialNames.@dieNameInfo set
+  "INIT"        makeStringView @processor findNameInfo @processor.@specialNames.@initNameInfo set
+  "ASSIGN"      makeStringView @processor findNameInfo @processor.@specialNames.@assignNameInfo set
+  "self"        makeStringView @processor findNameInfo @processor.@specialNames.@selfNameInfo set
+  "closure"     makeStringView @processor findNameInfo @processor.@specialNames.@closureNameInfo set
+  "inputs"      makeStringView @processor findNameInfo @processor.@specialNames.@inputsNameInfo set
+  "outputs"     makeStringView @processor findNameInfo @processor.@specialNames.@outputsNameInfo set
+  "captures"    makeStringView @processor findNameInfo @processor.@specialNames.@capturesNameInfo set
+  "variadic"    makeStringView @processor findNameInfo @processor.@specialNames.@variadicNameInfo set
+  "failProc"    makeStringView @processor findNameInfo @processor.@specialNames.@failProcNameInfo set
+  "convention"  makeStringView @processor findNameInfo @processor.@specialNames.@conventionNameInfo set
+  "SCHEMA_NAME" makeStringView @processor findNameInfo @processor.@specialNames.@schemaNameNameInfo set
 
   @processor addBlock
   TRUE dynamic @processor.@blocks.last.get.@root set
@@ -442,7 +443,7 @@ debugMemory [
     ] when
 
     processor.usedFloatBuiltins [@processor createFloatBuiltins] when
-    processor.options.callTrace processor.options.threadModel 1 = and @processor createCtors
+    @processor createCtors
     @processor createDtors
     @processor clearUnusedDebugInfo
     @processor addAliasesForUsedNodes

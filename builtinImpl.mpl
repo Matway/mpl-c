@@ -150,8 +150,8 @@ mplNumberBinaryOp: [
           value2: tag var2.data.get.end copy;
           resultType: tag @getResultType call;
           result: resultType zeroValue makeValuePair resultType @processor @block createVariable
-          Dynamic @processor block makeStaticity
-          @processor @block createAllocIR;
+            Dynamic @processor block makeStaticity
+            @processor @block createAllocIR;
           arg1 arg2 @result opName @processor @block createBinaryOperation
           result @block push
         ] staticCall
@@ -192,8 +192,8 @@ mplNumberBuiltinOp: [
           value: tag var.data.get.end copy;
           resultType: tag copy;
           result: resultType zeroValue makeValuePair resultType @processor @block createVariable
-          Dynamic @processor block makeStaticity
-          @processor @block createAllocIR;
+            Dynamic @processor block makeStaticity
+            @processor @block createAllocIR;
 
           args: IRArgument Array;
 
@@ -250,8 +250,8 @@ mplNumberUnaryOp: [
           value: tag var.data.get.end copy;
           resultType: tag copy;
           result: resultType zeroValue makeValuePair resultType @processor @block createVariable
-          Dynamic @processor block makeStaticity
-          @processor @block createAllocIR;
+            Dynamic @processor block makeStaticity
+            @processor @block createAllocIR;
           arg @result opName mopName @processor @block createUnaryOperation
           result @block push
         ] staticCall
@@ -301,8 +301,8 @@ mplShiftBinaryOp: [
           copy tag:;
           resultType: tag copy;
           result: resultType zeroValue makeValuePair resultType @processor @block createVariable
-          Dynamic @processor @block makeStaticity
-          @processor @block createAllocIR;
+            Dynamic @processor @block makeStaticity
+            @processor @block createAllocIR;
           arg1 @processor getStorageSize arg2 @processor getStorageSize = [
             arg1 arg2 @result opName @processor @block createBinaryOperation
           ] [
@@ -347,7 +347,7 @@ parseSignature: [
       optionsStruct.fields [
         f:;
         f.nameInfo (
-          processor.variadicNameInfo [
+          processor.specialNames.variadicNameInfo [
             variadicRefToVar: f.refToVar;
             variadicVar: variadicRefToVar getVar;
             (
@@ -357,7 +357,7 @@ parseSignature: [
               [VarCond variadicVar.data.get.end @result.@variadic set]
             ) sequence
           ]
-          processor.conventionNameInfo [
+          processor.specialNames.conventionNameInfo [
             conventionRefToVarRef: f.refToVar;
             conventionVarRef: conventionRefToVarRef getVar;
             (
@@ -616,8 +616,8 @@ staticityOfBinResult: [
           copy tag:;
           resultType: tag copy;
           result: resultType zeroValue makeValuePair resultType @processor @block createVariable
-          Dynamic @processor @block makeStaticity
-          @processor @block createAllocIR;
+            Dynamic @processor @block makeStaticity
+            @processor @block createAllocIR;
 
           args: IRArgument Array;
 
@@ -726,7 +726,7 @@ staticityOfBinResult: [
             i count < [
               element: refToElement @processor @block copyVar staticity @processor @block makeStaticity;
               field: Field;
-              processor.emptyNameInfo @field.@nameInfo set
+              processor.specialNames.emptyNameInfo @field.@nameInfo set
               element @field.@refToVar set
               field @struct.@fields.pushBack
               i 1 + @i set TRUE
@@ -1146,48 +1146,40 @@ staticityOfBinResult: [
 [
   processor.varForCallTrace.assigned ~ [
     varPrev:   0n64 makeValuePair VarNatX @processor @block createVariable;
-    varNext:   0n64 makeValuePair VarNatX @processor @block createVariable;
     varName:   String @processor @block makeVarString TRUE dynamic @processor @block createRefNoOp;
     varLine:   0i64 makeValuePair VarInt32 @processor @block createVariable;
     varColumn: 0i64 makeValuePair VarInt32 @processor @block createVariable;
 
     struct: Struct;
-    5 @struct.@fields.resize
 
-    varPrev 0 @struct.@fields.at.@refToVar set
-    "prev" makeStringView @processor findNameInfo 0 @struct.@fields.at.@nameInfo set
+    field: Field;
+    varPrev @field.@refToVar set
+    "prev" makeStringView @processor findNameInfo @field.@nameInfo set
+    @field move @struct.@fields.pushBack
 
-    varNext 1 @struct.@fields.at.@refToVar set
-    "next" makeStringView @processor findNameInfo 1 @struct.@fields.at.@nameInfo set
+    field: Field;
+    varName @field.@refToVar set
+    "name" makeStringView @processor findNameInfo @field.@nameInfo set
+    @field move @struct.@fields.pushBack
 
-    varName 2 @struct.@fields.at.@refToVar set
-    "name" makeStringView @processor findNameInfo 2 @struct.@fields.at.@nameInfo set
+    field: Field;
+    varLine @field.@refToVar set
+    "line" makeStringView @processor findNameInfo @field.@nameInfo set
+    @field move @struct.@fields.pushBack
 
-    varLine 3 @struct.@fields.at.@refToVar set
-    "line" makeStringView @processor findNameInfo 3 @struct.@fields.at.@nameInfo set
-
-    varColumn 4 @struct.@fields.at.@refToVar set
-    "column" makeStringView @processor findNameInfo 4 @struct.@fields.at.@nameInfo set
+    field: Field;
+    varColumn @field.@refToVar set
+    "column" makeStringView @processor findNameInfo @field.@nameInfo set
+    @field move @struct.@fields.pushBack
 
     @struct move owner VarStruct @processor @block createVariable @processor.@varForCallTrace set
+
     Dynamic @processor.@varForCallTrace getVar.@storageStaticity set
     @processor.@varForCallTrace @processor @block makeVarTreeDirty
   ] when
 
-  firstRef: @processor.@varForCallTrace FALSE dynamic @processor @block createRefNoOp;
-  lastRef:  @processor.@varForCallTrace FALSE dynamic @processor @block createRefNoOp;
-
-  resultStruct: Struct;
-  2 @resultStruct.@fields.resize
-
-  firstRef             0 @resultStruct.@fields.at.@refToVar set
-  "first" makeStringView @processor findNameInfo 0 @resultStruct.@fields.at.@nameInfo set
-
-  lastRef             1 @resultStruct.@fields.at.@refToVar set
-  "last" makeStringView @processor findNameInfo 1 @resultStruct.@fields.at.@nameInfo set
-
-  result: @resultStruct move owner VarStruct @processor @block createVariable @processor @block createAllocIR;
-  @processor.@varForCallTrace @processor getIrType result @processor getIrType result @processor @block createGetCallTrace
+  result: @processor.@varForCallTrace FALSE dynamic @processor @block createRefNoOp @processor @block createAllocIR Dynamic @processor @block makeStaticity;
+  result @processor @block createGetCallTrace
   result @block push
 
   TRUE @block.!hasCallTrace
@@ -1663,7 +1655,7 @@ staticityOfBinResult: [
             splitted.chars [
               element: toString @processor @block makeVarString;
               field: Field;
-              processor.emptyNameInfo @field.@nameInfo set
+              processor.specialNames.emptyNameInfo @field.@nameInfo set
               @element TRUE dynamic @processor @block createRef @field.@refToVar set
               field @struct.@fields.pushBack
             ] each

@@ -235,6 +235,7 @@ Block: [{
   exportDepth:        0 dynamic;
   namedFunctions:     String Int32 HashTable; # name -> node ID
   capturedVars:       RefToVar Array;
+  fileLexicalBlocks:  Int32 Int32 HashTable;
   funcDbgIndex:      -1 dynamic;
   lastVarName:        0 dynamic;
   lastBrLabelName:    0 dynamic;

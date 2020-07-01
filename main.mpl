@@ -96,7 +96,7 @@ parseIntegerOption: [
       codepointIndex: 0;
       [result.error "" = [codepointIndex codepoints.getSize <] &&] [
         codepoint: codepointIndex codepoints @;
-        asciiCode: codepoint.data Nat8 addressToReference Nat32 cast;
+        asciiCode: codepoint.data Nat32 cast;
         asciiCode (
           [code:; asciiCode ascii.zero < [asciiCode ascii.nine >] ||] ["value has non-digit character" toString @result.!error]
           [code:; code ascii.zero = [codepointIndex 0 =] && [codepoints.getSize 1 >] &&] ["value has leading zeros" toString @result.!error]
@@ -353,7 +353,6 @@ addToProcessAndCheck: [
 
           success [
 
-            ("trees concated" makeStringView) addLog
             ("filenames:" makeStringView) addLog
             options.fileNames [fileName:; (fileName) addLog] each
 

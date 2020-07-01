@@ -343,9 +343,8 @@ getPointeeWith: [
     refToVar staticityOfVar Dynamic > ~ [
       # create new var of dynamic dereference
       result: pointee @processor @block copyOneVarFromType
-      Dynamic @processor @block  makeStorageStaticity
-      Dirty @processor @block makeStaticity
-      ;
+        Dynamic @processor @block  makeStorageStaticity
+        Dirty @processor @block makeStaticity;
       @result @processor block unglobalize
       result.var     @pointee.setVar
       result.mutable @pointee.setMutable
@@ -1391,7 +1390,7 @@ captureName: [
             ] when
           ] when
 
-          nameInfo processor.selfNameInfo = [overloadDepth 0 = ~] && [
+          nameInfo processor.specialNames.selfNameInfo = [overloadDepth 0 = ~] && [
             [FALSE] "Self cannot have overloads!" assert
           ] when
 
@@ -1434,13 +1433,13 @@ captureName: [
       # now we must capture and create GEP instruction
       getNameResult.mplFieldIndex 0 < ~ [
         nameInfo: getNameResult.nameCase NameCaseSelfMember = [
-          processor.selfNameInfo copy
+          processor.specialNames.selfNameInfo copy
         ] [
           getNameResult.nameCase NameCaseClosureMember = [
-            processor.closureNameInfo copy
+            processor.specialNames.closureNameInfo copy
           ] [
             [FALSE] "Invalid getName case for members!" assert
-            processor.closureNameInfo copy
+            processor.specialNames.closureNameInfo copy
           ] if
         ] if;
 
@@ -1516,7 +1515,7 @@ isCallable: [
   [var.data.getTag VarCode =] ||
   [var.data.getTag VarImport =] || [
     var.data.getTag VarStruct = [
-      processor.callNameInfo refToVar @processor block findField.success copy
+      processor.specialNames.callNameInfo refToVar @processor block findField.success copy
     ] &&
   ] ||
 ];
@@ -1533,7 +1532,7 @@ addFieldsNameInfos: [
   [
     i struct.fields.size < [
       currentField: i struct.fields.at;
-      [currentField.nameInfo processor.emptyNameInfo = ~] "Closured list!" assert
+      [currentField.nameInfo processor.specialNames.emptyNameInfo = ~] "Closured list!" assert
 
       {
         nameInfo:      currentField.nameInfo copy;
@@ -1560,7 +1559,7 @@ deleteFieldsNameInfos: [
     i 0 > [
       i 1 - @i set TRUE
       currentField: i struct.fields.at;
-      [currentField.nameInfo processor.emptyNameInfo = ~] "Closured list!" assert
+      [currentField.nameInfo processor.specialNames.emptyNameInfo = ~] "Closured list!" assert
       currentField.nameInfo deleteNameInfo # name info pointing to the struct, not to a field!
     ] &&
   ] loop
@@ -1570,7 +1569,7 @@ regNamesClosure: [
   object: file: ;;
   object.assigned [
     {
-      nameInfo:      processor.closureNameInfo copy;
+      nameInfo:      processor.specialNames.closureNameInfo copy;
       addNameCase:   NameCaseClosureObject;
       refToVar:      object copy;
       reg:           FALSE;
@@ -1585,7 +1584,7 @@ regNamesSelf: [
   object: file: ;;
   object.assigned [
     {
-      nameInfo:      processor.selfNameInfo copy;
+      nameInfo:      processor.specialNames.selfNameInfo copy;
       addNameCase:   NameCaseSelfObject;
       refToVar:      object copy;
       reg:           FALSE;
@@ -1600,7 +1599,7 @@ unregNamesClosure: [
   object:;
   object.assigned [
     object deleteFieldsNameInfos
-    processor.closureNameInfo deleteNameInfo
+    processor.specialNames.closureNameInfo deleteNameInfo
   ] when
 ];
 
@@ -1608,7 +1607,7 @@ unregNamesSelf: [
   object:;
   object.assigned [
     object deleteFieldsNameInfos
-    processor.selfNameInfo deleteNameInfo
+    processor.specialNames.selfNameInfo deleteNameInfo
   ] when
 ];
 
@@ -1623,7 +1622,7 @@ callCallableStruct: [
 
   struct: VarStruct var.data.get.get;
 
-  fr: processor.callNameInfo refToVar @processor block findField;
+  fr: processor.specialNames.callNameInfo refToVar @processor block findField;
   [fr.success copy] "Struct is not callable!" assert
 
   codeField: fr.index struct.fields.at .refToVar;
@@ -1674,7 +1673,7 @@ callCallableStructWithPre: [
 
     struct: VarStruct var.data.get.get;
 
-    fr: processor.callNameInfo refToVar @processor block findField;
+    fr: processor.specialNames.callNameInfo refToVar @processor block findField;
     [fr.success copy] "Struct is not callable!" assert
 
     codeField: fr.index struct.fields.at .refToVar;
@@ -1683,7 +1682,7 @@ callCallableStructWithPre: [
     codeVar.data.getTag VarCode = [
 
       needPre: FALSE;
-      pfr: processor.preNameInfo refToVar @processor block findField;
+      pfr: processor.specialNames.preNameInfo refToVar @processor block findField;
       pfr.success [
         preField: pfr.index struct.fields.at .refToVar;
         preVar: preField getVar;
@@ -2336,7 +2335,17 @@ processReal64Node: [makeVarReal64 @block push];
 
       @block.@programTemplate.makeZ
 
-      locationIndex: processor.positions.last block.funcDbgIndex @processor addDebugLocation;
+      fileDbgIndex: processor.positions.last.file.debugId;
+      fr: fileDbgIndex block.fileLexicalBlocks.find;
+      lexicalBlockLocation: -1;
+      fr.success [
+        fr.value @lexicalBlockLocation set
+      ] [
+        fileDbgIndex block.funcDbgIndex @processor addLexicalBlockLocation @lexicalBlockLocation set
+        fileDbgIndex lexicalBlockLocation @block.@fileLexicalBlocks.insert
+      ] if
+
+      locationIndex: processor.positions.last lexicalBlockLocation block.funcDbgIndex @processor addDebugLocation;
       (", !dbg !" locationIndex) @block.@programTemplate.catMany
 
       offset copy @instruction.!codeOffset
@@ -2548,13 +2557,13 @@ argRecommendedToCopy: [
         i 1 - @i set
         current: i @uninited.at copy dynamic;
         current getVar.data.getTag VarStruct = [
-          fr: processor.dieNameInfo current @processor block findField;
+          fr: processor.specialNames.dieNameInfo current @processor block findField;
           fr.success [
-            fr: processor.initNameInfo current @processor block findField;
+            fr: processor.specialNames.initNameInfo current @processor block findField;
             fr.success [
               index: fr.index copy;
               fieldRef: index @current @processor @block processStaticAt;
-              initName: processor.initNameInfo processor.nameManager.getText;
+              initName: processor.specialNames.initNameInfo processor.nameManager.getText;
               stackSize: block.stack.size;
               fieldRef getVar.data.getTag VarCode = [
                 current fieldRef @initName callCallableField
@@ -2605,13 +2614,13 @@ argRecommendedToCopy: [
         curDstVar: curDst getVar;
 
         curSrcVar.data.getTag VarStruct = [
-          fr: processor.dieNameInfo curSrc @processor block findField;
+          fr: processor.specialNames.dieNameInfo curSrc @processor block findField;
           fr.success [
-            fr: processor.assignNameInfo curSrc @processor block findField;
+            fr: processor.specialNames.assignNameInfo curSrc @processor block findField;
             fr.success [
               index: fr.index copy;
               fieldRef: index @curSrc @processor @block processStaticAt;
-              assignName: processor.assignNameInfo processor.nameManager.getText;
+              assignName: processor.specialNames.assignNameInfo processor.nameManager.getText;
               stackSize: block.stack.size;
 
               fieldRef getVar.data.getTag VarCode = [
@@ -2672,11 +2681,11 @@ argRecommendedToCopy: [
         @unkilled.popBack
         last getVar.data.getTag VarStruct = [
           struct: VarStruct last getVar.data.get.get;
-          fr: processor.dieNameInfo last @processor block findField;
+          fr: processor.specialNames.dieNameInfo last @processor block findField;
           fr.success [
             index: fr.index copy;
             fieldRef: index @last @processor @block processStaticAt;
-            dieName: processor.dieNameInfo processor.nameManager.getText;
+            dieName: processor.specialNames.dieNameInfo processor.nameManager.getText;
             stackSize: block.stack.size;
 
             fieldRef getVar.data.getTag VarCode = [
@@ -2725,7 +2734,7 @@ killStruct: [
 
   overload failProc: processor block FailProcForProcessor;
 
-  gnr: processor.failProcNameInfo @processor @block getName;
+  gnr: processor.specialNames.failProcNameInfo @processor @block getName;
   cnr: @gnr 0 dynamic @processor @block processor.positions.last.file captureName;
   failProcRefToVar: cnr.refToVar copy;
   @message @processor @block makeVarString @block push
@@ -2819,7 +2828,7 @@ finalizeListNode: [
         curRef: i @block.@stack.at;
 
         newField: Field;
-        processor.emptyNameInfo @newField.@nameInfo set
+        processor.specialNames.emptyNameInfo @newField.@nameInfo set
 
         curRef getVar.temporary [
           curRef @newField.@refToVar set
@@ -2937,10 +2946,10 @@ unregCodeNodeNames: [
         @whereIds unregInLine
       ];
 
-      nameWithOverloadAndRefToVar.nameInfo processor.selfNameInfo = [
+      nameWithOverloadAndRefToVar.nameInfo processor.specialNames.selfNameInfo = [
         nameWithOverloadAndRefToVar.nameOverloadDepth nameWithOverloadAndRefToVar.refToVar getVar.mplSchemaId @whereNames.@selfNames unregInObjectTable
       ] [
-        nameWithOverloadAndRefToVar.nameInfo processor.closureNameInfo = [
+        nameWithOverloadAndRefToVar.nameInfo processor.specialNames.closureNameInfo = [
           nameWithOverloadAndRefToVar.nameOverloadDepth nameWithOverloadAndRefToVar.refToVar getVar.mplSchemaId @whereNames.@closureNames unregInObjectTable
         ] [
           whereOverloads: nameWithOverloadAndRefToVar.nameInfo @whereNames.@simpleNames.at;
@@ -3655,12 +3664,12 @@ makeCompilerPosition: [
   ];
 
   isDeclaration:
-  block.nodeCase NodeCaseDeclaration =
-  [block.nodeCase NodeCaseCodeRefDeclaration =] ||;
+    block.nodeCase NodeCaseDeclaration =
+    [block.nodeCase NodeCaseCodeRefDeclaration =] ||;
 
   isRealFunction:
-  block.nodeCase NodeCaseExport =
-  [block.nodeCase NodeCaseLambda =] ||;
+    block.nodeCase NodeCaseExport =
+    [block.nodeCase NodeCaseLambda =] ||;
 
   hasForcedSignature: isDeclaration isRealFunction or;
 
@@ -3809,9 +3818,7 @@ makeCompilerPosition: [
       ] [
         @current checkOutput refDeref:; output:;
 
-        passAsRet:
-        isDeclaration [output @processor isTinyArg [hasRet ~] &&] ||;
-
+        passAsRet: isDeclaration [output @processor isTinyArg [hasRet ~] &&] ||;
         passAsRet ~ [isRealFunction copy] && [
           "returning two arguments or non-primitive object; mpl's function can not have this signature" @processor block compilerError
         ] when
@@ -3864,11 +3871,11 @@ makeCompilerPosition: [
         currentVar: current.refToVar getVar;
 
         needToDerefCopy:
-        currentVar.capturedForDeref
-        [currentVar.capturedByPtr ~] &&
-        [currentVar.capturedAsRealValue ~] &&
-        [currentVar.data.getTag VarRef =] &&
-        [VarRef currentVar.data.get.refToVar @processor argAbleToCopy] &&;
+          currentVar.capturedForDeref
+          [currentVar.capturedByPtr ~] &&
+          [currentVar.capturedAsRealValue ~] &&
+          [currentVar.data.getTag VarRef =] &&
+          [VarRef currentVar.data.get.refToVar @processor argAbleToCopy] &&;
 
         currentVar.capturedAsRealValue ~
         [currentVar.capturedForDeref ~] &&
@@ -4353,6 +4360,8 @@ addIndexArrayToProcess: [
     @block.@unprocessedAstNodes.clear
     @block.@dependentPointers.clear
     @block.@captureErrors.clear
+    @block.@fileLexicalBlocks.clear
+    FALSE @block.!hasNestedCall
 
     processor.options.debug [
       @processor addDebugReserve @block.@funcDbgIndex set

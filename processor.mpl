@@ -132,20 +132,23 @@ Processor: [{
     stableNames:  Int32 Array Array; #vector of vector of blockId
   };
 
-  emptyNameInfo:               -1 dynamic;
-  callNameInfo:                -1 dynamic;
-  preNameInfo:                 -1 dynamic;
-  dieNameInfo:                 -1 dynamic;
-  initNameInfo:                -1 dynamic;
-  assignNameInfo:              -1 dynamic;
-  selfNameInfo:                -1 dynamic;
-  closureNameInfo:             -1 dynamic;
-  inputsNameInfo:              -1 dynamic;
-  outputsNameInfo:             -1 dynamic;
-  capturesNameInfo:            -1 dynamic;
-  variadicNameInfo:            -1 dynamic;
-  failProcNameInfo:            -1 dynamic;
-  conventionNameInfo:          -1 dynamic;
+  specialNames: {
+    emptyNameInfo:               -1 dynamic;
+    callNameInfo:                -1 dynamic;
+    preNameInfo:                 -1 dynamic;
+    dieNameInfo:                 -1 dynamic;
+    initNameInfo:                -1 dynamic;
+    assignNameInfo:              -1 dynamic;
+    selfNameInfo:                -1 dynamic;
+    closureNameInfo:             -1 dynamic;
+    inputsNameInfo:              -1 dynamic;
+    outputsNameInfo:             -1 dynamic;
+    capturesNameInfo:            -1 dynamic;
+    variadicNameInfo:            -1 dynamic;
+    failProcNameInfo:            -1 dynamic;
+    conventionNameInfo:          -1 dynamic;
+    schemaNameNameInfo:          -1 dynamic;
+  };
 
   funcAliasCount:         0 dynamic;
   globalVarCount:         0 dynamic;

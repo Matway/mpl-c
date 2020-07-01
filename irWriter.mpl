@@ -579,7 +579,7 @@ getLLPriority: [
 ];
 
 createCtors: [
-  createTlsInit: processor: ; copy;
+  processor: ;
 
   priority: @processor getLLPriority;
 
@@ -587,10 +587,6 @@ createCtors: [
   ("@llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 " priority ", void ()* @global.ctors, i8* null }]") assembleString @processor addStrToProlog
   "" @processor addStrToProlog
   "define internal void @global.ctors() {" @processor addStrToProlog
-
-  createTlsInit [
-    "  call void @__tls_init()" toString @processor addStrToProlog
-  ] when
 
   processor.moduleFunctions [
     currentBlock: processor.blocks.at.get;
@@ -651,6 +647,10 @@ sortInstructions: [
 
             FALSE @current.!enabled
           ] when
+
+          current.irName2 bannedId = [
+            FALSE @current.!enabled
+          ] when
         ] when
       ] times
 
@@ -700,107 +700,66 @@ createCallTraceData: [
 
   tlPrefix: processor.options.threadModel 1 = ["thread_local "] [""] if;
 
-  callTraceDataType: "[65536 x %type.callTraceInfo]" toString;
-  "%type.callTraceInfo = type {%type.callTraceInfo*, %type.callTraceInfo*, i8*, i32, i32}" toString @processor.@prolog.pushBack
-  ("@debug.callTrace = " tlPrefix "unnamed_addr global " callTraceDataType " zeroinitializer") assembleString @processor.@prolog.pushBack
-  ("@debug.callTracePtr = " tlPrefix "unnamed_addr global %type.callTraceInfo* getelementptr inbounds (" callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0)") assembleString @processor.@prolog.pushBack
-
-  processor.options.threadModel 1 = [
-    String @processor.@prolog.pushBack
-    "@\"__tls_init$initializer$\" = internal constant void ()* @__tls_init, section \".CRT$XDU\"" toString @processor.@prolog.pushBack
-    "@llvm.used = appending global [1 x i8*] [i8* bitcast (void ()** @\"__tls_init$initializer$\" to i8*)], section \"llvm.metadata\"" toString @processor.@prolog.pushBack
-    String @processor.@prolog.pushBack
-    "define internal void @__tls_init() {" toString @processor.@prolog.pushBack
-    ("  store %type.callTraceInfo* getelementptr inbounds (" callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0), %type.callTraceInfo** @debug.callTracePtr") assembleString @processor.@prolog.pushBack
-    "  ret void" toString @processor.@prolog.pushBack
-    "}" toString @processor.@prolog.pushBack
-    String @processor.@prolog.pushBack
-
-    processor.options.pointerSize 64nx = [
-      "/include:__dyn_tls_init" toString @processor.@options.@linkerOptions.pushBack
-    ] [
-      "/include:___dyn_tls_init@12" toString @processor.@options.@linkerOptions.pushBack
-    ] if
-  ] when
+  "%type.callTraceInfo = type {%type.callTraceInfo*, i8*, i32, i32}" toString @processor.@prolog.pushBack
+  ("@debug.callTracePtr = " tlPrefix "unnamed_addr global %type.callTraceInfo* null") assembleString @processor.@prolog.pushBack
 ];
 
 createCallTraceProlog: [
   processor: block: ;;
-  ptr: @processor @block generateRegisterIRName;
-  ptrNext: @processor @block generateRegisterIRName;
 
-  ("  " ptr @processor getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
-  ("  " ptrNext @processor getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr @processor getNameById ", i32 1") @block appendInstruction
-  ("  store %type.callTraceInfo* " ptrNext @processor getNameById ", %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
+  ptrRegName: "%debug.oldCallTracePtr";
+  ctRegName: "%debug.callTraceData";
+  prevPtrRegName: "%debug.callTraceData.prev";
+  namePtrRegName: "%debug.callTraceData.name";
+  linePtrRegName: "%debug.callTraceData.line";
+  colmPtrRegName: "%debug.callTraceData.column";
 
   block.hasNestedCall ~ [
-    #ptr->next = ptrNext
-    ptrDotNext: @processor @block generateRegisterIRName;
-    ("  " ptrDotNext @processor getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr @processor getNameById ", i32 0, i32 1") @block appendInstruction
-    ("  store %type.callTraceInfo* " ptrNext @processor getNameById ", %type.callTraceInfo** " ptrDotNext @processor getNameById) @block appendInstruction
+    ("  " ctRegName " = alloca %type.callTraceInfo") @block appendInstruction
+    TRUE @block.@program.last.@alloca set #fake for good sorting
+    ("  " prevPtrRegName " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ctRegName ", i32 0, i32 0") @block appendInstruction
+    TRUE @block.@program.last.@alloca set #fake for good sorting
+    ("  " namePtrRegName " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ctRegName ", i32 0, i32 1") @block appendInstruction
+    TRUE @block.@program.last.@alloca set #fake for good sorting
+    ("  " linePtrRegName " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ctRegName ", i32 0, i32 2") @block appendInstruction
+    TRUE @block.@program.last.@alloca set #fake for good sorting
+    ("  " colmPtrRegName " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ctRegName ", i32 0, i32 3") @block appendInstruction
+    TRUE @block.@program.last.@alloca set #fake for good sorting
 
-    #ptrNext->prev = ptr
-    ptrNextDotPrev: @processor @block generateRegisterIRName;
-    ("  " ptrNextDotPrev @processor getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext @processor getNameById ", i32 0, i32 0") @block appendInstruction
-    ("  store %type.callTraceInfo* " ptr @processor getNameById ", %type.callTraceInfo** " ptrNextDotPrev @processor getNameById) @block appendInstruction
-
-    #ptrNext->fileName = fileName
-    fileNameVar: processor.positions.last.file.name @processor @block makeVarString;
-    ptrNextDotName: @processor @block generateRegisterIRName;
-    ("  " ptrNextDotName @processor getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext @processor getNameById ", i32 0, i32 2") @block appendInstruction
-    ("  store i8* " fileNameVar @processor getIrName ", i8** " ptrNextDotName @processor getNameById) @block appendInstruction
+    ("  " ptrRegName " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
+    TRUE @block.@program.last.@alloca set #fake for good sorting
+    ("  store %type.callTraceInfo* " ptrRegName ", %type.callTraceInfo** " prevPtrRegName) @block appendInstruction
+    TRUE @block.@program.last.@alloca set #fake for good sorting
+    fileNameVar: (processor.positions.last.file.name "\00") assembleString @processor @block makeVarString;
+    ("  store i8* " fileNameVar @processor getIrName ", i8** " namePtrRegName) @block appendInstruction
+    TRUE @block.@program.last.@alloca set #fake for good sorting
 
     TRUE @block.@hasNestedCall set
   ] when
 
-  #ptrNext->line = line
-  ptrNextDotLine: @processor @block generateRegisterIRName;
-  ("  " ptrNextDotLine @processor getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext @processor getNameById ", i32 0, i32 3") @block appendInstruction
-  ("  store i32 " processor.positions.last.line ", i32* " ptrNextDotLine @processor getNameById) @block appendInstruction
-
-  #ptrNext->column = column
-  ptrNextDotColumn: @processor @block generateRegisterIRName;
-  ("  " ptrNextDotColumn @processor getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptrNext @processor getNameById ", i32 0, i32 4") @block appendInstruction
-  ("  store i32 " processor.positions.last.column ", i32* " ptrNextDotColumn @processor getNameById) @block appendInstruction
+  ("  store i32 " processor.positions.last.line ", i32* " linePtrRegName) @block appendInstruction
+  ("  store i32 " processor.positions.last.column ", i32* " colmPtrRegName) @block appendInstruction
+  ("  store %type.callTraceInfo* " ctRegName ", %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
 ];
 
 createCallTraceEpilog: [
   processor: block:;;
-  ptr:     @processor @block generateRegisterIRName;
-  ptrPrev: @processor @block generateRegisterIRName;
-  ("  " ptr @processor getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
-  ("  " ptrPrev @processor getNameById " = getelementptr inbounds %type.callTraceInfo, %type.callTraceInfo* " ptr @processor getNameById ", i32 -1") @block appendInstruction
-  ("  store %type.callTraceInfo* " ptrPrev @processor getNameById ", %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
+  ptrRegName: "%debug.oldCallTracePtr";
+  ("  store %type.callTraceInfo* " ptrRegName ", %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
 ];
 
 createGetCallTrace: [
-  infoIrType: variableIrType: variable: processor: block: ;;;;;
+  variable: processor: block: ;;;
+  variableIrType: variable @processor getMplSchema.irTypeId;
+
   processor.options.callTrace [
-    callTraceDataType: "[65536 x %type.callTraceInfo]" toString;
-
-    ptrFirstSrc:  @processor @block generateRegisterIRName;
-    ptrFirstCast: @processor @block generateRegisterIRName;
-    ptrFirstDst:  @processor @block generateRegisterIRName;
-    ("  " ptrFirstSrc @processor getNameById " = getelementptr inbounds " callTraceDataType ", " callTraceDataType "* @debug.callTrace, i32 0, i32 0") @block appendInstruction
-    ("  " ptrFirstDst @processor getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable @processor getIrName ", i32 0, i32 0") @block appendInstruction
-    ("  " ptrFirstCast @processor getNameById " = bitcast %type.callTraceInfo* " ptrFirstSrc @processor getNameById " to " infoIrType "*") @block appendInstruction
-    ("  store " infoIrType "* " ptrFirstCast @processor getNameById ", " infoIrType "** " ptrFirstDst @processor getNameById) @block appendInstruction
-
-    ptrLastSrc:  @processor @block generateRegisterIRName;
-    ptrLastCast: @processor @block generateRegisterIRName;
-    ptrLastDst:  @processor @block generateRegisterIRName;
-    ("  " ptrLastSrc @processor getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
-    ("  " ptrLastDst @processor getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable @processor getIrName ", i32 0, i32 1") @block appendInstruction
-    ("  " ptrLastCast @processor getNameById " = bitcast %type.callTraceInfo* " ptrLastSrc @processor getNameById " to " infoIrType "*") @block appendInstruction
-    ("  store " infoIrType "* " ptrLastCast @processor getNameById ", " infoIrType "** " ptrLastDst @processor getNameById) @block appendInstruction
+    currentPtrRegName: @processor @block generateRegisterIRName;
+    ("  " currentPtrRegName @processor getNameById " = load %type.callTraceInfo*, %type.callTraceInfo** @debug.callTracePtr") @block appendInstruction
+    varPtrRegName: @processor @block generateRegisterIRName;
+    ("  " varPtrRegName @processor getNameById " = bitcast %type.callTraceInfo* " currentPtrRegName @processor getNameById " to " variableIrType @processor getNameById) @block appendInstruction
+    ("  store " variableIrType @processor getNameById " " varPtrRegName @processor getNameById ", " variableIrType @processor getNameById "* " variable @processor getIrName) @block appendInstruction
   ] [
-    ptrFirstDst: @processor @block generateRegisterIRName;
-    ("  " ptrFirstDst @processor getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable @processor getIrName ", i32 0, i32 0") @block appendInstruction
-    ("  store " infoIrType "* null, " infoIrType "** " ptrFirstDst @processor getNameById) @block appendInstruction
-
-    ptrLastDst: @processor @block generateRegisterIRName;
-    ("  " ptrLastDst @processor getNameById " = getelementptr inbounds " variableIrType ", " variableIrType "* " variable @processor getIrName ", i32 0, i32 1") @block appendInstruction
-    ("  store " infoIrType "* null, " infoIrType "** " ptrLastDst @processor getNameById) @block appendInstruction
+    ("  store " variableIrType @processor getNameById " null, " variableIrType @processor getNameById "* " variable @processor getIrName) @block appendInstruction
   ] if
 ];
 

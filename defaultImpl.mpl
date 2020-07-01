@@ -18,13 +18,11 @@ FailProcForProcessor: [{
 
     trace: getCallTrace;
     [
-      trace.first trace.last is [
+      trace storageAddress 0nx = [
         FALSE
       ] [
-        () "\nin \00" printf
-        trace.last.name print
-        (trace.last.line copy trace.last.column copy) " at %i:%i\00" printf
-        trace.last.prev trace.last addressToReference @trace.!last
+        (trace.name trace.line copy trace.column copy) " in %s at %i:%i\n\00" printf
+        trace.prev trace addressToReference !trace
         TRUE
       ] if
     ] loop
@@ -321,10 +319,10 @@ addBlockIdTo: [
     @whereIds addToLine
   ];
 
-  nameInfo processor.selfNameInfo = [
+  nameInfo processor.specialNames.selfNameInfo = [
     nameOverloadDepth mplSchemaId @whereNames.@selfNames addBlockToObjectCase
   ] [
-    nameInfo processor.closureNameInfo =  [
+    nameInfo processor.specialNames.closureNameInfo =  [
       nameOverloadDepth mplSchemaId @whereNames.@closureNames addBlockToObjectCase
     ] [
       nameInfo whereNames.simpleNames.size < ~ [nameInfo 1 + @whereNames.@simpleNames.resize] when

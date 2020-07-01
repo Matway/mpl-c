@@ -464,7 +464,7 @@ makeDbgTypeId: [
       field0: 0 branch.fields.at;
       fieldi: i branch.fields.at;
 
-      fieldi.nameInfo processor.preNameInfo = [
+      fieldi.nameInfo processor.specialNames.preNameInfo = [
         TRUE @branch.@hasPreField set
       ] when
 
@@ -480,7 +480,7 @@ makeDbgTypeId: [
         FALSE @branch.@homogeneous set
       ] when
 
-      fieldi.nameInfo processor.dieNameInfo = [fieldi.refToVar isAutoStruct] || [
+      fieldi.nameInfo processor.specialNames.dieNameInfo = [fieldi.refToVar isAutoStruct] || [
         TRUE @branch.@hasDestructor set
       ] when
     ] times

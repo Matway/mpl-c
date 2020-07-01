@@ -351,7 +351,7 @@ getStringImplementation: [
     i: 0 dynamic;
     [
       i stringView.size < [
-        codeRef: stringView.data i Natx cast + Nat8 addressToReference;
+        codeRef: stringView.data storageAddress i Natx cast + Nat8 addressToReference;
         code: codeRef copy;
         code 32n8 < ~ [code 127n8 <] && [code 34n8 = ~] && [code 92n8 = ~] && [  # exclude " and \
           code 0n32 cast @result.catSymbolCode

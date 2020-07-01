@@ -365,7 +365,7 @@ undo: [
     prevPosition @currentPosition set
     currentPosition.offset 0 < ~ [
       currentPosition.offset splittedString.chars.at @currentSymbol set
-      currentSymbol.data Nat8 addressToReference Nat32 cast @currentCode set
+      currentSymbol.data Nat32 cast @currentCode set
     ] [
       StringView @currentSymbol set
       ascii.null @currentCode set
@@ -387,7 +387,7 @@ iterate: [
 
     currentPosition.offset splittedString.chars.getSize < [
       currentPosition.offset splittedString.chars.at @currentSymbol set
-      currentSymbol.data Nat8 addressToReference Nat32 cast @currentCode set
+      currentSymbol.data Nat32 cast @currentCode set
     ] [
       StringView @currentSymbol set
       ascii.null @currentCode set
@@ -424,9 +424,9 @@ parseStringConstant: [
       ] [
         currentCode ascii.nCode = [LF makeStringView @nameSymbols.cat] term
       ] [
-        currentCode ascii.rCode = [code: 13n8; code storageAddress 1 makeStringView2 @nameSymbols.cat] term
+        currentCode ascii.rCode = [code: 13n8; (code storageAddress Nat8 addressToReference const 1) toStringView @nameSymbols.cat] term
       ] [
-        currentCode ascii.tCode = [code: 9n8; code storageAddress 1 makeStringView2 @nameSymbols.cat] term
+        currentCode ascii.tCode = [code: 9n8; (code storageAddress Nat8 addressToReference const 1) toStringView @nameSymbols.cat] term
       ] [
         currentCode ascii.backSlash = [currentSymbol @nameSymbols.cat] term
       ] [
@@ -441,7 +441,7 @@ parseStringConstant: [
         first 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !first
         first codeunitHead? ~ ["invalid unicode sequence" error] term
       ] [
-        first storageAddress 1 makeStringView2 @nameSymbols.cat
+        (first storageAddress Nat8 addressToReference const 1) toStringView @nameSymbols.cat
         first 0x80n8 < [] term
       ] [
         iterate
@@ -458,7 +458,7 @@ parseStringConstant: [
         next 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !next
         next codeunitTail? ~ ["invalid unicode sequence" error] term
       ] [
-        next storageAddress 1 makeStringView2 @nameSymbols.cat
+        (next storageAddress Nat8 addressToReference const 1) toStringView @nameSymbols.cat
         first 0xE0n8 < [] term
       ] [
         iterate
@@ -475,7 +475,7 @@ parseStringConstant: [
         next 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !next
         next codeunitTail? ~ ["invalid unicode sequence" error] term
       ] [
-        next storageAddress 1 makeStringView2 @nameSymbols.cat
+        (next storageAddress Nat8 addressToReference const 1) toStringView @nameSymbols.cat
         first 0xF0n8 < [] term
       ] [
         iterate
@@ -492,7 +492,7 @@ parseStringConstant: [
         next 4n8 lshift currentCode Int32 cast codepointHexValue Nat8 cast or !next
         next codeunitTail? ~ ["invalid unicode sequence" error] term
       ] [
-        next storageAddress 1 makeStringView2 @nameSymbols.cat
+        (next storageAddress Nat8 addressToReference const 1) toStringView @nameSymbols.cat
       ]
     ) sequence
 
