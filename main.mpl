@@ -27,11 +27,13 @@ printInfo: [
   "  -I <path>                           Add include path to find files" print LF print
   "  -array_checks 0|1                   Turn off/on array index checks, by default it is on in debug mode and off in release mode" print LF print
   "  -auto_recursion                     Make all code block recursive-by-default" print LF print
+  "  -begin_func <name>                  Name of begin function, default value is \"main\"" print LF print
   "  -call_trace                         Generate information about call trace" print LF print
   debugMemory [
     "  -debug_memory                       Produce memory usage information" print LF print
   ] when
   "  -dynalit                            Number literals are dynamic constants, which are not used in analysis; default mode is static literals" print LF print
+  "  -end_func <name>                    Name of end function, default value is \"main\"" print LF print
   "  -linker_option                      Add linker option for LLVM" print LF print
   "  -ndebug                             Disable debug info; value of \"DEBUG\" constant in code turn to FALSE" print LF print
   "  -o <file>                           Write output to <file>, default output file is \"mpl.ll\"" print LF print
@@ -153,6 +155,8 @@ addToProcessAndCheck: [
     OPT_PRE_RECURSION_DEPTH_LIMIT: [8 dynamic];
     OPT_STATIC_LOOP_LENGTH_LIMIT:  [9 dynamic];
     OPT_INCLUDE_PATH:              [10 dynamic];
+    OPT_BEGIN_FUNC:                [11 dynamic];
+    OPT_END_FUNC:                  [12 dynamic];
 
     nextOption: OPT_ANY;
 
@@ -170,6 +174,8 @@ addToProcessAndCheck: [
 
     "*builtins"    toString @options.@fileNames.pushBack
     "*definitions" toString @options.@fileNames.pushBack
+    "main" toString @options.@beginFunc set
+    "main" toString @options.@endFunc set
 
     argc 1 = [
       FALSE @success set
@@ -200,11 +206,13 @@ addToProcessAndCheck: [
                     "-I"                         [OPT_INCLUDE_PATH              !nextOption]
                     "-array_checks"              [OPT_ARRAY_CHECK               !nextOption]
                     "-auto_recursion"            [TRUE                          @options.!autoRecursion]
+                    "-begin_func"                [OPT_BEGIN_FUNC                !nextOption]
                     "-call_trace"                [OPT_CALL_TRACE                !nextOption]
                     debugMemory [
                       "-debug_memory"            [TRUE                          @options.!debugMemory]
                     ] when
                     "-dynalit"                   [FALSE                         @options.!staticLiterals]
+                    "-end_func"                  [OPT_END_FUNC                  !nextOption]
                     "-linker_option"             [OPT_LINKER_OPTION             !nextOption]
                     "-ndebug"                    [FALSE                         @options.!debug]
                     "-o"                         [OPT_OUTPUT_FILE_NAME          !nextOption]
@@ -274,6 +282,14 @@ addToProcessAndCheck: [
                 ]
                 OPT_INCLUDE_PATH [
                   option simplifyFileName @options.@includePaths.pushBack
+                  OPT_ANY !nextOption
+                ]
+                OPT_BEGIN_FUNC [
+                  option toString @options.@beginFunc set
+                  OPT_ANY !nextOption
+                ]
+                OPT_END_FUNC [
+                  option toString @options.@endFunc set
                   OPT_ANY !nextOption
                 ]
                 []

@@ -32,10 +32,10 @@ AstNodeType: {
 };
 
 #AST Nodes
-IndexArray: [Int32 Array];
+IndexOfArray: [Int32];
 
 NamedRecursiveBranch:[{
-  children: IndexArray; # Array of Index
+  children: IndexOfArray; # Array of Index
   name: String; # dynamic String
   nameInfo: 0 dynamic; #index in NameInfo pool
 }];
@@ -50,10 +50,11 @@ AstNode: [{
   token:     String;
   column:    -1 dynamic;
   line:      -1 dynamic;
+  fileId:    -1 dynamic;
   data: (
-    IndexArray           #CodeNode:
+    IndexOfArray         #CodeNode:
     NamedRecursiveBranch #LabelNode:
-    IndexArray           #ListNode:
+    IndexOfArray         #ListNode:
     NamedBranch          #NameNode:
     NamedBranch          #NameMemberNode:
     NamedBranch          #NameReadNode:
@@ -70,7 +71,7 @@ AstNode: [{
     Nat64                #Numbern64Node:
     Nat64                #Numbern8Node:
     Nat64                #NumbernxNode:
-    IndexArray           #ObjectNode:
+    IndexOfArray         #ObjectNode:
     Real64               #Real32Node:
     Real64               #Real64Node:
     String               #StringNode:
@@ -94,8 +95,9 @@ ParserResult: [{
     message: String;
     position: PositionInfo;
   };
-  memory: AstNode Array;
-  nodes: IndexArray;
+
+  memory: AstNode Array Array;
+  root: IndexOfArray;
 
   INIT: []; DIE: []; # default life control, and ban uneffective copy, because object is too big
 }];
@@ -103,8 +105,8 @@ ParserResult: [{
 ParserResults: [ParserResult Array];
 
 MultiParserResult: [{
-  memory: AstNode Owner Array;
-  nodes: IndexArray Owner Array; # order of going is not defined before compiling
+  memory: AstNode Array Array;
+  roots: IndexOfArray Array; # order of going is not defined before compiling
 
   INIT: []; DIE: []; # default life control, and ban uneffective copy, because object is too big
 }];

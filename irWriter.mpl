@@ -578,41 +578,138 @@ getLLPriority: [
   priority
 ];
 
-createCtors: [
-  processor: ;
+createCheckers: [
+  processor:;
 
-  priority: @processor getLLPriority;
+  processor.files.getSize [
+    i 1 > [
+      currentFile:  i processor.files.at.get;
+      currentName: currentFile.name stripExtension nameWithoutBadSymbols;
+      processor.beginFuncIndex 0 < ~ [
+        String @processor addStrToProlog
+        ("define void @check." currentName "() { ret void }") assembleString @processor addStrToProlog
+      ] [
+        currentFile.usedInParams [
+          String @processor addStrToProlog
+          ("declare void @check." currentName "()") assembleString @processor addStrToProlog
+          ("define void @check." currentName ".call() { call void @check." currentName "() ret void}") assembleString @processor addStrToProlog
+        ] when
+      ] if
 
-  "" @processor addStrToProlog
-  ("@llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 " priority ", void ()* @global.ctors, i8* null }]") assembleString @processor addStrToProlog
-  "" @processor addStrToProlog
-  "define internal void @global.ctors() {" @processor addStrToProlog
-
-  processor.moduleFunctions [
-    currentBlock: processor.blocks.at.get;
-    currentBlock.deleted ~ currentBlock.empty ~ and [
-      ("  call void " currentBlock.irName "()") assembleString @processor addStrToProlog
+      processor.options.partial [currentFile.usedInParams ~] && [
+        String @processor addStrToProlog
+        ("declare void @module." currentName ".ctor()") assembleString @processor addStrToProlog
+      ] when
     ] when
-  ] each
-
-  "  ret void" @processor addStrToProlog
-  "}" @processor addStrToProlog
+  ] times
 ];
 
 createDtors: [
   processor:;
-  priority: @processor getLLPriority;
+  dtorByFile: Int32 Array Array;
 
-  "" @processor addStrToProlog
-  ("@llvm.global_dtors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 " 65536 priority + ", void ()* @global.dtors, i8* null }]") assembleString @processor addStrToProlog
-  "" @processor addStrToProlog
-  "define internal void @global.dtors() {" @processor addStrToProlog
+  processor.files.getSize @dtorByFile.resize
+
   processor.dtorFunctions [
-    cur: processor.blocks.at.get.irName copy;
-    ("  call void " cur "()") assembleString @processor addStrToProlog
+    blockId:;
+    cur: blockId processor.blocks.at.get;
+    processor.options.partial ~ [cur.file.usedInParams copy] || [
+      id: cur.file.fileId copy;
+      blockId id @dtorByFile.at.pushBack
+    ] when
   ] each
-  "  ret void" @processor addStrToProlog
-  "}" @processor addStrToProlog
+
+  processor.files.getSize [
+    i 1 > [
+      currentFile: i processor.files.at.get;
+      currentName: currentFile.name stripExtension nameWithoutBadSymbols;
+      String @processor addStrToProlog
+      processor.options.partial ~ [currentFile.usedInParams copy] || [
+        ("define void @module." currentName ".dtor() {") assembleString @processor addStrToProlog
+        i dtorByFile.at [
+          cur: processor.blocks.at.get.irName copy;
+          ("  call void " cur "()") assembleString @processor addStrToProlog
+        ] each
+        "  ret void" @processor addStrToProlog
+        "}" @processor addStrToProlog
+      ] [
+        ("declare void @module." currentName ".dtor()") assembleString @processor addStrToProlog
+      ] if
+    ] when
+  ] times
+];
+
+addCtorsToBeginFunc: [
+  processor:;
+
+  processor.beginFuncIndex 0 < ~ [
+    block: processor.beginFuncIndex @processor.@blocks.at.get;
+    previousVersion: @block.@program move copy;
+    @block.@program.clear
+
+    0 @previousVersion.at move @block.@program.pushBack
+
+    block.beginPosition @processor.@positions.pushBack
+
+    processor.moduleFunctions.getSize [
+      i 0 > [ # skip definitions
+        currentFunction: i processor.moduleFunctions.at processor.blocks.at.get;
+
+        currentFile: currentFunction.file;
+        currentName: currentFile.name stripExtension nameWithoutBadSymbols;
+        ("  call void @module." currentName ".ctor()") @block appendInstruction
+
+        processor.options.debug [
+          @processor @block addDebugLocationForLastInstruction
+        ] when
+      ] when
+    ] times
+
+    previousVersion.getSize [
+      i 0 >  [
+        current: i @previousVersion.at;
+        @current move @block.@program.pushBack
+      ] when
+    ] times
+
+    @processor.@positions.popBack
+  ] when
+];
+
+addDtorsToEndFunc: [
+  processor:;
+
+  processor.endFuncIndex 0 < ~ [
+    block: processor.endFuncIndex @processor.@blocks.at.get;
+    previousVersion: @block.@program move copy;
+    @block.@program.clear
+
+    block.beginPosition @processor.@positions.pushBack
+
+    previousVersion.getSize [
+      i previousVersion.getSize 1 - < [
+        current: i @previousVersion.at;
+        @current move @block.@program.pushBack
+      ] when
+    ] times
+
+    processor.moduleFunctions.getSize [
+      i 0 > [ # skip definitions
+        currentFunction: processor.moduleFunctions.getSize i - processor.moduleFunctions.at processor.blocks.at.get;
+
+        currentFile: currentFunction.file;
+        currentName: currentFile.name stripExtension nameWithoutBadSymbols;
+        ("  call void @module." currentName ".dtor()") @block appendInstruction
+
+        processor.options.debug [
+          @processor @block addDebugLocationForLastInstruction
+        ] when
+      ] when
+    ] times
+
+    @processor.@positions.popBack
+    @previousVersion.last move @block.@program.pushBack
+  ] when
 ];
 
 sortInstructions: [
@@ -695,13 +792,41 @@ addAliasesForUsedNodes: [
   ] each
 ];
 
+checkBeginEndPoint: [
+  processor:;
+  result: TRUE;
+
+  processor.beginFuncIndex 0 < processor.endFuncIndex 0 < and [
+    # ok
+  ] [
+    processor.beginFuncIndex 0 < ~ processor.endFuncIndex 0 < ~ and [
+      beginFuncFile: processor.beginFuncIndex processor.blocks.at.get.file;
+      endFuncFile: processor.endFuncIndex processor.blocks.at.get.file;
+      beginFuncFile endFuncFile is ~ [
+        FALSE !result
+      ] when
+    ] [
+      FALSE !result
+    ] if
+  ] if
+
+  result ~ [
+    ("beginFunc and endFunc must be in one module" LF) assembleString @processor.@result.@errorInfo.@message.cat
+    FALSE @processor.@result.@success set
+  ] when
+];
+
 createCallTraceData: [
   processor:;
 
   tlPrefix: processor.options.threadModel 1 = ["thread_local "] [""] if;
 
   "%type.callTraceInfo = type {%type.callTraceInfo*, i8*, i32, i32}" toString @processor.@prolog.pushBack
-  ("@debug.callTracePtr = " tlPrefix "unnamed_addr global %type.callTraceInfo* null") assembleString @processor.@prolog.pushBack
+  processor.beginFuncIndex 0 < ~ [
+    ("@debug.callTracePtr = " tlPrefix "unnamed_addr global %type.callTraceInfo* null") assembleString @processor.@prolog.pushBack
+  ] [
+    ("@debug.callTracePtr = external " tlPrefix "unnamed_addr global %type.callTraceInfo*") assembleString @processor.@prolog.pushBack
+  ] if
 ];
 
 createCallTraceProlog: [

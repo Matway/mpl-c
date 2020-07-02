@@ -31,6 +31,19 @@ fillPositionInfo: [
   lastPosition.column @astNode.@column set
 ];
 
+addToMainResult: [
+  astArray:;
+
+  newIndex: mainResult.memory.size;
+  @astArray move @mainResult.@memory.pushBack
+  newIndex
+];
+
+addToLastUnfinished: [
+  astNode:;
+  @astNode move @unfinishedNodes.last.pushBack
+];
+
 makeLabelNode: [
   children:;
   name:;
@@ -39,7 +52,7 @@ makeLabelNode: [
   (name ":") assembleString @result.@token set
   AstNodeType.Label @result.@data.setTag
   branch: AstNodeType.Label @result.@data.get;
-  children @branch.@children set
+  @children addToMainResult @branch.@children set
   name @branch.@name set
   @result
 ];
@@ -51,7 +64,7 @@ makeCodeNode: [
   "[" toString @result.@token set
   AstNodeType.Code @result.@data.setTag
   branch: AstNodeType.Code @result.@data.get;
-  children @branch set
+  @children addToMainResult @branch set
   @result
 ];
 
@@ -62,7 +75,7 @@ makeObjectNode: [
   "{" toString @result.@token set
   AstNodeType.Object @result.@data.setTag
   branch: AstNodeType.Object @result.@data.get;
-  children @branch set
+  @children addToMainResult @branch set
   @result
 ];
 
@@ -73,7 +86,7 @@ makeListNode: [
   "(" toString @result.@token set
   AstNodeType.List @result.@data.setTag
   branch: AstNodeType.List @result.@data.get;
-  children @branch set
+  @children addToMainResult @branch set
   @result
 ];
 
@@ -499,7 +512,7 @@ parseStringConstant: [
     iterate stop ~
   ] loop
 
-  @nameSymbols move makeStringNode @mainResult.@memory.pushBack
+  @nameSymbols move makeStringNode addToLastUnfinished
   TRUE
 ];
 
@@ -642,10 +655,10 @@ parseDecNumber: [
     result 10.0r64 decOrder ^ * @result set
 
     typeName 705 = typeName 0 = or [
-      result token makeReal64Node @mainResult.@memory.pushBack
+      result token makeReal64Node addToLastUnfinished
     ] [
       typeName 403 = [
-        result token makeReal32Node @mainResult.@memory.pushBack
+        result token makeReal32Node addToLastUnfinished
       ] [
         "wrong real constant suffix" lexicalError
       ] if
@@ -658,19 +671,19 @@ parseDecNumber: [
       result: 0n64 dynamic;
       beforeDot.getSize [result 10n64 * i beforeDot.at 0i64 cast type cast + @result set] times
       typeName 705 = [
-        result token makeNumbern64Node @mainResult.@memory.pushBack
+        result token makeNumbern64Node addToLastUnfinished
       ] [
         typeName 403 = typeName 0 = or [
-          result token makeNumbern32Node @mainResult.@memory.pushBack
+          result token makeNumbern32Node addToLastUnfinished
         ] [
           typeName 207 = [
-            result token makeNumbern16Node @mainResult.@memory.pushBack
+            result token makeNumbern16Node addToLastUnfinished
           ] [
             typeName 9 = [
-              result token makeNumbern8Node @mainResult.@memory.pushBack
+              result token makeNumbern8Node addToLastUnfinished
             ] [
               typeName -1 = [
-                result token makeNumbernxNode @mainResult.@memory.pushBack
+                result token makeNumbernxNode addToLastUnfinished
               ] [
                 "wrong natural constant suffix" lexicalError
               ] if
@@ -685,19 +698,19 @@ parseDecNumber: [
       beforeDot.getSize [result 10i64 * i beforeDot.at type cast + @result set] times
       hasMinus [result neg @result set] when
       typeName 705 = [
-        result token makeNumberi64Node @mainResult.@memory.pushBack
+        result token makeNumberi64Node addToLastUnfinished
       ] [
         typeName 403 = typeName 0 = or [
-          result token makeNumberi32Node @mainResult.@memory.pushBack
+          result token makeNumberi32Node addToLastUnfinished
         ] [
           typeName 207 = [
-            result token makeNumberi16Node @mainResult.@memory.pushBack
+            result token makeNumberi16Node addToLastUnfinished
           ] [
             typeName 9 = [
-              result token makeNumberi8Node @mainResult.@memory.pushBack
+              result token makeNumberi8Node addToLastUnfinished
             ] [
               typeName -1 = [
-                result token makeNumberixNode @mainResult.@memory.pushBack
+                result token makeNumberixNode addToLastUnfinished
               ] [
                 "wrong integer constant suffix" lexicalError
               ] if
@@ -779,19 +792,19 @@ parseHexNumber: [
     beforeT.getSize 0 = ["empty hex constant" lexicalError] when
     beforeT.getSize [result 16n64 * i beforeT.at 0i64 cast type cast + @result set] times
     typeName 705 = [
-      result token makeNumbern64Node @mainResult.@memory.pushBack
+      result token makeNumbern64Node addToLastUnfinished
     ] [
       typeName 403 = typeName 0 = or [
-        result token makeNumbern32Node @mainResult.@memory.pushBack
+        result token makeNumbern32Node addToLastUnfinished
       ] [
         typeName 207 = [
-          result token makeNumbern16Node @mainResult.@memory.pushBack
+          result token makeNumbern16Node addToLastUnfinished
         ] [
           typeName 9 = [
-            result token makeNumbern8Node @mainResult.@memory.pushBack
+            result token makeNumbern8Node addToLastUnfinished
           ] [
             typeName -1 = [
-              result token makeNumbernxNode @mainResult.@memory.pushBack
+              result token makeNumbernxNode addToLastUnfinished
             ] [
               "wrong natural constant suffix" lexicalError
             ] if
@@ -806,19 +819,19 @@ parseHexNumber: [
     beforeT.getSize 0 = ["empty hex constant" lexicalError] when
     beforeT.getSize [result 16i64 * i beforeT.at type cast + @result set] times
     typeName 705 = [
-      result token makeNumberi64Node @mainResult.@memory.pushBack
+      result token makeNumberi64Node addToLastUnfinished
     ] [
       typeName 403 = typeName 0 = or [
-        result token makeNumberi32Node @mainResult.@memory.pushBack
+        result token makeNumberi32Node addToLastUnfinished
       ] [
         typeName 207 = [
-          result token makeNumberi16Node @mainResult.@memory.pushBack
+          result token makeNumberi16Node addToLastUnfinished
         ] [
           typeName 9 = [
-            result token makeNumberi8Node @mainResult.@memory.pushBack
+            result token makeNumberi8Node addToLastUnfinished
           ] [
             typeName -1 = [
-              result token makeNumberixNode @mainResult.@memory.pushBack
+              result token makeNumberixNode addToLastUnfinished
             ] [
               "wrong integer constant suffix" lexicalError
             ] if
@@ -862,7 +875,7 @@ makeLabel: [
   lastPosition @unfinishedPositions.pushBack
   ascii.semicolon @unfinishedTerminators.pushBack
   name toString @unfinishedLabelNames.pushBack
-  IndexArray @unfinishedNodes.pushBack
+  AstNode Array @unfinishedNodes.pushBack
 ];
 
 parseName: [
@@ -982,10 +995,10 @@ parseName: [
 
     nameSymbols.getSize 0 = [
       read [
-        label ["@" makeLabel FALSE]["@" makeNameNode @mainResult.@memory.pushBack TRUE] if
+        label ["@" makeLabel FALSE]["@" makeNameNode addToLastUnfinished TRUE] if
       ] [
         write [
-          label ["!" makeLabel FALSE]["!" makeNameNode @mainResult.@memory.pushBack TRUE] if
+          label ["!" makeLabel FALSE]["!" makeNameNode addToLastUnfinished TRUE] if
         ] [
           "empty name" lexicalError
           FALSE
@@ -1000,22 +1013,22 @@ parseName: [
       ] [
         dotState DotState.MEMBER = [
           read [
-            name makeNameReadMemberNode @mainResult.@memory.pushBack TRUE
+            name makeNameReadMemberNode addToLastUnfinished TRUE
           ] [
             write [
-              name makeNameWriteMemberNode @mainResult.@memory.pushBack TRUE
+              name makeNameWriteMemberNode addToLastUnfinished TRUE
             ] [
-              name makeNameMemberNode @mainResult.@memory.pushBack TRUE
+              name makeNameMemberNode addToLastUnfinished TRUE
             ] if
           ] if
         ] [
           read [
-            name makeNameReadNode @mainResult.@memory.pushBack TRUE
+            name makeNameReadNode addToLastUnfinished TRUE
           ] [
             write [
-              name makeNameWriteNode @mainResult.@memory.pushBack TRUE
+              name makeNameWriteNode addToLastUnfinished TRUE
             ] [
-              name makeNameNode @mainResult.@memory.pushBack TRUE
+              name makeNameNode addToLastUnfinished TRUE
             ] if
           ] if
         ] if
@@ -1052,7 +1065,7 @@ parseComment: [
 addNestedNode: [
   currentPosition @unfinishedPositions.pushBack
 
-  IndexArray @unfinishedNodes.pushBack
+  AstNode Array @unfinishedNodes.pushBack
   currentCode ascii.openRBr = [
     ascii.closeRBr @unfinishedTerminators.pushBack
   ] [
@@ -1068,11 +1081,6 @@ addNestedNode: [
   ] if
 
   iterate
-];
-
-addToLastUnfinished: [
-  @mainResult.@memory.pushBack
-  mainResult.memory.getSize 1 - @unfinishedNodes.last.pushBack
 ];
 
 parseNode: [
@@ -1119,7 +1127,7 @@ parseNode: [
                       unfinishedNodes.getSize 1 = ~ [
                         "unexpected end of the file!" makeStringView lexicalError
                       ] when
-                      0 @unfinishedNodes.at @mainResult.@nodes set
+                      0 @unfinishedNodes.at addToMainResult @mainResult.@root set
                       @unfinishedNodes.popBack
                       @unfinishedTerminators.popBack
                     ] [
@@ -1167,10 +1175,7 @@ parseNode: [
       ] if
     ] [
       lastPosition: currentPosition copy;
-      parseIdentifier [
-        mainResult.memory.getSize 1 -   # if made label, dont do it
-        @unfinishedNodes.last.pushBack
-      ] when
+      success: parseIdentifier;
     ] if
 
     unfinishedNodes.getSize 0 > [mainResult.success copy] &&
@@ -1196,11 +1201,11 @@ parseNode: [
 
     unfinishedPositions: PositionInfo Array;
     unfinishedLabelNames: String Array;
-    unfinishedNodes: IndexArray Array;
+    unfinishedNodes: AstNode Array Array;
     unfinishedTerminators: Nat32 Array;
 
     currentPosition @unfinishedPositions.pushBack
-    IndexArray @unfinishedNodes.pushBack
+    AstNode Array @unfinishedNodes.pushBack
     ascii.null @unfinishedTerminators.pushBack
 
     iterate

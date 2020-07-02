@@ -1,3 +1,4 @@
+"Array" use
 "HashTable" use
 "Owner" use
 "String" use
@@ -149,8 +150,6 @@ debugMemory [
   "" makeStringView @processor addStrToProlog
   ("mainPath is \"" makeStringView processor.options.mainPath makeStringView "\"" makeStringView) addLog
 
-  processor.options.callTrace [@processor createCallTraceData] when
-
   @processor addLinkerOptionsDebugInfo
 
   processor.options.debug [
@@ -159,22 +158,26 @@ debugMemory [
 
   lastFile: File Cref;
 
-  multiParserResult.nodes.size 0 > [
-    dependedFiles: String IndexArray HashTable; # string -> array of indexes of dependent files
+  multiParserResult.roots.size 0 > [
+    dependedFiles: String Int32 Array HashTable; # string -> array of indexes of dependent files
     cachedGlobalErrorInfoSize: 0;
 
     runFile: [
       n:;
       file: n @processor.@files.at.get;
       file !lastFile
-      fileNode: n 1 - processor.multiParserResult.nodes.at.get;
-      rootPositionInfo: CompilerPositionInfo;
-      file @rootPositionInfo.@file.set
-      1    @rootPositionInfo.!line
-      1    @rootPositionInfo.!column
+      astArrayIndex: n 1 - processor.multiParserResult.roots.at;
 
       processor.result.globalErrorInfo.getSize @cachedGlobalErrorInfoSize set
-      topNodeIndex: StringView 0 NodeCaseCode fileNode file rootPositionInfo CFunctionSignature @processor astNodeToCodeNode;
+
+      compilerPositionInfo: CompilerPositionInfo;
+
+      1    @compilerPositionInfo.@line set
+      1    @compilerPositionInfo.@column set
+      file @compilerPositionInfo.@file.set
+      compilerPositionInfo @processor.@positions.pushBack
+      topNodeIndex: StringView 0 NodeCaseCode astArrayIndex CFunctionSignature @processor astNodeToCodeNode;
+      @processor.@positions.popBack
 
       processor.result.findModuleFail [
         # cant compile this file now, add him to queue
@@ -183,7 +186,7 @@ debugMemory [
         fr.success [
           n @fr.@value.pushBack
         ] [
-          a: IndexArray;
+          a: Int32 Array;
           n @a.pushBack
           @processor.result.@errorInfo.@missedModule @a move @dependedFiles.insert
         ] if
@@ -220,8 +223,8 @@ debugMemory [
 
     n: 0 dynamic;
     [
-      n processor.multiParserResult.nodes.size < [
-        processor.multiParserResult.nodes.size n - @processor.@unfinishedFiles.pushBack
+      n processor.multiParserResult.roots.size < [
+        processor.multiParserResult.roots.size n - @processor.@unfinishedFiles.pushBack
         n 1 + @n set TRUE
       ] &&
     ] loop
@@ -234,6 +237,10 @@ debugMemory [
         processor.result.success copy
       ] &&
     ] loop
+
+    processor.result.success [
+      @processor checkBeginEndPoint
+    ] when
 
     processor.result.success ~ [
       @processor.@result.@errorInfo move @processor.@result.@globalErrorInfo.pushBack
@@ -287,7 +294,6 @@ debugMemory [
       ] when
     ] when
   ] when
-
 
   ("all nodes generated" makeStringView) addLog
   [processor compilable ~ [processor.recursiveNodesStack.getSize 0 =] ||] "Recursive stack is not empty!" assert
@@ -442,9 +448,13 @@ debugMemory [
       ] each
     ] when
 
+    processor.options.callTrace [@processor createCallTraceData] when
     processor.usedFloatBuiltins [@processor createFloatBuiltins] when
-    @processor createCtors
+
+    @processor createCheckers
     @processor createDtors
+    @processor addCtorsToBeginFunc
+    @processor addDtorsToEndFunc
     @processor clearUnusedDebugInfo
     @processor addAliasesForUsedNodes
 
@@ -523,15 +533,9 @@ debugMemory [
 
 {
   processor: Processor Ref;
-  file: File Cref;
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
   refToVar: RefToVar Cref;
 } () {} [
   processor:;
-  file:;
-  forcedSignature:;
-  compilerPositionInfo:;
   refToVar:;
 
   @processor addBlock
@@ -541,9 +545,12 @@ debugMemory [
 
   NodeCaseDtor                    @codeNode.@nodeCase set
   0 dynamic                       @codeNode.@parent set
-  file                            @codeNode.@file.set
   @processor @codeNode getTopNode @codeNode.@topNode.set
-  @compilerPositionInfo @processor.@positions.last set
+
+  compilerPositionInfo: processor.positions.last copy;
+
+  compilerPositionInfo.file   @codeNode.@file.set
+  compilerPositionInfo        @codeNode.@beginPosition set
 
   processor.options.debug [
     @processor addDebugReserve @codeNode.@funcDbgIndex set
@@ -558,5 +565,5 @@ debugMemory [
   shadow @processor @block killStruct
   dtorName: ("dtor." refToVar getVar.globalId) assembleString;
   dtorNameStringView: dtorName makeStringView;
-  dtorNameStringView compilerPositionInfo forcedSignature @processor @block finalizeCodeNode
+  dtorNameStringView CFunctionSignature @processor @block finalizeCodeNode
 ] "createDtorForGlobalVar" exportFunction

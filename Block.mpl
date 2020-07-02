@@ -6,6 +6,7 @@
 
 "Mref" use
 "Var" use
+"astNodeType" use
 
 ArgVirtual:     [0n8 dynamic];
 ArgGlobal:      [1n8 dynamic];
@@ -137,8 +138,7 @@ NameWithOverloadAndRefToVar: [{
 }];
 
 TokenRef: [{
-  file: ["MplFile.FileSchema" use FileSchema] Mref;
-  token: Int32;
+  astNode: AstNode Cref;
 }];
 
 UsedModuleInfo: [{
@@ -230,7 +230,7 @@ Block: [{
 
   refToVar:           RefToVar; #refToVar of function with compiled node
   varNameInfo:        -1 dynamic; #variable name of imported function
-  indexArrayAddress:  0nx dynamic;
+  astArrayIndex:      -1 dynamic;
   matchingInfoIndex:  -1 dynamic;
   exportDepth:        0 dynamic;
   namedFunctions:     String Int32 HashTable; # name -> node ID

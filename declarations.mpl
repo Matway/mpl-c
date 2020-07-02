@@ -18,11 +18,8 @@ compilerError: [processor: block:;; makeStringView block @processor compilerErro
 
 {
   processor: Processor Ref;
-
   signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
-  file: File Cref;
-  indexArray: IndexArray Cref;
+  astArrayIndex: Int32;
   nodeCase: NodeCaseCode;
   parentIndex: 0;
   functionName: StringView Cref;
@@ -30,9 +27,6 @@ compilerError: [processor: block:;; makeStringView block @processor compilerErro
 
 {
   processor: Processor Ref;
-  file: File Cref;
-  signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
   refToVar: RefToVar Cref;
 } () {} "createDtorForGlobalVar" importFunction
 
@@ -40,10 +34,9 @@ compilerError: [processor: block:;; makeStringView block @processor compilerErro
   block: Block Ref;
   processor: Processor Ref;
 
-  positionInfo: CompilerPositionInfo Cref;
   name: StringView Cref;
   nodeCase: NodeCaseCode;
-  indexArray: IndexArray Cref;
+  astArrayIndex: Int32;
 } () {} "processCallByIndexArray" importFunction
 
 {
@@ -64,8 +57,7 @@ compilerError: [processor: block:;; makeStringView block @processor compilerErro
   block: Block Ref;
   processor: Processor Ref;
 
-  file: File Cref;
-  preAstNodeIndex: Int32;
+  astArrayIndex: Int32;
 } Cond {} "processPre" importFunction
 
 {
@@ -73,8 +65,7 @@ compilerError: [processor: block:;; makeStringView block @processor compilerErro
   processor: Processor Ref;
 
   name: StringView Cref;
-  file: File Cref;
-  callAstNodeIndex: Int32;
+  astArrayIndex: Int32;
 } () {} "processCall" importFunction
 
 {
@@ -97,8 +88,7 @@ compilerError: [processor: block:;; makeStringView block @processor compilerErro
 
   asLambda: Cond;
   name: StringView Cref;
-  file: File Cref;
-  astNode: AstNode Cref;
+  astArrayIndex: Int32;
   signature: CFunctionSignature Cref;
 } Int32 {} "processExportFunction" importFunction
 

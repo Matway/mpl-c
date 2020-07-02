@@ -470,20 +470,19 @@ tryMatchNode: [
   ] &&
 ];
 
-{processor: Processor Ref; block: Block Ref; forceRealFunction: Cond; indexArrayOfSubNode: IndexArray Cref;} Int32 {} [
+{processor: Processor Ref; block: Block Ref; forceRealFunction: Cond; astArrayIndex: Int32;} Int32 {} [
   processor:;
   block:;
 
   overload failProc: processor block FailProcForProcessor;
 
   forceRealFunction:;
-  indexArrayOfSubNode:;
+  astArrayIndex:;
 
   compileOnce
-  indexArrayAddr: indexArrayOfSubNode storageAddress;
-  fr: indexArrayAddr @processor.@matchingNodes.find;
-  fr.success [
-    fr.value.entries 1 + @fr.@value.@entries set
+  astArrayIndex processor.matchingNodes.size < [astArrayIndex processor.matchingNodes.at.assigned] && [
+    matchingNode: astArrayIndex @processor.@matchingNodes.at.get;
+    matchingNode.entries 1 + @matchingNode.@entries set
 
     findInIndexArray: [
       where:;
@@ -492,7 +491,7 @@ tryMatchNode: [
       i: 0 dynamic;
       [
         i where.size < [
-          fr.value.tries 1 + @fr.@value.@tries set
+          matchingNode.tries 1 + @matchingNode.@tries set
           currentMatchingNodeIndex: i where.at;
           currentMatchingNode: currentMatchingNodeIndex processor.blocks.at.get;
 
@@ -513,7 +512,7 @@ tryMatchNode: [
     result: -1 dynamic;
 
     @processor block getStackDepth 0 > [
-      byType: 0 @processor block getStackEntry getVar.mplSchemaId fr.value.byMplType.find;
+      byType: 0 @processor block getStackEntry getVar.mplSchemaId matchingNode.byMplType.find;
 
       byType.success [
         byType.value findInIndexArray @result set
@@ -521,7 +520,7 @@ tryMatchNode: [
     ] when
 
     result 0 < [
-      fr.value.unknownMplType findInIndexArray @result set
+      matchingNode.unknownMplType findInIndexArray @result set
     ] when
 
     result
@@ -1351,28 +1350,23 @@ useMatchingInfoOnly: [
   oldSuccess @processor.@result.@success set
 ];
 
-{block: Block Ref; processor: Processor Ref;
-  positionInfo: CompilerPositionInfo Cref; name: StringView Cref; nodeCase: NodeCaseCode; indexArray: IndexArray Cref;} () {} [
+{block: Block Ref; processor: Processor Ref; name: StringView Cref; nodeCase: NodeCaseCode; astArrayIndex: Int32;} () {} [
   block:;
   processor:;
-  positionInfo:;
   name:;
   copy nodeCase:;
-  indexArray:;
+  astArrayIndex:;
 
   overload failProc: processor block FailProcForProcessor;
 
   forcedNameString: String;
-  file: positionInfo.file;
 
-  newNodeIndex: indexArray @processor @block tryMatchAllNodes;
+  newNodeIndex: astArrayIndex @processor @block tryMatchAllNodes;
   newNodeIndex 0 < [
     name
     block.id
     nodeCase
-    indexArray
-    file
-    positionInfo
+    astArrayIndex
     CFunctionSignature
     @processor
     astNodeToCodeNode @newNodeIndex set
@@ -1407,49 +1401,29 @@ useMatchingInfoOnly: [
   ] if
 ] "processCallByIndexArray" exportFunction
 
-{block: Block Ref; processor: Processor Ref; name: StringView Cref; file: File Cref; callAstNodeIndex: Int32;} () {} [
+{block: Block Ref; processor: Processor Ref; name: StringView Cref; astArrayIndex: Int32;} () {} [
   block:;
   processor:;
   name:;
-  file:;
-  callAstNodeIndex:;
+  astArrayIndex:;
   overload failProc: processor block FailProcForProcessor;
-
-  astNode: callAstNodeIndex processor.multiParserResult.memory.at.get;
-
-  positionInfo: astNode file makeCompilerPosition;
-
-  indexArray: Int32 Array Cref;
-  nodeCase: Nat8;
-
-  (
-    AstNodeType.Code   [!indexArray NodeCaseCode   !nodeCase]
-    AstNodeType.List   [!indexArray NodeCaseList   !nodeCase]
-    AstNodeType.Object [!indexArray NodeCaseObject !nodeCase]
-  ) astNode.data.visit
-
-  indexArray nodeCase dynamic name positionInfo @processor @block processCallByIndexArray
+  astArrayIndex NodeCaseCode dynamic name @processor @block processCallByIndexArray
 ] "processCall" exportFunction
 
-{block: Block Ref; processor: Processor Ref; file: File Cref; preAstNodeIndex: Int32;} Cond {} [
+{block: Block Ref; processor: Processor Ref; preAstArrayIndex: Int32;} Cond {} [
   block:;
   processor:;
-  file:;
-  preAstNodeIndex:;
+  preAstArrayIndex:;
   overload failProc: processor block FailProcForProcessor;
 
   processor compilable [
-    astNode: preAstNodeIndex processor.multiParserResult.memory.at.get;
-    positionInfo: astNode file makeCompilerPosition;
-    indexArray: AstNodeType.Code @astNode.@data.get;
-
     oldSuccess: processor compilable;
     oldGlobalErrorCount: processor.result.globalErrorInfo.getSize;
 
-    newNodeIndex: indexArray @processor @block tryMatchAllNodes;
+    newNodeIndex: preAstArrayIndex @processor @block tryMatchAllNodes;
     newNodeIndex 0 < [
       processor.depthOfPre 1 + @processor.@depthOfPre set
-      "PRE" makeStringView block.id NodeCaseCode indexArray file positionInfo CFunctionSignature @processor astNodeToCodeNode @newNodeIndex set
+      "PRE" makeStringView block.id NodeCaseCode preAstArrayIndex CFunctionSignature @processor astNodeToCodeNode @newNodeIndex set
       processor.depthOfPre 1 - @processor.@depthOfPre set
     ] when
 
@@ -1483,36 +1457,24 @@ useMatchingInfoOnly: [
 
 {
   block: Block Ref; processor: Processor Ref;
-  fileElse: File Cref;
-  astNodeElse: AstNode Cref;
-  fileThen: File Cref;
-  astNodeThen: AstNode Cref;
+  astArrayIndexThen: Int32;
+  astArrayIndexElse: Int32;
   refToCond: RefToVar Cref;
 } () {} [
   processor: block: ;;
 
-  fileElse:;
-  astNodeElse:;
-  fileThen:;
-  astNodeThen:;
+  astArrayIndexThen:;
+  astArrayIndexElse:;
   refToCond:;
 
   overload failProc: processor block FailProcForProcessor;
 
-  indexArrayElse: AstNodeType.Code astNodeElse.data.get;
-  indexArrayThen: AstNodeType.Code astNodeThen.data.get;
-
-  positionInfoThen: astNodeThen fileThen makeCompilerPosition;
-  positionInfoElse: astNodeElse fileElse makeCompilerPosition;
-
-  newNodeThenIndex: @indexArrayThen @processor @block tryMatchAllNodes;
+  newNodeThenIndex: @astArrayIndexThen @processor @block tryMatchAllNodes;
   newNodeThenIndex 0 < [
     "ifThen" makeStringView
     block.id
     NodeCaseCode
-    indexArrayThen
-    fileThen
-    positionInfoThen
+    astArrayIndexThen
     CFunctionSignature
     @processor astNodeToCodeNode @newNodeThenIndex set
   ] when
@@ -1521,14 +1483,12 @@ useMatchingInfoOnly: [
   processor compilable ~ [
     newNodeThen @processor @block useMatchingInfoOnly
   ] [
-    newNodeElseIndex: @indexArrayElse @processor @block tryMatchAllNodes;
+    newNodeElseIndex: @astArrayIndexElse @processor @block tryMatchAllNodes;
     newNodeElseIndex 0 < [
       "ifElse" makeStringView
       block.id
       NodeCaseCode
-      indexArrayElse
-      fileElse
-      positionInfoElse
+      astArrayIndexElse
       CFunctionSignature
       @processor
       astNodeToCodeNode @newNodeElseIndex set
@@ -1866,19 +1826,17 @@ useMatchingInfoOnly: [
 ] "processIf" exportFunction
 
 processDynamicLoop: [
-  indexArray: file:;;
+  astArrayIndex:;
 
   iterationNumber: 0 dynamic;
   [
     needToRemake: FALSE dynamic;
-    newNodeIndex: @indexArray @processor @block tryMatchAllNodes;
+    newNodeIndex: @astArrayIndex @processor @block tryMatchAllNodes;
     newNodeIndex 0 < [
       "dynamicLoop" makeStringView
       block.id
       NodeCaseCode
-      indexArray
-      file
-      positionInfo
+      astArrayIndex
       CFunctionSignature
       @processor astNodeToCodeNode @newNodeIndex set
     ] when
@@ -2039,27 +1997,22 @@ processDynamicLoop: [
 ];
 
 {
-  file: File Cref; block: Block Ref; processor: Processor Ref; astNode: AstNode Cref;
+  block: Block Ref; processor: Processor Ref; astArrayIndex: Int32;
 } () {} [
-  astNode: processor: block: file: ;;;;
+  astArrayIndex: processor: block: ;;;
 
   overload failProc: processor block FailProcForProcessor;
-
-  indexArray: AstNodeType.Code astNode.data.get;
-  positionInfo: astNode file makeCompilerPosition;
 
   iterationNumber: 0 dynamic;
   loopIsDynamic: FALSE;
 
   [
-    newNodeIndex: @indexArray @processor @block tryMatchAllNodes dynamic;
+    newNodeIndex: @astArrayIndex @processor @block tryMatchAllNodes dynamic;
     newNodeIndex 0 < [
       "loop" makeStringView
       block.id
       NodeCaseCode
-      indexArray
-      file
-      positionInfo
+      astArrayIndex
       CFunctionSignature
       @processor
       astNodeToCodeNode @newNodeIndex set
@@ -2106,13 +2059,13 @@ processDynamicLoop: [
     iterationNumber 1 + @iterationNumber set
     iterationNumber processor.options.staticLoopLengthLimit > [
       TRUE @processor.@result.!passErrorThroughPRE
-      ("Static loop length limit (" processor.options.staticLoopLengthLimit ") exceeded. Dynamize loop or increase limit using -static_loop_lenght_limit option") assembleString @processor block compilerError
+      ("Static loop length limit (" processor.options.staticLoopLengthLimit ") exceeded. Dynamize loop or increase limit using -static_loop_length_limit option") assembleString @processor block compilerError
     ] when
 
     processor compilable and
   ] loop
 
-  loopIsDynamic [indexArray file processDynamicLoop] when
+  loopIsDynamic [astArrayIndex processDynamicLoop] when
 ] "processLoop" exportFunction
 
 {
@@ -2142,7 +2095,6 @@ processDynamicLoop: [
   ] times
 
   [
-    compilerPositionInfo: processor.positions.last copy;
     block: @declarationNode;
     forcedSignature: signature;
     processor.options.debug [
@@ -2150,7 +2102,7 @@ processDynamicLoop: [
     ] when
     forcedSignature.inputs   [p:; a: @processor @block pop;] each
     forcedSignature.outputs [@processor @block copyVarFromChild @block push] each
-    name compilerPositionInfo forcedSignature @processor @block finalizeCodeNode
+    name forcedSignature @processor @block finalizeCodeNode
   ] call
 
   signature.inputs   [p:; a: @processor @block pop;] each
@@ -2158,18 +2110,15 @@ processDynamicLoop: [
 ] "processImportFunction" exportFunction
 
 {block: Block Ref; processor: Processor Ref;
-  asLambda: Cond; name: StringView Cref; file: File Cref; astNode: AstNode Cref; signature: CFunctionSignature Cref;} Int32 {} [
+  asLambda: Cond; name: StringView Cref; astArrayIndex: Int32; signature: CFunctionSignature Cref;} Int32 {} [
   block:;
   processor:;
   copy asLambda:;
   name:;
-  file:;
-  astNode:;
+  astArrayIndex:;
   signature:;
   overload failProc: processor block FailProcForProcessor;
 
-  indexArray: AstNodeType.Code astNode.data.get;
-  positionInfo: astNode file makeCompilerPosition;
   compileOnce
 
   signature.variadic [
@@ -2200,11 +2149,11 @@ processDynamicLoop: [
     oldSuccess: processor compilable;
     oldRecursiveNodesStackSize: processor.recursiveNodesStack.getSize;
 
-    newNodeIndex: @indexArray @processor @block tryMatchAllNodesForRealFunction;
+    newNodeIndex: astArrayIndex @processor @block tryMatchAllNodesForRealFunction;
     newNodeIndex 0 < [
       nodeCase: asLambda [NodeCaseLambda][NodeCaseExport] if;
       processor.exportDepth 1 + @processor.@exportDepth set
-      name block.id nodeCase indexArray file positionInfo signature @processor astNodeToCodeNode @newNodeIndex set
+      name block.id nodeCase astArrayIndex signature @processor astNodeToCodeNode @newNodeIndex set
       processor.exportDepth 1 - @processor.@exportDepth set
     ] when
 
@@ -2260,6 +2209,13 @@ processDynamicLoop: [
 
     processor compilable [
       ("successfully processed export: " makeStringView name makeStringView) addLog
+      name processor.options.beginFunc = [
+        newNodeIndex @processor.@beginFuncIndex set
+      ] when
+
+      name processor.options.endFunc = [
+        newNodeIndex @processor.@endFuncIndex set
+      ] when
     ] [
       ("failed while process export: " makeStringView name makeStringView) addLog
     ] if

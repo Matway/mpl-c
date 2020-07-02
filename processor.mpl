@@ -21,6 +21,8 @@ DEFAULT_PRE_RECURSION_DEPTH_LIMIT: [64];
 
 ProcessorOptions: [{
   mainPath:               String;
+  beginFunc:              String;
+  endFunc:                String;
   fileNames:              StringArray;
   includePaths:           StringArray;
   pointerSize:            64nx dynamic;
@@ -75,8 +77,8 @@ NameInfoEntry: [{
 }];
 
 MatchingNode: [{
-  unknownMplType: IndexArray;
-  byMplType: Int32 IndexArray HashTable; #first input MPL type
+  unknownMplType: Int32 Array;
+  byMplType: Int32 Int32 Array HashTable; #first input MPL type
 
   compilerPositionInfo: CompilerPositionInfo;
   entries: Int32;
@@ -110,7 +112,7 @@ Processor: [{
   multiParserResult: MultiParserResult Ref;
   result: ProcessorResult;
   positions: CompilerPositionInfo Array;
-  unfinishedFiles: IndexArray;
+  unfinishedFiles: Int32 Array;
 
   files: File Owner Array;
   fileNameIds: String Int32 HashTable;
@@ -120,10 +122,12 @@ Processor: [{
   blocks: Block Owner Array;
   variables: Variable Array Array;
 
-  matchingNodes:       Natx MatchingNode HashTable;
+  matchingNodes:       MatchingNode Owner Array;
   recursiveNodesStack: Int32 Array;
   nameManager:         NameInfoEntry NameManager;
   modules:             String Int32 HashTable; # -1 no module, or Id of codeNode
+  beginFuncIndex:     -1 dynamic;
+  endFuncIndex:       -1 dynamic;
 
   captureTable: {
     simpleNames:  NameInfoCoord Array Array Array; #name; overload; vector of blocks

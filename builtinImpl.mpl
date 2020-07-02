@@ -1005,8 +1005,8 @@ staticityOfBinResult: [
     ]
     [signature: parseSignature;]
     [
-      astNode: VarCode varBody.data.get.index processor.multiParserResult.memory.at.get;
-      index: signature astNode VarCode varBody.data.get.file VarString varName.data.get makeStringView FALSE dynamic @processor @block processExportFunction;
+      astArrayIndex: VarCode varBody.data.get.index;
+      index: signature astArrayIndex VarString varName.data.get makeStringView FALSE dynamic @processor @block processExportFunction;
     ]
   ) sequence
 ] "mplBuiltinExportFunction" @declareBuiltin ucall
@@ -1229,18 +1229,16 @@ staticityOfBinResult: [
       condition staticityOfVar Weak > [
         value: VarCond varCond.data.get.end copy;
         value [
-          VarCode varThen.data.get.index VarCode varThen.data.get.file "staticIfThen" makeStringView @processor @block processCall
+          VarCode varThen.data.get.index "staticIfThen" makeStringView @processor @block processCall
         ] [
-          VarCode varElse.data.get.index VarCode varElse.data.get.file "staticIfElse" makeStringView @processor @block processCall
+          VarCode varElse.data.get.index "staticIfElse" makeStringView @processor @block processCall
         ] if
       ] [
         condition @processor @block makeVarRealCaptured
 
         condition
-        VarCode varThen.data.get.index processor.multiParserResult.memory.at.get
-        VarCode varThen.data.get.file
-        VarCode varElse.data.get.index processor.multiParserResult.memory.at.get
-        VarCode varElse.data.get.file
+        VarCode varElse.data.get.index
+        VarCode varThen.data.get.index
         @processor @block processIf
       ] if
     ] when
@@ -1386,8 +1384,8 @@ staticityOfBinResult: [
       varBody: body getVar;
       varBody.data.getTag VarCode = ~ ["body must be [CODE]" @processor block compilerError] when
     ] [
-      astNode: VarCode varBody.data.get.index processor.multiParserResult.memory.at.get;
-      astNode @processor @block VarCode varBody.data.get.file processLoop
+      astArrayIndex: VarCode varBody.data.get.index;
+      astArrayIndex @processor @block processLoop
     ]
   ) sequence
 ] "mplBuiltinLoop" @declareBuiltin ucall
@@ -1704,14 +1702,11 @@ staticityOfBinResult: [
     varCode.data.getTag VarCode = ~ ["branch else must be a [CODE]" @processor block compilerError] when
 
     processor compilable [
-      codeIndex: VarCode varCode.data.get.index copy;
-      codeFile: VarCode varCode.data.get.file;
-      astNode: codeIndex processor.multiParserResult.memory.at.get;
-      [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
+      astArrayIndex: VarCode varCode.data.get.index copy;
       block.countOfUCall 1 + @block.@countOfUCall set
       block.countOfUCall 65535 > ["ucall limit exceeded" @processor block compilerError] when
-      indexArray: AstNodeType.Code astNode.data.get;
-      indexArray @block codeFile addIndexArrayToProcess
+      indexArray: astArrayIndex processor.multiParserResult.memory.at;
+      indexArray @block addIndexArrayToProcess
     ] when
   ] when
 ] "mplBuiltinUcall" @declareBuiltin ucall
@@ -1734,12 +1729,11 @@ staticityOfBinResult: [
       condition staticityOfVar Weak > [
         value: VarCond varCond.data.get.end copy;
         code: value [VarCode varThen.data.get] [VarCode varElse.data.get] if;
-        astNode: code.index processor.multiParserResult.memory.at.get;
-        [astNode.data.getTag AstNodeType.Code =] "Not a code!" assert
+        astArrayIndex: code.index;
         block.countOfUCall 1 + @block.@countOfUCall set
         block.countOfUCall 65535 > ["ucall limit exceeded" @processor block compilerError] when
-        indexArray: AstNodeType.Code astNode.data.get;
-        indexArray @block code.file addIndexArrayToProcess
+        indexArray: astArrayIndex processor.multiParserResult.memory.at;
+        indexArray @block addIndexArrayToProcess
       ] [
         "condition must be static" @processor block compilerError
       ] if

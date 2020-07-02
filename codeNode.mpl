@@ -1047,30 +1047,27 @@ processLabelNode: [
 ];
 
 processCodeNode: [
-  indexOfAstNode: ;
-  astNode: indexOfAstNode processor.multiParserResult.memory.at.get; #we have info from parser anyway
+  astNodeBranch: ;
   codeInfo: CodeNodeInfo;
 
   processor.positions.last.file @codeInfo.@file.set
   astNode.line   copy @codeInfo.!line
   astNode.column copy @codeInfo.!column
-  indexOfAstNode copy @codeInfo.!index
+  astNodeBranch  copy @codeInfo.!index #it is index of array
 
   @codeInfo move makeVarCode @block push
 ];
 
 processObjectNode: [
-  data: ;
-  position: processor.positions.last copy;
+  astNodeBranch: ;
   name: "objectInitializer" makeStringView;
-  data NodeCaseObject dynamic name position @processor @block processCallByIndexArray
+  astNodeBranch NodeCaseObject dynamic name @processor @block processCallByIndexArray
 ];
 
 processListNode: [
-  data: ;
-  position: processor.positions.last copy;
+  astNodeBranch: ;
   name: "listInitializer" makeStringView;
-  data NodeCaseList dynamic name position @processor @block processCallByIndexArray
+  astNodeBranch NodeCaseList dynamic name @processor @block processCallByIndexArray
 ];
 
 {
@@ -1632,7 +1629,7 @@ callCallableStruct: [
 
     object file regNamesSelf
     refToVar file regNamesClosure
-    VarCode codeVar.data.get.index file name @processor @block processCall
+    VarCode codeVar.data.get.index name @processor @block processCall
     refToVar unregNamesClosure
     object unregNamesSelf
   ] [
@@ -1649,7 +1646,7 @@ callCallableField: [
   file: VarCode var.data.get.file;
 
   object file regNamesClosure
-  code file @name @processor @block processCall
+  code @name @processor @block processCall
   object unregNamesClosure
 ];
 
@@ -1687,7 +1684,7 @@ callCallableStructWithPre: [
         preField: pfr.index struct.fields.at .refToVar;
         preVar: preField getVar;
         preVar.data.getTag VarCode = [
-          VarCode preVar.data.get.index VarCode preVar.data.get.file @processor @block processPre ~ @needPre set
+          VarCode preVar.data.get.index @processor @block processPre ~ @needPre set
         ] [
           "PRE field must be a code" @processor block compilerError
         ] if
@@ -1739,13 +1736,13 @@ callCallableStructWithPre: [
         findInside [
           object file regNamesSelf
           refToVar file regNamesClosure
-          VarCode codeVar.data.get.index file nameInfo processor.nameManager.getText @processor @block processCall
+          VarCode codeVar.data.get.index nameInfo processor.nameManager.getText @processor @block processCall
           refToVar unregNamesClosure
           object unregNamesSelf
         ] [
           object file regNamesSelf
           refToVar file regNamesClosure
-          VarCode codeVar.data.get.index file nameInfo processor.nameManager.getText @processor @block processCall
+          VarCode codeVar.data.get.index nameInfo processor.nameManager.getText @processor @block processCall
           refToVar unregNamesClosure
           object unregNamesSelf
         ] if
@@ -1774,11 +1771,11 @@ callCallable: [
 
       field [
         object file regNamesSelf
-        VarCode var.data.get.index file @nameInfo processor.nameManager.getText @processor @block processCall
+        VarCode var.data.get.index @nameInfo processor.nameManager.getText @processor @block processCall
         object unregNamesSelf
       ] [
         object file regNamesSelf
-        VarCode var.data.get.index file @nameInfo processor.nameManager.getText @processor @block processCall
+        VarCode var.data.get.index @nameInfo processor.nameManager.getText @processor @block processCall
         object unregNamesSelf
       ] if
     ] [
@@ -2373,7 +2370,7 @@ addBlock: [
     var: refToVar getVar;
     var.data.getTag  (
       [VarCode =] [
-        VarCode var.data.get.index VarCode var.data.get.file "call" makeStringView @processor @block processCall
+        VarCode var.data.get.index "call" makeStringView @processor @block processCall
       ]
       [VarImport =] [
         refToVar @processor @block processFuncPtr
@@ -2464,8 +2461,8 @@ addBlock: [
       csignature: declarationNode.csignature;
 
       implName: ("lambda." block.id "." block.lastLambdaName) assembleString;
-      astNode: VarCode refToSrc getVar.data.get.index processor.multiParserResult.memory.at.get;
-      implIndex: csignature astNode VarCode refToSrc getVar.data.get.file implName makeStringView TRUE dynamic @processor @block processExportFunction;
+      astArrayIndex: VarCode refToSrc getVar.data.get.index;
+      implIndex: csignature astArrayIndex implName makeStringView TRUE dynamic @processor @block processExportFunction;
 
       processor compilable [
         implNode: implIndex processor.blocks.at.get;
@@ -2751,12 +2748,10 @@ killStruct: [
 {
   processor: Processor Ref;
   block: Block Ref;
-  indexOfAstNode: Int32;
   astNode: AstNode Cref;
 } () {} [
   processor:;
   block:;
-  indexOfAstNode:;
   astNode:;
 
   overload failProc: processor block FailProcForProcessor;
@@ -2769,7 +2764,7 @@ killStruct: [
   programSize: block.program.size;
 
   (
-    AstNodeType.Code            [drop indexOfAstNode processCodeNode]
+    AstNodeType.Code            [processCodeNode]
     AstNodeType.Label           [processLabelNode]
     AstNodeType.List            [processListNode]
     AstNodeType.Name            [processNameNode]
@@ -2800,8 +2795,8 @@ killStruct: [
 ] "processNodeImpl" exportFunction
 
 processNode: [
-  token: tokenIndex: ;;
-  token tokenIndex @block @processor processNodeImpl
+  astNode: ;
+  astNode @block @processor processNodeImpl
 ];
 
 addNamesFromModule: [
@@ -3004,32 +2999,35 @@ unregCodeNodeNames: [
 
 addMatchingNode: [
   block:;
-  copy addr:;
+  copy astArrayIndex:;
 
-  addr @block.@indexArrayAddress set
+  astArrayIndex @block.@astArrayIndex set
 
-  fr: addr @processor.@matchingNodes.find;
-  fr.success [
-    fr.value.unknownMplType.getSize @block.@matchingInfoIndex set
-    fr.value.size 1 + @fr.@value.@size set
-    block.id @fr.@value.@unknownMplType.pushBack
+  astArrayIndex processor.matchingNodes.size < [astArrayIndex processor.matchingNodes.at.assigned] && [
+    matchingNode: astArrayIndex @processor.@matchingNodes.at.get;
+
+    matchingNode.unknownMplType.getSize @block.@matchingInfoIndex set
+    matchingNode.size 1 + @matchingNode.@size set
+    block.id @matchingNode.@unknownMplType.pushBack
   ] [
     tableValue: MatchingNode;
-    compilerPositionInfo @tableValue.@compilerPositionInfo set
+    processor.positions.last @tableValue.@compilerPositionInfo set
     1 @tableValue.@size set
     0 @tableValue.@tries set
     0 @tableValue.@entries set
     0 @block.@matchingInfoIndex set
     block.id @tableValue.@unknownMplType.pushBack
-    addr @tableValue move @processor.@matchingNodes.insert
+
+    astArrayIndex processor.matchingNodes.size < ~ [astArrayIndex 1 + @processor.@matchingNodes.resize] when
+    @tableValue move owner astArrayIndex @processor.@matchingNodes.at set
   ] if
 ];
 
 deleteMatchingNode: [
   block:;
   block.matchingInfoIndex 0 < ~ [
-    addr: block.indexArrayAddress copy;
-    info: addr @processor.@matchingNodes.find.@value;
+    astArrayIndex: block.astArrayIndex copy;
+    info: astArrayIndex @processor.@matchingNodes.at.get;
     indexArray: @info.@unknownMplType;
     info.size 1 - @info.@size set
 
@@ -3054,8 +3052,8 @@ concreteMatchingNode: [
   block.matchingInfo.inputs.getSize 0 = ~ [
     @block deleteMatchingNode
 
-    addr: block.indexArrayAddress copy;
-    info: addr @processor.@matchingNodes.find.@value;
+    astArrayIndex: block.astArrayIndex copy;
+    info: astArrayIndex @processor.@matchingNodes.at.get;
     info.size 1 + @info.@size set #return it back
 
     byMplType: info.@byMplType;
@@ -3066,7 +3064,7 @@ concreteMatchingNode: [
     fr.success [
       block.id @fr.@value.pushBack
     ] [
-      newBranch: IndexArray;
+      newBranch: Int32 Array;
       block.id @newBranch.pushBack
       key @newBranch move @info.@byMplType.insert
     ] if
@@ -3380,14 +3378,18 @@ checkRecursionOfCodeNode: [
   ] when
 ];
 
+astFileIdToFileRef: [
+  1 + processor.files.at.get
+];
+
 makeCompilerPosition: [
-  astNode: file: ;;
+  astNode: processor: ;;
   result: CompilerPositionInfo;
 
-  file                @result.@file.set
-  astNode.line   copy @result.!line
-  astNode.column copy @result.!column
-  astNode.token  copy @result.!token
+  astNode.fileId astFileIdToFileRef @result.@file.set
+  astNode.line                 copy @result.!line
+  astNode.column               copy @result.!column
+  astNode.token                copy @result.!token
 
   result
 ];
@@ -3396,12 +3398,10 @@ makeCompilerPosition: [
   block: Block Ref;
   processor: Processor Ref;
   forcedSignature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
   functionName: StringView Cref;
 } () {} [
   processor: block: ;;
   forcedSignature:;
-  compilerPositionInfo:;
   functionName:;
 
   overload failProc: processor block FailProcForProcessor;
@@ -3642,7 +3642,7 @@ makeCompilerPosition: [
       block.candidatesToDie [
         refToVar:;
         refToVar isAutoStruct [
-          refToVar compilerPositionInfo CFunctionSignature block.file @processor createDtorForGlobalVar
+          refToVar @processor createDtorForGlobalVar
         ] when
       ] each
     ] [
@@ -4147,20 +4147,23 @@ makeCompilerPosition: [
 
   #generate function header
   noname [processor.result.findModuleFail copy] || [
+    internal: TRUE;
+
     block.nodeCase NodeCaseDtor = [
       "@"          @block.@irName.cat
       functionName @block.@irName.cat
     ] [
       block.parent 0 = [
-        "@module." @block.@irName.cat
+        ("@module." block.file.name stripExtension nameWithoutBadSymbols ".ctor") @block.@irName.catMany
+        FALSE !internal
       ] [
         "@func."   @block.@irName.cat
-      ] if
 
-      (block.beginPosition.file.name stripExtension nameWithoutBadSymbols "."
-        block.beginPosition.line "."
-        block.beginPosition.column ".id"
-        block.id) @block.@irName.catMany
+        (block.beginPosition.file.name stripExtension nameWithoutBadSymbols "."
+          block.beginPosition.line "."
+          block.beginPosition.column ".id"
+          block.id) @block.@irName.catMany
+      ] if
 
       # create name with only correct symbols
       block.nodeCase NodeCaseLambda = [
@@ -4177,7 +4180,11 @@ makeCompilerPosition: [
       addFunctionVariableInfo
     ] when
 
-    "define internal " makeStringView @block.@header.cat
+    internal [
+      "define internal " makeStringView @block.@header.cat
+    ] [
+      "define " makeStringView @block.@header.cat
+    ] if
   ] [
     processor compilable [
       # export func!!!
@@ -4249,7 +4256,7 @@ makeCompilerPosition: [
   processor.options.debug [block.empty ~] && [isDeclaration ~] && [block.nodeCase NodeCaseEmpty = ~] && [
     fullFunctionName: functionName;
 
-    compilerPositionInfo fullFunctionName makeStringView block.irName makeStringView block.funcDbgIndex @processor addFuncDebugInfo
+    block.beginPosition fullFunctionName makeStringView block.irName makeStringView block.funcDbgIndex @processor addFuncDebugInfo
     block.funcDbgIndex @processor moveLastDebugString
     " !dbg !"          @block.@header.cat
     block.funcDbgIndex @block.@header.cat
@@ -4261,17 +4268,16 @@ makeCompilerPosition: [
 ] "finalizeCodeNode" exportFunction
 
 addIndexArrayToProcess: [
-  indexArray: block: file: ;;;
+  astNodeArray: block: ;;
 
-  i: indexArray.size;
+  i: astNodeArray.size;
   [
     i 0 > [
       i 1 - @i set
-      indexOfAstNode: i indexArray.at;
+      astNode: i astNodeArray.at;
       block.unprocessedAstNodes.size 1 + @block.@unprocessedAstNodes.enlarge
       unprocessedAstNode: @block.@unprocessedAstNodes.last;
-      file @unprocessedAstNode.@file.set
-      indexOfAstNode copy @unprocessedAstNode.!token
+      astNode @unprocessedAstNode.!astNode
       TRUE
     ] &&
   ] loop
@@ -4280,24 +4286,18 @@ addIndexArrayToProcess: [
 {
   processor: Processor Ref;
   signature: CFunctionSignature Cref;
-  compilerPositionInfo: CompilerPositionInfo Cref;
-  file: File Cref;
-  indexArray: IndexArray Cref;
+  astArrayIndex: Int32;
   nodeCase: NodeCaseCode;
   parentIndex: Int32;
   functionName: StringView Cref;
 } Int32 {} [
   processor:;
   forcedSignature:;
-  compilerPositionInfo:;
-  file:;
-  indexArray:;
+  astArrayIndex:;
   copy nodeCase:;
   copy parentIndex:;
   functionName:;
   compileOnce
-
-  [file isNil ~] "File is nil" assert
 
   @processor addBlock
   codeNode: @processor.@blocks.last.get;
@@ -4310,12 +4310,15 @@ addIndexArrayToProcess: [
   @processor block getStackDepth  @codeNode.@minStackDepth set
   processor.varCount              @codeNode.@variableCountDelta set
   processor.exportDepth           @codeNode.@exportDepth set
-  file                            @codeNode.@file.set
-  compilerPositionInfo            @codeNode.@beginPosition set
+  CompilerPositionInfo            @codeNode.@beginPosition set
   @processor @codeNode getTopNode @codeNode.@topNode.set
   0                               @codeNode.@globalPriority set
 
-  compilerPositionInfo @processor.@positions.pushBack
+  compilerPositionInfo: processor.positions.last copy;
+
+  compilerPositionInfo.file   @codeNode.@file.set
+  compilerPositionInfo        @codeNode.@beginPosition set
+  compilerPositionInfo        @processor.@positions.pushBack
 
   processor.depthOfRecursion 1 + @processor.@depthOfRecursion set
   processor.depthOfRecursion processor.maxDepthOfRecursion > [
@@ -4333,7 +4336,7 @@ addIndexArrayToProcess: [
   ] when
 
   #add to match table
-  indexArray storageAddress @block addMatchingNode
+  astArrayIndex @block addMatchingNode
 
   block.parent 0 = [
     block.id 0 > [
@@ -4367,23 +4370,23 @@ addIndexArrayToProcess: [
       @processor addDebugReserve @block.@funcDbgIndex set
     ] when
 
-    indexArray @block file addIndexArrayToProcess
+    astArrayIndex processor.multiParserResult.memory.at @block addIndexArrayToProcess
 
     [
       block.unprocessedAstNodes.size 0 > [
         tokenRef: block.unprocessedAstNodes.last copy;
         @block.@unprocessedAstNodes.popBack
 
-        astNode: tokenRef.token processor.multiParserResult.memory.at.get;
-        astNode tokenRef.file makeCompilerPosition @processor.@positions.last set
+        astNode: tokenRef.astNode;
+        astNode @processor makeCompilerPosition @processor.@positions.last set
 
-        astNode tokenRef.token processNode
+        astNode processNode
         processor compilable [block.state NodeStateNoOutput = ~] &&
       ] &&
     ] loop
 
     processor compilable [
-      functionName compilerPositionInfo forcedSignature @processor @block finalizeCodeNode
+      functionName forcedSignature @processor @block finalizeCodeNode
     ] [
       unregCodeNodeNames
       block.id @processor deleteNode
