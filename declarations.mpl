@@ -94,9 +94,10 @@ compilerError: [processor: block:;; makeStringView block @processor compilerErro
 
 {
   processor: Processor Cref;
-  currentMatchingNode: Block Cref;
+  makeMessage: Cond;
   comparingMessage: String Ref;
   checkConstness: Cond;
+  forMatching: Cond;
   cacheEntry: RefToVar Cref;
   stackEntry: RefToVar Cref;
 } Cond {} "compareOnePair" importFunction
@@ -337,13 +338,14 @@ createFailWithMessage: [
   multiParserResult: MultiParserResult Ref;
   fileText: StringView Cref;
   fileName: StringView Cref;
+  fileId: Int32;
   errorMessage: String Ref;
 } () {} "addToProcessImpl" importFunction
 
 addToProcess: [
   result: String;
-  fileName: fileText: multiParserResult: nameManager: ;;;;
-  @result fileName fileText @multiParserResult @nameManager addToProcessImpl
+  fileId: fileName: fileText: multiParserResult: nameManager: ;;;;;
+  @result fileId fileName fileText @multiParserResult @nameManager addToProcessImpl
   @result
 ];
 

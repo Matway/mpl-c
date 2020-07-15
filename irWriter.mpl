@@ -243,6 +243,7 @@ createStaticGEP: [
   resultRefToVar: index: structRefToVar: processor: block:;;;;;
   struct: structRefToVar getVar;
   realIndex: index VarStruct struct.data.get.get.realFieldIndexes.at;
+  [realIndex 0 < ~] "Gep index must be non-negative!" assert
   ("  " resultRefToVar @processor getIrName " = getelementptr " structRefToVar @processor getIrType ", " structRefToVar @processor getIrType "* " structRefToVar @processor getIrName ", i32 0, i32 " realIndex) @block appendInstruction
 
   structRefToVar getVar.irNameId @block.@program.last.@irName1 set
@@ -673,6 +674,8 @@ addCtorsToBeginFunc: [
     ] times
 
     @processor.@positions.popBack
+
+    block.instructionCountBeforeRet previousVersion.size - block.program.size + @block.!instructionCountBeforeRet
   ] when
 ];
 
@@ -687,7 +690,7 @@ addDtorsToEndFunc: [
     block.beginPosition @processor.@positions.pushBack
 
     previousVersion.getSize [
-      i previousVersion.getSize 1 - < [
+      i block.instructionCountBeforeRet < [
         current: i @previousVersion.at;
         @current move @block.@program.pushBack
       ] when
@@ -707,8 +710,12 @@ addDtorsToEndFunc: [
       ] when
     ] times
 
+    previousVersion.getSize block.instructionCountBeforeRet - [
+      current: i block.instructionCountBeforeRet + @previousVersion.at;
+      @current move @block.@program.pushBack
+    ] times
+
     @processor.@positions.popBack
-    @previousVersion.last move @block.@program.pushBack
   ] when
 ];
 

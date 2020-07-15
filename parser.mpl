@@ -27,8 +27,7 @@ codeunitTail?: [
 
 fillPositionInfo: [
   astNode:;
-  lastPosition.line @astNode.@line set
-  lastPosition.column @astNode.@column set
+  lastPosition   @astNode.@positionInfo set
 ];
 
 addToMainResult: [
@@ -41,7 +40,7 @@ addToMainResult: [
 
 addToLastUnfinished: [
   astNode:;
-  @astNode move @unfinishedNodes.last.pushBack
+  @astNode move @unfinishedNodes.last.@nodes.pushBack
 ];
 
 makeLabelNode: [
@@ -49,7 +48,7 @@ makeLabelNode: [
   name:;
   result: AstNode;
   @result fillPositionInfo
-  (name ":") assembleString @result.@token set
+  (name ":") assembleString @result.@positionInfo.@token set
   AstNodeType.Label @result.@data.setTag
   branch: AstNodeType.Label @result.@data.get;
   @children addToMainResult @branch.@children set
@@ -61,7 +60,7 @@ makeCodeNode: [
   children:;
   result: AstNode;
   @result fillPositionInfo
-  "[" toString @result.@token set
+  "[" toString @result.@positionInfo.@token set
   AstNodeType.Code @result.@data.setTag
   branch: AstNodeType.Code @result.@data.get;
   @children addToMainResult @branch set
@@ -72,7 +71,7 @@ makeObjectNode: [
   children:;
   result: AstNode;
   @result fillPositionInfo
-  "{" toString @result.@token set
+  "{" toString @result.@positionInfo.@token set
   AstNodeType.Object @result.@data.setTag
   branch: AstNodeType.Object @result.@data.get;
   @children addToMainResult @branch set
@@ -83,7 +82,7 @@ makeListNode: [
   children:;
   result: AstNode;
   @result fillPositionInfo
-  "(" toString @result.@token set
+  "(" toString     @result.@positionInfo.@token set
   AstNodeType.List @result.@data.setTag
   branch: AstNodeType.List @result.@data.get;
   @children addToMainResult @branch set
@@ -94,7 +93,7 @@ makeNameNode: [
   name:;
   result: AstNode;
   @result fillPositionInfo
-  name toString @result.@token set
+  name toString @result.@positionInfo.@token set
   AstNodeType.Name @result.@data.setTag
   branch: AstNodeType.Name @result.@data.get;
   name toString @branch.@name set
@@ -105,7 +104,7 @@ makeNameReadNode: [
   name:;
   result: AstNode;
   @result fillPositionInfo
-  ("@" name) assembleString @result.@token set
+  ("@" name) assembleString @result.@positionInfo.@token set
   AstNodeType.NameRead @result.@data.setTag
   branch: AstNodeType.NameRead @result.@data.get;
   name toString @branch.@name set
@@ -116,7 +115,7 @@ makeNameWriteNode: [
   name:;
   result: AstNode;
   @result fillPositionInfo
-  ("!" name) assembleString @result.@token set
+  ("!" name) assembleString @result.@positionInfo.@token set
   AstNodeType.NameWrite @result.@data.setTag
   branch: AstNodeType.NameWrite @result.@data.get;
   name toString @branch.@name set
@@ -127,7 +126,7 @@ makeNameMemberNode: [
   name:;
   result: AstNode;
   @result fillPositionInfo
-  ("." name) assembleString @result.@token set
+  ("." name) assembleString @result.@positionInfo.@token set
   AstNodeType.NameMember @result.@data.setTag
   branch: AstNodeType.NameMember @result.@data.get;
   name toString @branch.@name set
@@ -138,7 +137,7 @@ makeNameReadMemberNode: [
   name:;
   result: AstNode;
   @result fillPositionInfo
-  (".@" name) assembleString @result.@token set
+  (".@" name) assembleString @result.@positionInfo.@token set
   AstNodeType.NameReadMember @result.@data.setTag
   branch: AstNodeType.NameReadMember @result.@data.get;
   name toString @branch.@name set
@@ -149,7 +148,7 @@ makeNameWriteMemberNode: [
   name:;
   result: AstNode;
   @result fillPositionInfo
-  (".!" name) assembleString @result.@token set
+  (".!" name) assembleString @result.@positionInfo.@token set
   AstNodeType.NameWriteMember @result.@data.setTag
   branch: AstNodeType.NameWriteMember @result.@data.get;
   name toString @branch.@name set
@@ -160,7 +159,7 @@ makeStringNode: [
   value:;
   result: AstNode;
   @result fillPositionInfo
-  "TEXT" toString @result.@token set
+  "TEXT" toString @result.@positionInfo.@token set
   AstNodeType.String @result.@data.setTag
   branch: AstNodeType.String @result.@data.get;
   value @branch set
@@ -172,7 +171,7 @@ makeNumberi8Node: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Numberi8 @result.@data.setTag
   branch: AstNodeType.Numberi8 @result.@data.get;
   number @branch set
@@ -184,7 +183,7 @@ makeNumberi16Node: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Numberi16 @result.@data.setTag
   branch: AstNodeType.Numberi16 @result.@data.get;
   number @branch set
@@ -196,7 +195,7 @@ makeNumberi32Node: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Numberi32 @result.@data.setTag
   branch: AstNodeType.Numberi32 @result.@data.get;
   number @branch set
@@ -208,7 +207,7 @@ makeNumberi64Node: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Numberi64 @result.@data.setTag
   branch: AstNodeType.Numberi64 @result.@data.get;
   number @branch set
@@ -220,7 +219,7 @@ makeNumberixNode: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Numberix @result.@data.setTag
   branch: AstNodeType.Numberix @result.@data.get;
   number @branch set
@@ -232,7 +231,7 @@ makeNumbern8Node: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Numbern8 @result.@data.setTag
   branch: AstNodeType.Numbern8 @result.@data.get;
   number @branch set
@@ -244,7 +243,7 @@ makeNumbern16Node: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Numbern16 @result.@data.setTag
   branch: AstNodeType.Numbern16 @result.@data.get;
   number @branch set
@@ -256,7 +255,7 @@ makeNumbern32Node: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Numbern32 @result.@data.setTag
   branch: AstNodeType.Numbern32 @result.@data.get;
   number @branch set
@@ -268,7 +267,7 @@ makeNumbern64Node: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Numbern64 @result.@data.setTag
   branch: AstNodeType.Numbern64 @result.@data.get;
   number @branch set
@@ -280,7 +279,7 @@ makeNumbernxNode: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Numbernx @result.@data.setTag
   branch: AstNodeType.Numbernx @result.@data.get;
   number @branch set
@@ -292,7 +291,7 @@ makeReal32Node: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Real32 @result.@data.setTag
   branch: AstNodeType.Real32 @result.@data.get;
   number @branch set
@@ -304,7 +303,7 @@ makeReal64Node: [
   copy number:;
   result: AstNode;
   @result fillPositionInfo
-  token @result.@token set
+  token @result.@positionInfo.@token set
   AstNodeType.Real64 @result.@data.setTag
   branch: AstNodeType.Real64 @result.@data.get;
   number @branch set
@@ -313,7 +312,6 @@ makeReal64Node: [
 
 makeParserConstants: [{
   eof:        [  0n32];
-
 
   makeLookupTable: [
     av:;
@@ -395,6 +393,7 @@ iterate: [
       currentPosition.line 1 + @currentPosition.@line set
     ] when
 
+    fileId                     @currentPosition.@fileId set
     currentPosition.offset 1 + @currentPosition.@offset set
     currentPosition.column 1 + @currentPosition.@column set
 
@@ -875,7 +874,9 @@ makeLabel: [
   lastPosition @unfinishedPositions.pushBack
   ascii.semicolon @unfinishedTerminators.pushBack
   name toString @unfinishedLabelNames.pushBack
-  AstNode Array @unfinishedNodes.pushBack
+  newAstNodeArray: AstNodeArray;
+  lastPosition @newAstNodeArray.@positionInfo set
+  @newAstNodeArray move @unfinishedNodes.pushBack
 ];
 
 parseName: [
@@ -1065,7 +1066,10 @@ parseComment: [
 addNestedNode: [
   currentPosition @unfinishedPositions.pushBack
 
-  AstNode Array @unfinishedNodes.pushBack
+  newAstNodeArray: AstNodeArray;
+  currentPosition @newAstNodeArray.@positionInfo set
+  @newAstNodeArray move @unfinishedNodes.pushBack
+
   currentCode ascii.openRBr = [
     ascii.closeRBr @unfinishedTerminators.pushBack
   ] [
@@ -1184,9 +1188,11 @@ parseNode: [
 
 {
   text: StringView Cref;
+  fileId: Int32;
   mainResult: ParserResult Ref;
 } () {} [
   splittedString: splitString;
+  fileId:;
   mainResult:;
 
   splittedString.success [
@@ -1201,11 +1207,15 @@ parseNode: [
 
     unfinishedPositions: PositionInfo Array;
     unfinishedLabelNames: String Array;
-    unfinishedNodes: AstNode Array Array;
+    unfinishedNodes: AstNodeArray Array;
     unfinishedTerminators: Nat32 Array;
 
+    fileId          @currentPosition.@fileId set
     currentPosition @unfinishedPositions.pushBack
-    AstNode Array @unfinishedNodes.pushBack
+    newAstNodeArray: AstNodeArray;
+    currentPosition @newAstNodeArray.@positionInfo set
+    @newAstNodeArray move @unfinishedNodes.pushBack
+
     ascii.null @unfinishedTerminators.pushBack
 
     iterate

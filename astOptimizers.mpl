@@ -11,16 +11,18 @@ optimizeLabels: [
   @parserResult.@memory [
     currentIndexArray:;
 
-    newIndexArray: AstNode Array;
-    @currentIndexArray [
+    newIndexArray: AstNodeArray;
+    @currentIndexArray.@positionInfo move @newIndexArray.@positionInfo set
+
+    @currentIndexArray.@nodes [
       current:;
       current.data.getTag AstNodeType.Label = [
-        AstNodeType.Label current.data.get.children @parserResult.@memory.at [
-          move @newIndexArray.pushBack
+        AstNodeType.Label current.data.get.children @parserResult.@memory.at.@nodes [
+          move @newIndexArray.@nodes.pushBack
         ] each
       ] when
 
-      @current move @newIndexArray.pushBack
+      @current move @newIndexArray.@nodes.pushBack
     ] each
 
     @newIndexArray move @currentIndexArray set
@@ -51,7 +53,7 @@ optimizeNames: [
   parserResult: nameManager: ;;
 
   @parserResult.@memory [
-    [
+    .@nodes [
       optimizeNamesInCurrentNode
     ] each
   ] each
@@ -61,7 +63,6 @@ concatParserResult: [
   mresult:;
   current:;
   shift: mresult.memory.getSize;
-  fileId: mresult.roots.getSize;
 
   adjustArray: [
     astArrayIndex:;
@@ -72,9 +73,8 @@ concatParserResult: [
 
   @current.@memory [
     currentArray:;
-    @currentArray [
+    @currentArray.@nodes [
       currentNode:;
-      fileId @currentNode.@fileId set
 
       currentNode.data.getTag AstNodeType.Code = [
         AstNodeType.Code @currentNode.@data.get adjustArray

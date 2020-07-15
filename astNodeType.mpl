@@ -45,12 +45,19 @@ NamedBranch: [{
   nameInfo: 0 dynamic; #index in NameInfo pool
 }];
 
+makePositionInfo: [{
+  token:  String;
+  column: copy;
+  line:   copy;
+  offset: copy;
+  fileId: copy;
+}];
+
+PositionInfo: [-1 dynamic -1 dynamic 1 dynamic 0 dynamic makePositionInfo];
+
 AstNode: [{
   virtual AST_NODE: ();
-  token:     String;
-  column:    -1 dynamic;
-  line:      -1 dynamic;
-  fileId:    -1 dynamic;
+  positionInfo: PositionInfo;
   data: (
     IndexOfArray         #CodeNode:
     NamedRecursiveBranch #LabelNode:
@@ -80,13 +87,10 @@ AstNode: [{
   INIT: []; DIE: []; # default life control, and ban uneffective copy, because object is too big
 }];
 
-makePositionInfo: [{
-  column: copy;
-  line: copy;
-  offset: copy;
+AstNodeArray: [{
+  positionInfo: PositionInfo;
+  nodes: AstNode Array;
 }];
-
-PositionInfo: [-1 dynamic 1 dynamic 0 dynamic makePositionInfo];
 
 ParserResult: [{
   virtual PARSER_RESULT: ();
@@ -96,7 +100,7 @@ ParserResult: [{
     position: PositionInfo;
   };
 
-  memory: AstNode Array Array;
+  memory: AstNodeArray Array;
   root: IndexOfArray;
 
   INIT: []; DIE: []; # default life control, and ban uneffective copy, because object is too big
@@ -105,7 +109,7 @@ ParserResult: [{
 ParserResults: [ParserResult Array];
 
 MultiParserResult: [{
-  memory: AstNode Array Array;
+  memory: AstNodeArray Array;
   roots: IndexOfArray Array; # order of going is not defined before compiling
 
   INIT: []; DIE: []; # default life control, and ban uneffective copy, because object is too big

@@ -1,3 +1,4 @@
+"Array" use
 "String" use
 "control" use
 "conventions" use
@@ -6,6 +7,7 @@
 "Var" use
 "declarations" use
 "processor" use
+"staticCall" use
 
 FailProcForProcessor: [{
   processor: block: ;;
@@ -29,6 +31,9 @@ FailProcForProcessor: [{
 
     "\nWhile compiling:\n" print
     processor block defaultPrintStackTrace
+    "\nCommand line:\n" print
+    processor.options.fullLine print
+    "\n" print
 
     2 exit
   ];
@@ -180,7 +185,10 @@ getStackEntryWith: [
   result: @block isConst [processor.varForFails] [@processor.@varForFails] uif;
   currentBlock: @block; [
     currentBlock.root [
-      check ["stack underflow" @processor block compilerError] when
+      check [
+        "stack underflow" @processor block compilerError
+      ] when
+
       FALSE
     ] [
       depth currentBlock.stack.size < [
@@ -225,16 +233,11 @@ getStackDepth: [
   processor: block:;;
 
   ("stack:" LF "depth=" processor block getStackDepth LF) printList
-
-  i: 0 dynamic;
-  [
-    i @processor block getStackDepth < [
-      entry: i @processor block getStackEntryUnchecked;
-      (entry @processor block getMplType entry.mutable ["R"] ["C"] if entry getVar.temporary ["T"] [""] if
-        entry isPlain [entry getPlainValueInformation] [String] if LF) printList
-      i 1 + @i set TRUE
-    ] &&
-  ] loop
+  @processor @block getStackDepth  [
+    entry: i @processor block getStackEntryUnchecked;
+    (entry @processor block getMplType entry.mutable ["R"] ["C"] if entry getVar.temporary ["T"] [""] if
+      entry isPlain [entry getPlainValueInformation] [String] if LF) printList
+  ] times
 ] "defaultPrintStack" exportFunction
 
 {
@@ -257,6 +260,51 @@ getStackDepth: [
   @processor block defaultPrintStack
 ] "defaultPrintStackTrace" exportFunction
 
+printShadowEvent: [
+  event: index: building: processor: block: ;;;;;
+
+  getFileName: [
+    file:; file isNil ["NIL" makeStringView] [file.name makeStringView] if
+  ];
+
+  getTopologyIndex: [
+    building [
+      .buildingTopologyIndex
+    ] [
+      .topologyIndex
+    ] if
+  ];
+
+  (
+    ShadowReasonInput [
+      branch:;
+      ("shadow event [" index "] input as " branch.refToVar getVar getTopologyIndex LF) printList
+    ]
+    ShadowReasonCapture [
+      branch:;
+      branch.stable [
+        ("shadow event [" index "] capture " branch.nameInfo processor.nameManager.getText " as stable name" "(" branch.nameOverloadDepth ") in " branch.file getFileName "; type " branch.refToVar @processor @block getMplType LF) printList
+      ] [
+        ("shadow event [" index "] capture " branch.nameInfo processor.nameManager.getText "(" branch.nameOverloadDepth ") in " branch.file getFileName "; staticity=" branch.refToVar getVar.staticity.begin " as " branch.refToVar getVar getTopologyIndex " type " branch.refToVar @processor @block getMplType LF) printList
+        branch.mplFieldIndex 0 < ~ [("  as field " branch.mplFieldIndex " in object" LF) printList] when
+      ] if
+    ]
+    ShadowReasonPointee [
+      branch:;
+      ("shadow event [" index "] pointee " branch.pointer getVar getTopologyIndex " as " branch.pointee getVar getTopologyIndex LF) printList
+    ]
+    ShadowReasonField [
+      branch:;
+      ("shadow event [" index "] field " branch.object getVar getTopologyIndex " [" branch.mplFieldIndex "] as " branch.field getVar getTopologyIndex LF) printList
+    ]
+    ShadowReasonTreeSplitterLambda [
+      branch:;
+      ("shadow event [" index "] tree splitter lambda " branch LF) printList
+    ]
+    []
+  ) event.visit
+];
+
 findNameInfo: [
   processor:;
   @processor.@nameManager.createName
@@ -270,7 +318,7 @@ addStackUnderflowInfo: [
   branch: ShadowReasonInput @newEvent.get;
   processor.varForFails @branch.@refToVar set
   ArgMeta   @branch.@argCase set
-  @newEvent @block addShadowEvent
+  @newEvent @processor @block addShadowEvent
 ];
 
 nodeHasCode: [
@@ -304,34 +352,22 @@ addBlockIdTo: [
       NameInfoCoord @line.pushBack
       block @line.last.@block.set
       file  @line.last.@file.set
+
+      nameWithOverload: NameWithOverload;
+      nameInfo          @nameWithOverload.@nameInfo set
+      nameOverloadDepth @nameWithOverload.@nameOverloadDepth set
+      #other fields does not matter
+      nameWithOverload @block.@captureNames.pushBack
     ] when
 
     result
   ];
 
-  addBlockToObjectCase: [
-    nameOverloadDepth: mplSchemaId: table: ;;;
-
-    nameOverloadDepth table.size < ~ [nameOverloadDepth 1 + @table.resize] when
-    whereTypes: nameOverloadDepth @table.at;
-    mplSchemaId whereTypes.size < ~ [mplSchemaId 1 + @whereTypes.resize] when
-    whereIds: mplSchemaId @whereTypes.at;
-    @whereIds addToLine
-  ];
-
-  nameInfo processor.specialNames.selfNameInfo = [
-    nameOverloadDepth mplSchemaId @whereNames.@selfNames addBlockToObjectCase
-  ] [
-    nameInfo processor.specialNames.closureNameInfo =  [
-      nameOverloadDepth mplSchemaId @whereNames.@closureNames addBlockToObjectCase
-    ] [
-      nameInfo whereNames.simpleNames.size < ~ [nameInfo 1 + @whereNames.@simpleNames.resize] when
-      whereOverloads: nameInfo @whereNames.@simpleNames.at;
-      nameOverloadDepth whereOverloads.size < ~ [nameOverloadDepth 1 + @whereOverloads.resize] when
-      whereIds: nameOverloadDepth @whereOverloads.at;
-      @whereIds addToLine
-    ] if
-  ] if
+  nameInfo whereNames.simpleNames.size < ~ [nameInfo 1 + @whereNames.@simpleNames.resize] when
+  whereOverloads: nameInfo @whereNames.@simpleNames.at;
+  nameOverloadDepth whereOverloads.size < ~ [nameOverloadDepth 1 + @whereOverloads.resize] when
+  whereIds: nameOverloadDepth @whereOverloads.at;
+  @whereIds addToLine
 ];
 
 addEmptyCapture: [
@@ -344,25 +380,461 @@ addEmptyCapture: [
     ShadowReasonCapture @newEvent.setTag
     branch: ShadowReasonCapture @newEvent.get;
 
+    -1                    @branch.@mplFieldIndex set
     processor.varForFails @branch.@refToVar set
     nameInfo              @branch.@nameInfo set
     nameOverloadDepth     @branch.@nameOverloadDepth set
-    NameCaseInvalid       @branch.@captureCase set
     file                  @branch.@file.set
     ArgMeta               @branch.@argCase set
-    @newEvent @block addShadowEvent
+    @newEvent @processor @block addShadowEvent
+  ] when
+];
+
+getShadowEventHash: [
+  event: whileMatching: processor: block: ;;;;
+
+  apply: [
+    value:;
+    result 0x8088405n32 * 1n32 + value xor !result
+  ];
+
+  applyRefToVar: [
+    refToVar: checkMutable: ;;
+    var: refToVar getVar;
+
+    whileMatching [
+      var.topologyIndexWhileMatching Nat32 cast apply
+      var.staticity.end Nat32 cast apply
+    ] [
+      var.buildingTopologyIndex Nat32 cast apply
+      var.staticity.begin Nat32 cast apply
+    ] if
+
+    var.mplSchemaId Nat32 cast apply
+    var.globalId Nat32 cast apply
+    var.storageStaticity Nat32 cast apply
+
+    checkMutable [
+      refToVar.mutable [5n32][4n32] if apply
+    ] when
+
+    refToVar isAutoStruct [
+      refToVar.moved   [3n32][2n32] if apply
+    ] when
+
+    refToVar isPlain [
+      currentStaticity: whileMatching [var.staticity.end copy] [var.staticity.begin copy] if;
+      currentStaticity Dynamic > [
+        var.data.getTag VarCond VarReal64 1 + [
+          tag:;
+          applyData: 0n64;
+          value: whileMatching [tag var.data.get.end copy] [tag var.data.get.begin copy] if;
+          value applyData storageAddress @value addressToReference set
+          applyData 32n32 rshift applyData 48n32 rshift xor applyData xor Nat32 cast apply
+        ] staticCall
+      ] when
+    ] when
+  ];
+
+  result: 0n32;
+  event.getTag Nat32 cast apply
+  (
+    ShadowReasonInput [
+      branch:;
+      # key - none
+      branch.refToVar TRUE applyRefToVar
+    ]
+    ShadowReasonCapture [
+      branch:;
+      # key - nameInfo
+      branch.stable [
+        0n32 apply
+        branch.refToVar TRUE applyRefToVar
+      ] [
+        10n32 apply
+        branch.mplFieldIndex Nat32 cast apply
+        branch.refToVar TRUE applyRefToVar
+      ] if
+    ]
+    ShadowReasonPointee [
+      branch:;
+      # key - pointer topologyIndex
+      branch.pointee TRUE applyRefToVar
+    ]
+    ShadowReasonField [
+      branch:;
+      # key - object topologyIndex, object mplFieldIndex
+      branch.field FALSE applyRefToVar
+    ]
+    ShadowReasonTreeSplitterLambda [
+      branch:;
+      # key - node
+      branch [0n32] [1n32] if apply
+    ]
+    []
+  ) event.visit
+
+  result
+];
+
+sameEvents: [
+  event1: event2: ;;
+
+  event1.getTag event2.getTag = [
+    event1.getTag (
+      ShadowReasonInput [
+        # key - none
+        TRUE
+      ]
+      ShadowReasonCapture [
+        # key - nameInfo
+        branch1: ShadowReasonCapture event1.get;
+        branch2: ShadowReasonCapture event2.get;
+
+        branch1.nameInfo branch2.nameInfo =
+        [branch1.nameOverloadDepth branch2.nameOverloadDepth =] &&
+        [branch1.file branch2.file is] && [
+          TRUE
+        ] [
+          getFileName: [
+            file:;
+            file isNil ["NIL" makeStringView] [file.name makeStringView] if
+          ];
+
+          ("Capture events are different; "
+            LF branch1.nameInfo processor.nameManager.getText ":" branch1.nameOverloadDepth ":" branch1.file getFileName
+            LF branch2.nameInfo processor.nameManager.getText ":" branch2.nameOverloadDepth ":" branch2.file getFileName
+            LF) printList
+          FALSE
+        ] if
+      ]
+      ShadowReasonPointee [
+        # key - pointer topologyIndex
+        branch1: ShadowReasonPointee event1.get;
+        branch2: ShadowReasonPointee event2.get;
+        pointer1: branch1.pointer getVar;
+        pointer2: branch2.pointer getVar;
+        pointer1.buildingTopologyIndex pointer2.topologyIndex = [
+          TRUE
+        ] [
+          ("Pointee events are different; " pointer1.buildingTopologyIndex " and " pointer2.topologyIndex LF) printList
+          FALSE
+        ] if
+      ]
+      ShadowReasonField [
+        # key - object topologyIndex
+        branch1: ShadowReasonField event1.get;
+        branch2: ShadowReasonField event2.get;
+        object1: branch1.object getVar;
+        object2: branch2.object getVar;
+        object1.buildingTopologyIndex object2.topologyIndex =
+        [branch1.mplFieldIndex branch2.mplFieldIndex =] && [
+          TRUE
+        ] [
+          ("Field events are different; " object1.buildingTopologyIndex ":" branch1.mplFieldIndex " and " object2.topologyIndex ":" branch2.mplFieldIndex LF) printList
+          FALSE
+        ] if
+      ]
+      ShadowReasonTreeSplitterLambda [
+        # key - none
+        TRUE
+      ]
+      [
+        ("Event tags are invalid; " event1.getTag LF) printList
+        FALSE
+      ]
+    ) case
+  ] [
+    ("Event tags are different; " event1.getTag " and " event2.getTag LF) printList
+    FALSE
+  ] if
+];
+
+compareShadows: [
+  processor:;
+  comparingMessage:;
+  whileMatching:;
+  checkConstness:;
+  refToVar2:;
+  refToVar1:;
+  refToVar1 refToVar2 whileMatching checkConstness @comparingMessage FALSE @processor compareOnePair
+];
+
+compareTopologyIndex: [
+  refToVar1: refToVar2: whileMatching: ;;;
+
+  var1: refToVar1 getVar;
+  var2: refToVar2 getVar;
+
+  ti1: refToVar1 noMatterToCopy [-1][
+    whileMatching [
+      var1.topologyIndexWhileMatching copy
+    ] [
+      var1.buildingTopologyIndex copy
+    ] if
+  ] if;
+
+  ti2: refToVar2 noMatterToCopy [-1][
+    whileMatching [
+      var2.topologyIndex copy
+    ] [
+      var2.topologyIndex copy
+    ] if
+  ] if;
+
+  ti1 ti2 =
+];
+
+compareEvents: [
+  event1: event2: comparingMessage: whileMatching: processor: ;;;;;
+
+  result: TRUE;
+  event1.getTag event2.getTag = [
+    event1.getTag (
+      ShadowReasonInput [
+        branch1: ShadowReasonInput event1.get;
+        branch2: ShadowReasonInput event2.get;
+
+        branch1.refToVar branch2.refToVar whileMatching compareTopologyIndex
+        [branch1.refToVar branch2.refToVar TRUE whileMatching @comparingMessage @processor compareShadows] && ~ [
+          FALSE !result
+        ] when
+      ]
+      ShadowReasonCapture [
+        branch1: ShadowReasonCapture event1.get;
+        branch2: ShadowReasonCapture event2.get;
+
+        branch1.stable branch2.stable and [
+          branch1.refToVar branch2.refToVar TRUE whileMatching @comparingMessage @processor compareShadows ~ [
+            FALSE !result
+          ] when
+        ] [
+          branch1.stable ~ branch2.stable ~ and
+          [branch1.refToVar branch2.refToVar whileMatching compareTopologyIndex] &&
+          [branch1.mplFieldIndex branch2.mplFieldIndex =] &&
+          [branch1.refToVar branch2.refToVar TRUE whileMatching @comparingMessage @processor compareShadows] && ~ [
+            FALSE !result
+          ] when
+        ] if
+      ]
+      ShadowReasonPointee [
+        branch1: ShadowReasonPointee event1.get;
+        branch2: ShadowReasonPointee event2.get;
+
+        branch1.pointee branch2.pointee whileMatching compareTopologyIndex
+        [branch1.pointee branch2.pointee TRUE whileMatching @comparingMessage @processor compareShadows] && ~ [
+          FALSE !result
+        ] when
+      ]
+      ShadowReasonField [
+        branch1: ShadowReasonField event1.get;
+        branch2: ShadowReasonField event2.get;
+
+        branch1.field branch2.field whileMatching compareTopologyIndex
+        [branch1.field branch2.field FALSE whileMatching @comparingMessage @processor compareShadows] && ~ [
+          FALSE !result
+        ] when
+      ]
+      ShadowReasonTreeSplitterLambda [
+        branch1: ShadowReasonTreeSplitterLambda event1.get;
+        branch2: ShadowReasonTreeSplitterLambda event2.get;
+
+        branch1 branch2 = ~ [
+          FALSE !result
+        ] when
+      ]
+      []
+    ) case
+  ] [
+    FALSE !result
+  ] if
+
+  result
+];
+
+deleteMatchingNodeFrom: [
+  processor: block: matchingChindIndex: full: ;;;;
+
+  matchingChindIndex 0 < ~ [
+    astArrayIndex: block.astArrayIndex copy;
+    matchingNode: astArrayIndex @processor.@matchingNodes.at.get;
+    currentMemory: matchingChindIndex @matchingNode.@treeMemory.at;
+
+    index: -1 dynamic;
+    i: currentMemory.nodeIndexes.size 1 -;
+    [i 0 < ~ index 0 < and] [
+      i currentMemory.nodeIndexes.at block.id = [
+        i @index set
+      ] when
+
+      i 1 - !i
+    ] while
+
+    full [
+      index: matchingChindIndex copy;
+      [
+        parentIndex: index matchingNode.treeMemory.at.parentIndex copy;
+        parentIndex 0 < ~ [
+          parentNode: parentIndex @matchingNode.@treeMemory.at;
+          parentNode.childIndices.size 1 = [
+            i: parentNode.childIndices.size 1 -;
+            [i 0 < ~ [i parentNode.childIndices.at.childIndex index = ~] &&] [
+              i 1 - !i
+            ] while
+
+            [i 0 < ~] "No such child in parent in matchingTree!" assert
+            i @parentNode.@childIndices.erase
+
+            parentIndex @index set
+            TRUE
+          ] &&
+        ] &&
+      ] loop
+    ] when
+
+    index 0 < ~ [
+      index @currentMemory.@nodeIndexes.erase
+    ] when
+  ] when
+];
+
+deleteMatchingNode: [
+  processor: block: full: ;;;
+
+  block.matchingChindIndex 0 < ~ [
+    @processor @block block.matchingChindIndex full deleteMatchingNodeFrom
+    -1 @block.@matchingChindIndex set
   ] when
 ];
 
 addShadowEvent: [
-  event: block: ;;
+  event: processor: block: ;;;
 
-  #begin of var go to matching
+  block.astArrayIndex 0 < ~ [
+    #begin of var go to matching
+    event @block.@buildingMatchingInfo.@shadowEvents.pushBack
 
-  event @block.@buildingMatchingInfo.@shadowEvents.pushBack
+    block.state NodeStateNew = [
+      event @block.@matchingInfo.@shadowEvents.pushBack
+    ] when
 
-  block.state NodeStateNew = [
-    event @block.@matchingInfo.@shadowEvents.pushBack
+    block.recursionState NodeRecursionStateNew = [
+    ] [
+      addChild: [
+        event: machingMemoryNode:;;
+
+        matchingNodePair: MatchingNodePair;
+        result: matchingNode.treeMemory.getSize;
+
+        eventHash @matchingNodePair.@eventHash set
+        result    @matchingNodePair.@childIndex set
+
+        @matchingNodePair move @machingMemoryNode.@childIndices.pushBack
+
+        newMatchingNodeEntry: MatchingNodeEntry;
+        event             @newMatchingNodeEntry.@parentEvent set
+        currentEntryIndex @newMatchingNodeEntry.@parentIndex set
+        @newMatchingNodeEntry move @matchingNode.@treeMemory.pushBack
+
+        result
+      ];
+
+      currentEntryIndex: block.matchingChindIndex copy;
+      comparingMessage: String;
+      matchingNode: block.astArrayIndex @processor.@matchingNodes.at.get;
+      currentMemory: currentEntryIndex @matchingNode.@treeMemory.at;
+
+      eventHash: event FALSE dynamic @processor @block getShadowEventHash;
+
+      currentMemory.childIndices.size 0 = [
+        event @currentMemory addChild @currentEntryIndex set
+      ] [
+        pattern: 0 currentMemory.childIndices @ .childIndex matchingNode.treeMemory.at.parentEvent;
+        [
+          event pattern sameEvents [
+            ("First event is new event; second is pattern; astNode index = " block.astArrayIndex LF) printList
+            ("Current try matching events: " LF) printList
+
+            block.buildingMatchingInfo.shadowEvents.size [
+              event: i block.buildingMatchingInfo.shadowEvents.at;
+
+              getFileName: [
+                file:; file isNil ["NIL" makeStringView] [file.name makeStringView] if
+              ];
+
+              (
+                ShadowReasonInput [
+                  branch:;
+                  ("shadow event [" i "] input as " branch.refToVar getVar.buildingTopologyIndex LF) printList
+                ]
+                ShadowReasonCapture [
+                  branch:;
+                  branch.stable [
+                    ("shadow event [" i "] capture " branch.nameInfo processor.nameManager.getText " as stable name" LF) printList
+                  ] [
+                    ("shadow event [" i "] capture " branch.nameInfo processor.nameManager.getText "(" branch.nameOverloadDepth ") in " branch.file getFileName "; staticity=" branch.refToVar getVar.staticity.begin " as " branch.refToVar getVar.buildingTopologyIndex " type " branch.refToVar @processor @block getMplType LF) printList
+                    branch.mplFieldIndex 0 < ~ [("  as field " branch.mplFieldIndex " in object" LF) printList] when
+                  ] if
+                ]
+                ShadowReasonPointee [
+                  branch:;
+                  ("shadow event [" i "] pointee " branch.pointer getVar.buildingTopologyIndex " as " branch.pointee getVar.buildingTopologyIndex LF) printList
+                ]
+                ShadowReasonField [
+                  branch:;
+                  ("shadow event [" i "] field " branch.object getVar.buildingTopologyIndex " [" branch.mplFieldIndex "] as " branch.field getVar.buildingTopologyIndex LF) printList
+                ]
+                ShadowReasonTreeSplitterLambda [
+                  branch:;
+                  ("shadow event [" i "] tree splitter lambda " branch LF) printList
+                ]
+                []
+              ) event.visit
+            ] times
+
+            FALSE
+          ] ||
+        ] "Matching events are not consistent" assert
+
+        candidates: @currentMemory.@childIndices;
+
+        prevEventIndex: -1 dynamic;
+        candidates [
+          prevVersion:;
+          prevEventIndex 0 < [
+            prevVersion.eventHash eventHash = [
+              prevVersionEvent: prevVersion.childIndex matchingNode.treeMemory.at.parentEvent;
+              event prevVersionEvent @comparingMessage FALSE dynamic @processor compareEvents
+            ] && [
+              prevVersion.childIndex @prevEventIndex set
+            ] when
+          ] when
+        ] each
+
+        prevEventIndex 0 < [
+          candidates [
+            prevVersion:;
+            prevEventIndex 0 < [
+              prevVersion.eventHash eventHash = [
+                prevVersionEvent: prevVersion.childIndex matchingNode.treeMemory.at.parentEvent;
+                event prevVersionEvent @comparingMessage FALSE dynamic @processor compareEvents
+              ] && [
+                prevVersion.childIndex @prevEventIndex set
+              ] when
+            ] when
+          ] each
+
+          event @currentMemory addChild @currentEntryIndex set
+        ] [
+          prevEventIndex @currentEntryIndex set
+        ] if
+      ] if
+
+      @processor @block FALSE deleteMatchingNode
+      currentEntryIndex @block.@matchingChindIndex set
+      currentMemory: currentEntryIndex @matchingNode.@treeMemory.at;
+      block.id @currentMemory.@nodeIndexes.pushBack
+    ] if
   ] when
 ];
 

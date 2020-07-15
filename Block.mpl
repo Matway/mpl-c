@@ -14,9 +14,10 @@ ArgRef:         [2n8 dynamic];
 ArgCopy:        [3n8 dynamic];
 ArgDerefCopy:   [4n8 dynamic];
 ArgMeta:        [5n8 dynamic];
-ArgReturn:      [6n8 dynamic];
-ArgRefDeref:    [7n8 dynamic];
-ArgReturnDeref: [8n8 dynamic];
+ArgAlreadyUsed: [6n8 dynamic];
+ArgReturn:      [7n8 dynamic];
+ArgRefDeref:    [8n8 dynamic];
+ArgReturnDeref: [9n8 dynamic];
 
 NameCaseInvalid:               [ 0n8 dynamic];
 NameCaseBuiltin:               [ 1n8 dynamic];
@@ -63,7 +64,8 @@ Argument: [{
 Capture: [{
   refToVar:          RefToVar;
   argCase:           ArgRef;
-  captureCase:       NameCaseInvalid;
+  stable:            Cond;
+  mplFieldIndex:     -1 dynamic;
   nameInfo:          -1 dynamic;
   nameOverloadDepth: -1 dynamic;
   file:              ["MplFile.FileSchema" use FileSchema] Mref;
@@ -80,16 +82,7 @@ CompilerPositionInfo: [{
   file:   ["MplFile.FileSchema" use FileSchema] Mref;
   line:   -1 dynamic;
   column: -1 dynamic;
-  token:  String;
-}];
-
-FieldCapture: [{
-  object:            RefToVar;
-  captureCase:       NameCaseInvalid;
-  nameInfo:          -1 dynamic;
-  nameOverloadDepth: -1 dynamic;
-  fieldIndex:        -1 dynamic;
-  file:              ["MplFile.FileSchema" use FileSchema] Mref;
+  token:  StringView;
 }];
 
 makeInstruction: [{
@@ -106,21 +99,13 @@ makeInstruction: [{
 
 Instruction: [0 0 makeInstruction];
 
-ShadowEvent: [(
-  Cond                    #ShadowReasonNo
-  ShadowEventCapture      #ShadowReasonCapture
-  ShadowEventStableName   #ShadowReasonStableName
-  ShadowEventFieldCapture #ShadowReasonFieldCapture
-  ShadowEventInput        #ShadowReasonInput
-  ShadowEventField        #ShadowReasonField
-  ShadowEventPointee      #ShadowReasonPointee
-) Variant];
-
 MatchingInfo: [{
   inputs: Argument Array; #for generating signatures
   captures: Capture Array; #for generating signatures, for finding 'self'
   shadowEvents: ShadowEvent Array;
   lastTopologyIndex: 0 dynamic;
+  currentInputCount: 0 dynamic;
+  maxInputCount: 0 dynamic;
 }];
 
 NameWithOverload: [{
@@ -150,8 +135,6 @@ ShadowEventInput:        [Argument];
 
 ShadowEventCapture:      [Capture];
 
-ShadowEventFieldCapture: [FieldCapture];
-
 ShadowEventField: [{
   object: RefToVar;
   field: RefToVar;
@@ -163,28 +146,35 @@ ShadowEventPointee: [{
   pointee: RefToVar;
 }];
 
-ShadowEventStableName: [{
-  nameInfo: Int32;
-}];
+ShadowEvent: [(
+  Cond                    #ShadowReasonNo
+  ShadowEventCapture      #ShadowReasonCapture
+  ShadowEventInput        #ShadowReasonInput
+  ShadowEventField        #ShadowReasonField
+  ShadowEventPointee      #ShadowReasonPointee
+  Cond                    #ShadowReasonLambda
+) Variant];
 
 Block: [{
-  id:              Int32;
-  root:            FALSE dynamic;
-  file:            ["MplFile.FileSchema" use FileSchema] Mref;
-  topNode:         [@BlockSchema] Mref;
-  capturedFiles:   Cond Array;
-  beginPosition:   CompilerPositionInfo;
-  parent:          0 dynamic;
-  nodeCase:        NodeCaseCode;
-  stack:           RefToVar Array; # we must compile node without touching parent
-  minStackDepth:   0 dynamic;
-  programTemplate: String;
-  program:         Instruction Array;
-  aliases:         String Array;
-  lastLambdaName:  Int32;
-  nextRecLambdaId: -1 dynamic;
-  globalPriority:  Int32;
+  id:               Int32;
+  root:             FALSE dynamic;
+  file:             ["MplFile.FileSchema" use FileSchema] Mref;
+  topNode:          [@BlockSchema] Mref;
+  capturedFiles:    Cond Array;
+  beginPosition:    CompilerPositionInfo;
+  parent:           0 dynamic;
+  nodeCase:         NodeCaseCode;
+  stack:            RefToVar Array; # we must compile node without touching parent
+  minStackDepth:    0 dynamic;
+  programTemplate:  String;
+  program:          Instruction Array;
+  aliases:          String Array;
+  lastLambdaName:   Int32;
+  nextRecLambdaId:  -1 dynamic;
+  globalPriority:   Int32;
 
+  instructionCountBeforeRet: Int32;
+  hasCallImport:       FALSE dynamic;
   hasEmptyLambdas:     FALSE dynamic;
   nodeIsRecursive:     FALSE dynamic;
   nextLabelIsVirtual:  FALSE dynamic;
@@ -220,8 +210,7 @@ Block: [{
 
   fromModuleNames:   NameWithOverloadAndRefToVar Array;
   labelNames:        NameWithOverloadAndRefToVar Array;
-  captureNames:      NameWithOverloadAndRefToVar Array;
-  fieldCaptureNames: NameWithOverloadAndRefToVar Array;
+  captureNames:      NameWithOverload Array;
   stableNames:       Int32 Array;
 
   candidatesToDie:     RefToVar Array;
@@ -231,7 +220,7 @@ Block: [{
   refToVar:           RefToVar; #refToVar of function with compiled node
   varNameInfo:        -1 dynamic; #variable name of imported function
   astArrayIndex:      -1 dynamic;
-  matchingInfoIndex:  -1 dynamic;
+  matchingChindIndex: -1 dynamic;
   exportDepth:        0 dynamic;
   namedFunctions:     String Int32 HashTable; # name -> node ID
   capturedVars:       RefToVar Array;

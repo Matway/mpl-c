@@ -983,6 +983,14 @@ staticityOfBinResult: [
 [
   refToVar: @processor @block pop;
   processor compilable [
+    refToVar @processor @block makeVarTreeDynamic
+    refToVar @block push
+  ] when
+] "mplBuiltinDynamic" @declareBuiltin ucall
+
+[
+  refToVar: @processor @block pop;
+  processor compilable [
     refToVar @processor @block makeVarTreeDirty
     refToVar @block push
   ] when
@@ -1485,6 +1493,10 @@ staticityOfBinResult: [
       result isVirtual ~ [
         TRUE @result.setMutable
         @result @processor @block createAllocIR @processor @block callInit
+
+        result isAutoStruct [
+          result @block.@candidatesToDie.pushBack
+        ] when
       ] when
 
       result @block push
@@ -1517,6 +1529,15 @@ staticityOfBinResult: [
 [
   @processor block defaultPrintStackTrace
 ] "mplBuiltinPrintStackTrace" @declareBuiltin ucall
+
+
+[
+  ("Print shadow events for block " block.id " in astNode " block.astArrayIndex LF) printList
+  block.buildingMatchingInfo.shadowEvents.size [
+    event: i block.buildingMatchingInfo.shadowEvents.at;
+    event i TRUE @processor @block printShadowEvent
+  ] times
+] "mplBuiltinPrintShadowEvents" @declareBuiltin ucall
 
 [
   debugMemory [
@@ -1782,7 +1803,7 @@ tryFindInPath: [
   @fullFileName checkLoadedFile ~ [
     loadStringResult: fullFileName loadString;
     loadStringResult.success [
-      errorInfo: fullFileName makeStringView loadStringResult.data makeStringView @processor.@multiParserResult @processor.@nameManager addToProcess;
+      errorInfo: processor.files.getSize fullFileName makeStringView loadStringResult.data makeStringView @processor.@multiParserResult @processor.@nameManager addToProcess;
       errorInfo "" = [
         fileId: FALSE fullFileName makeStringView @processor addFileNameToProcessor;
         fullFileName @processor.@options.@fileNames.pushBack
@@ -1891,6 +1912,7 @@ tryFindInPath: [
 
             addNameData.size [
               current: addNameData.size 1 - i - addNameData.at;
+
               {
                 addNameCase: NameCaseFromModule;
                 refToVar:    current.refToVar copy;
@@ -1913,7 +1935,7 @@ tryFindInPath: [
               CALL: [nameInfo:;
                 fr: nameInfo @indexes.find;
                 fr.success [
-                  result: fr.value.index file nameInfo @processor.@nameManager.findItem;
+                  result: fr.value.index file nameInfo @processor.@nameManager.findItemStrong;
                   result @fr.@value.@index set
                   fr.value.depth 1 + @fr.@value.@depth set
                   fr.value.index copy fr.value.depth copy
@@ -1932,7 +1954,7 @@ tryFindInPath: [
               index: -1;
               CALL: [
                 nameInfo:;
-                index file nameInfo @processor.@nameManager.findItem !index
+                index file nameInfo @processor.@nameManager.findItemStrong !index
                 depth 1 + !depth
                 index depth
               ];

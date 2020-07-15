@@ -21,6 +21,7 @@ DEFAULT_PRE_RECURSION_DEPTH_LIMIT: [64];
 
 ProcessorOptions: [{
   mainPath:               String;
+  fullLine:               String;
   beginFunc:              String;
   endFunc:                String;
   fileNames:              StringArray;
@@ -69,6 +70,7 @@ RefToVarTable: [
 
 NameInfoEntry: [{
   file: File Cref;
+  object: RefToVar; # for NameCaseSelfMember
   refToVar: RefToVar;
   startPoint: -1 dynamic; # id of node
   mplFieldIndex: -1 dynamic; # for NameCaseSelfMember
@@ -76,14 +78,26 @@ NameInfoEntry: [{
   nameCase: NameCaseInvalid;
 }];
 
-MatchingNode: [{
-  unknownMplType: Int32 Array;
-  byMplType: Int32 Int32 Array HashTable; #first input MPL type
+MatchingNodePair: [{
+  eventHash: Nat32;
+  childIndex: Int32;
+}];
 
+MatchingNodeEntry: [{
+  nodeIndexes: Int32 Array;
+  parentIndex: -1 dynamic;
+  parentEvent: ShadowEvent;
+  childIndices: MatchingNodePair Array;
+}];
+
+MatchingNode: [{
   compilerPositionInfo: CompilerPositionInfo;
   entries: Int32;
   tries: Int32;
   size: Int32;
+  count: Int32;
+
+  treeMemory: MatchingNodeEntry Array;
 }];
 
 makeWayInfo: [{
@@ -111,6 +125,7 @@ Processor: [{
   options: ProcessorOptions;
   multiParserResult: MultiParserResult Ref;
   result: ProcessorResult;
+  canBuildTree: TRUE dynamic;
   positions: CompilerPositionInfo Array;
   unfinishedFiles: Int32 Array;
 
@@ -131,8 +146,6 @@ Processor: [{
 
   captureTable: {
     simpleNames:  NameInfoCoord Array Array Array; #name; overload; vector of blocks
-    selfNames:    NameInfoCoord Array Array Array; #overload; mplTypeId; vector of blocks
-    closureNames: NameInfoCoord Array Array Array; #overload; mplTypeId; vector of blocks
     stableNames:  Int32 Array Array; #vector of vector of blockId
   };
 

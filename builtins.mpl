@@ -43,7 +43,7 @@ builtins: (
   {name: "copy"                          ; impl: @mplBuiltinCopy                    ;}
   {name: "cos"                           ; impl: @mplBuiltinCos                     ;}
   {name: "def"                           ; impl: @mplBuiltinDef                     ;}
-  {name: "dynamic"                       ; impl: @mplBuiltinDirty                   ;}
+  {name: "dynamic"                       ; impl: @mplBuiltinDynamic                 ;}
   {name: "exportFunction"                ; impl: @mplBuiltinExportFunction          ;}
   {name: "exportVariable"                ; impl: @mplBuiltinExportVariable          ;}
   {name: "failProc"                      ; impl: @mplBuiltinFailProc                ;}
@@ -75,6 +75,7 @@ builtins: (
   {name: "or"                            ; impl: @mplBuiltinOr                      ;}
   {name: "overload"                      ; impl: @mplBuiltinOverload                ;}
   {name: "printCompilerMessage"          ; impl: @mplBuiltinPrintCompilerMessage    ;}
+  {name: "printShadowEvents"             ; impl: @mplBuiltinPrintShadowEvents       ;}
   {name: "printStack"                    ; impl: @mplBuiltinPrintStack              ;}
   {name: "printStackTrace"               ; impl: @mplBuiltinPrintStackTrace         ;}
   {name: "raiseStaticError"              ; impl: @mplBuiltinRaiseStaticError        ;}

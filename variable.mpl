@@ -199,10 +199,11 @@ getNonrecursiveDataMPLType: [
       "s" toString @result set
     ] [
       var.data.getTag VarCode = [
-        "c" toString @result set
+        info: VarCode  var.data.get;
+        ("c'" info.file.name getStringImplementation "\"/" info.line ":" info.column) assembleString @result set
       ] [
         var.data.getTag VarBuiltin = [
-          "b" toString @result set
+          ("b'" VarBuiltin var.data.get) assembleString @result set
         ] [
           var.data.getTag VarInvalid = [
             "I" toString @result set
@@ -319,11 +320,6 @@ untemporize: [
   refToVar:;
   var: @refToVar getVar;
   FALSE @var.@temporary set
-];
-
-noMatterToCopy: [
-  refToVar:;
-  refToVar isVirtual [refToVar isAutoStruct ~] &&
 ];
 
 makeTypeAliasId: [
@@ -662,7 +658,7 @@ makeDbgTypeId: [
   refToVar isVirtual [
     ir: refToVar getVirtualValue;
     "'" @resultMPL.cat
-    ir @resultMPL.cat
+    #ir @resultMPL.cat
   ] when
 ] "getMplTypeImpl" exportFunction
 

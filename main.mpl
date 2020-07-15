@@ -135,6 +135,17 @@ addToProcessAndCheck: [
   ] when
 ];
 
+checkedSaveString: [
+  name: string: ;;
+
+  loadResult: name loadString;
+  loadResult.success [loadResult.data string =] && [
+    (name ".temp") assembleString string saveString
+  ] [
+    name string saveString
+  ] if
+];
+
 {argc: 0; argv: 0nx;} 0 {convention: cdecl;} [
   #debugMemory [TRUE !memoryDebugEnabled] when
   ("Start mplc compiler") addLog
@@ -177,16 +188,21 @@ addToProcessAndCheck: [
     "main" toString @options.@beginFunc set
     "main" toString @options.@endFunc set
 
+    fullLine: String;
+
     argc 1 = [
       FALSE @success set
     ] [
       argc [
         i 0 = [
           addr: 0nx storageSize i 0ix cast 0nx cast * argv + Natx addressToReference;
-          addr makeStringViewByAddress extractClearPath @options.@mainPath set
+          option:  addr makeStringViewByAddress;
+          option @fullLine.cat
+          option extractClearPath @options.@mainPath set
         ] [
           addr: 0nx storageSize i 0ix cast 0nx cast * argv + Natx addressToReference;
           option: addr makeStringViewByAddress;
+          (" " option) @fullLine.catMany
 
           option.size 0 = [
             "Error, argument cannot be empty" print LF print
@@ -300,6 +316,8 @@ addToProcessAndCheck: [
       ] times
     ] if
 
+    @fullLine move @options.@fullLine set
+
     nextOption OPT_ANY = ~ [
       "Value expected" print LF print
       FALSE @success set
@@ -352,13 +370,13 @@ addToProcessAndCheck: [
               #builtins
             ] [
               i 1 = [
-                fileName makeStringView definitions makeStringView @multiParserResult @nameManager addToProcessAndCheck
+                i fileName makeStringView definitions makeStringView @multiParserResult @nameManager addToProcessAndCheck
               ] [
                 loadStringResult: fileName loadString;
                 loadStringResult.success [
                   ("Loaded string from " fileName) addLog
                   ("HASH=" loadStringResult.data hash) addLog
-                  fileName makeStringView loadStringResult.data makeStringView @multiParserResult @nameManager addToProcessAndCheck
+                  i fileName makeStringView loadStringResult.data makeStringView @multiParserResult @nameManager addToProcessAndCheck
                 ] [
                   "Unable to load string:" print fileName print LF print
                   FALSE @success set
@@ -376,7 +394,7 @@ addToProcessAndCheck: [
             program: String;
             @multiParserResult @nameManager options 0 @result @program process
             result.size 0 = [
-              outputFileName program saveString [
+              outputFileName program checkedSaveString [
                 ("program written to " outputFileName) addLog
               ] [
                 ("failed to save program" LF) printList

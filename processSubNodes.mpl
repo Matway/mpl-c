@@ -43,7 +43,9 @@
   ] if
 ] "variablesHaveSameGlobality" exportFunction
 
-{processor: Processor Cref; comparingMessage: String Ref; makeMessage: Cond; cacheEntry: RefToVar Cref; stackEntry: RefToVar Cref;} Cond {} [
+varibaleAreEqualBody: [
+  e1Checker: e2Checker: ;;
+
   stackEntry: cacheEntry: makeMessage: comparingMessage: processor: ;;;;;
   stackDynamicBorder: Weak;
 
@@ -65,8 +67,8 @@
         FALSE
       ] [
         stackEntryVar.data.getTag VarStruct = [
-          cacheStaticity: cacheEntryVar.staticity.end copy;
-          stackStaticity: stackEntryVar.staticity.end copy;
+          cacheStaticity: cacheEntryVar.staticity e1Checker copy;
+          stackStaticity: stackEntryVar.staticity e2Checker copy;
 
           cacheStaticity Dynamic = [Static !cacheStaticity] when
           stackStaticity Dynamic = [Static !stackStaticity] when
@@ -86,8 +88,8 @@
             ] if
           ] if
         ] [
-          cacheStaticity: cacheEntryVar.staticity.begin copy;
-          stackStaticity: stackEntryVar.staticity.end copy;
+          cacheStaticity: cacheEntryVar.staticity e1Checker copy;
+          stackStaticity: stackEntryVar.staticity e2Checker copy;
 
           cacheStaticity Weak > ~ stackStaticity stackDynamicBorder > ~ and [
             # both dynamic
@@ -107,8 +109,11 @@
 
                 cacheEntryVar.data.getTag VarCond VarReal64 1 + [
                   tag:;
-                  tag cacheEntryVar.data.get.begin
-                  tag stackEntryVar.data.get.end =
+                  cacheValue: tag cacheEntryVar.data.get;
+                  stackValue: tag stackEntryVar.data.get;
+
+                  cacheValue e1Checker
+                  stackValue e2Checker =
                   !result
                 ] staticCall
 
@@ -128,6 +133,15 @@
       ] if
     ] if
   ] if
+
+];
+
+{processor: Processor Cref; comparingMessage: String Ref; makeMessage: Cond; cacheEntry: RefToVar Cref; stackEntry: RefToVar Cref;} Cond {} [
+  [.begin] [.begin] @varibaleAreEqualBody ucall
+] "variablesAreEqualForTree" exportFunction
+
+{processor: Processor Cref; comparingMessage: String Ref; makeMessage: Cond; cacheEntry: RefToVar Cref; stackEntry: RefToVar Cref;} Cond {} [
+  [.begin] [.end] @varibaleAreEqualBody ucall
 ] "variablesAreEqualForMatching" exportFunction
 
 {forLoop: Cond; processor: Processor Cref; cacheEntry: RefToVar Cref; stackEntry: RefToVar Cref; } Cond {} [
@@ -194,17 +208,21 @@ variablesAreEqualForLoop: [TRUE variablesAreEqualWith];
   refToVar getVar.host currentMatchingNode is ~ [refToVar noMatterToCopy ~] &&
 ] "variableIsUnused" exportFunction
 
-{processor: Processor Cref; currentMatchingNode: Block Cref; comparingMessage: String Ref; checkConstness: Cond; cacheEntry: RefToVar Cref; stackEntry: RefToVar Cref;} Cond {} [
-  stackEntry: cacheEntry: checkConstness: comparingMessage: currentMatchingNode:  processor:;;;;;;
+{processor: Processor Cref; makeMessage: Cond; comparingMessage: String Ref; checkConstness: Cond; forMatching: Cond; cacheEntry: RefToVar Cref; stackEntry: RefToVar Cref;} Cond {} [
+  stackEntry: cacheEntry: forMatching: checkConstness: comparingMessage: makeMessage:  processor:;;;;;;;
 
   checkConstness ~ [cacheEntry.mutable stackEntry.mutable =] || [
-    stackEntry cacheEntry currentMatchingNode.nodeCompileOnce @comparingMessage processor variablesAreEqualForMatching [
+    forMatching [
+      stackEntry cacheEntry makeMessage @comparingMessage processor variablesAreEqualForMatching
+    ] [
+      stackEntry cacheEntry makeMessage @comparingMessage processor variablesAreEqualForTree
+    ] if [
       TRUE
     ] [
       FALSE
     ] if
   ] [
-    currentMatchingNode.nodeCompileOnce ["variables have different constness" toString @comparingMessage set] when
+    makeMessage ["variables have different constness" toString @comparingMessage set] when
     FALSE
   ] if
 ] "compareOnePair" exportFunction
@@ -251,15 +269,12 @@ catShadowEvents: [
       ]
       ShadowReasonCapture [
         branch:;
-        ("shadow event [" i "] capture " branch.nameInfo processor.nameManager.getText "(" branch.nameOverloadDepth ") index " branch.refToVar getVar.topologyIndex " type " branch.refToVar @processor @block getMplType LF) @message.catMany
-      ]
-      ShadowReasonStableName [
-        branch:;
-        ("shadow event [" i "] stableName " branch.nameInfo processor.nameManager.getText LF) @message.catMany
-      ]
-      ShadowReasonFieldCapture [
-        branch:;
-        ("shadow event [" i "] fieldCapture " branch.nameInfo processor.nameManager.getText "(" branch.nameOverloadDepth ") [" branch.fieldIndex "] in " branch.object getVar.topologyIndex LF) @message.catMany
+        branch.stable [
+          ("shadow event [" i "] capture " branch.nameInfo processor.nameManager.getText " as stable" LF) @message.catMany
+        ] [
+          ("shadow event [" i "] capture " branch.nameInfo processor.nameManager.getText "(" branch.nameOverloadDepth ") index " branch.refToVar getVar.topologyIndex " type " branch.refToVar @processor @block getMplType LF) @message.catMany
+          branch.mplFieldIndex 0 < ~ [("  as field " branch.mplFieldIndex " in object" LF) @message.catMany] when
+        ] if
       ]
       ShadowReasonPointee [
         branch:;
@@ -272,6 +287,39 @@ catShadowEvents: [
       []
     ) currentEvent.visit
   ] times
+];
+
+addEventVarWhileMatching: [
+  stackEntry: cacheEntry: eventVars: ;;;
+
+  success: TRUE dynamic;
+  stackEntry noMatterToCopy ~ [
+    topologyIndex: cacheEntry getVar.topologyIndex copy;
+    [topologyIndex 0 < ~] "Shadow event index is negative!" assert
+    topologyIndex eventVars.size < [
+      topologyIndex stackEntry getVar.topologyIndexWhileMatching = ~ [
+        FALSE dynamic @success set
+      ] when
+    ] [
+      stackEntry getVar.topologyIndexWhileMatching 0 < ~ [
+        FALSE dynamic @success set
+      ] [
+        [
+          topologyIndex eventVars.size = [
+            message: String;
+            currentMatchingNode.matchingInfo.shadowEvents.size 1 - @currentMatchingNode @message catShadowEvents
+            message print
+            FALSE
+          ] ||
+        ] "Topology indexes are not sequenced!" assert
+        topologyIndex 1 + @eventVars.enlarge
+        topologyIndex @stackEntry getVar.@topologyIndexWhileMatching set
+        stackEntry topologyIndex @eventVars.at set
+      ] if
+    ] if
+  ] when
+
+  success
 ];
 
 tryMatchNode: [
@@ -315,159 +363,11 @@ tryMatchNode: [
     ] ||;
 
   invisibleName: currentMatchingNode.nodeCase NodeCaseLambda = [currentMatchingNode.varNameInfo 0 < ~] && [
-    matchingCapture: Capture;
-    currentMatchingNode.refToVar @matchingCapture.@refToVar set
-    NameCaseLocal                @matchingCapture.@captureCase set
-    gnr: currentMatchingNode.varNameInfo matchingCapture @processor @block matchingCapture.file getNameForMatching;
+    gnr: currentMatchingNode.varNameInfo @processor @block File Cref getNameForMatching;
     gnr.refToVar.assigned ~
   ] &&;
 
-  canMatch invisibleName ~ and goodReality and [
-    mismatchMessage: [
-      index:;
-      message: ("in compile-one func cache mismatch; " comparingMessage "; matching table events to failing event:" LF) assembleString;
-
-      index currentMatchingNode @message catShadowEvents
-      message @processor block compilerError
-    ];
-
-    success: TRUE dynamic;
-    eventVars: @processor.acquireVarRefArray;
-    matchingNodeStackDepth: 0 dynamic;
-
-    addEventVar: [
-      stackEntry: cacheEntry: eventVars: ;;;
-
-      success: TRUE dynamic;
-      stackEntry noMatterToCopy ~ [
-        topologyIndex: cacheEntry getVar.topologyIndex copy;
-        [topologyIndex 0 < ~] "Shadow event index is negative!" assert
-        topologyIndex eventVars.size < [
-          topologyIndex stackEntry getVar.topologyIndexWhileMatching = ~ [
-            FALSE dynamic @success set
-          ] when
-        ] [
-          stackEntry getVar.topologyIndexWhileMatching 0 < ~ [
-            FALSE dynamic @success set
-          ] [
-            topologyIndex 1 + @eventVars.enlarge
-            topologyIndex @stackEntry getVar.@topologyIndexWhileMatching set
-            stackEntry topologyIndex @eventVars.at set
-          ] if
-        ] if
-      ] when
-
-      success
-    ];
-
-    currentMatchingNode.matchingInfo.shadowEvents.size [
-      success processor compilable and [
-        currentEvent: i currentMatchingNode.matchingInfo.shadowEvents.at;
-        (
-          ShadowReasonInput [
-            branch:;
-            stackEntry: matchingNodeStackDepth @processor block getStackEntryUnchecked;
-            cacheEntry: branch.refToVar;
-
-            stackEntry cacheEntry TRUE @comparingMessage currentMatchingNode processor compareOnePair
-            [@stackEntry cacheEntry @eventVars addEventVar] && ~ [
-              currentMatchingNode.nodeCompileOnce [i mismatchMessage] when
-              FALSE dynamic @success set
-            ] when
-
-            matchingNodeStackDepth 1 + !matchingNodeStackDepth
-          ]
-          ShadowReasonCapture [
-            branch:;
-
-            cacheEntry: branch.refToVar;
-            overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
-            gnr: branch.nameInfo branch overloadIndex @processor @block branch.file getNameForMatchingWithOverloadIndex;
-
-            branch.file gnr processor nameResultIsStable [
-              "cache entry was not stable, now it is stable" toString @comparingMessage set
-              currentMatchingNode.nodeCompileOnce [i mismatchMessage] when
-              FALSE dynamic @success set
-            ] [
-              stackEntry: gnr.refToVar;
-              stackEntry cacheEntry TRUE @comparingMessage currentMatchingNode processor compareOnePair
-
-              [
-                cacheEntry noMatterToCopy [cacheEntry getVar.topologyIndex 0 < ~] || [
-                  ("captureName=" branch.nameInfo processor.nameManager.getText "; captureType=" cacheEntry @processor @block getMplType LF) printList
-                  FALSE
-                ] ||
-              ] "Capture shadow event index is negative!" assert
-
-              [@stackEntry cacheEntry @eventVars addEventVar] && ~ [
-                currentMatchingNode.nodeCompileOnce [i mismatchMessage] when
-                FALSE dynamic @success set
-              ] when
-            ] if
-          ]
-          ShadowReasonStableName [
-            branch:;
-
-            #here need to check local def in all usef in thos implementation files!
-            branch.nameInfo processor.nameManager.hasOverload
-            [branch.nameInfo processor.nameManager.hasLocalDefinition] || [
-              currentMatchingNode.nodeCompileOnce [
-                "cache entry was stable, now it is not stable" toString @comparingMessage set
-                i mismatchMessage
-              ] when
-
-              FALSE dynamic @success set
-            ] when
-          ]
-          ShadowReasonFieldCapture [
-            branch:;
-
-            overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
-            processor compilable [
-              currentFieldInfo: overloadIndex branch.nameInfo processor.nameManager.getItem;
-              currentFieldInfo.nameCase branch.captureCase = [branch.object currentFieldInfo.refToVar variablesAreSame] &&
-            ] && ~ [
-              currentMatchingNode.nodeCompileOnce [i mismatchMessage] when
-              FALSE dynamic @success set
-            ] when
-          ]
-          ShadowReasonPointee [
-            branch:;
-            cacheEntry: branch.pointee;
-            stackEntry: branch.pointer getVar.topologyIndex eventVars.at @processor @block getPointeeForMatching;
-
-            stackEntry cacheEntry TRUE @comparingMessage currentMatchingNode processor compareOnePair
-            [@stackEntry cacheEntry @eventVars addEventVar] && ~ [
-              currentMatchingNode.nodeCompileOnce [i mismatchMessage] when
-              FALSE dynamic @success set
-            ] when
-          ]
-          ShadowReasonField [
-            branch:;
-
-            cacheEntry: branch.field;
-            stackEntry: branch.mplFieldIndex branch.object getVar.topologyIndex eventVars.at @processor @block getFieldForMatching;
-
-            stackEntry cacheEntry FALSE @comparingMessage currentMatchingNode processor compareOnePair
-            [@stackEntry cacheEntry @eventVars addEventVar] && ~ [
-              currentMatchingNode.nodeCompileOnce [i mismatchMessage] when
-              FALSE dynamic @success set
-            ] when
-          ]
-          []
-        ) @currentEvent.visit
-      ] when
-    ] times
-
-    @eventVars [
-      refToVar:;
-      -1 @refToVar getVar.@topologyIndexWhileMatching set
-    ] each
-
-    @eventVars @processor.releaseVarRefArray
-
-    success
-  ] &&
+  canMatch invisibleName ~ and goodReality and
 ];
 
 {processor: Processor Ref; block: Block Ref; forceRealFunction: Cond; astArrayIndex: Int32;} Int32 {} [
@@ -509,18 +409,133 @@ tryMatchNode: [
       result
     ];
 
+    #find-in-tree way
     result: -1 dynamic;
+    currentEntryIndex: 0 dynamic;
+    eventVars: @processor.acquireVarRefArray;
 
-    @processor block getStackDepth 0 > [
-      byType: 0 @processor block getStackEntry getVar.mplSchemaId matchingNode.byMplType.find;
+    success: FALSE dynamic;
+    continueSearch: TRUE dynamic;
+    comparingMessage: String;
+    matchingNodeStackDepth: 0 dynamic;
 
-      byType.success [
-        byType.value findInIndexArray @result set
+    addEventVar: [
+      stackEntry: eventVars: ;;
+
+      stackEntry noMatterToCopy ~ [
+        stackEntry getVar.topologyIndexWhileMatching 0 < [
+          eventVars.size @stackEntry getVar.@topologyIndexWhileMatching set
+          stackEntry @eventVars.pushBack
+        ] when
       ] when
-    ] when
+    ];
 
-    result 0 < [
-      matchingNode.unknownMplType findInIndexArray @result set
+    [
+      currentMemory: currentEntryIndex matchingNode.treeMemory.at;
+      currentMemory.childIndices.size 0 = [
+        TRUE !success
+        FALSE !continueSearch
+      ] [
+        pattern: 0 currentMemory.childIndices @ .childIndex matchingNode.treeMemory.at.parentEvent;
+
+        matchingFakeEvent: pattern copy;
+
+        #step1: get our hash of event
+        (
+          ShadowReasonInput [
+            branch:;
+            stackEntry: matchingNodeStackDepth @processor block getStackEntryUnchecked;
+            stackEntry @branch.@refToVar set
+            stackEntry @eventVars addEventVar
+            matchingNodeStackDepth 1 + !matchingNodeStackDepth
+          ]
+          ShadowReasonCapture [
+            branch:;
+
+            overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
+            gnr: branch.nameInfo overloadIndex @processor @block branch.file getNameForMatchingWithOverloadIndex;
+
+            branch.file gnr processor nameResultIsStable @branch.@stable set
+            stackEntry: gnr.mplFieldIndex 0 < [gnr.refToVar] [gnr.object] if;
+
+            stackEntry @branch.@refToVar set
+            stackEntry @eventVars addEventVar
+          ]
+          ShadowReasonPointee [
+            branch:;
+            stackPointer: branch.pointer getVar.topologyIndex eventVars.at;
+            stackEntry: stackPointer @processor @block getPointeeForMatching;
+
+            stackPointer @branch.@pointer set
+            stackEntry   @branch.@pointee set
+            stackEntry   @eventVars addEventVar
+          ]
+          ShadowReasonField [
+            branch:;
+            stackObject: branch.object getVar.topologyIndex eventVars.at;
+            stackEntry: branch.mplFieldIndex stackObject @processor @block getFieldForMatching;
+
+            stackObject @branch.@object set
+            stackEntry  @branch.@field set
+            stackEntry  @eventVars addEventVar
+          ]
+          ShadowReasonTreeSplitterLambda [
+            branch:;
+
+            processor.options.partial ~ [
+              topNode: block.topNode;
+              [topNode.file isNil ~] "Topnode in nil file!" assert
+              topNode.file.usedInParams copy
+            ] || @branch set
+          ]
+          []
+        ) @matchingFakeEvent.visit
+
+        continueSearch [
+          eventHash: matchingFakeEvent TRUE dynamic @processor @block getShadowEventHash;
+
+          candidates: @currentMemory.@childIndices;
+          candidateIndex: -1 dynamic;
+
+          candidates [
+            prevVersion:;
+            candidateIndex 0 < [
+              eventHash prevVersion.eventHash = [
+                prevVersionEvent: prevVersion.childIndex matchingNode.treeMemory.at.parentEvent;
+                matchingFakeEvent prevVersionEvent @comparingMessage TRUE dynamic @processor compareEvents
+              ] && [
+                prevVersion.childIndex @candidateIndex set
+              ] when
+            ] when
+          ] each
+
+          candidateIndex 0 < [
+            TRUE !success #may be we can find it in
+            FALSE !continueSearch
+          ] [
+            currentMemory.nodeIndexes.size 0 > [
+              TRUE !success #may be we can find it in
+              FALSE !continueSearch
+            ] [
+              candidateIndex @currentEntryIndex set
+            ] if
+          ] if
+        ] when
+      ] if
+
+      continueSearch copy
+    ] loop
+
+    eventVars [
+      refToVar:;
+      -1 @refToVar getVar.@topologyIndexWhileMatching set
+    ] each
+
+    @eventVars @processor.releaseVarRefArray
+
+    success [
+      currentMemory: currentEntryIndex matchingNode.treeMemory.at;
+      currentMemory.nodeIndexes findInIndexArray @result set
     ] when
 
     result
@@ -682,15 +697,15 @@ fixOutputRefsRec: [
         sourceVar.host block is [
           [currentFromStack hasGoodSource] "Stack var source invariant failed!" assert
         ] [
-          sourceIndex: sourceVar.topologyIndex copy;
-          sourceIndex 0 < ~ [
-            sourceIndex appliedVars.stackVars.at @stackEntryVar.@sourceOfValue set
-          ] [
-            sourceVar.host currentChangesNode is [
-              currentFromStack @stackEntryVar.@sourceOfValue set
+          sourceVar.host currentChangesNode is [
+            sourceIndex: sourceVar.topologyIndex copy;
+            sourceIndex 0 < ~ [
+              sourceIndex appliedVars.stackVars.at @stackEntryVar.@sourceOfValue set
             ] [
-              [FALSE] "Source of value is unknown!" assert
+              currentFromStack @stackEntryVar.@sourceOfValue set
             ] if
+          ] [
+            [FALSE] "Source of value is unknown!" assert
           ] if
 
           [currentFromStack hasGoodSource] "Stack var source invariant failed!" assert
@@ -794,7 +809,11 @@ fixCaptureRef: [
                 cachePointee getVar.storageStaticity Virtual = [
                   cachePointee @processor @block getLastShadow getVar @cachePointee.setVar
                 ] [
-                  "returning pointer to local variable" @processor block compilerError
+                  cachePointee isUnallocable [
+                    #its ok
+                  ] [
+                    "returning pointer to local variable" @processor block compilerError
+                  ] if
                 ] if
               ] if
             ] [
@@ -843,6 +862,8 @@ applyNodeChanges: [
     [stackEntry cacheEntry variablesAreSame] "Applied vars has different type!" assert
 
     stackEntry noMatterToCopy ~ [
+      [stackEntry getVar.host.id block.id =] "Stack entry is not from here!" assert
+
       topologyIndex: cacheEntry getVar.topologyIndex copy;
       [topologyIndex 0 < ~] "Shadow event index is negative!" assert
       topologyIndex appliedVars.stackVars.size < ~ [
@@ -870,43 +891,39 @@ applyNodeChanges: [
   currentChangesNode.matchingInfo.shadowEvents.size [
     processor compilable [
       shadowEventIndex: i copy;
-
       currentEvent: shadowEventIndex currentChangesNode.matchingInfo.shadowEvents.at;
       (
         ShadowReasonInput [
           branch:;
           stackEntry: @processor @block popForMatching;
           cacheEntry: branch.refToVar;
-          stackEntry getVar.data.getTag VarInvalid = ~ [stackEntry @pops.pushBack] when
           stackEntry cacheEntry @appliedVars addAppliedVar
-        ]
-        ShadowReasonStableName [
-          branch:;
-          branch.nameInfo @processor @block addStableName
+          stackEntry @pops.pushBack
         ]
         ShadowReasonCapture [
           branch:;
-          cacheEntry: branch.refToVar;
-          overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
-          gnr: branch.nameInfo branch overloadIndex @processor @block branch.file getNameForMatchingWithOverloadIndex;
-          stackEntry: gnr outOverloadDepth @processor @block branch.file captureName.refToVar;
+          branch.stable [
+            branch.refToVar branch.nameInfo branch.nameOverloadDepth branch.file @processor @block addStableName
+          ] [
+            cacheEntry: branch.refToVar;
+            overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
+            gnr: branch.nameInfo overloadIndex @processor @block branch.file getNameForMatchingWithOverloadIndex;
+            cnr: gnr outOverloadDepth @processor @block branch.file captureName;
+            stackEntry: cnr.matchingEntry;
 
-          [stackEntry cacheEntry variablesAreSame
-            [
-              (
-                "shadowEventIndex " shadowEventIndex " of " currentChangesNode.matchingInfo.shadowEvents.size LF
-                "capture name is " branch.nameInfo processor.nameManager.getText LF
-                "stack entry is " stackEntry @processor @block getMplType LF
-                "cache entry is " cacheEntry @processor @block getMplType LF) printList
-              FALSE
-            ] ||
-          ] "Applied vars has different type!" assert
-          stackEntry cacheEntry @appliedVars addAppliedVar
-        ]
-        ShadowReasonFieldCapture [
-          branch:;
-          overloadIndex: outOverloadDepth: branch @block branch.file FALSE getOverloadIndex;;
-          fieldCnr: branch.nameInfo overloadIndex @processor @block branch.file getNameWithOverloadIndex outOverloadDepth @processor @block branch.file captureName;
+            [stackEntry cacheEntry variablesAreSame
+              [
+                (
+                  "shadowEventIndex " shadowEventIndex " of " currentChangesNode.matchingInfo.shadowEvents.size LF
+                  "capture name is " branch.nameInfo processor.nameManager.getText LF
+                  "stack entry is " stackEntry @processor @block getMplType LF
+                  "cache entry is " cacheEntry @processor @block getMplType LF) printList
+                FALSE
+              ] ||
+            ] "Applied vars has different type!" assert
+
+            stackEntry cacheEntry @appliedVars addAppliedVar
+          ] if
         ]
         ShadowReasonPointee [
           branch:;
@@ -942,6 +959,10 @@ applyNodeChanges: [
           stackEntry: branch.mplFieldIndex stackObject @processor @block getField;
           stackEntry cacheEntry @appliedVars addAppliedVar
         ]
+        ShadowReasonTreeSplitterLambda [
+          branch:;
+          branch copy @processor @block addLambdaEvent
+        ]
         []
       ) @currentEvent.visit
     ] when
@@ -954,13 +975,13 @@ applyNodeChanges: [
   ] times
 
   currentChangesNode.hasEmptyLambdas [
-    TRUE @block.!hasEmptyLambdas
+    @block setBlockEmptyLambdas
   ] when
 
   i: 0 dynamic;
   [
     i pops.size < [
-      pops.size i - 1 - pops.at @block push
+      pops.size i - 1 - pops.at @block pushForMatching
       i 1 + @i set processor compilable
     ] &&
   ] loop
@@ -984,6 +1005,10 @@ applyNodeChanges: [
 
   currentChangesNode.hasCallTrace [
     TRUE @block.@hasCallTrace set
+  ] when
+
+  currentChangesNode.hasCallImport [
+    TRUE @block.@hasCallImport set
   ] when
 
   appliedVars.stackVars.size [
@@ -1027,7 +1052,7 @@ changeVarValue: [
       varDst.data.getTag VarRef = [
         srcBranch: VarRef varSrc.data.get;
         dstBranch: VarRef @varDst.@data.get;
-        srcBranch @dstBranch set
+        srcBranch.refToVar @dstBranch.@refToVar set
       ] when
     ] if
   ] when
@@ -1067,11 +1092,13 @@ applyNamedStackChanges: [
 
   i: 0 dynamic;
   [
-    i newNode.matchingInfo.inputs.size < [
-      @processor @block pop @inputs.pushBack
+    i newNode.matchingInfo.inputs.getSize < [
+      @processor @block popForMatching @inputs.pushBack
       i 1 + @i set TRUE
     ] &&
   ] loop
+
+  newNode.matchingInfo.inputs.getSize @block updateInputCount
 
   i: 0 dynamic;
   [
@@ -1184,11 +1211,14 @@ makeCallInstructionWith: [
     i newNode.matchingInfo.captures.size < [
       currentCapture: i newNode.matchingInfo.captures.at;
 
-      currentCapture.refToVar.assigned [
+      currentRefToVar: currentCapture.refToVar;
+
+      currentRefToVar.assigned [
         currentCapture.argCase ArgRef = currentCapture.argCase ArgCopy = or currentCapture.argCase ArgDerefCopy = or  [
           overloadIndex: outOverloadDepth: currentCapture @block currentCapture.file FALSE getOverloadIndex;;
-          refToVar: currentCapture.nameInfo currentCapture overloadIndex @processor @block currentCapture.file getNameForMatchingWithOverloadIndex outOverloadDepth @processor @block currentCapture.file captureName.refToVar;
-          [currentCapture.refToVar refToVar variablesAreSame] "invalid capture type while generating arg list!" assert
+          cnr: currentCapture.nameInfo overloadIndex @processor @block currentCapture.file getNameForMatchingWithOverloadIndex outOverloadDepth @processor @block currentCapture.file captureName;
+          refToVar: cnr.matchingEntry;
+          [currentRefToVar refToVar variablesAreSame] "invalid capture type while generating arg list!" assert
 
           arg: IRArgument;
           refToVar getVar.irNameId @arg.@irNameId set
@@ -1245,9 +1275,10 @@ processNamedCallByNode: [
   newNode: newNodeIndex processor.blocks.at.get;
   compileOnce
 
-
   newNodeIndex changeNewNodeState
-  newNode.state NodeStateNoOutput = ~ [
+  newNode.state NodeStateNoOutput = [
+    newNode TRUE @processor @block useMatchingInfoOnly
+  ] [
     appliedVars: newNode applyNodeChanges;
 
     appliedVars.stackVars.size [
@@ -1257,7 +1288,7 @@ processNamedCallByNode: [
     ] times
 
     newNode newNodeIndex @appliedVars forcedName applyNamedStackChanges
-  ] when
+  ] if
 ];
 
 processCallByNode: [
@@ -1266,10 +1297,10 @@ processCallByNode: [
 ];
 
 useMatchingInfoOnly: [
-  newNode: processor: block: ;;;
+  newNode: useArgStatus: processor: block: ;;;;
 
-  pops: @processor.acquireVarRefArray;
   eventVars: @processor.acquireVarRefArray;
+  pops: @processor.acquireVarRefArray;
 
   addEventVar: [
     stackEntry: cacheEntry: ;;
@@ -1279,11 +1310,26 @@ useMatchingInfoOnly: [
         index 1 + @eventVars.resize
         stackEntry index @eventVars.at set
       ] when
+
+      useArgStatus [
+        cacheEntry getVar.capturedByPtr [
+          stackEntry makeVarPtrCaptured
+        ] when
+
+        cacheEntry getVar.capturedAsRealValue [
+          stackEntry @processor @block makeVarRealCaptured
+        ] when
+
+        cacheEntry getVar.capturedForDeref [
+          stackEntry makeVarDerefCaptured
+        ] when
+      ] when
     ] when
   ];
 
   oldSuccess: processor.result.success copy;
   TRUE @processor.@result.@success set
+  oldSuccess @processor.@canBuildTree set
 
   newNode.matchingInfo.shadowEvents [
     event:;
@@ -1292,25 +1338,21 @@ useMatchingInfoOnly: [
         branch:;
         cacheEntry: branch.refToVar;
         stackEntry: @processor @block popForMatching;
-        stackEntry getVar.data.getTag VarInvalid = ~ [stackEntry @pops.pushBack] when
         stackEntry cacheEntry addEventVar
+        stackEntry @pops.pushBack
       ]
       ShadowReasonCapture [
         branch:;
-        cacheEntry: branch.refToVar;
-        overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
-        gnr: branch.nameInfo branch overloadIndex @processor @block branch.file getNameForMatchingWithOverloadIndex;
-        stackEntry: gnr outOverloadDepth @processor @block branch.file captureName.refToVar;
-        stackEntry cacheEntry addEventVar
-      ]
-      ShadowReasonStableName [
-        branch:;
-        branch.nameInfo @processor @block addStableName
-      ]
-      ShadowReasonFieldCapture [
-        branch:;
-        overloadIndex: outOverloadDepth: branch @block branch.file FALSE getOverloadIndex;;
-        fieldCnr: branch.nameInfo overloadIndex @processor @block branch.file getNameWithOverloadIndex outOverloadDepth @processor @block branch.file captureName;
+        branch.stable [
+          branch.refToVar branch.nameInfo branch.nameOverloadDepth branch.file @processor @block addStableName
+        ] [
+          cacheEntry: branch.refToVar;
+          overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
+          gnr: branch.nameInfo overloadIndex @processor @block branch.file getNameForMatchingWithOverloadIndex;
+          cnr: gnr outOverloadDepth @processor @block branch.file captureName;
+          stackEntry: cnr.matchingEntry;
+          stackEntry cacheEntry addEventVar
+        ] if
       ]
       ShadowReasonPointee [
         branch:;
@@ -1328,6 +1370,18 @@ useMatchingInfoOnly: [
     ) event.visit
   ] each
 
+  TRUE @processor.@canBuildTree set
+
+  i: 0 dynamic;
+  [
+    i pops.size < [
+      pops.size i - 1 - pops.at @block pushForMatching
+      i 1 + @i set processor compilable
+    ] &&
+  ] loop
+
+  @pops @processor.releaseVarRefArray
+
   newNode.capturedFiles.getSize [
     i newNode.capturedFiles.at [
       i @block captureFileToBlock
@@ -1335,18 +1389,6 @@ useMatchingInfoOnly: [
   ] times
 
   @eventVars @processor.releaseVarRefArray
-
-  i: 0 dynamic;
-  [
-    i pops.size < [
-      pops.size i - 1 - pops.at @block push
-      i 1 + @i set
-      TRUE
-    ] &&
-  ] loop
-
-  @pops @processor.releaseVarRefArray
-
   oldSuccess @processor.@result.@success set
 ];
 
@@ -1397,7 +1439,7 @@ useMatchingInfoOnly: [
       newNodeIndex forcedName processNamedCallByNode
     ] if
   ] [
-    newNode @processor @block useMatchingInfoOnly
+    newNode FALSE @processor @block useMatchingInfoOnly
   ] if
 ] "processCallByIndexArray" exportFunction
 
@@ -1428,7 +1470,7 @@ useMatchingInfoOnly: [
     ] when
 
     newNode: newNodeIndex processor.blocks.at.get;
-    newNode @processor @block useMatchingInfoOnly
+    newNode FALSE @processor @block useMatchingInfoOnly
 
     oldGlobalErrorCount @processor.@result.@globalErrorInfo.shrink
     oldSuccess [
@@ -1481,7 +1523,7 @@ useMatchingInfoOnly: [
 
   newNodeThen: newNodeThenIndex @processor.@blocks.at.get;
   processor compilable ~ [
-    newNodeThen @processor @block useMatchingInfoOnly
+    newNodeThen FALSE @processor @block useMatchingInfoOnly
   ] [
     newNodeElseIndex: @astArrayIndexElse @processor @block tryMatchAllNodes;
     newNodeElseIndex 0 < [
@@ -1497,7 +1539,8 @@ useMatchingInfoOnly: [
     newNodeElse: newNodeElseIndex @processor.@blocks.at.get;
 
     processor compilable ~ [
-      newNodeElse @processor @block useMatchingInfoOnly
+      newNodeThen FALSE @processor @block useMatchingInfoOnly
+      newNodeElse FALSE @processor @block useMatchingInfoOnly
     ] [
       newNodeThenIndex changeNewNodeState
       newNodeElseIndex changeNewNodeState
@@ -1508,9 +1551,15 @@ useMatchingInfoOnly: [
           NodeStateNoOutput @block.@state set
         ] [
           newNodeThen.state NodeStateHasOutput < [
-            newNodeElseIndex processCallByNode
+            newNodeThen TRUE @processor @block useMatchingInfoOnly
           ] [
             newNodeThenIndex processCallByNode
+          ] if
+
+          newNodeElse.state NodeStateHasOutput < [
+            newNodeElse TRUE @processor @block useMatchingInfoOnly
+          ] [
+            newNodeElseIndex processCallByNode
           ] if
 
           NodeStateHasOutput @block.@state set
@@ -1846,6 +1895,7 @@ processDynamicLoop: [
       newNodeIndex changeNewNodeState
 
       newNode.state NodeStateHasOutput < [
+        newNode FALSE @processor @block useMatchingInfoOnly
         FALSE
       ] [
         newNode.state NodeStateHasOutput = [NodeStateHasOutput @block.@state set] when
@@ -2020,11 +2070,12 @@ processDynamicLoop: [
 
     newNode: newNodeIndex @processor.@blocks.at.get;
     processor compilable ~ [
-      newNode @processor @block useMatchingInfoOnly
+      newNode FALSE @processor @block useMatchingInfoOnly
       FALSE
     ] [
       newNodeIndex changeNewNodeState
       newNode.state NodeStateHasOutput < [
+        newNode TRUE @processor @block useMatchingInfoOnly
         FALSE
       ] [
         newNode.state NodeStateHasOutput = [NodeStateHasOutput @block.@state set] when
@@ -2166,10 +2217,13 @@ processDynamicLoop: [
       (
         ShadowReasonCapture [
           branch:;
-
-          overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
-          gnr: branch.nameInfo branch overloadIndex @processor @block branch.file getNameForMatchingWithOverloadIndex;
-          stackEntry: gnr outOverloadDepth @processor @block branch.file captureName.refToVar;
+          branch.stable [
+            branch.refToVar branch.nameInfo branch.nameOverloadDepth branch.file @processor @block addStableName
+          ] [
+            overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
+            gnr: branch.nameInfo overloadIndex @processor @block branch.file getNameForMatchingWithOverloadIndex;
+            stackEntry: gnr outOverloadDepth @processor @block branch.file captureName.refToVar;
+          ] if
         ]
         []
       ) currentEvent.visit
@@ -2372,6 +2426,7 @@ callImportWith: [
     ]
   ) sequence
 
+  TRUE @block.@hasCallImport set
   TRUE @block.@hasCallTrace set
 
   @inputs  @processor.releaseVarRefArray

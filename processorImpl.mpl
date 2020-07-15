@@ -32,12 +32,13 @@ debugMemory [
   multiParserResult: MultiParserResult Ref;
   fileText: StringView Cref;
   fileName: StringView Cref;
+  fileId: Int32;
   errorMessage: String Ref;
 } () {} [
-  errorMessage: fileName: fileText: multiParserResult: nameManager: ;;;;;
+  errorMessage: fileId: fileName: fileText: multiParserResult: nameManager: ;;;;;;
 
   parserResult: ParserResult;
-  @parserResult fileText makeStringView parseString
+  @parserResult fileId fileText makeStringView parseString
 
   parserResult.success [
     @parserResult optimizeLabels
@@ -298,9 +299,25 @@ debugMemory [
   ("all nodes generated" makeStringView) addLog
   [processor compilable ~ [processor.recursiveNodesStack.getSize 0 =] ||] "Recursive stack is not empty!" assert
 
+  getTreeSize: [
+    result: 0nx dynamic;
+    processor.matchingNodes [
+      current:;
+      current.assigned [
+        current.get.treeMemory.dataReserve Natx cast current.get.treeMemory.elementType storageSize * result + !result
+        current.get.treeMemory [
+          current:;
+          current.childIndices.dataReserve Natx cast current.childIndices.elementType storageSize * result + !result
+        ] each
+      ] when
+    ] each
+
+    result
+  ];
+
   processor.result.success [
     ("nameCount=" processor.nameManager.names.size
-      "; irNameCount=" processor.nameBuffer.size "; block count=" processor.blocks.getSize "; block size=" BlockSchema storageSize "; est var count=" processor.variables.getSize 4096 * "; var size=" VarSchema storageSize) addLog
+      "; irNameCount=" processor.nameBuffer.size "; block count=" processor.blocks.getSize "; block size=" BlockSchema storageSize "; est var count=" processor.variables.getSize 4096 * "; var size=" VarSchema storageSize "; tree size=" getTreeSize) addLog
 
     ("max depth of recursion=" processor.maxDepthOfRecursion) addLog
 
@@ -330,10 +347,7 @@ debugMemory [
         result
       ];
 
-      coordsMemory:
-        processor.captureTable.simpleNames  getCoordsMemory
-        processor.captureTable.selfNames    getCoordsMemory +
-        processor.captureTable.closureNames getCoordsMemory +;
+      coordsMemory: processor.captureTable.simpleNames  getCoordsMemory;
 
       getVariableUsedMemory: [
         var:;
@@ -399,23 +413,25 @@ debugMemory [
 
           event.getTag ShadowReasonCapture = [
             branch: ShadowReasonCapture event.get;
-            branch.refToVar getVar processor.varForFails getVar is [
-              failedCaptureCount 1 + !failedCaptureCount
-              name: branch.nameInfo processor.nameManager.getText;
-              fr: name @failedCaptureNames.find;
-              fr.success [
-                fr.value 1 + @fr.@value set
-              ] [
-                name 1 @failedCaptureNames.insert
-              ] if
-            ] when
+            branch.stable ~ [
+              branch.refToVar getVar processor.varForFails getVar is [
+                failedCaptureCount 1 + !failedCaptureCount
+                name: branch.nameInfo processor.nameManager.getText;
+                fr: name @failedCaptureNames.find;
+                fr.success [
+                  fr.value 1 + @fr.@value set
+                ] [
+                  name 1 @failedCaptureNames.insert
+                ] if
+              ] when
 
-            branch.refToVar isGlobal [branch.refToVar isUnallocable] && [
-              stringCaptureCount 1 + !stringCaptureCount
-            ] when
+              branch.refToVar isGlobal [branch.refToVar isUnallocable] && [
+                stringCaptureCount 1 + !stringCaptureCount
+              ] when
 
-            branch.refToVar isGlobal [branch.refToVar isVirtual] && [
-              virtualCaptureCount 1 + !virtualCaptureCount
+              branch.refToVar isGlobal [branch.refToVar isVirtual] && [
+                virtualCaptureCount 1 + !virtualCaptureCount
+              ] when
             ] when
           ] when
         ] each
@@ -431,7 +447,7 @@ debugMemory [
         "; totalFieldCount=" totalFieldCount "; fieldSize=" Field storageSize
         "; beventCount=" beventCount
         "; meventCount=" meventCount
-        "; meventCountByTag=" 0 eventTagCount @ ":" 1 eventTagCount @ ":" 2 eventTagCount @ ":" 3 eventTagCount @ ":" 4 eventTagCount @ ":" 5 eventTagCount @
+        "; meventCountByTag=" 0 eventTagCount @ ":" 1 eventTagCount @ ":" 2 eventTagCount @ ":" 3 eventTagCount @ ":" 4 eventTagCount @
         "; eventSize=" ShadowEvent storageSize
       ) addLog
 
@@ -505,7 +521,10 @@ debugMemory [
         LF @processor.@result.@program.cat
       ] when
     ] each
-  ] when
+  ] [
+    ("nameCount=" processor.nameManager.names.size
+      "; irNameCount=" processor.nameBuffer.size "; block count=" processor.blocks.getSize "; block size=" BlockSchema storageSize "; est var count=" processor.variables.getSize 4096 * "; var size=" VarSchema storageSize "; tree size=" getTreeSize) addLog
+  ] if
 
   processor.result.success ~ [
     processor.result.globalErrorInfo.getSize [

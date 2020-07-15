@@ -13,13 +13,12 @@ Weak:    [2n8 dynamic];
 Static:  [3n8 dynamic];
 Virtual: [4n8 dynamic];
 
-ShadowReasonNo:           [0];
-ShadowReasonCapture:      [1];
-ShadowReasonStableName:   [2];
-ShadowReasonFieldCapture: [3];
-ShadowReasonInput:        [4];
-ShadowReasonField:        [5];
-ShadowReasonPointee:      [6];
+ShadowReasonNo:                 [0];
+ShadowReasonCapture:            [1];
+ShadowReasonInput:              [2];
+ShadowReasonField:              [3];
+ShadowReasonPointee:            [4];
+ShadowReasonTreeSplitterLambda: [5];
 
 VarInvalid: [ 0 static];
 VarCond:    [ 1 static];
@@ -137,6 +136,7 @@ Variable: [{
   storageStaticity:                  Static;
   global:                            FALSE dynamic;
   usedInHeader:                      FALSE dynamic;
+  usedInParams:                      FALSE dynamic;
   capturedByPtr:                     FALSE dynamic;
   capturedAsRealValue:               FALSE dynamic;
   capturedForDeref:                  FALSE dynamic;
@@ -200,6 +200,11 @@ isVirtual: [
   var: refToVar getVar;
   var.staticity.end Virtual < ~
   [refToVar isVirtualType] ||
+];
+
+noMatterToCopy: [
+  refToVar:;
+  refToVar isVirtual [refToVar isAutoStruct ~] &&
 ];
 
 isVirtualType: [

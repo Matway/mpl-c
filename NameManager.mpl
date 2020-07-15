@@ -46,6 +46,22 @@ NameManager: [{
     index
   ];
 
+  findItemStrong: [
+    index: file: nameId:;; copy;
+    items: nameId names.at.items;
+
+    index -1 = [items.size !index] when
+    [
+      index 1 - !index
+      index -1 = [
+        itemFile: index items.at.file;
+        file isNil [itemFile file is] ||
+      ] || ~
+    ] loop
+
+    index
+  ];
+
   hasOverload: [
     nameId: copy;
     nameId @names.at.overloadCount 0 >
