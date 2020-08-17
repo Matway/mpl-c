@@ -263,13 +263,13 @@ isPlain: [
 
 isTinyArg: [
   refToVar: processor: ;;
-  #refToVar isPlain [
-  #  var: refToVar getVar;
-  #  var.data.getTag VarRef =
-  #] ||
-
   refToVar isUnallocable ~
-  [refToVar @processor getStorageSize processor.options.pointerSize 8nx / 2nx * > ~] &&
+  [
+    refToVar isPlain
+    [
+      refToVar @processor getStorageSize processor.options.pointerSize 8nx / > ~
+    ] ||
+  ] &&
 ];
 
 isUnallocable: [

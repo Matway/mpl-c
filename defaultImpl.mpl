@@ -23,7 +23,7 @@ FailProcForProcessor: [{
       trace storageAddress 0nx = [
         FALSE
       ] [
-        (trace.name trace.line copy trace.column copy) " in %s at %i:%i\n\00" printf
+        (trace.name trace.line copy trace.column copy) " in %s at %i:%i\n\00" printf drop
         trace.prev trace addressToReference !trace
         TRUE
       ] if
@@ -193,6 +193,10 @@ getStackEntryWith: [
     ] [
       depth currentBlock.stack.size < [
         currentBlock.stack.size 1 - depth - @currentBlock.@stack.at !result
+        check [result getVar.data.getTag VarInvalid =] && [
+          "stack underflow" @processor block compilerError
+        ] when
+
         FALSE
       ] [
         depth currentBlock.stack.size - currentBlock.buildingMatchingInfo.inputs.size + @depth set
@@ -231,9 +235,22 @@ getStackDepth: [
   processor: Processor Cref;
 } () {} [
   processor: block:;;
-
-  ("stack:" LF "depth=" processor block getStackDepth LF) printList
+  hasInvalid: FALSE dynamic;
+  depth: 0 dynamic;
   @processor @block getStackDepth  [
+    hasInvalid ~ [
+      entry: i @processor block getStackEntryUnchecked;
+      entry getVar.data.getTag VarInvalid = [
+        TRUE !hasInvalid
+      ] [
+        depth 1 + !depth
+      ] if
+    ] when
+  ] times
+
+  ("stack:" LF "depth=" depth LF) printList
+
+  depth [
     entry: i @processor block getStackEntryUnchecked;
     (entry @processor block getMplType entry.mutable ["R"] ["C"] if entry getVar.temporary ["T"] [""] if
       entry isPlain [entry getPlainValueInformation] [String] if LF) printList

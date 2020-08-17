@@ -279,6 +279,7 @@ updateInputCountInMatchingInfo: [
 updateInputCount: [
   delta: block:;;
 
+
   delta @block.@buildingMatchingInfo updateInputCountInMatchingInfo
   block.state NodeStateNew = [
     delta @block.@matchingInfo updateInputCountInMatchingInfo
@@ -317,29 +318,6 @@ setTopologyIndex: [
       topologyIndex 1 + @topologyIndex set
     ] when
   ] when
-];
-
-getStackEntryForPreInput: [
-  copy depth:;
-  depth @processor block getStackDepth < [
-    entry: depth @processor block getStackEntry;
-    [entry getVar.host block is ~] "Pre input is just in inputs!" assert
-    shadowBegin: RefToVar;
-    shadowEnd: RefToVar;
-    entry @shadowBegin @shadowEnd ShadowReasonInput @processor @block makeShadows
-
-    newEvent: ShadowEvent;
-    ShadowReasonInput @newEvent.setTag
-    branch: ShadowReasonInput @newEvent.get;
-    shadowBegin @branch.@refToVar set
-    ArgMeta     @branch.@argCase set
-    @block @shadowBegin setTopologyIndex
-    @newEvent @block addShadowEvent
-
-    shadowEnd
-  ] [
-    RefToVar
-  ] if
 ];
 
 makeVarCode:   [VarCode   @processor @block createVariable];
@@ -1725,7 +1703,7 @@ callCallable: [
         var.data.getTag VarStruct = [
           @predicate call
         ] [
-          [FALSE] "Wrong type to call!" assert
+          "not callable" @processor @block compilerError
         ] if
       ] if
     ] if
@@ -2957,7 +2935,7 @@ addMatchingNode: [
 
   astArrayIndex @block.@astArrayIndex set
 
-  astArrayIndex processor.matchingNodes.size < [astArrayIndex processor.matchingNodes.at.assigned] && [
+  astArrayIndex processor.matchingNodes.size < [astArrayIndex processor.matchingNodes.at.valid?] && [
     #it exists
   ] [
     tableValue: MatchingNode;
@@ -3511,6 +3489,9 @@ makeCompilerPosition: [
 
   hasForcedSignature [
     forcedSignature @block.@csignature set
+    validInputCount forcedSignature.inputs.getSize = ~ [
+      inputCountMismatch
+    ] when
   ] when
 
   addRefOrCopyArg: [
@@ -3620,12 +3601,12 @@ makeCompilerPosition: [
     ] loop
   ] when
 
+  invalidOutputCount: block.matchingInfo.inputs.getSize block.matchingInfo.maxInputCount -;
+
   block.parent 0 =
-  [block.stack.size 0 >] && [
+  [block.stack.size invalidOutputCount >] && [
     "module can not have inputs or outputs" @processor block compilerError
   ] when
-
-  invalidOutputCount: block.matchingInfo.inputs.getSize block.matchingInfo.maxInputCount -;
 
   @block.@outputs.clear
   i: invalidOutputCount copy dynamic;

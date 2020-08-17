@@ -140,13 +140,9 @@ debugMemory [
 
   s1: String;
   s2: String;
-  processor.options.pointerSize 32nx = [
-    "target datalayout = \"e-m:x-p:32:32-i64:64-f80:32-n8:16:32-a:0:32-S32\"" makeStringView @processor addStrToProlog
-    "target triple = \"i386-pc-windows-msvc18.0.0\"" makeStringView @processor addStrToProlog
-  ] [
-    "target datalayout = \"e-m:w-i64:64-f80:128-n8:16:32:64-S128\"" makeStringView @processor addStrToProlog
-    "target triple = \"x86_64-pc-windows\"" makeStringView @processor addStrToProlog
-  ] if
+
+  options.dataLayout "" = ~ [("target datalayout = \"" options.dataLayout "\"") assembleString @processor addStrToProlog] when
+  options.triple "" = ~ [("target triple = \"" options.triple "\"") assembleString @processor addStrToProlog] when
 
   "" makeStringView @processor addStrToProlog
   ("mainPath is \"" makeStringView processor.options.mainPath makeStringView "\"" makeStringView) addLog
@@ -303,7 +299,7 @@ debugMemory [
     result: 0nx dynamic;
     processor.matchingNodes [
       current:;
-      current.assigned [
+      current.valid? [
         current.get.treeMemory.dataReserve Natx cast current.get.treeMemory.elementType storageSize * result + !result
         current.get.treeMemory [
           current:;

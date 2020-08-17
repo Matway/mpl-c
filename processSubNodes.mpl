@@ -380,7 +380,7 @@ tryMatchNode: [
   astArrayIndex:;
 
   compileOnce
-  astArrayIndex processor.matchingNodes.size < [astArrayIndex processor.matchingNodes.at.assigned] && [
+  astArrayIndex processor.matchingNodes.size < [astArrayIndex processor.matchingNodes.at.valid?] && [
     matchingNode: astArrayIndex @processor.@matchingNodes.at.get;
     matchingNode.entries 1 + @matchingNode.@entries set
 
@@ -718,7 +718,15 @@ fixOutputRefsRec: [
                 fixed: fixedPointer @processor @block getPointeeNoDerefIR;
                 fixed @unfinishedStack.pushBack
               ] when
-            ] when
+            ] [
+              sourceVar.topologyIndex 0 < ~ [
+                stackEntryOfSource: sourceVar.topologyIndex @appliedVars.@stackVars.at;
+                stackPointeeBySource: VarRef @stackEntryOfSource getVar.@data.get.@refToVar;
+                stackPointeeBySource getVar.host.id block.id = [
+                  @stackPointeeBySource getVar @stackPointee.setVar
+                ] when
+              ] when
+            ] if
           ] [
             stackEntryVar.data.getTag VarStruct = [
               stackStruct: VarStruct stackEntryVar.data.get.get;
@@ -744,35 +752,6 @@ fixOutputRefsRec: [
   ] loop
 
   @unfinishedStack @processor.releaseVarRefArray
-];
-
-fixCaptureRefOld: [
-  cacheRefToVar: appliedVars: ;;
-
-  result: cacheRefToVar appliedVars fixRef;
-  fixed: result copy;
-
-  [
-    continue: FALSE;
-    var: fixed getVar;
-
-    curPointee: VarRef var.data.get.refToVar;
-    curPointeeVar: curPointee getVar;
-
-    curPointeeVar.data.getTag VarRef = [
-      index: curPointee getVar.topologyIndexWhileMatching copy;
-      index 0 < ~ [
-        curPointee appliedVars fixRef @fixed set
-        TRUE dynamic @continue set
-        # we need deep recursion for captures, becouse if we has dynamic fix to, we will has unfixed pointee
-        # need to fix!!!
-      ] when
-    ] when
-
-    continue
-  ] loop
-
-  result
 ];
 
 fixCaptureRef: [
@@ -1366,6 +1345,10 @@ useMatchingInfoOnly: [
         stackEntry: branch.mplFieldIndex branch.object getVar.topologyIndex eventVars.at @processor @block getField;
         stackEntry cacheEntry addEventVar
       ]
+      ShadowReasonTreeSplitterLambda [
+        branch:;
+        branch copy @processor @block addLambdaEvent
+      ]
       []
     ) event.visit
   ] each
@@ -1479,17 +1462,23 @@ useMatchingInfoOnly: [
       [FALSE] "Has compilerError before trying compiling pre!" assert
     ] if
 
-    newNode.uncompilable ~
-    [newNode.outputs.size 0 >] &&
-    [
-      top: newNode.outputs.last.refToVar;
-      top getVar.data.getTag VarCond =
-      [top staticityOfVar Weak < ~] && [
-        VarCond top getVar.data.get.end copy
-      ] [
+    newNode.uncompilable ~ [
+      badResult: [
         TRUE dynamic @processor.@result.@passErrorThroughPRE set
         "PRE code must fail or return static Cond" @processor block compilerError
         FALSE dynamic
+      ];
+
+      newNode.outputs.size 0 = [
+        badResult
+      ] [
+        top: newNode.outputs.last.refToVar;
+        top getVar.data.getTag VarCond =
+        [top staticityOfVar Weak < ~] && [
+          VarCond top getVar.data.get.end copy
+        ] [
+          badResult
+        ] if
       ] if
     ] &&
   ] [
@@ -1776,7 +1765,11 @@ useMatchingInfoOnly: [
                   outputThen outputElse newOutput mergeValuesRec
                   i newNodeThen.outputs.size + longestOutputSize < ~ [newOutput @outputsThen.pushBack] when
                   i newNodeElse.outputs.size + longestOutputSize < ~ [newOutput @outputsElse.pushBack] when
-                  @newOutput @processor @block createAllocIR @outputs.pushBack
+                  newOutput isVirtual [
+                    @newOutput @outputs.pushBack
+                  ] [
+                    @newOutput @processor @block createAllocIR @outputs.pushBack
+                  ] if
                 ] [
                   ("branch types mismatch; in 'then' type is " outputThen @processor block getMplType "; in 'else' type is " outputElse @processor block getMplType) assembleString @processor block compilerError
                 ] if
@@ -2183,17 +2176,19 @@ processDynamicLoop: [
   ] || [
     ("process export: " makeStringView name makeStringView) addLog
 
+    processor.varForFails @block pushForMatching
+
     # we dont know count of used in export entites
     signature.inputs.getSize [
-      r: signature.inputs.getSize 1 - i - signature.inputs.at @processor @block copyVarFromChild;
+      r: signature.inputs.getSize 1 - i - signature.inputs.at @processor @block copyVarFromType;
       r @processor @block makeVarTreeDynamic
       @r @processor block unglobalize
       @r fullUntemporize
       r getVar.data.getTag VarRef = [
-        @r @processor @block getPointeeNoDerefIR @block push
+        @r @processor @block getPointeeNoDerefIR @block pushForMatching
       ] [
         TRUE @r.setMutable
-        r @block push
+        r @block pushForMatching
       ] if
     ] times
 
@@ -2259,7 +2254,7 @@ processDynamicLoop: [
       ] when
     ] when
 
-    signature.inputs [p:; a: @processor @block pop;] each
+    signature.inputs.getSize 1 + [@processor @block popForMatching drop] times
 
     processor compilable [
       ("successfully processed export: " makeStringView name makeStringView) addLog

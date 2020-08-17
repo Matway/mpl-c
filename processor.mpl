@@ -19,6 +19,11 @@ DEFAULT_STATIC_LOOP_LENGTH_LIMIT: [64];
 DEFAULT_RECURSION_DEPTH_LIMIT: [256];
 DEFAULT_PRE_RECURSION_DEPTH_LIMIT: [64];
 
+DEFAULT_TRIPLE_32: ["i386-pc-windows-msvc18.0.0"];
+DEFAULT_TRIPLE_64: ["x86_64-pc-windows"];
+DEFAULT_DATA_LAYOUT_32: ["e-m:x-p:32:32-i64:64-f80:32-n8:16:32-a:0:32-S32"];
+DEFAULT_DATA_LAYOUT_64: ["e-m:w-i64:64-f80:128-n8:16:32:64-S128"];
+
 ProcessorOptions: [{
   mainPath:               String;
   fullLine:               String;
@@ -38,6 +43,8 @@ ProcessorOptions: [{
   verboseIR:              FALSE dynamic;
   callTrace:              FALSE dynamic;
   threadModel:            0 dynamic;
+  dataLayout:             String;
+  triple:                 String;
   staticLoopLengthLimit:  DEFAULT_STATIC_LOOP_LENGTH_LIMIT;
   recursionDepthLimit:    DEFAULT_RECURSION_DEPTH_LIMIT;
   preRecursionDepthLimit: DEFAULT_PRE_RECURSION_DEPTH_LIMIT;
