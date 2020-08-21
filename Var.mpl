@@ -136,6 +136,7 @@ Variable: [{
   storageStaticity:                  Static;
   global:                            FALSE dynamic;
   usedInHeader:                      FALSE dynamic;
+  usedInDebugInfo:                   FALSE dynamic;
   usedInParams:                      FALSE dynamic;
   capturedByPtr:                     FALSE dynamic;
   capturedAsRealValue:               FALSE dynamic;

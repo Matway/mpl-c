@@ -322,6 +322,21 @@ printShadowEvent: [
   ) event.visit
 ];
 
+printAstArrayTree: [
+  astArrayIndex: processor: block: ;;;
+
+  ("Print astArrayTree for " astArrayIndex LF) printList
+  matchingMode: astArrayIndex processor.matchingNodes.at.get;
+  matchingMode.treeMemory.getSize [
+    entry: i matchingMode.treeMemory.at;
+    (i "  nodeIndexes: ") printList
+    entry.nodeIndexes [v:; (v " ") printList] each
+    ("  childs: ") printList
+    entry.childIndices [v:; (v.childIndex " ") printList] each
+    LF print
+  ] times
+];
+
 findNameInfo: [
   processor:;
   @processor.@nameManager.createName
@@ -344,7 +359,7 @@ nodeHasCode: [
 ];
 
 addBlockIdTo: [
-  whereNames: nameInfo: nameOverloadDepth: captureCase: mplSchemaId: file: processor: block: ;;;;;;;;
+  whereNames: nameInfo: nameOverloadDepth: file: processor: block: ;;;;;;
 
   addToLine: [
     line:;
@@ -392,7 +407,7 @@ addEmptyCapture: [
   nameInfo: nameOverloadDepth: ;;
   file:;
 
-  @processor.@captureTable nameInfo nameOverloadDepth NameCaseInvalid processor.varForFails getVar.mplSchemaId file @processor @block addBlockIdTo [
+  @processor.@captureTable nameInfo nameOverloadDepth file @processor @block addBlockIdTo [
     newEvent: ShadowEvent;
     ShadowReasonCapture @newEvent.setTag
     branch: ShadowReasonCapture @newEvent.get;

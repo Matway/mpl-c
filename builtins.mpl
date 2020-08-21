@@ -75,6 +75,7 @@ builtins: (
   {name: "or"                            ; impl: @mplBuiltinOr                      ;}
   {name: "overload"                      ; impl: @mplBuiltinOverload                ;}
   {name: "printCompilerMessage"          ; impl: @mplBuiltinPrintCompilerMessage    ;}
+  {name: "printMatchingTree"             ; impl: @mplBuiltinPrintMatchingTree       ;}
   {name: "printShadowEvents"             ; impl: @mplBuiltinPrintShadowEvents       ;}
   {name: "printStack"                    ; impl: @mplBuiltinPrintStack              ;}
   {name: "printStackTrace"               ; impl: @mplBuiltinPrintStackTrace         ;}

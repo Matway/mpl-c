@@ -1530,7 +1530,6 @@ staticityOfBinResult: [
   @processor block defaultPrintStackTrace
 ] "mplBuiltinPrintStackTrace" @declareBuiltin ucall
 
-
 [
   ("Print shadow events for block " block.id " in astNode " block.astArrayIndex LF) printList
   block.buildingMatchingInfo.shadowEvents.size [
@@ -1538,6 +1537,10 @@ staticityOfBinResult: [
     event i TRUE @processor @block printShadowEvent
   ] times
 ] "mplBuiltinPrintShadowEvents" @declareBuiltin ucall
+
+[
+  block.astArrayIndex @processor @block printAstArrayTree
+] "mplBuiltinPrintMatchingTree" @declareBuiltin ucall
 
 [
   debugMemory [

@@ -118,6 +118,7 @@ createAllocIRByReg: [
 createAllocIR: [
   refToVar: processor: block: ;;;
   var: @refToVar getVar;
+
   block.parent 0 = [
     processor.options.partial copy [
       varBlock: block;

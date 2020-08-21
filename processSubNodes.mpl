@@ -893,10 +893,14 @@ applyNodeChanges: [
             [stackEntry cacheEntry variablesAreSame
               [
                 (
+                  "astArrayIndex " currentChangesNode.astArrayIndex "; nodeIndex " currentChangesNode.id LF
                   "shadowEventIndex " shadowEventIndex " of " currentChangesNode.matchingInfo.shadowEvents.size LF
                   "capture name is " branch.nameInfo processor.nameManager.getText LF
                   "stack entry is " stackEntry @processor @block getMplType LF
                   "cache entry is " cacheEntry @processor @block getMplType LF) printList
+
+                currentChangesNode.astArrayIndex @processor @block printAstArrayTree
+
                 FALSE
               ] ||
             ] "Applied vars has different type!" assert
@@ -1466,23 +1470,28 @@ useMatchingInfoOnly: [
       badResult: [
         TRUE dynamic @processor.@result.@passErrorThroughPRE set
         "PRE code must fail or return static Cond" @processor block compilerError
-        FALSE dynamic
+        FALSE
       ];
 
-      newNode.outputs.size 0 = [
-        badResult
+      newNode.state NodeStateNoOutput = [
+        NodeStateNoOutput @block.@state set
+        FALSE
       ] [
-        top: newNode.outputs.last.refToVar;
-        top getVar.data.getTag VarCond =
-        [top staticityOfVar Weak < ~] && [
-          VarCond top getVar.data.get.end copy
-        ] [
+        newNode.outputs.size 0 = [
           badResult
+        ] [
+          top: newNode.outputs.last.refToVar;
+          top getVar.data.getTag VarCond =
+          [top staticityOfVar Weak < ~] && [
+            VarCond top getVar.data.get.end copy
+          ] [
+            badResult
+          ] if
         ] if
       ] if
     ] &&
   ] [
-    FALSE dynamic
+    FALSE
   ] if
 ] "processPre" exportFunction
 
@@ -1759,7 +1768,7 @@ useMatchingInfoOnly: [
 
               isOutputImplicitDerefThen isOutputImplicitDerefElse = [
                 outputThen outputElse variablesAreSame [
-                  newOutput: outputThen copy;
+                  newOutput: newNodeThen.outputs.size newNodeElse.outputs.size < [outputElse copy] [outputThen copy] if;
                   outputElse.mutable outputThen.mutable and @newOutput.setMutable
                   outputElse varIsMoved outputThen varIsMoved and @newOutput.setMoved
                   outputThen outputElse newOutput mergeValuesRec
@@ -2207,22 +2216,25 @@ processDynamicLoop: [
     TRUE @processor.@result.@success set
 
     newNode: newNodeIndex processor.blocks.at.get;
-    newNode.matchingInfo.shadowEvents [
-      currentEvent:;
-      (
-        ShadowReasonCapture [
-          branch:;
-          branch.stable [
-            branch.refToVar branch.nameInfo branch.nameOverloadDepth branch.file @processor @block addStableName
-          ] [
-            overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
-            gnr: branch.nameInfo overloadIndex @processor @block branch.file getNameForMatchingWithOverloadIndex;
-            stackEntry: gnr outOverloadDepth @processor @block branch.file captureName.refToVar;
-          ] if
-        ]
-        []
-      ) currentEvent.visit
-    ] each
+
+    processor.result.passErrorThroughPRE ~ [
+      newNode.matchingInfo.shadowEvents [
+        currentEvent:;
+        (
+          ShadowReasonCapture [
+            branch:;
+            branch.stable [
+              branch.refToVar branch.nameInfo branch.nameOverloadDepth branch.file @processor @block addStableName
+            ] [
+              overloadIndex: outOverloadDepth: branch @block branch.file TRUE getOverloadIndex;;
+              gnr: branch.nameInfo overloadIndex @processor @block branch.file getNameForMatchingWithOverloadIndex;
+              stackEntry: gnr outOverloadDepth @processor @block branch.file captureName.refToVar;
+            ] if
+          ]
+          []
+        ) currentEvent.visit
+      ] each
+    ] when
 
     successBeforeCaptures @processor.@result.@success set
 
@@ -2269,7 +2281,7 @@ processDynamicLoop: [
       ("failed while process export: " makeStringView name makeStringView) addLog
     ] if
 
-    oldSuccess processor compilable ~ and processor.depthOfPre 0 = and processor.result.findModuleFail ~ and [
+    oldSuccess processor compilable ~ and processor.depthOfPre 0 = and processor.result.findModuleFail ~ and processor.result.passErrorThroughPRE ~ and [
       @processor.@result.@errorInfo move @processor.@result.@globalErrorInfo.pushBack
       oldRecursiveNodesStackSize @processor.@recursiveNodesStack.shrink
       -1 @processor.@result clearProcessorResult

@@ -1325,7 +1325,6 @@ captureName: [
         copy overloadDepth:;
         copy nameInfo:;
 
-
         result: {
           object: RefToVar;
           refToVar: RefToVar;
@@ -1333,7 +1332,7 @@ captureName: [
         };
 
         shadow: RefToVar;
-        getNameResult.startPoint block.id = ~ [@processor.@captureTable nameInfo overloadDepth captureCase refToVar getVar.mplSchemaId file @processor @block addBlockIdTo] && [
+        getNameResult.startPoint block.id = ~ [@processor.@captureTable nameInfo overloadDepth file @processor @block addBlockIdTo] && [
           @shadow refToVar ShadowReasonCapture @processor @block makeShadows
           @shadow fullUntemporize
 
@@ -1386,15 +1385,33 @@ captureName: [
           ] if
 
           processor.options.debug [
-            varForFake: result.refToVar;
-            varForFake isVirtual ~ [varForFake isGlobal ~] && [
-              fakePointer: varForFake makeRefBranch FALSE @processor @block createRefVariable;
-              varForFake @fakePointer @processor @block createRefOperation
-              nameInfo fakePointer @processor @block addVariableMetadata
-              3 [
-                TRUE block.program.getSize 1 - i - @block.@program.at.@fakePointer set
-              ] times
-              @processor @block addDebugLocationForLastInstruction
+            createFakePointer: [
+              varForFake: nameInfo: ;;
+              varForFake isVirtual ~ [varForFake isGlobal ~] && [
+                fakePointer: varForFake makeRefBranch FALSE @processor @block createRefVariable;
+                varForFake @fakePointer @processor @block createRefOperation
+                nameInfo fakePointer @processor @block addVariableMetadata
+                3 [
+                  TRUE block.program.getSize 1 - i - @block.@program.at.@fakePointer set
+                ] times
+                @processor @block addDebugLocationForLastInstruction
+              ] when
+            ];
+
+            result.refToVar nameInfo createFakePointer
+
+            getNameResult.mplFieldIndex 0 < ~ [
+              result.object getVar.usedInDebugInfo ~ [
+                captureCase NameCaseSelfMember = [
+                  result.object processor.specialNames.selfNameInfo createFakePointer
+                ] [
+                  captureCase NameCaseClosureMember = [
+                    result.object processor.specialNames.closureNameInfo createFakePointer
+                  ] when
+                ] if
+
+                TRUE @result.@object getVar.!usedInDebugInfo
+              ] when
             ] when
           ] when
 
@@ -1624,54 +1641,56 @@ callCallableStructWithPre: [
         ] if
       ] when
 
-      needPre [
-        findInside [
-          findFieldDepth 1 + !findFieldDepth
+      block.state NodeStateNoOutput = ~ [
+        needPre [
+          findInside [
+            findFieldDepth 1 + !findFieldDepth
 
-          fr: nameInfo object findFieldDepth @processor block findFieldWithOverloadDepth;
-          fr.success [
-            fr.index @object @processor @block processStaticAt @refToVar set
+            fr: nameInfo object findFieldDepth @processor block findFieldWithOverloadDepth;
+            fr.success [
+              fr.index @object @processor @block processStaticAt @refToVar set
+            ] [
+              name: nameInfo processor.nameManager.getText;
+              ("cant call overload for field with name: " name) assembleString @processor block compilerError
+            ] if
+
           ] [
-            name: nameInfo processor.nameManager.getText;
-            ("cant call overload for field with name: " name) assembleString @processor block compilerError
+            oldGnr: nameInfo overloadIndex @processor @block processor.positions.last.file getNameWithOverloadIndex;
+            oldGnr.startPoint block.id = ~ [overloadDepth 1 + !overloadDepth] when
+
+            overloadIndex processor.positions.last.file nameInfo processor.nameManager.findItem !overloadIndex
+            overloadIndex 0 < [
+              name: nameInfo processor.nameManager.getText;
+              processor.positions.last.file nameInfo overloadDepth @processor @block addEmptyCapture
+
+              ("cant call overload for name: " name) assembleString @processor block compilerError
+            ] when
+
+            processor compilable [
+              gnr: nameInfo overloadIndex @processor @block processor.positions.last.file getNameWithOverloadIndex;
+              processor compilable [
+                cnr: @gnr overloadDepth @processor @block processor.positions.last.file captureName;
+                cnr.refToVar @refToVar set
+              ] when
+            ] when
           ] if
 
-        ] [
-          oldGnr: nameInfo overloadIndex @processor @block processor.positions.last.file getNameWithOverloadIndex;
-          oldGnr.startPoint block.id = ~ [overloadDepth 1 + !overloadDepth] when
-
-          overloadIndex processor.positions.last.file nameInfo processor.nameManager.findItem !overloadIndex
-          overloadIndex 0 < [
-            name: nameInfo processor.nameManager.getText;
-            processor.positions.last.file nameInfo overloadDepth @processor @block addEmptyCapture
-
-            ("cant call overload for name: " name) assembleString @processor block compilerError
-          ] when
-
           processor compilable [
-            gnr: nameInfo overloadIndex @processor @block processor.positions.last.file getNameWithOverloadIndex;
-            processor compilable [
-              cnr: @gnr overloadDepth @processor @block processor.positions.last.file captureName;
-              cnr.refToVar @refToVar set
-            ] when
+            findInside object refToVar nameInfo [
+              TRUE @nextIteration set # for builtin or import or pure code go out of loop
+            ] callCallable
           ] when
+        ] [
+          # no need pre, just call it!
+          file: VarCode codeVar.data.get.file;
+
+          object file regNamesSelf
+          refToVar file regNamesClosure
+          VarCode codeVar.data.get.index nameInfo processor.nameManager.getText @processor @block processCall
+          refToVar unregNamesClosure
+          object unregNamesSelf
         ] if
-
-        processor compilable [
-          findInside object refToVar nameInfo [
-            TRUE @nextIteration set # for builtin or import or pure code go out of loop
-          ] callCallable
-        ] when
-      ] [
-        # no need pre, just call it!
-        file: VarCode codeVar.data.get.file;
-
-        object file regNamesSelf
-        refToVar file regNamesClosure
-        VarCode codeVar.data.get.index nameInfo processor.nameManager.getText @processor @block processCall
-        refToVar unregNamesClosure
-        object unregNamesSelf
-      ] if
+      ] when
     ] [
       "CALL field is not a code" @processor block compilerError
     ] if
@@ -3827,7 +3846,7 @@ makeCompilerPosition: [
       (
         ShadowReasonInput [
           branch:;
-          ("shadow event [" i "] input as " branch.refToVar getVar.buildingTopologyIndex) assembleString @block createComment
+          ("shadow event [" i "] input as " branch.refToVar getVar.buildingTopologyIndex " type " branch.refToVar @processor @block getMplType) assembleString @block createComment
         ]
         ShadowReasonCapture [
           branch:;
@@ -4219,6 +4238,10 @@ addIndexArrayToProcess: [
       NodeStateFailed @block.@state set
       TRUE @block.@uncompilable set
     ] if
+
+    prevBlockMatchingChindIndex 0 < ~ [
+      @processor @block prevBlockMatchingChindIndex TRUE deleteMatchingNodeFrom
+    ] when
 
     recursionTries 1 + @recursionTries set
     recursionTries 64 > ["recursion processing loop length too big" @processor block compilerError] when
