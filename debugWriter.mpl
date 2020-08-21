@@ -128,7 +128,9 @@ getPointerTypeDebugDeclaration: [
   var: refToVar getVar;
   debugDeclarationIndex: refToVar @processor getMplSchema.dbgTypeDeclarationId copy;
   [debugDeclarationIndex -1 = ~] "Pointee has no type debug info!" assert
-  "DW_TAG_pointer_type" makeStringView debugDeclarationIndex processor.options.pointerSize 0ix cast 0 cast @processor addDerivedTypeInfo
+  index: "DW_TAG_pointer_type" makeStringView debugDeclarationIndex processor.options.pointerSize 0ix cast 0 cast @processor addDerivedTypeInfo;
+
+  index
 ];
 
 addMemberInfo: [
@@ -147,17 +149,16 @@ addMemberInfo: [
   name: field.nameInfo processor.nameManager.getText;
 
   name "" = [
-    ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"f" fieldNumber "\", scope: !" block.funcDbgIndex
+    ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"f" fieldNumber "\""
       ", file: !" processor.positions.last.file.debugId
       ", line: " processor.positions.last.line ", baseType: !" debugDeclarationIndex ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
   ] [
-    ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"" name "\", scope: !" block.funcDbgIndex
+    ("!" index " = !DIDerivedType(tag: DW_TAG_member, name: \"" name "\""
       ", file: !" processor.positions.last.file.debugId
       ", line: " processor.positions.last.line ", baseType: !" debugDeclarationIndex ", size: " fsize 8 * ", offset: " offset 8 * ")") assembleString
   ] if
 
   addDebugString
-  index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
 
   offset fsize + @offset set
   index
@@ -213,15 +214,13 @@ getTypeDebugDeclaration: [
             "}" @newDebugInfo.cat
             @newDebugInfo move addDebugString
 
-            index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
 
             index: processor.debugInfo.lastId copy;
             processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
             ("!" index " = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !" processor.positions.last.file.debugId
-              ", name: \"" refToVar @processor block getDebugType "\", line: " processor.positions.last.line ", size: " refToVar @processor getStorageSize 0ix cast 0 cast 8 * ", elements: !" index 1 -
+              ", name: \"" refToVar @processor block getDebugType "\", size: " refToVar @processor getStorageSize 0ix cast 0 cast 8 * ", elements: !" index 1 -
               ")") assembleString addDebugString
-            index block.funcDbgIndex @processor.@debugInfo.@locationIds.insert
             index
           ] [
             [FALSE] "Unknown type in getTypeDebugDeclaration!" assert
@@ -508,13 +507,18 @@ correctUnitInfo: [
 clearUnusedDebugInfo: [
   processor:;
 
+  clearString: [
+    s:;
+    String @s set
+  ];
+
   processor.debugInfo.locationIds [
     pair:;
     locId: pair.key;
     funcDbgId: pair.value;
     debugString: funcDbgId 4 + processor.debugInfo.strings.at;
     debugString.size 0 = [
-      String locId 4 + @processor.@debugInfo.@strings.at set
+      locId 4 + @processor.@debugInfo.@strings.at clearString
     ] when
   ] each
 

@@ -1188,7 +1188,7 @@ staticityOfBinResult: [
 
   result: @processor.@varForCallTrace FALSE dynamic @processor @block createRefNoOp @processor @block createAllocIR Dynamic @processor @block makeStaticity;
   result @processor @block createGetCallTrace
-  result @block push
+  result @processor @block derefAndPush
 
   TRUE @block.!hasCallTrace
 ] "mplBuiltinGetCallTrace" @declareBuiltin ucall

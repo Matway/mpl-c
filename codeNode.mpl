@@ -2777,24 +2777,31 @@ addNamesFromModule: [
 
 finalizeListNode: [
   struct: Struct;
+  validOutputCount: block.stack.size;
+
   processor compilable [
     i: 0 dynamic;
+
     [
       i block.stack.size < [
         curRef: i @block.@stack.at;
-
-        newField: Field;
-        processor.specialNames.emptyNameInfo @newField.@nameInfo set
-
-        curRef getVar.temporary [
-          curRef @newField.@refToVar set
+        curRef getVar.data.getTag VarInvalid = [
+          i @validOutputCount set
+          FALSE
         ] [
-          @curRef TRUE dynamic @processor @block createRef @newField.@refToVar set
-          @curRef makeVarPtrCaptured
-        ] if
+          newField: Field;
+          processor.specialNames.emptyNameInfo @newField.@nameInfo set
 
-        newField @struct.@fields.pushBack
-        i 1 + @i set processor compilable
+          curRef getVar.temporary [
+            curRef @newField.@refToVar set
+          ] [
+            @curRef TRUE dynamic @processor @block createRef @newField.@refToVar set
+            @curRef makeVarPtrCaptured
+          ] if
+
+          newField @struct.@fields.pushBack
+          i 1 + @i set processor compilable
+        ] if
       ] &&
     ] loop
   ] when
@@ -2809,7 +2816,7 @@ finalizeListNode: [
 
     i: 0 dynamic;
     [
-      i block.stack.size < [
+      i validOutputCount < [
         curFieldRef: i @struct.@fields.at.@refToVar;
 
         curFieldRef isVirtual [
@@ -2826,7 +2833,7 @@ finalizeListNode: [
       ] &&
     ] loop
 
-    @block.@stack.clear
+    block.stack.size validOutputCount - @block.@stack.shrink
     refToStruct @block.@stack.pushBack
   ] when
 ];

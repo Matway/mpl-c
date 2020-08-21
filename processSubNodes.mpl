@@ -838,7 +838,15 @@ applyNodeChanges: [
   addAppliedVar: [
     stackEntry: cacheEntry: appliedVars: ;;;
 
-    [stackEntry cacheEntry variablesAreSame] "Applied vars has different type!" assert
+    [stackEntry cacheEntry variablesAreSame
+      [
+        (
+          "Stack entry type is " stackEntry @processor @block getMplType LF
+          "cache entry type is " cacheEntry @processor @block getMplType LF
+        ) printList
+        FALSE
+      ] ||
+    ] "Applied vars has different type!" assert
 
     stackEntry noMatterToCopy ~ [
       [stackEntry getVar.host.id block.id =] "Stack entry is not from here!" assert
