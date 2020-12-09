@@ -63,7 +63,7 @@ mplBuiltinProcessAtList: [
   (
     [processor compilable]
     [structVar: refToStruct VarStruct "the right-hand argument \"object\" is not a list:" checkedVar;]
-    [indexVar: refToIndex VarInt32 "the left-hand argument \"index\" is not an i32-value:" checkedVar;]
+    [indexVar: refToIndex VarInt32 "the left-hand argument \"index\" is not an Int32:" checkedVar;]
     [
       struct: VarStruct structVar.data.get.get;
       refToIndex staticityOfVar Weak < [
@@ -357,7 +357,7 @@ parseSignature: [
             variadicRefToVar: f.refToVar;
             (
               [processor compilable]
-              [variadicVar: variadicRefToVar VarCond "the option \"variadic\" is not a static i1-value:" checkedVar;]
+              [variadicVar: variadicRefToVar VarCond "the option \"variadic\" is not a static Cond:" checkedVar;]
               [variadicRefToVar staticityOfVar Weak < ["the value of option \"variadic\" is not static" @processor block compilerError] when]
               [VarCond variadicVar.data.get.end @result.@variadic set]
             ) sequence
@@ -581,8 +581,8 @@ staticityOfBinResult: [
   processor compilable [
     var1: arg1 getVar;
     var2: arg2 getVar;
-    arg1 isReal ~ [arg1 "the left-hand argument neither a r32 nor r64:" illegalRef] [
-      arg2 isReal ~ [arg2 "the right-hand argument neither a r32 nor r64:" illegalRef] [
+    arg1 isReal ~ [arg1 "the left-hand argument neither a Real32 nor Real64:" illegalRef] [
+      arg2 isReal ~ [arg2 "the right-hand argument neither a Real32 nor Real64:" illegalRef] [
         arg1 arg2 variablesAreSame ~ [
           ("schema mismatch - the left-hand argument is <" arg1 @processor block getMplType ">, the right-hand argument is <" arg2 @processor block getMplType ">") assembleString @processor block compilerError
         ] when
@@ -676,7 +676,7 @@ staticityOfBinResult: [
         ] if
       ] if
     ] [
-      refToVar "the right-hand argument \"address\" is not a nx-value:" illegalRef
+      refToVar "the right-hand argument \"address\" is not a Natx:" illegalRef
     ] if
   ] when
 ] "mplBuiltinAddressToReference" @declareBuiltin ucall
@@ -704,7 +704,7 @@ staticityOfBinResult: [
   refToElement: @processor @block pop;
   processor compilable [
     @refToElement fullUntemporize
-    varCount: refToCount VarInt32 "the right-hand argument \"count\" is not an i32-value:" checkedVar;
+    varCount: refToCount VarInt32 "the right-hand argument \"count\" is not an Int32:" checkedVar;
     processor compilable [
       refToCount staticityOfVar Dynamic > ~ ["the right-hand argument \"count\" is not static" @processor block compilerError] when
       processor compilable [
@@ -1101,7 +1101,7 @@ staticityOfBinResult: [
   refToCount: @processor @block pop;
   refToVar:   @processor @block pop;
   processor compilable [
-    varCount: refToCount VarInt32 "the right-hand argument \"fieldIndex\" is not a static i32-value:" checkedVar;
+    varCount: refToCount VarInt32 "the right-hand argument \"fieldIndex\" is not a static Int32:" checkedVar;
     processor compilable [
       refToCount staticityOfVar Dynamic > ~ ["the right-hand argument \"fieldIndex\" is not static" @processor block compilerError] when
       processor compilable [
@@ -1203,7 +1203,7 @@ staticityOfBinResult: [
   processor compilable [
     varOnFalse: onFalse VarCode "the branch \"onFalse\" is not a [CODE]:" checkedVar;
     varOnTrue: onTrue VarCode "the branch \"onTrue\" is not a [CODE]:" checkedVar;
-    varCond: determiner VarCond "the determiner is not an i1-value:" checkedVar;
+    varCond: determiner VarCond "the determiner is not a Cond:" checkedVar;
 
     processor compilable [
       determiner staticityOfVar Weak > [
@@ -1415,7 +1415,7 @@ staticityOfBinResult: [
 
   (
     [processor compilable]
-    [condVar: refToCond VarCond "the right-hand argument \"determiner\" is not a static i1-value:" checkedVar;]
+    [condVar: refToCond VarCond "the right-hand argument \"determiner\" is not a static Cond:" checkedVar;]
     [refToCond staticityOfVar Dynamic > ~ ["the right-hand argument \"determiner\" is not static" @processor block compilerError] when]
     [refToVar: @processor @block pop;]
     [
@@ -1702,7 +1702,7 @@ staticityOfBinResult: [
   processor compilable [
     varOnTrue: onTrue VarCode "the branch \"onTrue\" is not a [CODE]:" checkedVar;
     varOnFalse: onFalse VarCode "the branch \"onFalse\" is not a [CODE]:" checkedVar;
-    varCond: condition VarCond "the branch determiner is not an i1-value:" checkedVar;
+    varCond: condition VarCond "the branch determiner is not a Cond:" checkedVar;
 
     processor compilable [
       condition staticityOfVar Weak > [
