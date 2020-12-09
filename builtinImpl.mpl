@@ -328,17 +328,12 @@ parseFieldToSignatureCaptureArray: [
   varStruct: refToStruct VarStruct "the argument \"parameters\" is not a list:" checkedVar;
 
   processor compilable [
-    walk: [
-      walkIterSource:walkIterBody:;;
-      [@walkIterSource.valid] [@walkIterSource.get walkIterBody @walkIterSource.next] while
-    ];
-
     VarStruct varStruct.data.get.get.fields enumerate [
       field:;
       refToVar: field.value.refToVar;
       refToVar [isVirtual ~] ("non-mpl function can't take virtual value as a parameter; the zero-based parameter #" field.key " is:") assembleString checkVarBy # FIXME: Do not allocate memory for the message without the need.
       refToVar @result.pushBack
-    ] walk
+    ] each
   ] when
 
   result
