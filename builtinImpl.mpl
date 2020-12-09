@@ -36,16 +36,16 @@ declareBuiltin: [
     checkVar: [checkedVar drop];
     checkVarBy: [checkedVarBy drop];
     checkedVar: [
-      refToVar:type:msg:;;;
+      refToVar: type: msg:;;;
       @refToVar [getVar.data.getTag type =] msg checkedVarBy
     ];
     checkedVarBy: [
-      checkedVarBy-refToVar: checkedVarBy-f: checkedVarBy-msg: ;;;
+      checkedVarBy-refToVar: checkedVarBy-f: checkedVarBy-msg:;;;
       @checkedVarBy-refToVar checkedVarBy-f ~ [checkedVarBy-refToVar checkedVarBy-msg illegalRef] when
       @checkedVarBy-refToVar getVar
     ];
     illegalRef: [
-      refToVar:msg:;;
+      refToVar: msg:;;
       (msg " <" refToVar @processor block getMplType ">") assembleString @processor block compilerError
     ];
 
