@@ -1203,7 +1203,7 @@ staticityOfBinResult: [
   processor compilable [
     varOnFalse: onFalse VarCode "the branch \"onFalse\" is not a [CODE]:" checkedVar;
     varOnTrue: onTrue VarCode "the branch \"onTrue\" is not a [CODE]:" checkedVar;
-    varCond: determiner VarCond "the determiner is not a Cond:" checkedVar;
+    varCond: determiner VarCond "the branch determiner is not a Cond:" checkedVar;
 
     processor compilable [
       determiner staticityOfVar Weak > [
