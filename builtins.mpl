@@ -51,7 +51,6 @@ builtins: (
   {name: "fieldIndex"                    ; impl: @mplBuiltinFieldIndex              ;}
   {name: "fieldName"                     ; impl: @mplBuiltinFieldName               ;}
   {name: "floor"                         ; impl: @mplBuiltinFloor                   ;}
-  {name: "printCompilerMaxAllocationSize"; impl: @mplPrintCompilerMaxAllocationSize ;}
   {name: "getCallTrace"                  ; impl: @mplBuiltinGetCallTrace            ;}
   {name: "has"                           ; impl: @mplBuiltinHas                     ;}
   {name: "if"                            ; impl: @mplBuiltinIf                      ;}
@@ -60,7 +59,9 @@ builtins: (
   {name: "is"                            ; impl: @mplBuiltinIs                      ;}
   {name: "isCombined"                    ; impl: @mplBuiltinIsCombined              ;}
   {name: "isConst"                       ; impl: @mplBuiltinIsConst                 ;}
+  {name: "isDynamic"                     ; impl: @mplBuiltinIsDynamic               ;}
   {name: "isMoved"                       ; impl: @mplBuiltinIsMoved                 ;}
+  {name: "isStatic"                      ; impl: @mplBuiltinIsStatic                ;}
   {name: "log"                           ; impl: @mplBuiltinLog                     ;}
   {name: "log10"                         ; impl: @mplBuiltinLog10                   ;}
   {name: "loop"                          ; impl: @mplBuiltinLoop                    ;}
@@ -74,6 +75,7 @@ builtins: (
   {name: "newVarOfTheSameType"           ; impl: @mplBuiltinNewVarOfTheSameType     ;}
   {name: "or"                            ; impl: @mplBuiltinOr                      ;}
   {name: "overload"                      ; impl: @mplBuiltinOverload                ;}
+  {name: "printCompilerMaxAllocationSize"; impl: @mplPrintCompilerMaxAllocationSize ;}
   {name: "printCompilerMessage"          ; impl: @mplBuiltinPrintCompilerMessage    ;}
   {name: "printMatchingTree"             ; impl: @mplBuiltinPrintMatchingTree       ;}
   {name: "printShadowEvents"             ; impl: @mplBuiltinPrintShadowEvents       ;}

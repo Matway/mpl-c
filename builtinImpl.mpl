@@ -1365,11 +1365,25 @@ staticityOfBinResult: [
 [
   refToVar: @processor @block pop;
   processor compilable [
+    refToVar staticityOfVar Dynamic = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
+  ] when
+] "mplBuiltinIsDynamic" @declareBuiltin ucall
+
+[
+  refToVar: @processor @block pop;
+  processor compilable [
     refToVar @block push
     refToVar isAutoStruct [refToVar varIsMoved] && makeValuePair
     VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
   ] when
 ] "mplBuiltinIsMoved" @declareBuiltin ucall
+
+[
+  refToVar: @processor @block pop;
+  processor compilable [
+    refToVar staticityOfVar Static = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
+  ] when
+] "mplBuiltinIsStatic" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedFloatBuiltins set
@@ -1509,6 +1523,19 @@ staticityOfBinResult: [
 ] "mplBuiltinOr" @declareBuiltin ucall
 
 [
+  block.nextLabelIsOverload ["duplicate overload specifier" @processor block compilerError] when
+  TRUE @block.@nextLabelIsOverload set
+] "mplBuiltinOverload" @declareBuiltin ucall
+
+[
+  debugMemory [
+    ("compilerMaxAllocationSize=" getMemoryMetrics.memoryMaxAllocationSize LF) printList
+  ] [
+    ("compilerMaxAllocationSize is unknown, use -debugMemory flag" LF) printList
+  ] uif
+] "mplPrintCompilerMaxAllocationSize"  @declareBuiltin ucall
+
+[
   refToName: @processor @block pop;
   processor compilable [
     refToName staticityOfVar Weak < ["name must be static string" @processor block compilerError] when
@@ -1523,12 +1550,8 @@ staticityOfBinResult: [
 ] "mplBuiltinPrintCompilerMessage" @declareBuiltin ucall
 
 [
-  @processor block defaultPrintStack
-] "mplBuiltinPrintStack" @declareBuiltin ucall
-
-[
-  @processor block defaultPrintStackTrace
-] "mplBuiltinPrintStackTrace" @declareBuiltin ucall
+  block.astArrayIndex @processor @block printAstArrayTree
+] "mplBuiltinPrintMatchingTree" @declareBuiltin ucall
 
 [
   ("Print shadow events for block " block.id " in astNode " block.astArrayIndex LF) printList
@@ -1539,16 +1562,12 @@ staticityOfBinResult: [
 ] "mplBuiltinPrintShadowEvents" @declareBuiltin ucall
 
 [
-  block.astArrayIndex @processor @block printAstArrayTree
-] "mplBuiltinPrintMatchingTree" @declareBuiltin ucall
+  @processor block defaultPrintStack
+] "mplBuiltinPrintStack" @declareBuiltin ucall
 
 [
-  debugMemory [
-    ("compilerMaxAllocationSize=" getMemoryMetrics.memoryMaxAllocationSize LF) printList
-  ] [
-    ("compilerMaxAllocationSize is unknown, use -debugMemory flag" LF) printList
-  ] uif
-] "mplPrintCompilerMaxAllocationSize"  @declareBuiltin ucall
+  @processor block defaultPrintStackTrace
+] "mplBuiltinPrintStackTrace" @declareBuiltin ucall
 
 [
   refToName: @processor @block pop;
@@ -1994,11 +2013,6 @@ tryFindInPath: [
   block.nextLabelIsVirtual ["duplicate virtual specifier" @processor block compilerError] when
   TRUE @block.@nextLabelIsVirtual set
 ] "mplBuiltinVirtual" @declareBuiltin ucall
-
-[
-  block.nextLabelIsOverload ["duplicate overload specifier" @processor block compilerError] when
-  TRUE @block.@nextLabelIsOverload set
-] "mplBuiltinOverload" @declareBuiltin ucall
 
 [
   VarCond VarNatX 1 + [a2:; a1:; "xor" makeStringView] [xor] [copy] [y:; x:;] mplNumberBinaryOp
