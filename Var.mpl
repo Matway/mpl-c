@@ -333,7 +333,7 @@ getVirtualValue: [
           ]
           VarImport  [VarImport  pointeeVar.data.get @result.cat]
           [
-            [FALSE] "Wrong type for virtual reference!" assert
+            "Wrong type for virtual reference!" failProc
           ]
         ) case
       ] if
@@ -342,7 +342,7 @@ getVirtualValue: [
       refToVar isPlain [
         refToVar getPlainConstantIR @result.cat
       ] [
-        [FALSE] "Wrong type for virtual value!" assert
+        "Wrong type for virtual value!" failProc
       ] if
     ]
   ) case
@@ -414,7 +414,7 @@ getPlainConstantIR: [
                         var.data.getTag VarReal32 = [VarReal32 var.data.get.end Real32 cast Real64 cast bitView @result set] [
                           var.data.getTag VarReal64 = [VarReal64 var.data.get.end bitView @result set] [
                             ("Tag = " makeStringView var.data.getTag Int32 cast) addLog
-                            [FALSE] "Unknown plain struct while getting IR value" assert
+                            "Unknown plain struct while getting IR value" failProc
                           ] if
                         ] if
                       ] if

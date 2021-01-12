@@ -103,7 +103,7 @@ getPlainTypeDebugDeclaration: [
                         var.data.getTag VarReal32 = [processor.debugInfo.unit 13 +] [
                           var.data.getTag VarReal64 = [processor.debugInfo.unit 14 +] [
                             var.data.getTag VarString = [processor.debugInfo.unit 15 +] [
-                              [FALSE] "Unknown plain struct while getting debug declaration index" assert
+                              "Unknown plain struct while getting debug declaration index" failProc
                               -1
                             ] if
                           ] if
@@ -169,7 +169,7 @@ getTypeDebugDeclaration: [
   compileOnce
   var: refToVar getVar;
   refToVar isVirtualType [
-    [FALSE] "virtual type has not debug declaration" assert
+    "virtual type has not debug declaration" failProc
     -1
   ] [
     refToVar isPlain [var.data.getTag VarString =] || [
@@ -223,7 +223,7 @@ getTypeDebugDeclaration: [
               ")") assembleString addDebugString
             index
           ] [
-            [FALSE] "Unknown type in getTypeDebugDeclaration!" assert
+            "Unknown type in getTypeDebugDeclaration!" failProc
             -1
           ] if
         ] if

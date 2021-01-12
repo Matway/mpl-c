@@ -38,7 +38,7 @@ getStaticStructIR: [
       @unfinishedVars.popBack
 
       current isVirtual [
-        [FALSE] "Virtual field cannot be processed in static array constant!" assert
+        "Virtual field cannot be processed in static array constant!" failProc
       ] [
         current isPlain [
           (current @processor getIrType " " current getPlainConstantIR) @result.catMany
@@ -68,7 +68,7 @@ getStaticStructIR: [
               ] when
             ] times
           ] [
-            [FALSE] "Unknown type in static struct!" assert
+            "Unknown type in static struct!" failProc
           ] if
         ] if
       ] if

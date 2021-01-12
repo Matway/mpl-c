@@ -76,7 +76,7 @@ addNameInfo: [
                   # do nothing
                   FALSE @addInfo set
                 ] [
-                  [FALSE] "wrong name info case" assert
+                  "wrong name info case" failProc
                 ] if
               ] if
             ] if
@@ -2445,7 +2445,7 @@ addLambdaEvent: [
           implNode.varNameInfo 0 < ~ [
             gnr: implNode.varNameInfo @processor @block getNameEverywhere;
             processor compilable ~ [
-              [FALSE] "Name of new lambda is not visible!" assert
+              "Name of new lambda is not visible!" failProc
             ] [
               cnr: @gnr 0 dynamic @processor @block processor.positions.last.file captureName;
               cnr.refToVar @result.@refToVar set

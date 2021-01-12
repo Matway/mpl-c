@@ -655,7 +655,7 @@ staticityOfBinResult: [
       varSchema: refToSchema getVar;
       schemaOfResult: RefToVar;
       varSchema.data.getTag VarRef = [
-        [FALSE] "Unable in current semantic!" assert
+        "Unable in current semantic!" failProc
       ] [
         refToSchema @schemaOfResult set
       ] if

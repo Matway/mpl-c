@@ -705,7 +705,7 @@ fixOutputRefsRec: [
               currentFromStack @stackEntryVar.@sourceOfValue set
             ] if
           ] [
-            [FALSE] "Source of value is unknown!" assert
+            "Source of value is unknown!" failProc
           ] if
 
           [currentFromStack hasGoodSource] "Stack var source invariant failed!" assert
@@ -1471,7 +1471,7 @@ useMatchingInfoOnly: [
     oldSuccess [
       processor.@result.passErrorThroughPRE ~ [-1 @processor.@result clearProcessorResult] when
     ] [
-      [FALSE] "Has compilerError before trying compiling pre!" assert
+      "Has compilerError before trying compiling pre!" failProc
     ] if
 
     newNode.uncompilable ~ [

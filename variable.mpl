@@ -125,7 +125,7 @@ getPlainDataIRType: [
     VarReal64 ["double" toString @result set]
     [
       ("Tag = " var.data.getTag) addLog
-      [FALSE] "Unknown plain struct while getting IR type" assert
+      "Unknown plain struct while getting IR type" failProc
     ]
   ) case
 
@@ -152,7 +152,7 @@ getPlainDataMPLType: [
     VarReal64 ["r64" toString @result set]
     [
       ("Tag = " var.data.getTag) addLog
-      [FALSE] "Unknown plain struct MPL type" assert
+      "Unknown plain struct MPL type" failProc
     ]
   ) case
 
@@ -541,7 +541,7 @@ makeDbgTypeId: [
         "}" @resultDBG.cat
       ] when
     ]
-    [[FALSE] "Unknown variable for IR type" assert]
+    ["Unknown variable for IR type" failProc]
   ) cond
 
   @resultDBG @processor makeStringId
@@ -591,7 +591,7 @@ makeDbgTypeId: [
         ] if
       ] when
     ]
-    [[FALSE] "Unknown variable for IR type" assert]
+    ["Unknown variable for IR type" failProc]
   ) cond
 
   irTypeId: Int32;
@@ -650,7 +650,7 @@ makeDbgTypeId: [
         ] loop
         "}" @resultMPL.cat
       ] [
-        [FALSE] "Unknown variable for IR type" assert
+        "Unknown variable for IR type" failProc
       ] if
     ] if
   ] if
@@ -714,7 +714,7 @@ zeroValue: [
                         tag VarReal32 = [0.0r64] [
                           tag VarReal64 = [0.0r64] [
                             ("Tag = " makeStringView .getTag 0 cast) addLog
-                            [FALSE] "Unknown plain struct while getting Zero value" assert
+                            "Unknown plain struct while getting Zero value" failProc
                           ] if
                         ] if
                       ] if

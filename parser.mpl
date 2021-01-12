@@ -1206,8 +1206,8 @@ parseNode: [
     pc: makeParserConstants;
 
     unfinishedPositions: PositionInfo Array;
-    unfinishedLabelNames: String Array;
-    unfinishedNodes: AstNodeArray Array;
+    unfinishedLabelNames: String Array dynamic;
+    unfinishedNodes: AstNodeArray Array dynamic;
     unfinishedTerminators: Nat32 Array;
 
     fileId          @currentPosition.@fileId set

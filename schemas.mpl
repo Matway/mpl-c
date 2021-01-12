@@ -111,7 +111,7 @@ VariableSchema: [{
         ] times
 
         [
-          [FALSE] "invalid tag in VariableSchema" assert
+          "invalid tag in VariableSchema" failProc
           FALSE
         ]
       ) case
