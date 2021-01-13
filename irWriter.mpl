@@ -472,7 +472,9 @@ createCallIR: [
   haveRet: refToRet.var isNil ~;
   retName: 0;
 
-  processor.options.callTrace hasCallTrace and [@processor @block createCallTraceProlog] when
+  processor.options.hidePrefixes [processor.positions.last.file.name swap beginsWith ~] all [
+    processor.options.callTrace hasCallTrace and [@processor @block createCallTraceProlog] when
+  ] when
 
   offset: block.programTemplate.size;
 
@@ -506,7 +508,9 @@ createCallIR: [
 
   @processor @block addDebugLocationForLastInstruction
 
-  processor.options.callTrace hasCallTrace and [@processor @block createCallTraceEpilog] when
+  processor.options.hidePrefixes [processor.positions.last.file.name swap beginsWith ~] all [
+    processor.options.callTrace hasCallTrace and [@processor @block createCallTraceEpilog] when
+  ] when
 
   retName
 ];

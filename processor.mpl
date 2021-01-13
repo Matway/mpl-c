@@ -31,6 +31,7 @@ ProcessorOptions: [{
   endFunc:                String;
   fileNames:              StringArray;
   includePaths:           StringArray;
+  hidePrefixes:           StringArray;
   pointerSize:            64nx dynamic;
   staticLiterals:         TRUE dynamic;
   debug:                  TRUE dynamic;

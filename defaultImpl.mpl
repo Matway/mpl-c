@@ -267,12 +267,14 @@ getStackDepth: [
   processor.positions.getSize [
     currentPosition: processor.positions.getSize 1 - i - processor.positions.at;
 
-    (
-      "at fileName: " currentPosition.file.name
-      ", token: "     currentPosition.token
-      ", line: "      currentPosition.line
-      ", column: "    currentPosition.column LF
-    ) printList
+    processor.options.hidePrefixes [currentPosition.file.name swap beginsWith ~] all [
+      (
+        "at fileName: " currentPosition.file.name
+        ", token: "     currentPosition.token
+        ", line: "      currentPosition.line
+        ", column: "    currentPosition.column LF
+      ) printList
+    ] when
   ] times
 
   @processor block defaultPrintStack

@@ -530,15 +530,19 @@ debugMemory [
       current.position.getSize 0 = [
         ("error, "  current.message LF) [@result.cat] each
       ] [
+        first: TRUE;
         current.position.getSize [
           nodePosition: i current.position @;
-          (nodePosition.file.name "(" nodePosition.line  ","  nodePosition.column "): ") [@result.cat] each
+          processor.options.hidePrefixes [nodePosition.file.name swap beginsWith ~] all [
+            (nodePosition.file.name "(" nodePosition.line  ","  nodePosition.column "): ") [@result.cat] each
 
-          i 0 = [
-            ("error, [" nodePosition.token "], " current.message LF) [@result.cat] each
-          ] [
-            ("[" nodePosition.token "], called from here" LF) [@result.cat] each
-          ] if
+            first [
+              ("error, [" nodePosition.token "], " current.message LF) [@result.cat] each
+              FALSE !first
+            ] [
+              ("[" nodePosition.token "], called from here" LF) [@result.cat] each
+            ] if
+          ] when
         ] times
       ] if
     ] times

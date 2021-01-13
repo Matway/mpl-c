@@ -415,15 +415,20 @@ addFuncSubroutineInfo: [
 addFuncDebugInfo: [
   compileOnce
   position: funcName: funcIRName: funcDebugIndex: processor: ;;;;;
-
   subroutineIndex: @processor addFuncSubroutineInfo;
-  funcImplementation: funcName makeStringView getStringImplementation;
-
+  funcImplementation: (position.file.name dup ".mpl" makeStringView endsWith [4] [0] if untail " " funcName) assembleString getStringImplementation;
   (
-    "!" funcDebugIndex " = distinct !DISubprogram(name: \"" funcImplementation "\", linkageName: \"" @funcIRName
-    "\", scope: !" position.file.debugId
-    ", file: !" position.file.debugId ", line: " position.line  ", type: !" subroutineIndex
-    ", scopeLine: " position.line ", unit: !" processor.debugInfo.unit ")") assembleString addDebugString
+    "!" funcDebugIndex " = distinct !DISubprogram("
+    "name: \"" funcImplementation "\", "
+    "linkageName: \"" @funcIRName "\", "
+    "scope: !" position.file.debugId ", "
+    "file: !" position.file.debugId ", "
+    "line: " position.line ", "
+    "type: !" subroutineIndex ", "
+    "scopeLine: " position.line ", "
+    "unit: !" processor.debugInfo.unit
+    ")"
+  ) assembleString addDebugString
 ];
 
 addDebugLocation: [

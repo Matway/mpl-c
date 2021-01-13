@@ -36,6 +36,7 @@ printInfo: [
   ] when
   "  -dynalit                            Number literals are dynamic constants, which are not used in analysis; default mode is static literals" print LF print
   "  -end_func <name>                    Name of end function, default value is \"main\"" print LF print
+  "  -hide_prefix <path>                 Ignore files with this prefix in stack trace outputs" print LF print
   "  -linker_option                      Add linker option for LLVM" print LF print
   "  -ndebug                             Disable debug info; value of \"DEBUG\" constant in code turn to FALSE" print LF print
   "  -o <file>                           Write output to <file>, default output file is \"mpl.ll\"" print LF print
@@ -159,20 +160,21 @@ checkedSaveString: [
 
     success: TRUE dynamic;
 
-    OPT_ANY:                       [0 dynamic];
-    OPT_OUTPUT_FILE_NAME:          [1 dynamic];
-    OPT_LINKER_OPTION:             [3 dynamic];
-    OPT_DEFINITION:                [4 dynamic];
-    OPT_ARRAY_CHECK:               [5 dynamic];
-    OPT_CALL_TRACE:                [6 dynamic];
-    OPT_RECURSION_DEPTH_LIMIT:     [7 dynamic];
-    OPT_PRE_RECURSION_DEPTH_LIMIT: [8 dynamic];
-    OPT_STATIC_LOOP_LENGTH_LIMIT:  [9 dynamic];
+    OPT_ANY:                       [ 0 dynamic];
+    OPT_OUTPUT_FILE_NAME:          [ 1 dynamic];
+    OPT_LINKER_OPTION:             [ 3 dynamic];
+    OPT_DEFINITION:                [ 4 dynamic];
+    OPT_ARRAY_CHECK:               [ 5 dynamic];
+    OPT_CALL_TRACE:                [ 6 dynamic];
+    OPT_RECURSION_DEPTH_LIMIT:     [ 7 dynamic];
+    OPT_PRE_RECURSION_DEPTH_LIMIT: [ 8 dynamic];
+    OPT_STATIC_LOOP_LENGTH_LIMIT:  [ 9 dynamic];
     OPT_INCLUDE_PATH:              [10 dynamic];
     OPT_BEGIN_FUNC:                [11 dynamic];
     OPT_END_FUNC:                  [12 dynamic];
     OPT_TRIPLE:                    [13 dynamic];
     OPT_DATA_LAYOUT:               [14 dynamic];
+    OPT_HIDE_PREFIX:               [15 dynamic];
 
     nextOption: OPT_ANY;
 
@@ -232,6 +234,7 @@ checkedSaveString: [
                   ] when
                   "-dynalit"                   [FALSE                         @options.!staticLiterals]
                   "-end_func"                  [OPT_END_FUNC                  !nextOption]
+                  "-hide_prefix"               [OPT_HIDE_PREFIX               !nextOption]
                   "-linker_option"             [OPT_LINKER_OPTION             !nextOption]
                   "-ndebug"                    [FALSE                         @options.!debug]
                   "-o"                         [OPT_OUTPUT_FILE_NAME          !nextOption]
@@ -320,6 +323,10 @@ checkedSaveString: [
               OPT_TRIPLE [
                 option toString @options.@triple set
                 TRUE !hasTriple
+                OPT_ANY !nextOption
+              ]
+              OPT_HIDE_PREFIX [
+                option simplifyFileName @options.@hidePrefixes.pushBack
                 OPT_ANY !nextOption
               ]
               []
