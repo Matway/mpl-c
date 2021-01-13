@@ -1,13 +1,14 @@
-"Array" use
-"String" use
-"control" use
+"Array"       use
+"String"      use
+"algorithm"   use
+"control"     use
 "conventions" use
 
-"Block" use
-"Var" use
+"Block"        use
+"Var"          use
 "declarations" use
-"processor" use
-"staticCall" use
+"processor"    use
+"staticCall"   use
 
 FailProcForProcessor: [{
   processor: block: ;;

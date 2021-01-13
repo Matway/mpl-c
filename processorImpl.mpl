@@ -1,27 +1,28 @@
-"Array" use
+"Array"     use
 "HashTable" use
-"Owner" use
-"String" use
-"control" use
-"memory" use
+"Owner"     use
+"String"    use
+"algorithm" use
+"control"   use
+"memory"    use
 
-"Block" use
-"MplFile" use
-"NameManager" use
-"Var" use
-"astNodeType" use
-"astOptimizers" use
-"builtins" use
-"codeNode" use
-"debugWriter" use
-"declarations" use
-"defaultImpl" use
-"irWriter" use
-"parser" use
-"pathUtils" use
+"Block"           use
+"MplFile"         use
+"NameManager"     use
+"Var"             use
+"astNodeType"     use
+"astOptimizers"   use
+"builtins"        use
+"codeNode"        use
+"debugWriter"     use
+"declarations"    use
+"defaultImpl"     use
+"irWriter"        use
+"parser"          use
+"pathUtils"       use
 "processSubNodes" use
-"processor" use
-"variable" use
+"processor"       use
+"variable"        use
 
 debugMemory [
   "memory.getMemoryMetrics" use
@@ -495,7 +496,7 @@ debugMemory [
             block.program [
               curInstruction:;
               curInstruction.enabled [
-                block.programTemplate.getStringView curInstruction.codeOffset curInstruction.codeSize view @processor.@result.@program.cat
+                block.programTemplate.getStringView curInstruction.codeOffset curInstruction.codeSize slice @processor.@result.@program.cat
                 LF @processor.@result.@program.cat
               ] [
               ] if

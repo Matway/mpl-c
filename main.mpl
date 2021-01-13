@@ -1,17 +1,18 @@
-"Array" use
-"HashTable" use
-"String" use
-"ascii" use
-"control" use
+"Array"       use
+"HashTable"   use
+"String"      use
+"algorithm"   use
+"ascii"       use
+"control"     use
 "conventions" use
-"file" use
-"memory" use
+"file"        use
+"memory"      use
 
-"NameManager" use
-"astNodeType" use
-"declarations" use
-"pathUtils" use
-"processor" use
+"NameManager"   use
+"astNodeType"   use
+"declarations"  use
+"pathUtils"     use
+"processor"     use
 "processorImpl" use
 
 debugMemory [

@@ -1,6 +1,7 @@
-"Array" use
-"String" use
-"control" use
+"Array"     use
+"String"    use
+"algorithm" use
+"control"   use
 
 extractClearPath: [
   splittedPath: splitString;

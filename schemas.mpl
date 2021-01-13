@@ -1,7 +1,8 @@
-"Array" use
-"String" use
-"Variant" use
-"control" use
+"Array"     use
+"String"    use
+"Variant"   use
+"algorithm" use
+"control"   use
 
 "Var" use
 

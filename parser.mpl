@@ -1,13 +1,14 @@
-"Array" use
-"String" use
-"ascii" use
-"control" use
+"Array"     use
+"String"    use
+"algorithm" use
+"ascii"     use
+"control"   use
 
 "astNodeType" use
 
 codepointHex?: [
   codepoint:;
-  codepoint 48 57 between? [codepoint 65 70 between?] ||
+  codepoint 48 57 between [codepoint 65 70 between] ||
 ];
 
 codepointHexValue: [
@@ -17,7 +18,7 @@ codepointHexValue: [
 
 codeunitHead?: [
   codeunit:;
-  codeunit 0x80n8 < [codeunit 0xC0n8 0xF8n8 within?] ||
+  codeunit 0x80n8 < [codeunit 0xC0n8 0xF8n8 within] ||
 ];
 
 codeunitTail?: [

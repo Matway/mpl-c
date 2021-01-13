@@ -1,13 +1,14 @@
-"Array" use
+"Array"     use
 "HashTable" use
-"String" use
-"control" use
+"String"    use
+"algorithm" use
+"control"   use
 
-"Var" use
+"Var"          use
 "declarations" use
-"defaultImpl" use
-"irWriter" use
-"pathUtils" use
+"defaultImpl"  use
+"irWriter"     use
+"pathUtils"    use
 
 addDebugString: [
   @processor.@debugInfo.@strings.pushBack

@@ -1,19 +1,20 @@
-"Array" use
-"HashTable" use
-"String" use
-"control" use
+"Array"       use
+"HashTable"   use
+"String"      use
+"algorithm"   use
+"control"     use
 "conventions" use
 
-"Block" use
-"MplFile" use
-"Var" use
-"astNodeType" use
-"debugWriter" use
+"Block"        use
+"MplFile"      use
+"Var"          use
+"astNodeType"  use
+"debugWriter"  use
 "declarations" use
-"defaultImpl" use
-"irWriter" use
-"processor" use
-"schemas" use
+"defaultImpl"  use
+"irWriter"     use
+"processor"    use
+"schemas"      use
 
 Overload: [NameInfoEntry Array];
 

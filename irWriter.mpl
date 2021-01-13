@@ -1,15 +1,16 @@
-"Array" use
-"String" use
-"control" use
+"Array"       use
+"String"      use
+"algorithm"   use
+"control"     use
 "conventions" use
 
-"Block" use
-"MplFile" use
-"Var" use
+"Block"        use
+"MplFile"      use
+"Var"          use
 "declarations" use
-"defaultImpl" use
-"pathUtils" use
-"processor" use
+"defaultImpl"  use
+"pathUtils"    use
+"processor"    use
 
 appendInstruction: [
   list: block:;;

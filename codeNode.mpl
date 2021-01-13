@@ -1,23 +1,24 @@
-"Array" use
-"HashTable" use
-"Owner" use
-"String" use
-"control" use
+"Array"       use
+"HashTable"   use
+"Owner"       use
+"String"      use
+"algorithm"   use
+"control"     use
 "conventions" use
-"memory" use
+"memory"      use
 
-"Block" use
-"MplFile" use
-"Var" use
-"astNodeType" use
-"debugWriter" use
+"Block"        use
+"MplFile"      use
+"Var"          use
+"astNodeType"  use
+"debugWriter"  use
 "declarations" use
-"defaultImpl" use
-"irWriter" use
-"pathUtils" use
-"processor" use
-"staticCall" use
-"variable" use
+"defaultImpl"  use
+"irWriter"     use
+"pathUtils"    use
+"processor"    use
+"staticCall"   use
+"variable"     use
 
 startsFrom: [
   s1: s2: makeStringView; makeStringView;
@@ -2271,14 +2272,10 @@ processReal64Node: [makeVarReal64 @block push];
     [instruction.codeOffset instruction.codeSize 1 - + block.programTemplate.chars.at 58n8 =  ~] && # label detector, code of ":"
     [processor.positions.last.line 0 < ~] &&
     [
-      @block.@programTemplate.makeNZ
-      offset: block.programTemplate.chars.getSize;
-
-      offset instruction.codeSize + @block.@programTemplate.@chars.enlarge # Make sure the string can be copied without relocation
-      offset @block.@programTemplate.@chars.shrink
-      block.programTemplate.getStringView instruction.codeOffset instruction.codeSize view @block.@programTemplate.catStringNZ
-
-      @block.@programTemplate.makeZ
+      offset: block.programTemplate.size;
+      block.programTemplate.size instruction.codeSize + @block.@programTemplate.resize # Make sure the string can be copied without relocation
+      offset @block.@programTemplate.resize
+      block.programTemplate instruction.codeOffset instruction.codeSize slice @block.@programTemplate.cat
 
       fileDbgIndex: processor.positions.last.file.debugId;
       fr: fileDbgIndex block.fileLexicalBlocks.find;
