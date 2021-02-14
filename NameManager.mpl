@@ -9,12 +9,12 @@ NameManager: [{
   createName: [
     text:;
     result: text textNameIds.find;
-    result.success [result.value copy] [
+    result.success [result.value new] [
       string: text String same [@text] [text toString] uif;
       nameId: names.size;
       nameId 1 + @names.enlarge
       string.getStringView nameId @textNameIds.insertUnsafe # Make StringView using the source String object, reference should remain valid when we move String
-      @string move @names.last.@text set
+      @string @names.last.@text set
       0 @names.last.!overloadCount
       0 @names.last.!localCount
       nameId
@@ -27,11 +27,11 @@ NameManager: [{
     current: nameId @names.at;
     item.file isNil [current.overloadCount 1 + @current.!overloadCount] when
     item.isLocal [current.localCount 1 + @current.!localCount] when
-    @item move @current.@items.pushBack
+    @item @current.@items.pushBack
   ];
 
   findItem: [
-    index: file: nameId:;; copy;
+    index: file: nameId:;; new;
     items: nameId names.at.items;
 
     index -1 = [items.size !index] when
@@ -47,7 +47,7 @@ NameManager: [{
   ];
 
   findItemStrong: [
-    index: file: nameId:;; copy;
+    index: file: nameId:;; new;
     items: nameId names.at.items;
 
     index -1 = [items.size !index] when
@@ -63,12 +63,12 @@ NameManager: [{
   ];
 
   hasOverload: [
-    nameId: copy;
+    nameId: new;
     nameId @names.at.overloadCount 0 >
   ];
 
   hasLocalDefinition: [
-    nameId: copy;
+    nameId: new;
     nameId @names.at.localCount 0 >
   ];
 

@@ -29,9 +29,9 @@ getMplName:  [getVar.mplNameId processor.nameManager.getText];
 getMplTypeId: [@processor getMplType makeStringId];
 
 maxStaticity: [
-  copy s1:;
-  copy s2:;
-  s1 s2 > [s1 copy][s2 copy] if
+  s1: new;
+  s2: new;
+  s1 s2 > [s1 new][s2 new] if
 ];
 
 refsAreEqual: [
@@ -55,7 +55,7 @@ isStaticData: [
     result: TRUE dynamic;
     [
       result [unfinished.getSize 0 >] && [
-        current: unfinished.last copy;
+        current: unfinished.last new;
         @unfinished.popBack
         current isVirtual [
         ] [
@@ -304,7 +304,7 @@ makeStructAlignment: [
 isGlobal: [
   refToVar:;
   var: refToVar getVar;
-  var.global copy
+  var.global new
 ];
 
 unglobalize: [
@@ -330,14 +330,14 @@ makeTypeAliasId: [
 
     fr: irTypeName makeStringView @processor.@typeNames.find;
     fr.success [
-      fr.value copy
+      fr.value new
     ] [
       newTypeName: ("%type." processor.lastTypeId) assembleString;
       processor.lastTypeId 1 + @processor.@lastTypeId set
 
       newTypeName irTypeName @processor createTypeDeclaration
       result: @newTypeName @processor makeStringId;
-      @irTypeName move result @processor.@typeNames.insert
+      @irTypeName result @processor.@typeNames.insert
       result
     ] if
   ] [
@@ -666,25 +666,25 @@ makeDbgTypeId: [
 cutValue: [
   processor:;
 
-  copy tag:;
-  copy value:;
+  tag: new;
+  value: new;
   tag (
     VarNat8  [value  0n8 cast 0n64 cast]
     VarNat16 [value 0n16 cast 0n64 cast]
     VarNat32 [value 0n32 cast 0n64 cast]
-    VarNatX  [value processor.options.pointerSize 32nx = [0n32 cast 0n64 cast][copy] if]
+    VarNatX  [value processor.options.pointerSize 32nx = [0n32 cast 0n64 cast][new] if]
     VarInt8  [value 0i8 cast 0i64 cast]
     VarInt16 [value 0i16 cast 0i64 cast]
     VarInt32 [value 0i32 cast 0i64 cast]
-    VarIntX  [value processor.options.pointerSize 32nx = [0i32 cast 0i64 cast][copy] if]
-    [@value copy]
+    VarIntX  [value processor.options.pointerSize 32nx = [0i32 cast 0i64 cast][new] if]
+    [@value new]
   ) case
 ];
 
 checkValue: [
   processor: block: ;;
-  copy tag:;
-  copy value:;
+  tag: new;
+  value: new;
   tag (
     VarNat8  [value 0xFFn64 >]
     VarNat16 [value 0xFFFFn64 >]
@@ -700,7 +700,7 @@ checkValue: [
 ];
 
 zeroValue: [
-  copy tag:;
+  tag: new;
   tag VarCond = [FALSE] [
     tag VarInt8 = [0i64] [
       tag VarInt16 = [0i64] [
@@ -738,7 +738,7 @@ makeVariableIRName: [
 ];
 
 findFieldWithOverloadDepth: [
-  fieldNameInfo: refToVar: overloadDepth: processor: block: ;; copy;;;
+  fieldNameInfo: refToVar: overloadDepth: processor: block: ;; new;;;
 
   var: refToVar getVar;
 
@@ -749,7 +749,7 @@ findFieldWithOverloadDepth: [
 
   var.data.getTag VarStruct = [
     struct: VarStruct var.data.get.get;
-    i: struct.fields.dataSize copy dynamic;
+    i: struct.fields.dataSize new dynamic;
 
     [
       i 0 > [

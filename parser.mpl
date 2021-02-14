@@ -35,13 +35,13 @@ addToMainResult: [
   astArray:;
 
   newIndex: mainResult.memory.size;
-  @astArray move @mainResult.@memory.pushBack
+  @astArray @mainResult.@memory.pushBack
   newIndex
 ];
 
 addToLastUnfinished: [
   astNode:;
-  @astNode move @unfinishedNodes.last.@nodes.pushBack
+  @astNode @unfinishedNodes.last.@nodes.pushBack
 ];
 
 makeLabelNode: [
@@ -169,7 +169,7 @@ makeStringNode: [
 
 makeNumberi8Node: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -181,7 +181,7 @@ makeNumberi8Node: [
 
 makeNumberi16Node: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -193,7 +193,7 @@ makeNumberi16Node: [
 
 makeNumberi32Node: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -205,7 +205,7 @@ makeNumberi32Node: [
 
 makeNumberi64Node: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -217,7 +217,7 @@ makeNumberi64Node: [
 
 makeNumberixNode: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -229,7 +229,7 @@ makeNumberixNode: [
 
 makeNumbern8Node: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -241,7 +241,7 @@ makeNumbern8Node: [
 
 makeNumbern16Node: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -253,7 +253,7 @@ makeNumbern16Node: [
 
 makeNumbern32Node: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -265,7 +265,7 @@ makeNumbern32Node: [
 
 makeNumbern64Node: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -277,7 +277,7 @@ makeNumbern64Node: [
 
 makeNumbernxNode: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -289,7 +289,7 @@ makeNumbernxNode: [
 
 makeReal32Node: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -301,7 +301,7 @@ makeReal32Node: [
 
 makeReal64Node: [
   token:;
-  copy number:;
+  number: new;
   result: AstNode;
   @result fillPositionInfo
   token @result.@positionInfo.@token set
@@ -347,7 +347,7 @@ makeParserConstants: [{
   specials: (ascii.space ascii.cr ascii.lf ascii.colon ascii.grid) makeLookupTable starters joinLookupTables terminators joinLookupTables;
   begExp: (ascii.eCode ascii.eCodeBig) makeLookupTable;
   endNumbers: specials (ascii.comma) makeLookupTable joinLookupTables;
-  endNames: specials copy;
+  endNames: specials new;
 
   hexDigits: (
     ascii.zero ascii.one ascii.two ascii.three ascii.four ascii.five ascii.six ascii.seven ascii.eight ascii.nine
@@ -368,8 +368,8 @@ makeParserConstants: [{
 
 inArray: [
   where:;
-  copy code:;
-  code 256n32 < [code 0 cast where.at copy] &&
+  code: new;
+  code 256n32 < [code 0 cast where.at new] &&
 ];
 
 undo: [
@@ -512,7 +512,7 @@ parseStringConstant: [
     iterate stop ~
   ] loop
 
-  @nameSymbols move makeStringNode addToLastUnfinished
+  @nameSymbols makeStringNode addToLastUnfinished
   TRUE
 ];
 
@@ -538,7 +538,7 @@ xCheck: [
 ];
 
 parseDecNumber: [
-  copy hasMinus:;
+  hasMinus: new;
 
   IntArray: [Int32 Array];
   beforeDot: IntArray;
@@ -555,8 +555,8 @@ parseDecNumber: [
   #3 after n/r
 
   result: 0 dynamic;
-  tokenBegin: currentPosition.offset hasMinus [1 -][copy] if;
-  tokenEnd: tokenBegin copy;
+  tokenBegin: currentPosition.offset hasMinus [1 -][new] if;
+  tokenEnd: tokenBegin new;
 
   [
     currentCode pc.digits inArray [
@@ -641,7 +641,7 @@ parseDecNumber: [
     result: 0.0r64 dynamic;
     beforeDot.getSize [result 10.0r64 * i beforeDot.at type cast + @result set] times
     tenRcp: 0.1r64 dynamic;
-    fracPartFactor: tenRcp copy;
+    fracPartFactor: tenRcp new;
     afterDot.getSize [
       digit: i afterDot.at type cast;
       digit  fracPartFactor * result + @result set
@@ -721,11 +721,11 @@ parseDecNumber: [
     ] if
   ] if
 
-  mainResult.success copy
+  mainResult.success new
 ];
 
 parseHexNumber: [
-  copy hasMinus:;
+  hasMinus: new;
   IntArray: [Int32 Array];
   beforeT: IntArray;
   afterT: IntArray;
@@ -737,7 +737,7 @@ parseHexNumber: [
 
   result: 0 dynamic;
   tokenBegin: currentPosition.offset hasMinus [3 -][2 -] if;
-  tokenEnd: tokenBegin copy;
+  tokenEnd: tokenBegin new;
 
   [
     currentCode pc.hexDigits inArray [
@@ -841,7 +841,7 @@ parseHexNumber: [
     ] if
   ] if
 
-  mainResult.success copy
+  mainResult.success new
 ];
 
 parseNumber: [
@@ -877,7 +877,7 @@ makeLabel: [
   name toString @unfinishedLabelNames.pushBack
   newAstNodeArray: AstNodeArray;
   lastPosition @newAstNodeArray.@positionInfo set
-  @newAstNodeArray move @unfinishedNodes.pushBack
+  @newAstNodeArray @unfinishedNodes.pushBack
 ];
 
 parseName: [
@@ -893,7 +893,7 @@ parseName: [
   read: FALSE dynamic;
   write: FALSE dynamic;
   label: FALSE dynamic;
-  checkOffset: currentPosition.offset copy;
+  checkOffset: currentPosition.offset new;
   checkFirst: [currentPosition.offset checkOffset > ["invalid identifier" lexicalError] when];
   nameSymbols: StringView Array;
   first: TRUE dynamic;
@@ -1069,7 +1069,7 @@ addNestedNode: [
 
   newAstNodeArray: AstNodeArray;
   currentPosition @newAstNodeArray.@positionInfo set
-  @newAstNodeArray move @unfinishedNodes.pushBack
+  @newAstNodeArray @unfinishedNodes.pushBack
 
   currentCode ascii.openRBr = [
     ascii.closeRBr @unfinishedTerminators.pushBack
@@ -1098,13 +1098,13 @@ parseNode: [
           addNestedNode
         ] [
           currentCode pc.terminators inArray [
-            goodTerminator: unfinishedTerminators.last copy;
+            goodTerminator: unfinishedTerminators.last new;
             lastPosition: unfinishedPositions.last;
 
             currentCode goodTerminator = ~ [
               ("wrong terminator of block started at (" lastPosition.line ":" lastPosition.column
-                "), expected \"" goodTerminator ascii.null = ["END" toString] [goodTerminator codepointToString] if
-                "\", but found \"" currentCode ascii.null = ["END" toString] [currentCode codepointToString] if
+                "), expected \"" goodTerminator ascii.null = ["END" toString] [goodTerminator Int32 cast toChar toString] if
+                "\", but found \"" currentCode ascii.null = ["END" toString] [currentCode Int32 cast toChar toString] if
                 "\"") assembleString lexicalError
             ] [
 
@@ -1179,11 +1179,11 @@ parseNode: [
         ] if
       ] if
     ] [
-      lastPosition: currentPosition copy;
+      lastPosition: currentPosition new;
       success: parseIdentifier;
     ] if
 
-    unfinishedNodes.getSize 0 > [mainResult.success copy] &&
+    unfinishedNodes.getSize 0 > [mainResult.success new] &&
   ] loop
 ];
 
@@ -1215,7 +1215,7 @@ parseNode: [
     currentPosition @unfinishedPositions.pushBack
     newAstNodeArray: AstNodeArray;
     currentPosition @newAstNodeArray.@positionInfo set
-    @newAstNodeArray move @unfinishedNodes.pushBack
+    @newAstNodeArray @unfinishedNodes.pushBack
 
     ascii.null @unfinishedTerminators.pushBack
 

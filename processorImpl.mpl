@@ -70,7 +70,7 @@ debugMemory [
     newFile.name @processor addFileDebugInfo @newFile.!debugId
   ] when
 
-  @newFile move owner @processor.@files.pushBack
+  @newFile owner @processor.@files.pushBack
   #here we can implement search in cmd
   fileId
 ] "addFileNameToProcessor" exportFunction
@@ -85,7 +85,7 @@ debugMemory [
 } () {} [
   program:;
   result:;
-  copy unitId:;
+  unitId: new;
   options:;
   nameManager:;
   multiParserResult:;
@@ -93,7 +93,7 @@ debugMemory [
   processor: Processor;
 
   unitId @processor.@unitId set
-  @nameManager move @processor.@nameManager set
+  @nameManager @processor.@nameManager set
   @options @processor.@options set
   @multiParserResult @processor.!multiParserResult
 
@@ -186,7 +186,7 @@ debugMemory [
         ] [
           a: Int32 Array;
           n @a.pushBack
-          @processor.result.@errorInfo.@missedModule @a move @dependedFiles.insert
+          @processor.result.@errorInfo.@missedModule @a @dependedFiles.insert
         ] if
 
         cachedGlobalErrorInfoSize @processor.@result clearProcessorResult
@@ -229,10 +229,10 @@ debugMemory [
 
     [
       0 processor.unfinishedFiles.size < [
-        n: processor.unfinishedFiles.last copy;
+        n: processor.unfinishedFiles.last new;
         @processor.@unfinishedFiles.popBack
         n runFile
-        processor.result.success copy
+        processor.result.success new
       ] &&
     ] loop
 
@@ -241,7 +241,7 @@ debugMemory [
     ] when
 
     processor.result.success ~ [
-      @processor.@result.@errorInfo move @processor.@result.@globalErrorInfo.pushBack
+      @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.pushBack
     ] when
 
     processor.result.globalErrorInfo.getSize 0 > [
@@ -287,7 +287,7 @@ debugMemory [
         ] when
 
         processor.result.success ~ [
-          @processor.@result.@errorInfo move @processor.@result.@globalErrorInfo.pushBack
+          @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.pushBack
         ] when
       ] when
     ] when
@@ -547,7 +547,7 @@ debugMemory [
       ] if
     ] times
   ] [
-    @processor.@result.@program move @program set
+    @processor.@result.@program @program set
   ] if
 ] "process" exportFunction
 
@@ -567,7 +567,7 @@ debugMemory [
   0 dynamic                       @codeNode.@parent set
   @processor @codeNode getTopNode @codeNode.@topNode.set
 
-  compilerPositionInfo: processor.positions.last copy;
+  compilerPositionInfo: processor.positions.last new;
 
   compilerPositionInfo.file   @codeNode.@file.set
   compilerPositionInfo        @codeNode.@beginPosition set

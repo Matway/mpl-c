@@ -336,7 +336,7 @@ checkedSaveString: [
       ] times
     ] if
 
-    @fullLine move @options.@fullLine set
+    @fullLine @options.@fullLine set
 
     nextOption OPT_ANY = ~ [
       "Value expected" print LF print
@@ -367,7 +367,7 @@ checkedSaveString: [
         forceArrayChecks (
           0 [FALSE]
           1 [TRUE]
-          [options.debug copy]
+          [options.debug new]
         ) case @options.@arrayChecks set
 
         forceCallTrace (
@@ -446,24 +446,24 @@ checkedSaveString: [
     ] if
 
     success [0][1] if
-    debugMemory [options.debugMemory copy] when
+    debugMemory [options.debugMemory new] when
   ] call
 
   debugMemory [] && [
     #mplReleaseCache
     getMemoryMetrics.memoryChecksum 0nx = ~ [
       (
-        "allocations: " getMemoryMetrics.memoryCurrentAllocationCount copy By3 "/" getMemoryMetrics.memoryTotalAllocationCount copy By3
-        ", bytes: " getMemoryMetrics.memoryCurrentAllocationSize copy By3 "/" getMemoryMetrics.memoryTotalAllocationSize copy By3
-        ", max: " getMemoryMetrics.memoryMaxAllocationSize copy By3
-        ", checksum: " getMemoryMetrics.memoryChecksum copy By3
+        "allocations: " getMemoryMetrics.memoryCurrentAllocationCount new By3 "/" getMemoryMetrics.memoryTotalAllocationCount new By3
+        ", bytes: " getMemoryMetrics.memoryCurrentAllocationSize new By3 "/" getMemoryMetrics.memoryTotalAllocationSize new By3
+        ", max: " getMemoryMetrics.memoryMaxAllocationSize new By3
+        ", checksum: " getMemoryMetrics.memoryChecksum new By3
         LF
       ) printList
     ] [
       (
-        "allocations: " getMemoryMetrics.memoryTotalAllocationCount copy By3
-        ", bytes: " getMemoryMetrics.memoryTotalAllocationSize copy By3
-        ", max: " getMemoryMetrics.memoryMaxAllocationSize copy By3
+        "allocations: " getMemoryMetrics.memoryTotalAllocationCount new By3
+        ", bytes: " getMemoryMetrics.memoryTotalAllocationSize new By3
+        ", max: " getMemoryMetrics.memoryMaxAllocationSize new By3
         LF
       ) printList
     ] if

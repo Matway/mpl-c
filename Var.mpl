@@ -2,6 +2,7 @@
 "Owner" use
 "String" use
 "Variant" use
+"algorithm" use
 "control" use
 
 "Mref" use
@@ -73,7 +74,7 @@ Struct: [{
 }]; #IDs of pointee vars
 
 makeRefBranch: [{
-  refToVar: copy;
+  refToVar: new;
   usedHere: FALSE dynamic;
 }];
 
@@ -104,12 +105,12 @@ RefToVar: [{
   ];
 
   setMutable: [
-    copy newMutable:;
+    newMutable: new;
     newMutable [1nx] [0nx] if data 1nx ~ and or !data
   ];
 
   setMoved: [
-    copy newMoved:;
+    newMoved: new;
     newMoved [2nx] [0nx] if data 2nx ~ and or !data
   ];
 
@@ -121,8 +122,8 @@ RefToVar: [{
 makeValuePair: [
   type:;
   {
-    begin: type copy;
-    end: type copy;
+    begin: type new;
+    end: type new;
   }
 ];
 
@@ -215,7 +216,7 @@ isVirtualType: [
   var.data.getTag VarBuiltin =
   [var.data.getTag VarCode =] ||
   [var.data.getTag VarInvalid =] ||
-  [var.data.getTag VarStruct = [VarStruct var.data.get.get.fullVirtual copy] &&] ||
+  [var.data.getTag VarStruct = [VarStruct var.data.get.get.fullVirtual new] &&] ||
 ];
 
 isInt: [
@@ -292,7 +293,7 @@ isAutoStruct: [
   refToVar:;
   var: refToVar getVar;
   var.data.getTag VarStruct =
-  [VarStruct var.data.get.get.hasDestructor copy] &&
+  [VarStruct var.data.get.get.hasDestructor new] &&
 ];
 
 getVirtualValue: [
@@ -358,7 +359,7 @@ getStringImplementation: [
     [
       i stringView.size < [
         codeRef: stringView.data storageAddress i Natx cast + Nat8 addressToReference;
-        code: codeRef copy;
+        code: codeRef new;
         code 32n8 < ~ [code 127n8 <] && [code 34n8 = ~] && [code 92n8 = ~] && [  # exclude " and \
           code 0n32 cast @result.catSymbolCode
         ] [
@@ -440,7 +441,7 @@ getPlainValueInformation: [
     " dynamic" toString !result
   ] [
     var.data.getTag  VarCond VarReal64 1 + [
-      copy tag:;
+      tag: new;
       branch: tag var.data.get;
       (" static: " branch.end) assembleString !result
     ] staticCall
@@ -449,7 +450,7 @@ getPlainValueInformation: [
 ];
 
 bitView: [
-  copy f:;
+  f: new;
   buffer: f storageAddress (0n8 0n8 0n8 0n8 0n8 0n8 0n8 0n8) addressToReference;
   result: String;
   "0x" @result.cat
@@ -503,7 +504,7 @@ getStructStorageSize: [
   refToVar: processor: ;;
   var: refToVar getVar;
   struct: VarStruct var.data.get.get;
-  struct.structStorageSize copy
+  struct.structStorageSize new
 ];
 
 getStorageSize: [
@@ -519,7 +520,7 @@ getStructAlignment: [
   refToVar: processor: ;;
   var: refToVar getVar;
   struct: VarStruct var.data.get.get;
-  struct.structAlignment copy
+  struct.structAlignment new
 ];
 
 getAlignment: [
@@ -535,11 +536,11 @@ makeStringId: [
   string: processor: ;;
   fr: string @processor.@nameTable.find;
   fr.success [
-    fr.value copy
+    fr.value new
   ] [
     result: processor.nameBuffer.size;
     string makeStringView result @processor.@nameTable.insert
-    @string move @processor.@nameBuffer.pushBack
+    @string @processor.@nameBuffer.pushBack
     result
   ] if
 ];
@@ -553,7 +554,7 @@ makeDefaultVarId: [
 
   result: varId @processor.@defaultVarNames.at;
   result 0 < [("%var." varId) assembleString @processor makeStringId @result set] when
-  result copy
+  result new
 ];
 
 markAsUnableToDie: [
@@ -576,7 +577,7 @@ variablesAreSame: [
 staticityOfVar: [
   refToVar:;
   var: refToVar getVar;
-  var.staticity.end copy
+  var.staticity.end new
 ];
 
 fullUntemporize: [

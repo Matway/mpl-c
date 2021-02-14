@@ -3,9 +3,9 @@
 
 staticCall: [
   staticCallBody:;
-  copy staticCallLast:;   # required to be static
-  copy staticCallFirst:;  # required to be static
-  copy staticCallIndex:;  # can be dynamic
+  staticCallLast: new;   # required to be static
+  staticCallFirst: new;  # required to be static
+  staticCallIndex: new;  # can be dynamic
 
 
   [

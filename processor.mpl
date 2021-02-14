@@ -109,9 +109,9 @@ MatchingNode: [{
 }];
 
 makeWayInfo: [{
-  copy currentName:;
-  copy current:;
-  copy prev:;
+  currentName: new;
+  current: new;
+  prev: new;
 }];
 
 WayInfo: [
@@ -210,13 +210,13 @@ Processor: [{
       varRefArrayCount 1 + !varRefArrayCount
       RefToVar Array
     ] [
-      @varRefArrays.last move copy
+      @varRefArrays.last new
       @varRefArrays.popBack
     ] if
   ];
 
   releaseVarRefArray: [
-    move @varRefArrays.pushBack
+    @varRefArrays.pushBack
     @varRefArrays.last.clear
   ];
 

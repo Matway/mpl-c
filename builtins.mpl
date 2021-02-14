@@ -105,7 +105,7 @@ builtinFirst: [0 static];
 builtinLast: [builtins fieldCount 0 cast 2 /];
 
 addBuiltin: [
-  copy id:;
+  id: new;
   name:;
 
   nameId: @name makeStringView @processor.@nameManager.createName;
@@ -113,8 +113,8 @@ addBuiltin: [
 
   {
     addNameCase: NameCaseLocal;
-    refToVar:    bvar copy;
-    nameInfo:    nameId copy;
+    refToVar:    bvar new;
+    nameInfo:    nameId new;
     file:        0 processor.files.at.get;
   } @processor @block addNameInfo
 ];
@@ -134,7 +134,7 @@ initBuiltins: [
   block:;
   processor:;
   overload failProc: processor block FailProcForProcessor;
-  copy index:;
+  index: new;
 
   builtinFunc: index builtins @ .@impl;
   @block @processor @builtinFunc call

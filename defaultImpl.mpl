@@ -24,7 +24,7 @@ FailProcForProcessor: [{
       trace storageAddress 0nx = [
         FALSE
       ] [
-        (trace.name trace.line copy trace.column copy) " in %s at %i:%i\n\00" printf drop
+        (trace.name trace.line new trace.column new) " in %s at %i:%i\n\00" printf drop
         trace.prev trace addressToReference !trace
         TRUE
       ] if
@@ -50,7 +50,7 @@ pop: [
 createRef:     [processor: block:;;  TRUE dynamic @processor @block createRefWith];
 createRefNoOp: [processor: block:;; FALSE dynamic @processor @block createRefWith];
 
-compilable: [processor:; processor.result.success copy];
+compilable: [processor:; processor.result.success new];
 
 makeVarRealCaptured: [
   refToVar: processor: block: ;;;
@@ -171,7 +171,7 @@ defaultMakeConstWith: [
   check: processor: block: ;;;
   refToVar: @processor @block pop;
   processor compilable [
-    check [refToVar getVar.temporary copy] && [
+    check [refToVar getVar.temporary new] && [
       "temporary objects cannot be set const" @processor block compilerError
     ] [
       FALSE @refToVar.setMutable
@@ -181,7 +181,7 @@ defaultMakeConstWith: [
 ];
 
 getStackEntryWith: [
-  depth: check: processor: block: ;; copy; copy;
+  depth: check: processor: block: ;; new; new;
 
   result: @block isConst [processor.varForFails] [@processor.@varForFails] uif;
   currentBlock: @block; [
@@ -210,8 +210,8 @@ getStackEntryWith: [
   @result
 ];
 
-getStackEntry:          [depth: processor: block:;; copy; depth TRUE  @processor @block getStackEntryWith];
-getStackEntryUnchecked: [depth: processor: block:;; copy; depth FALSE processor block  getStackEntryWith];
+getStackEntry:          [depth: processor: block:;; new; depth TRUE  @processor @block getStackEntryWith];
+getStackEntryUnchecked: [depth: processor: block:;; new; depth FALSE processor block  getStackEntryWith];
 
 getStackDepth: [
   processor: block:;;
@@ -458,12 +458,12 @@ getShadowEventHash: [
     ] when
 
     refToVar isPlain [
-      currentStaticity: whileMatching [var.staticity.end copy] [var.staticity.begin copy] if;
+      currentStaticity: whileMatching [var.staticity.end new] [var.staticity.begin new] if;
       currentStaticity Dynamic > [
         var.data.getTag VarCond VarReal64 1 + [
           tag:;
           applyData: 0n64;
-          value: whileMatching [tag var.data.get.end copy] [tag var.data.get.begin copy] if;
+          value: whileMatching [tag var.data.get.end new] [tag var.data.get.begin new] if;
           value applyData storageAddress @value addressToReference set
           applyData 32n32 rshift applyData 48n32 rshift xor applyData xor Nat32 cast apply
         ] staticCall
@@ -603,17 +603,17 @@ compareTopologyIndex: [
 
   ti1: refToVar1 noMatterToCopy [-1][
     whileMatching [
-      var1.topologyIndexWhileMatching copy
+      var1.topologyIndexWhileMatching new
     ] [
-      var1.buildingTopologyIndex copy
+      var1.buildingTopologyIndex new
     ] if
   ] if;
 
   ti2: refToVar2 noMatterToCopy [-1][
     whileMatching [
-      var2.topologyIndex copy
+      var2.topologyIndex new
     ] [
-      var2.topologyIndex copy
+      var2.topologyIndex new
     ] if
   ] if;
 
@@ -691,7 +691,7 @@ deleteMatchingNodeFrom: [
   processor: block: matchingChindIndex: full: ;;;;
 
   matchingChindIndex 0 < ~ [
-    astArrayIndex: block.astArrayIndex copy;
+    astArrayIndex: block.astArrayIndex new;
     matchingNode: astArrayIndex @processor.@matchingNodes.at.get;
     currentMemory: matchingChindIndex @matchingNode.@treeMemory.at;
 
@@ -706,9 +706,9 @@ deleteMatchingNodeFrom: [
     ] while
 
     full [
-      index: matchingChindIndex copy;
+      index: matchingChindIndex new;
       [
-        parentIndex: index matchingNode.treeMemory.at.parentIndex copy;
+        parentIndex: index matchingNode.treeMemory.at.parentIndex new;
         parentIndex 0 < ~ [
           parentNode: parentIndex @matchingNode.@treeMemory.at;
           parentNode.childIndices.size 1 = [
@@ -764,17 +764,17 @@ addShadowEvent: [
         eventHash @matchingNodePair.@eventHash set
         result    @matchingNodePair.@childIndex set
 
-        @matchingNodePair move @machingMemoryNode.@childIndices.pushBack
+        @matchingNodePair @machingMemoryNode.@childIndices.pushBack
 
         newMatchingNodeEntry: MatchingNodeEntry;
         event             @newMatchingNodeEntry.@parentEvent set
         currentEntryIndex @newMatchingNodeEntry.@parentIndex set
-        @newMatchingNodeEntry move @matchingNode.@treeMemory.pushBack
+        @newMatchingNodeEntry @matchingNode.@treeMemory.pushBack
 
         result
       ];
 
-      currentEntryIndex: block.matchingChindIndex copy;
+      currentEntryIndex: block.matchingChindIndex new;
       comparingMessage: String;
       matchingNode: block.astArrayIndex @processor.@matchingNodes.at.get;
       currentMemory: currentEntryIndex @matchingNode.@treeMemory.at;

@@ -22,24 +22,24 @@ addDebugProlog: [
   String addDebugString
   processor.debugInfo.strings.dataSize 1 - @processor.@debugInfo.@cuStringNumber set
 
-  indexCodeView: processor.debugInfo.lastId copy;
+  indexCodeView: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
   ("!" indexCodeView " = !{i32 2, !\"CodeView\", i32 1}" ) assembleString addDebugString
 
-  indexDebug: processor.debugInfo.lastId copy;
+  indexDebug: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
   ("!" indexDebug " = !{i32 2, !\"Debug Info Version\", i32 3}") assembleString addDebugString
 
-  indexPIC: processor.debugInfo.lastId copy;
+  indexPIC: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
   ("!" indexPIC " = !{i32 1, !\"PIC Level\", i32 2}") assembleString addDebugString
 
   ("!llvm.module.flags = !{!" indexCodeView ", !" indexDebug ", !" indexPIC "}") assembleString processor.debugInfo.strings.dataSize 5 - @processor.@debugInfo.@strings.at set
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   String addDebugString
   processor.debugInfo.strings.dataSize 1 - @processor.@debugInfo.@unitStringNumber set
@@ -66,7 +66,7 @@ addDebugProlog: [
 addLinkerOptionsDebugInfo: [
   processor:;
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
   processor.options.linkerOptions.getSize 0 > [
@@ -80,7 +80,7 @@ addLinkerOptionsDebugInfo: [
       ("!\"" i processor.options.linkerOptions.at "\"") @optionsList.catMany
     ] times
     "}" @optionsList.cat
-    @optionsList move addDebugString
+    @optionsList addDebugString
   ] [
     String addDebugString
     String addDebugString
@@ -127,7 +127,7 @@ getPointerTypeDebugDeclaration: [
   refToVar:;
   compileOnce
   var: refToVar getVar;
-  debugDeclarationIndex: refToVar @processor getMplSchema.dbgTypeDeclarationId copy;
+  debugDeclarationIndex: refToVar @processor getMplSchema.dbgTypeDeclarationId new;
   [debugDeclarationIndex -1 = ~] "Pointee has no type debug info!" assert
   index: "DW_TAG_pointer_type" makeStringView debugDeclarationIndex processor.options.pointerSize 0ix cast 0 cast @processor addDerivedTypeInfo;
 
@@ -137,14 +137,14 @@ getPointerTypeDebugDeclaration: [
 addMemberInfo: [
   offset: field: fieldNumber: processor: block: ;;;;;
 
-  debugDeclarationIndex: field.refToVar @processor getMplSchema.dbgTypeDeclarationId copy;
+  debugDeclarationIndex: field.refToVar @processor getMplSchema.dbgTypeDeclarationId new;
   [debugDeclarationIndex -1 = ~] "Field has not debug info about type!" assert
 
   fsize: field.refToVar @processor getStorageSize 0ix cast 0 cast;
   falignment: field.refToVar @processor getAlignment 0ix cast 0 cast;
   offset falignment + 1 - 0n32 cast falignment 1 - 0n32 cast ~ and 0 cast @offset set
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
   name: field.nameInfo processor.nameManager.getText;
@@ -199,7 +199,7 @@ getTypeDebugDeclaration: [
               ] &&
             ] loop
 
-            index: processor.debugInfo.lastId copy;
+            index: processor.debugInfo.lastId new;
             processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
             newDebugInfo: String;
             ("!" index " = !{")   @newDebugInfo.catMany
@@ -213,10 +213,10 @@ getTypeDebugDeclaration: [
               ] &&
             ] loop
             "}" @newDebugInfo.cat
-            @newDebugInfo move addDebugString
+            @newDebugInfo addDebugString
 
 
-            index: processor.debugInfo.lastId copy;
+            index: processor.debugInfo.lastId new;
             processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
             ("!" index " = distinct !DICompositeType(tag: DW_TAG_structure_type, file: !" processor.positions.last.file.debugId
@@ -297,9 +297,9 @@ getDbgType:  [
 addVariableDebugInfo: [
   nameInfo: refToVar: processor: block: ;;;;
   refToVar isVirtualType ~ [
-    debugDeclarationIndex: refToVar @processor getMplSchema.dbgTypeDeclarationId copy;
+    debugDeclarationIndex: refToVar @processor getMplSchema.dbgTypeDeclarationId new;
     [debugDeclarationIndex -1 = ~] "There is no debug declaration for this type!" assert
-    index: processor.debugInfo.lastId copy;
+    index: processor.debugInfo.lastId new;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
     ("!" index " = !DILocalVariable(name: \"" nameInfo processor.nameManager.getText "\", scope: !" block.funcDbgIndex
       ", file: !" processor.positions.last.file.debugId
@@ -315,14 +315,14 @@ addVariableDebugInfo: [
 addGlobalVariableDebugInfo: [
   nameInfo: refToVar: processor: block:;;;;
   refToVar isVirtualType ~ [
-    debugDeclarationIndex: refToVar @processor getMplSchema.dbgTypeDeclarationId copy;
+    debugDeclarationIndex: refToVar @processor getMplSchema.dbgTypeDeclarationId new;
     [debugDeclarationIndex -1 = ~] "There is no debug declaration for this type!" assert
 
-    index: processor.debugInfo.lastId copy;
+    index: processor.debugInfo.lastId new;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
     ("!" index " = !DIGlobalVariableExpression(var: !" index 1 + ", expr: !DIExpression())") assembleString addDebugString
 
-    index: processor.debugInfo.lastId copy;
+    index: processor.debugInfo.lastId new;
     processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
     ("!" index " = !DIGlobalVariable(name: \"" nameInfo processor.nameManager.getText "\", linkageName: \"" refToVar @processor getIrName
       "\", scope: !" processor.debugInfo.unit ", file: !" processor.positions.last.file.debugId
@@ -348,7 +348,7 @@ addVariableMetadata: [
 addExpression: [
   processor:;
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   ("!" index " = !DIExpression()") assembleString addDebugString
   index
@@ -358,10 +358,10 @@ addTypeInfo: [
   processor: ;
 
   encoding:;
-  copy size:;
+  size: new;
   name:;
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   ("!" index " = !DIBasicType(name: \"" @name "\", size: " size ", encoding: " @encoding ")") assembleString addDebugString
 
@@ -371,10 +371,10 @@ addTypeInfo: [
 addDerivedTypeInfo: [
   processor: ;
 
-  copy size:;
-  copy base:;
+  size: new;
+  base: new;
   tag:;
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   ("!" index " = !DIDerivedType(tag: " @tag ", baseType: !" base ", size: " @size ")") assembleString addDebugString
 
@@ -386,7 +386,7 @@ addFileDebugInfo: [
   processor: ;
 
   fileName:;
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
   fullPath: (processor.options.mainPath fileName) assembleString;
@@ -399,12 +399,12 @@ addFuncSubroutineInfo: [
   compileOnce
   processor: ;
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   ("!" index " = !{null}") assembleString addDebugString
-  types: index copy;
+  types: index new;
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
   ("!" index " = !DISubroutineType(types: !" types ")") assembleString addDebugString
@@ -435,7 +435,7 @@ addDebugLocation: [
   compileOnce
   position: scopeDbgIndex: funcDbgIndex: processor: ;;;;
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
   ("!" index " = !DILocation(line: " position.line ", column: " position.column ", scope: !" scopeDbgIndex ")") assembleString addDebugString
@@ -458,7 +458,7 @@ addLexicalBlockLocation: [
 addLexicalBlockLocation: [
   fileDbgIndex: funcDbgIndex: processor: ;;;
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
   ("!" index " = !DILexicalBlockFile(scope: !" funcDbgIndex ", file: !" fileDbgIndex ", discriminator: 0)")  assembleString @processor.@debugInfo.@strings.pushBack
@@ -469,7 +469,7 @@ addLexicalBlockLocation: [
 addDebugReserve: [
   processor:;
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   String addDebugString
   index
@@ -478,7 +478,7 @@ addDebugReserve: [
 moveLastDebugString: [
   processor:;
 
-  copy index:;
+  index: new;
   processor.debugInfo.strings.last
   index 4 + @processor.@debugInfo.@strings.at set
   @processor.@debugInfo.@strings.popBack
@@ -489,7 +489,7 @@ correctUnitInfo: [
 
   file:;
 
-  index: processor.debugInfo.lastId copy;
+  index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   newDebugInfo: ("!" index " = !{" ) assembleString;
   processor.debugInfo.globals.getSize [
@@ -499,8 +499,8 @@ correctUnitInfo: [
   ] times
   "}"                       @newDebugInfo.cat
 
-  @newDebugInfo move addDebugString
-  globals: index copy;
+  @newDebugInfo addDebugString
+  globals: index new;
 
   ("!" processor.debugInfo.unit " = distinct !DICompileUnit(language: DW_LANG_C_plus_plus, file: !" file.debugId
     ", producer: \"mpl compiler\", isOptimized: false, runtimeVersion: 2, emissionKind: FullDebug, globals: !" globals ")") assembleString

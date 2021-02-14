@@ -93,8 +93,8 @@ makeInstruction: [{
   irName1: -1 dynamic;
   irName2: -1 dynamic;
   irName3: -1 dynamic;
-  codeOffset: copy;
-  codeSize: copy;
+  codeOffset: new;
+  codeSize: new;
 }];
 
 Instruction: [0 0 makeInstruction];

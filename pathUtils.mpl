@@ -83,7 +83,7 @@ simplifyPath: [
 simplifyFileName: [
   path: name: simplifyPath;;
   path "" = [
-    @name move copy
+    @name new
   ] [
     (path "/" name) assembleString
   ] if
@@ -96,7 +96,7 @@ findExtensionPosition: [
     i -1 = [FALSE] [
       codeunit: view.data storageAddress i Natx cast + Nat8 addressToReference;
       codeunit 46n8 = [ # '.'
-        i copy !extensionPosition FALSE
+        i new !extensionPosition FALSE
       ] [
         codeunit 47n8 = [codeunit 92n8 =] || [FALSE] [ # '/' or '\\'
           i 1 - !i TRUE
@@ -152,7 +152,7 @@ nameWithoutBadSymbols: [
   splitted.success [
     splitted.chars [
       symbol:;
-      codePoint: symbol.data copy;
+      codePoint: symbol.data new;
       codePoint 48n8 < ~ [codePoint 57n8 > ~] &&         #0..9
       [codePoint 65n8 < ~ [codePoint 90n8 > ~] &&] ||    #A..Z
       [codePoint 97n8 < ~ [codePoint 122n8 > ~] &&] || [ #a..z

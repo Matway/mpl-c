@@ -47,10 +47,10 @@ NamedBranch: [{
 
 makePositionInfo: [{
   token:  String;
-  column: copy;
-  line:   copy;
-  offset: copy;
-  fileId: copy;
+  column: new;
+  line:   new;
+  offset: new;
+  fileId: new;
 }];
 
 PositionInfo: [-1 dynamic -1 dynamic 1 dynamic 0 dynamic makePositionInfo];

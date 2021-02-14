@@ -35,7 +35,7 @@ getStaticStructIR: [
   ", " makeStringView @unfinishedTerminators.pushBack
   [
     unfinishedVars.getSize 0 > [
-      current: unfinishedVars.last copy;
+      current: unfinishedVars.last new;
       @unfinishedVars.popBack
 
       current isVirtual [
@@ -121,7 +121,7 @@ createAllocIR: [
   var: @refToVar getVar;
 
   block.parent 0 = [
-    processor.options.partial copy [
+    processor.options.partial new [
       varBlock: block;
       [varBlock.file isNil ~] "Topnode in nil file!" assert
       varBlock.file.usedInParams ~
@@ -138,7 +138,7 @@ createAllocIR: [
     block.program.size 1 - @var.@allocationInstructionIndex set
   ] if
 
-  refToVar copy
+  refToVar new
 ];
 
 createStaticInitIR: [
@@ -146,7 +146,7 @@ createStaticInitIR: [
   var: @refToVar getVar;
   [block.parent 0 =] "Can be used only with global vars!" assert
 
-  processor.options.partial copy [
+  processor.options.partial new [
     varBlock: block;
     [varBlock.file isNil ~] "Topnode in nil file!" assert
     varBlock.file.usedInParams ~
@@ -156,7 +156,7 @@ createStaticInitIR: [
     (refToVar @processor getIrName " = private local_unnamed_addr global " refToVar @processor getStaticStructIR) assembleString @processor.@prolog.pushBack
   ] if
   processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
-  refToVar copy
+  refToVar new
 ];
 
 createVarImportIR: [
@@ -167,7 +167,7 @@ createVarImportIR: [
   (refToVar @processor getIrName " = external global " refToVar @processor getIrType) assembleString @processor.@prolog.pushBack
   processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
 
-  refToVar copy
+  refToVar new
 ];
 
 createVarExportIR: [
@@ -178,7 +178,7 @@ createVarExportIR: [
   (refToVar @processor getIrName " = dllexport global " refToVar @processor getIrType " zeroinitializer") assembleString @processor.@prolog.pushBack
   processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
 
-  refToVar copy
+  refToVar new
 ];
 
 createGlobalAliasIR: [
@@ -196,14 +196,14 @@ createPlainIR: [
   refToVar: processor: block: ;;;
   [refToVar isPlain] "Var is not plain" assert
   refToVar @refToVar @processor @block createAllocIR @processor @block createStoreConstant
-  refToVar copy
+  refToVar new
 ];
 
 createStringIR: [
   processor:;
   refToVar:;
   string:;
-  stringId: processor.lastStringId copy;
+  stringId: processor.lastStringId new;
   stringName: ("@string." processor.lastStringId) assembleString;
 
   processor.lastStringId 1 + @processor.@lastStringId set
@@ -399,7 +399,7 @@ createCheckedCopyToNewWith: [
       ] [
         prevMut: dstRef.mutable;
         prevMoved: dstRef.moved;
-        prevTmp: dstRef getVar.temporary copy;
+        prevTmp: dstRef getVar.temporary new;
         TRUE @dstRef.setMutable
         @dstRef fullUntemporize
 
@@ -620,8 +620,8 @@ createDtors: [
   processor.dtorFunctions [
     blockId:;
     cur: blockId processor.blocks.at.get;
-    processor.options.partial ~ [cur.file.usedInParams copy] || [
-      id: cur.file.fileId copy;
+    processor.options.partial ~ [cur.file.usedInParams new] || [
+      id: cur.file.fileId new;
       blockId id @dtorByFile.at.pushBack
     ] when
   ] each
@@ -631,10 +631,10 @@ createDtors: [
       currentFile: i processor.files.at.get;
       currentName: currentFile.name stripExtension nameWithoutBadSymbols;
       String @processor addStrToProlog
-      processor.options.partial ~ [currentFile.usedInParams copy] || [
+      processor.options.partial ~ [currentFile.usedInParams new] || [
         ("define void @module." currentName ".dtor() {") assembleString @processor addStrToProlog
         i dtorByFile.at [
-          cur: processor.blocks.at.get.irName copy;
+          cur: processor.blocks.at.get.irName new;
           ("  call void " cur "()") assembleString @processor addStrToProlog
         ] each
         "  ret void" @processor addStrToProlog
@@ -651,10 +651,10 @@ addCtorsToBeginFunc: [
 
   processor.beginFuncIndex 0 < ~ [
     block: processor.beginFuncIndex @processor.@blocks.at.get;
-    previousVersion: @block.@program move copy;
+    previousVersion: @block.@program new;
     @block.@program.clear
 
-    0 @previousVersion.at move @block.@program.pushBack
+    0 @previousVersion.at @block.@program.pushBack
 
     block.beginPosition @processor.@positions.pushBack
 
@@ -675,7 +675,7 @@ addCtorsToBeginFunc: [
     previousVersion.getSize [
       i 0 >  [
         current: i @previousVersion.at;
-        @current move @block.@program.pushBack
+        @current @block.@program.pushBack
       ] when
     ] times
 
@@ -690,7 +690,7 @@ addDtorsToEndFunc: [
 
   processor.endFuncIndex 0 < ~ [
     block: processor.endFuncIndex @processor.@blocks.at.get;
-    previousVersion: @block.@program move copy;
+    previousVersion: @block.@program new;
     @block.@program.clear
 
     block.beginPosition @processor.@positions.pushBack
@@ -698,7 +698,7 @@ addDtorsToEndFunc: [
     previousVersion.getSize [
       i block.instructionCountBeforeRet < [
         current: i @previousVersion.at;
-        @current move @block.@program.pushBack
+        @current @block.@program.pushBack
       ] when
     ] times
 
@@ -718,7 +718,7 @@ addDtorsToEndFunc: [
 
     previousVersion.getSize block.instructionCountBeforeRet - [
       current: i block.instructionCountBeforeRet + @previousVersion.at;
-      @current move @block.@program.pushBack
+      @current @block.@program.pushBack
     ] times
 
     @processor.@positions.popBack
@@ -744,7 +744,7 @@ sortInstructions: [
 
   [
     bannedIds.getSize 0 > [
-      bannedId: bannedIds.last copy;
+      bannedId: bannedIds.last new;
       @bannedIds.popBack
 
       block.program.getSize [
@@ -770,26 +770,26 @@ sortInstructions: [
 
   block.program.getSize [
     current: i @block.@program.at;
-    i 0 = [current.alloca copy] || [
+    i 0 = [current.alloca new] || [
       current.fakePointer [
-        @current move @fakePointersAllocs.pushBack
+        @current @fakePointersAllocs.pushBack
       ] [
-        @current move @allocs.pushBack
+        @current @allocs.pushBack
       ] if
     ] [
       current.fakePointer [
-        @current move @fakePointers.pushBack
+        @current @fakePointers.pushBack
       ] [
-        @current move @noallocs.pushBack
+        @current @noallocs.pushBack
       ] if
     ] if
   ] times
 
   @block.@program.clear
-  @allocs             [move @block.@program.pushBack] each
-  @fakePointersAllocs [move @block.@program.pushBack] each
-  @fakePointers       [move @block.@program.pushBack] each
-  @noallocs           [move @block.@program.pushBack] each
+  @allocs             [@block.@program.pushBack] each
+  @fakePointersAllocs [@block.@program.pushBack] each
+  @fakePointers       [@block.@program.pushBack] each
+  @noallocs           [@block.@program.pushBack] each
 ];
 
 addAliasesForUsedNodes: [
@@ -800,7 +800,7 @@ addAliasesForUsedNodes: [
   @processor.@blocks [
     block0: .get;
     block0 nodeHasCode [
-      @block0.@aliases [move @processor.@prolog.pushBack] each
+      @block0.@aliases [@processor.@prolog.pushBack] each
     ] when
   ] each
 ];

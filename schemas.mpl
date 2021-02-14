@@ -20,16 +20,16 @@ makeVariableSchema: [
       signature: node.csignature;
       signature.inputs.getSize @functionSchema.@inputSchemaIds.resize
       signature.inputs.getSize [
-        i signature.inputs.at getVar.mplSchemaId copy i @functionSchema.@inputSchemaIds.at set
+        i signature.inputs.at getVar.mplSchemaId i @functionSchema.@inputSchemaIds.at set
       ] times
 
       signature.outputs.getSize @functionSchema.@outputSchemaIds.resize
       signature.outputs.getSize [
-        i signature.outputs.at getVar.mplSchemaId copy i @functionSchema.@outputSchemaIds.at set
+        i signature.outputs.at getVar.mplSchemaId i @functionSchema.@outputSchemaIds.at set
       ] times
 
-      signature.variadic copy @functionSchema.!variadic
-      signature.convention copy @functionSchema.!convention
+      signature.variadic new @functionSchema.!variadic
+      signature.convention new @functionSchema.!convention
     ]
     VarRef [
       VariableSchemaTags.REF_SCHEMA @varSchema.@data.setTag
@@ -37,7 +37,7 @@ makeVariableSchema: [
       ref: VarRef var.data.get.refToVar;
       pointee: ref getVar;
       ref.mutable @refSchema.!mutable
-      pointee.mplSchemaId copy @refSchema.!pointeeSchemaId
+      pointee.mplSchemaId new @refSchema.!pointeeSchemaId
     ]
     VarStruct [
       VariableSchemaTags.STRUCT_SCHEMA @varSchema.@data.setTag
@@ -48,7 +48,7 @@ makeVariableSchema: [
         field: i struct.fields.at;
         fieldSchema: FieldSchema;
         field.refToVar getVar.mplSchemaId @fieldSchema.@valueSchemaId set
-        field.nameInfo copy @fieldSchema.!nameInfo
+        field.nameInfo new @fieldSchema.!nameInfo
         @fieldSchema i @structSchema.@data.at set
       ] times
     ]
@@ -63,7 +63,7 @@ makeVariableSchema: [
     schemaId: varSchema @processor getVariableSchemaId;
     VariableSchemaTags.VIRTUAL_VALUE_SCHEMA @varSchema.@data.setTag
     virtualValueSchema: VariableSchemaTags.VIRTUAL_VALUE_SCHEMA @varSchema.@data.get;
-    schemaId copy @virtualValueSchema.!schemaId
+    schemaId new @virtualValueSchema.!schemaId
     refToVar getVirtualValue @virtualValueSchema.!virtualValue
   ] when
 
@@ -72,16 +72,15 @@ makeVariableSchema: [
 
 getVariableSchemaId: [
   processor:;
-  varSchemaIsMoved: isMoved;
   varSchema:;
   findResult: varSchema processor.schemaTable.find;
   findResult.success [
-    findResult.value copy
+    findResult.value new
   ] [
     schemaId: processor.schemaBuffer.getSize;
     varSchema schemaId @processor.@schemaTable.insert
-    @varSchema varSchemaIsMoved moveIf @processor.@schemaBuffer.pushBack
-    schemaId copy
+    @varSchema @processor.@schemaBuffer.pushBack
+    schemaId new
   ] if
 ];
 
@@ -104,7 +103,7 @@ VariableSchema: [{
     data.getTag other.data.getTag = ~ [FALSE] [
       data.getTag (
         VariableSchemaTags fieldCount [
-          i copy i copy [
+          i new i new [
             tag:;
             tag data.get
             tag other.data.get =
@@ -253,7 +252,7 @@ visit: [
   variant:callback:;;
   variant.getTag (
     variant.typeList fieldCount [
-      i copy i copy [@variant.get callback] bind
+      i new i new [@variant.get callback] bind
     ] times
 
     ["invalid tag in variant" failProc]

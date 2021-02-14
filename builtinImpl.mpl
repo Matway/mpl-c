@@ -109,8 +109,8 @@ mplNumberBinaryOp: [
   getResultType:;
   opFunc:;
   getOpName:;
-  copy lastTag:;
-  copy firstTag:;
+  lastTag: new;
+  firstTag: new;
 
   arg2: @processor @block pop;
   arg1: @processor @block pop;
@@ -132,9 +132,9 @@ mplNumberBinaryOp: [
 
       arg1 staticityOfVar Dynamic > arg2 staticityOfVar Dynamic > and [
         var1.data.getTag firstTag lastTag [
-          copy tag:;
-          value1: tag var1.data.get.end copy;
-          value2: tag var2.data.get.end copy;
+          tag: new;
+          value1: tag var1.data.get.end new;
+          value2: tag var2.data.get.end new;
           resultType: tag @getResultType call;
           value1 value2 @exValidator call
           processor compilable [
@@ -146,9 +146,9 @@ mplNumberBinaryOp: [
       ] [
         opName: arg1 arg2 @getOpName call;
         var1.data.getTag firstTag lastTag [
-          copy tag:;
-          value1: tag var1.data.get.end copy;
-          value2: tag var2.data.get.end copy;
+          tag: new;
+          value1: tag var1.data.get.end new;
+          value2: tag var2.data.get.end new;
           resultType: tag @getResultType call;
           result: resultType zeroValue makeValuePair resultType @processor @block createVariable
             Dynamic @processor block makeStaticity
@@ -175,9 +175,9 @@ mplNumberBuiltinOp: [
     processor compilable [
       arg staticityOfVar Dynamic > [
         var.data.getTag VarReal32 VarReal64 1 + [
-          copy tag:;
-          value: tag var.data.get.end copy;
-          resultType: tag copy;
+          tag: new;
+          value: tag var.data.get.end new;
+          resultType: tag new;
           value @exValidator call
           processor compilable [
             value @opFunc call resultType @processor cutValue makeValuePair resultType @processor @block createVariable
@@ -189,9 +189,9 @@ mplNumberBuiltinOp: [
         @arg @processor @block makeVarRealCaptured
         opName: arg @getOpName call;
         var.data.getTag VarReal32 VarReal64 1 + [
-          copy tag:;
-          value: tag var.data.get.end copy;
-          resultType: tag copy;
+          tag: new;
+          value: tag var.data.get.end new;
+          resultType: tag new;
           result: resultType zeroValue makeValuePair resultType @processor @block createVariable
             Dynamic @processor block makeStaticity
             @processor @block createAllocIR;
@@ -220,8 +220,8 @@ mplNumberUnaryOp: [
   opFunc:;
   getMidOpName:;
   getOpName:;
-  copy lastTag:;
-  copy firstTag:;
+  lastTag: new;
+  firstTag: new;
 
   arg: @processor @block pop;
 
@@ -232,9 +232,9 @@ mplNumberUnaryOp: [
     processor compilable [
       arg staticityOfVar Dynamic > [
         var.data.getTag firstTag lastTag [
-          copy tag:;
-          value: tag var.data.get.end copy;
-          resultType: tag copy;
+          tag: new;
+          value: tag var.data.get.end new;
+          resultType: tag new;
           value @exValidator call
           processor compilable [
             value @opFunc call resultType @processor cutValue makeValuePair resultType @processor @block createVariable
@@ -247,9 +247,9 @@ mplNumberUnaryOp: [
         opName: arg @getOpName call;
         mopName: arg @getMidOpName call;
         var.data.getTag firstTag lastTag [
-          copy tag:;
-          value: tag var.data.get.end copy;
-          resultType: tag copy;
+          tag: new;
+          value: tag var.data.get.end new;
+          resultType: tag new;
           result: resultType zeroValue makeValuePair resultType @processor @block createVariable
             Dynamic @processor block makeStaticity
             @processor @block createAllocIR;
@@ -281,12 +281,12 @@ mplShiftBinaryOp: [
 
       arg1 staticityOfVar Dynamic > arg2 staticityOfVar Dynamic > and [
         var1.data.getTag VarNat8 VarIntX 1 + [
-          copy tag1:;
+          tag1: new;
           var2.data.getTag VarNat8 VarNatX 1 + [
-            copy tag2:;
-            value1: tag1 var1.data.get.end copy;
-            value2: tag2 var2.data.get.end copy;
-            resultType: tag1 copy;
+            tag2: new;
+            value1: tag1 var1.data.get.end new;
+            value2: tag2 var2.data.get.end new;
+            resultType: tag1 new;
             value2 63n64 > ["shift value must be less than 64" @processor block compilerError] when
 
             processor compilable [
@@ -299,8 +299,8 @@ mplShiftBinaryOp: [
       ] [
         opName: arg1 arg2 @getOpName call;
         var1.data.getTag VarNat8 VarIntX 1 + [
-          copy tag:;
-          resultType: tag copy;
+          tag: new;
+          resultType: tag new;
           result: resultType zeroValue makeValuePair resultType @processor @block createVariable
             Dynamic @processor @block makeStaticity
             @processor @block createAllocIR;
@@ -452,19 +452,19 @@ staticityOfBinResult: [
 ] "mplBuiltinStrCat" @declareBuiltin ucall
 
 [
-  VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fmul" makeStringView]["mul" makeStringView] if] [*] [copy] [y:; x:;] mplNumberBinaryOp
+  VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fmul" makeStringView]["mul" makeStringView] if] [*] [new] [y:; x:;] mplNumberBinaryOp
 ] "mplBuiltinMul" @declareBuiltin ucall
 
 [
-  VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fadd" makeStringView]["add" makeStringView] if] [+] [copy] [y:; x:;] mplNumberBinaryOp
+  VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fadd" makeStringView]["add" makeStringView] if] [+] [new] [y:; x:;] mplNumberBinaryOp
 ] "mplBuiltinAdd" @declareBuiltin ucall
 
 [
-  VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fsub" makeStringView]["sub" makeStringView] if] [-] [copy] [y:; x:;] mplNumberBinaryOp
+  VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fsub" makeStringView]["sub" makeStringView] if] [-] [new] [y:; x:;] mplNumberBinaryOp
 ] "mplBuiltinSub" @declareBuiltin ucall
 
 [
-  VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fdiv" makeStringView][a2 isNat ["udiv" makeStringView] ["sdiv" makeStringView] if] if] [/] [copy] [
+  VarNat8 VarReal64 1 + [a2:; a1:; a2 isReal ["fdiv" makeStringView][a2 isNat ["udiv" makeStringView] ["sdiv" makeStringView] if] if] [/] [new] [
     y:; x:;
     y y - y = ["division by zero" @processor block compilerError] when
   ] mplNumberBinaryOp
@@ -507,9 +507,9 @@ staticityOfBinResult: [
           @processor @block createPlainIR @block push
         ] [
           var1.data.getTag VarCond VarReal64 1 + [
-            copy tag:;
-            value1: tag var1.data.get.end copy;
-            value2: tag var2.data.get.end copy;
+            tag: new;
+            value1: tag var1.data.get.end new;
+            value2: tag var2.data.get.end new;
             value1 value2 = makeValuePair VarCond @processor @block createVariable
             arg1 staticityOfVar arg2 staticityOfVar staticityOfBinResult @processor block makeStaticity
             @processor @block createPlainIR @block push
@@ -523,14 +523,14 @@ staticityOfBinResult: [
         ] [
           arg1 isReal [
             var1.data.getTag VarReal32 VarReal64 1 + [
-              copy tag:;
+              tag: new;
               result: FALSE makeValuePair VarCond @processor @block createVariable Dynamic @processor @block makeStaticity @processor @block createAllocIR;
               arg1 arg2 @result "fcmp oeq" @processor @block createBinaryOperation
               result @block push
             ] staticCall
           ] [
             var1.data.getTag VarCond VarIntX 1 + [
-              copy tag:;
+              tag: new;
               result: FALSE makeValuePair VarCond @processor @block createVariable Dynamic @processor @block makeStaticity @processor @block createAllocIR;
               arg1 arg2 @result "icmp eq" @processor @block createBinaryOperation
               result @block push
@@ -598,10 +598,10 @@ staticityOfBinResult: [
 
       arg1 staticityOfVar Dynamic > arg2 staticityOfVar Dynamic > and [
         var1.data.getTag VarReal32 VarReal64 1 + [
-          copy tag:;
-          value1: tag var1.data.get.end copy;
-          value2: tag var2.data.get.end copy;
-          resultType: tag copy;
+          tag: new;
+          value1: tag var1.data.get.end new;
+          value2: tag var2.data.get.end new;
+          resultType: tag new;
 
           processor compilable [
             value1 value2 ^ resultType @processor cutValue makeValuePair resultType @processor @block createVariable
@@ -614,8 +614,8 @@ staticityOfBinResult: [
         @arg2 @processor @block makeVarRealCaptured
 
         var1.data.getTag VarReal32 VarReal64 1 + [
-          copy tag:;
-          resultType: tag copy;
+          tag: new;
+          resultType: tag new;
           result: resultType zeroValue makeValuePair resultType @processor @block createVariable
             Dynamic @processor @block makeStaticity
             @processor @block createAllocIR;
@@ -699,7 +699,7 @@ staticityOfBinResult: [
 ] "mplBuiltinAlignment" @declareBuiltin ucall
 
 [
-  VarCond VarNatX 1 + [a2:; a1:; "and" makeStringView] [and] [copy] [y:; x:;] mplNumberBinaryOp
+  VarCond VarNatX 1 + [a2:; a1:; "and" makeStringView] [and] [new] [y:; x:;] mplNumberBinaryOp
 ] "mplBuiltinAnd" @declareBuiltin ucall
 
 [
@@ -734,7 +734,7 @@ staticityOfBinResult: [
             ] &&
           ] loop
 
-          result: @struct move owner VarStruct @processor @block createVariable;
+          result: @struct owner VarStruct @processor @block createVariable;
           result isVirtual ~ [@result @processor @block createAllocIR @result set] when
           resultStruct: VarStruct @result getVar.@data.get.get;
 
@@ -804,10 +804,10 @@ staticityOfBinResult: [
           refToDst: RefToVar;
 
           varSrc.data.getTag VarNat8 VarReal64 1 + [
-            copy tagSrc:;
+            tagSrc: new;
             branchSrc: tagSrc varSrc.data.get.end;
             varSchema.data.getTag VarNat8 VarReal64 1 + [
-              copy tagDst:;
+              tagDst: new;
               branchSchema: tagDst @varSchema.@data.get.end;
               branchSrc branchSchema cast tagDst @processor cutValue makeValuePair tagDst @processor @block createVariable @processor @block createPlainIR @refToDst set
             ] staticCall
@@ -821,7 +821,7 @@ staticityOfBinResult: [
           refToDst: RefToVar;
           varSchema: refToSchema getVar;
           varSchema.data.getTag VarNat8 VarReal64 1 + [
-            copy tagDst:;
+            tagDst: new;
 
             branchSchema: tagDst @varSchema.@data.get.end;
             branchSchema makeValuePair tagDst @processor @block createVariable @refToDst set
@@ -904,7 +904,7 @@ staticityOfBinResult: [
     [
       gnr: newBlock.varNameInfo @processor @block getName;
       cnr: @gnr 0 dynamic @processor @block processor.positions.last.file captureName;
-      refToVar: cnr.refToVar copy;
+      refToVar: cnr.refToVar new;
       refToVar @block push
     ]
   ) sequence
@@ -1046,9 +1046,9 @@ staticityOfBinResult: [
       fr: nameInfo processor.exportVarIds.find;
       fr.success ["export variable name used now" @processor block compilerError] when
     ] [
-      oldIrNameId: var.irNameId copy;
+      oldIrNameId: var.irNameId new;
       nameInfo refToVar @processor.@exportVarIds.insert
-      oldInstructionIndex: var.globalDeclarationInstructionIndex copy;
+      oldInstructionIndex: var.globalDeclarationInstructionIndex new;
       ("@" name) assembleString @processor makeStringId @var.@irNameId set
 
       processor.options.partial [
@@ -1059,7 +1059,7 @@ staticityOfBinResult: [
       ] [
         @refToVar @processor @block createVarExportIR drop
         instruction: var.globalDeclarationInstructionIndex @processor.@prolog.at;
-        @processor.@prolog.last move @instruction set
+        @processor.@prolog.last @instruction set
         @processor.@prolog.popBack
         TRUE @refToVar.setMutable
         var.irNameId oldIrNameId refToVar @processor getMplSchema.irTypeId @processor createGlobalAliasIR
@@ -1068,8 +1068,8 @@ staticityOfBinResult: [
 
       {
         addNameCase: NameCaseLocal;
-        refToVar:    refToVar copy;
-        nameInfo:    nameInfo copy;
+        refToVar:    refToVar new;
+        nameInfo:    nameInfo new;
       } @processor @block addNameInfo
 
       processor.options.debug [
@@ -1164,24 +1164,24 @@ staticityOfBinResult: [
     field: Field;
     varPrev @field.@refToVar set
     "prev" makeStringView @processor findNameInfo @field.@nameInfo set
-    @field move @struct.@fields.pushBack
+    @field @struct.@fields.pushBack
 
     field: Field;
     varName @field.@refToVar set
     "name" makeStringView @processor findNameInfo @field.@nameInfo set
-    @field move @struct.@fields.pushBack
+    @field @struct.@fields.pushBack
 
     field: Field;
     varLine @field.@refToVar set
     "line" makeStringView @processor findNameInfo @field.@nameInfo set
-    @field move @struct.@fields.pushBack
+    @field @struct.@fields.pushBack
 
     field: Field;
     varColumn @field.@refToVar set
     "column" makeStringView @processor findNameInfo @field.@nameInfo set
-    @field move @struct.@fields.pushBack
+    @field @struct.@fields.pushBack
 
-    @struct move owner VarStruct @processor @block createVariable @processor.@varForCallTrace set
+    @struct owner VarStruct @processor @block createVariable @processor.@varForCallTrace set
 
     Dynamic @processor.@varForCallTrace getVar.@storageStaticity set
     @processor.@varForCallTrace @processor @block makeVarTreeDirty
@@ -1236,7 +1236,7 @@ staticityOfBinResult: [
 
     processor compilable [
       condition staticityOfVar Weak > [
-        value: VarCond varCond.data.get.end copy;
+        value: VarCond varCond.data.get.end new;
         value [
           VarCode varThen.data.get.index "staticIfThen" makeStringView @processor @block processCall
         ] [
@@ -1300,8 +1300,8 @@ staticityOfBinResult: [
 
             {
               addNameCase: NameCaseLocal;
-              refToVar:    newRefToVar copy;
-              nameInfo:    nameInfo copy;
+              refToVar:    newRefToVar new;
+              nameInfo:    nameInfo new;
             } @processor @block addNameInfo
 
             processor.options.debug [newRefToVar isVirtual ~] && [
@@ -1432,7 +1432,7 @@ staticityOfBinResult: [
 ] "mplBuiltinManuallyInitVariable" @declareBuiltin ucall
 
 [
-  VarNat8 VarIntX 1 + [a2:; a1:; a2 isNat ["urem" makeStringView] ["srem" makeStringView] if] [mod] [copy] [
+  VarNat8 VarIntX 1 + [a2:; a1:; a2 isNat ["urem" makeStringView] ["srem" makeStringView] if] [mod] [new] [
     y:; x:;
     y y - y = ["division by zero" @processor block compilerError] when
   ] mplNumberBinaryOp
@@ -1520,7 +1520,7 @@ staticityOfBinResult: [
 ] "mplBuiltinNewVarOfTheSameType" @declareBuiltin ucall
 
 [
-  VarCond VarNatX 1 + [a2:; a1:; "or" makeStringView] [or] [copy] [y:; x:;] mplNumberBinaryOp
+  VarCond VarNatX 1 + [a2:; a1:; "or" makeStringView] [or] [new] [y:; x:;] mplNumberBinaryOp
 ] "mplBuiltinOr" @declareBuiltin ucall
 
 [
@@ -1702,7 +1702,7 @@ staticityOfBinResult: [
               field @struct.@fields.pushBack
             ] each
 
-            result: @struct move owner VarStruct @processor @block createVariable;
+            result: @struct owner VarStruct @processor @block createVariable;
             result isVirtual ~ [@result @processor @block createAllocIR @result set] when
             resultStruct: VarStruct @result getVar.@data.get.get;
 
@@ -1746,7 +1746,7 @@ staticityOfBinResult: [
     varCode.data.getTag VarCode = ~ ["branch else must be a [CODE]" @processor block compilerError] when
 
     processor compilable [
-      astArrayIndex: VarCode varCode.data.get.index copy;
+      astArrayIndex: VarCode varCode.data.get.index new;
       block.countOfUCall 1 + @block.@countOfUCall set
       block.countOfUCall 65535 > ["ucall limit exceeded" @processor block compilerError] when
       indexArray: astArrayIndex processor.multiParserResult.memory.at;
@@ -1771,7 +1771,7 @@ staticityOfBinResult: [
 
     processor compilable [
       condition staticityOfVar Weak > [
-        value: VarCond varCond.data.get.end copy;
+        value: VarCond varCond.data.get.end new;
         code: value [VarCode varThen.data.get] [VarCode varElse.data.get] if;
         astArrayIndex: code.index;
         block.countOfUCall 1 + @block.@countOfUCall set
@@ -1812,10 +1812,10 @@ tryFindInPath: [
       fr.success [fr.value 0 < ~] && [
         fileBlock: fr.value processor.blocks.at.get;
         fileBlock @result.!block
-        @fullFileName move @result.@fullFileName set
+        @fullFileName @result.@fullFileName set
         FindInPathResult.COMPILED_FILE @result.!success
       ] [
-        @fullFileName move @result.@fullFileName set
+        @fullFileName @result.@fullFileName set
         FindInPathResult.UNCOMPILED_FILE @result.!success
       ] if
 
@@ -1831,17 +1831,17 @@ tryFindInPath: [
         fileId: FALSE fullFileName makeStringView @processor addFileNameToProcessor;
         fullFileName @processor.@options.@fileNames.pushBack
         fileId @processor.@unfinishedFiles.pushBack
-        @fullFileName move @result.@fullFileName set
+        @fullFileName @result.@fullFileName set
         FindInPathResult.UNCOMPILED_FILE @result.!success
       ] [
         errorInfo @processor @block compilerError
-        @fullFileName move @result.@fullFileName set
+        @fullFileName @result.@fullFileName set
         FindInPathResult.FILE_WITH_ERROR @result.!success
       ] if
     ] [
       findInCmd: moduleName processor.cmdFileNameIds.find;
       findInCmd.success [
-        findInCmd.value copy checkLoadedFile ~ [
+        findInCmd.value new checkLoadedFile ~ [
           FindInPathResult.NO_FILE @result.!success
         ] when
       ] [
@@ -1887,7 +1887,7 @@ tryFindInPath: [
           message: ("module not found: " fileName) assembleString;
           message @processor block compilerError
           oldSuccess [
-            @processor.@result.@errorInfo move @processor.@result.@globalErrorInfo.pushBack
+            @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.pushBack
             -1 @processor.@result clearProcessorResult
           ] when
         ]
@@ -1896,7 +1896,7 @@ tryFindInPath: [
         ]
         FindInPathResult.UNCOMPILED_FILE [
           TRUE dynamic @processor.@result.@findModuleFail set
-          @findResult.@fullFileName move @processor.@result.@errorInfo.@missedModule set
+          @findResult.@fullFileName @processor.@result.@errorInfo.@missedModule set
           ("module not compiled yet: " fileName) assembleString @processor block compilerError
         ]
         FindInPathResult.COMPILED_FILE [
@@ -1927,7 +1927,7 @@ tryFindInPath: [
                 gnr: label.nameInfo index @processor @block file getNameWithOverloadIndex;
                 cnr: gnr depth @processor @block file captureName;
 
-                {refToVar: cnr.refToVar copy; nameInfo: label.nameInfo copy; } @addNameData.pushBack
+                {refToVar: cnr.refToVar new; nameInfo: label.nameInfo new; } @addNameData.pushBack
 
                 labelCount 1 + !labelCount
               ] when
@@ -1938,8 +1938,8 @@ tryFindInPath: [
 
               {
                 addNameCase: NameCaseFromModule;
-                refToVar:    current.refToVar copy;
-                nameInfo:    current.nameInfo copy;
+                refToVar:    current.refToVar new;
+                nameInfo:    current.nameInfo new;
                 overload:    block.nextLabelIsOverload;
               } @processor @block addNameInfo
 
@@ -1961,10 +1961,10 @@ tryFindInPath: [
                   result: fr.value.index file nameInfo @processor.@nameManager.findItemStrong;
                   result @fr.@value.@index set
                   fr.value.depth 1 + @fr.@value.@depth set
-                  fr.value.index copy fr.value.depth copy
+                  fr.value.index new fr.value.depth new
                 ] [
                   result: -1 file nameInfo @processor.@nameManager.findItem;
-                  nameInfo {index: result copy; depth: 0;} @indexes.insert
+                  nameInfo {index: result new; depth: 0;} @indexes.insert
                   result 0
                 ] if
               ];
@@ -1998,7 +1998,7 @@ tryFindInPath: [
 
             message @processor block compilerError
             oldSuccess [
-              @processor.@result.@errorInfo move @processor.@result.@globalErrorInfo.pushBack
+              @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.pushBack
               -1 @processor.@result clearProcessorResult
             ] when
           ] when
@@ -2016,7 +2016,7 @@ tryFindInPath: [
 ] "mplBuiltinVirtual" @declareBuiltin ucall
 
 [
-  VarCond VarNatX 1 + [a2:; a1:; "xor" makeStringView] [xor] [copy] [y:; x:;] mplNumberBinaryOp
+  VarCond VarNatX 1 + [a2:; a1:; "xor" makeStringView] [xor] [new] [y:; x:;] mplNumberBinaryOp
 ] "mplBuiltinXor" @declareBuiltin ucall
 
 [

@@ -13,20 +13,20 @@ optimizeLabels: [
     currentIndexArray:;
 
     newIndexArray: AstNodeArray;
-    @currentIndexArray.@positionInfo move @newIndexArray.@positionInfo set
+    @currentIndexArray.@positionInfo @newIndexArray.@positionInfo set
 
     @currentIndexArray.@nodes [
       current:;
       current.data.getTag AstNodeType.Label = [
         AstNodeType.Label current.data.get.children @parserResult.@memory.at.@nodes [
-          move @newIndexArray.@nodes.pushBack
+          @newIndexArray.@nodes.pushBack
         ] each
       ] when
 
-      @current move @newIndexArray.@nodes.pushBack
+      @current @newIndexArray.@nodes.pushBack
     ] each
 
-    @newIndexArray move @currentIndexArray set
+    @newIndexArray @currentIndexArray set
   ] each
 ];
 
@@ -90,7 +90,7 @@ concatParserResult: [
       ] if
     ] each
 
-    @currentArray move @mresult.@memory.pushBack
+    @currentArray @mresult.@memory.pushBack
   ] each
 
   current.root @mresult.@roots.pushBack
