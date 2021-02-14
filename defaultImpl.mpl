@@ -90,6 +90,10 @@ defaultSet: [
         ] [
           refToDst.mutable [
             [refToDst staticityOfVar Weak = ~] "Destination is weak!" assert
+            refToSrc.mutable [refToSrc isVirtual ~ [refToSrc getVar .data.getTag VarStruct =] &&] && [
+              TRUE @refToSrc.setMoved
+            ] when
+
             @refToSrc @refToDst @processor @block createCopyToExists
           ] [
             "destination is immutable" @processor block compilerError

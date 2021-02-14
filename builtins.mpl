@@ -40,7 +40,6 @@ builtins: (
   {name: "codeRef"                       ; impl: @mplBuiltinCodeRef                 ;}
   {name: "compileOnce"                   ; impl: @mplBuiltinCompileOnce             ;}
   {name: "const"                         ; impl: @mplBuiltinConst                   ;}
-  {name: "copy"                          ; impl: @mplBuiltinCopy                    ;}
   {name: "cos"                           ; impl: @mplBuiltinCos                     ;}
   {name: "def"                           ; impl: @mplBuiltinDef                     ;}
   {name: "dynamic"                       ; impl: @mplBuiltinDynamic                 ;}
@@ -60,7 +59,6 @@ builtins: (
   {name: "isCombined"                    ; impl: @mplBuiltinIsCombined              ;}
   {name: "isConst"                       ; impl: @mplBuiltinIsConst                 ;}
   {name: "isDynamic"                     ; impl: @mplBuiltinIsDynamic               ;}
-  {name: "isMoved"                       ; impl: @mplBuiltinIsMoved                 ;}
   {name: "isStatic"                      ; impl: @mplBuiltinIsStatic                ;}
   {name: "log"                           ; impl: @mplBuiltinLog                     ;}
   {name: "log10"                         ; impl: @mplBuiltinLog10                   ;}
@@ -69,9 +67,8 @@ builtins: (
   {name: "manuallyDestroyVariable"       ; impl: @mplBuiltinManuallyDestroyVariable ;}
   {name: "manuallyInitVariable"          ; impl: @mplBuiltinManuallyInitVariable    ;}
   {name: "mod"                           ; impl: @mplBuiltinMod                     ;}
-  {name: "move"                          ; impl: @mplBuiltinMove                    ;}
-  {name: "moveIf"                        ; impl: @mplBuiltinMoveIf                  ;}
   {name: "neg"                           ; impl: @mplBuiltinNeg                     ;}
+  {name: "new"                           ; impl: @mplBuiltinNew                     ;}
   {name: "newVarOfTheSameType"           ; impl: @mplBuiltinNewVarOfTheSameType     ;}
   {name: "or"                            ; impl: @mplBuiltinOr                      ;}
   {name: "overload"                      ; impl: @mplBuiltinOverload                ;}

@@ -917,48 +917,6 @@ staticityOfBinResult: [
 [TRUE @processor @block defaultMakeConstWith] "mplBuiltinConst" @declareBuiltin ucall
 
 [
-  refToVar: @processor @block pop;
-  processor compilable [
-    refToVar getVar.temporary [
-      "temporary objects cannot be copied" @processor block compilerError
-    ] [
-      refToVar getVar.data.getTag VarImport = [
-        "functions cannot be copied" @processor block compilerError
-      ] [
-        refToVar getVar.data.getTag VarString = [
-          "builtin-strings cannot be copied" @processor block compilerError
-        ] [
-          refToVar isPlain [
-            refToVar staticityOfVar Dynamic > [
-              result: refToVar @processor @block copyVarToNew @processor @block createPlainIR;
-              TRUE @result.setMutable
-              result @block push
-            ] [
-              refToVar isVirtual ~ [@refToVar @processor @block makeVarRealCaptured] when
-              result: refToVar @processor @block copyVarToNew;
-              TRUE @result.setMutable
-              @refToVar @result @processor @block createCopyToNew
-              result @block push
-            ] if
-          ] [
-            refToVar isVirtual ~ [@refToVar @processor @block makeVarRealCaptured] when
-            result: refToVar @processor @block copyVarToNew;
-            result isVirtual [
-              result isAutoStruct ["unable to copy virtual autostruct" @processor block compilerError] when
-            ] [
-              TRUE @result.setMutable
-              @refToVar @result @processor @block createCopyToNew
-            ] if
-
-            result @block push
-          ] if
-        ] if
-      ] if
-    ] if
-  ] when
-] "mplBuiltinCopy" @declareBuiltin ucall
-
-[
   TRUE dynamic @processor.@usedFloatBuiltins set
   [a:; a getVar.data.getTag VarReal32 = ["@llvm.cos.f32" makeStringView]["@llvm.cos.f64" makeStringView] if
   ] [cos] [x:;] mplNumberBuiltinOp
@@ -1373,15 +1331,6 @@ staticityOfBinResult: [
 [
   refToVar: @processor @block pop;
   processor compilable [
-    refToVar @block push
-    refToVar isAutoStruct [refToVar varIsMoved] && makeValuePair
-    VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
-  ] when
-] "mplBuiltinIsMoved" @declareBuiltin ucall
-
-[
-  refToVar: @processor @block pop;
-  processor compilable [
     refToVar staticityOfVar Static = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
   ] when
 ] "mplBuiltinIsStatic" @declareBuiltin ucall
@@ -1439,63 +1388,58 @@ staticityOfBinResult: [
 ] "mplBuiltinMod" @declareBuiltin ucall
 
 [
-  refToVar: @processor @block pop;
-  processor compilable [
-    refToVar.mutable [
-      refToVar isVirtual [
-        refToVar @block push
-      ] [
-        var: @refToVar getVar;
-        var.data.getTag VarStruct = [
-          TRUE @refToVar.setMoved
-        ] when
-
-        refToVar @block push
-      ] if
-    ] [
-      "moved can be only mutable variables" @processor block compilerError
-    ] if
-  ] when
-] "mplBuiltinMove" @declareBuiltin ucall
-
-[
-  refToCond: @processor @block pop;
-  processor compilable [
-    condVar: refToCond getVar;
-    condVar.data.getTag VarCond = ~ [refToCond staticityOfVar Dynamic > ~] || ["not a static Cond" @processor block compilerError] when
-    processor compilable [
-      refToVar: @processor @block pop;
-      processor compilable [
-        VarCond condVar.data.get.end [
-          refToVar.mutable [
-            refToVar isVirtual [
-              refToVar @block push
-            ] [
-              var: @refToVar getVar;
-              var.data.getTag VarStruct = [
-                TRUE @refToVar.setMoved
-              ] when
-
-              refToVar @block push
-            ] if
-          ] [
-            "moved can be only mutable variables" @processor block compilerError
-          ] if
-        ] [
-          refToVar @block push
-        ] if
-      ] when
-    ] when
-  ] when
-] "mplBuiltinMoveIf" @declareBuiltin ucall
-
-[
   VarInt8 VarReal64 1 + [
     a:; a isAnyInt ["sub" makeStringView]["fsub" makeStringView] if
   ] [
     a:; a isAnyInt ["0, " makeStringView]["0x0000000000000000, " makeStringView] if
   ] [neg] [x:;] mplNumberUnaryOp
 ] "mplBuiltinNeg" @declareBuiltin ucall
+
+[
+  refToVar: @processor @block pop;
+  processor compilable [
+    refToVar getVar.temporary [
+      "temporary objects cannot be copied" @processor block compilerError
+    ] [
+      refToVar getVar.data.getTag VarImport = [
+        "functions cannot be copied" @processor block compilerError
+      ] [
+        refToVar getVar.data.getTag VarString = [
+          "builtin-strings cannot be copied" @processor block compilerError
+        ] [
+          refToVar isPlain [
+            refToVar staticityOfVar Dynamic > [
+              result: refToVar @processor @block copyVarToNew @processor @block createPlainIR;
+              TRUE @result.setMutable
+              result @block push
+            ] [
+              refToVar isVirtual ~ [@refToVar @processor @block makeVarRealCaptured] when
+              result: refToVar @processor @block copyVarToNew;
+              TRUE @result.setMutable
+              @refToVar @result @processor @block createCopyToNew
+              result @block push
+            ] if
+          ] [
+            refToVar isVirtual ~ [@refToVar @processor @block makeVarRealCaptured] when
+            result: refToVar @processor @block copyVarToNew;
+            result isVirtual [
+              result isAutoStruct ["unable to copy virtual autostruct" @processor block compilerError] when
+            ] [
+              TRUE @result.setMutable
+              refToVar.mutable [refToVar isVirtual ~ [refToVar getVar .data.getTag VarStruct =] &&] && [
+                TRUE @refToVar.setMoved
+              ] when
+
+              @refToVar @result @processor @block createCopyToNew
+            ] if
+
+            result @block push
+          ] if
+        ] if
+      ] if
+    ] if
+  ] when
+] "mplBuiltinNew" @declareBuiltin ucall
 
 [
   refToVar: @processor @block pop;
