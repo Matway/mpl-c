@@ -66,6 +66,7 @@ builtins: (
   {name: "isCombined"                    ; impl: @mplBuiltinIsCombined              ;}
   {name: "isConst"                       ; impl: @mplBuiltinIsConst                 ;}
   {name: "isDynamic"                     ; impl: @mplBuiltinIsDynamic               ;}
+  {name: "isRef"                         ; impl: @mplBuiltinIsRef                   ;}
   {name: "isStatic"                      ; impl: @mplBuiltinIsStatic                ;}
   {name: "log"                           ; impl: @mplBuiltinLog                     ;}
   {name: "log10"                         ; impl: @mplBuiltinLog10                   ;}

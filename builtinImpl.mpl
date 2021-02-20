@@ -1338,6 +1338,15 @@ staticityOfBinResult: [
 [
   refToVar: @processor @block pop;
   processor compilable [
+    refToVar @block push
+    refToVar getVar.temporary ~ makeValuePair
+    VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
+  ] when
+] "mplBuiltinIsRef" @declareBuiltin ucall
+
+[
+  refToVar: @processor @block pop;
+  processor compilable [
     refToVar staticityOfVar Static = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
   ] when
 ] "mplBuiltinIsStatic" @declareBuiltin ucall
