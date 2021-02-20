@@ -1331,6 +1331,13 @@ staticityOfBinResult: [
 [
   refToVar: @processor @block pop;
   processor compilable [
+    refToVar staticityOfVar Dirty = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
+  ] when
+] "mplBuiltinIsDirty" @declareBuiltin ucall
+
+[
+  refToVar: @processor @block pop;
+  processor compilable [
     refToVar staticityOfVar Dynamic = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
   ] when
 ] "mplBuiltinIsDynamic" @declareBuiltin ucall
