@@ -196,7 +196,7 @@ debugMemory [
           @processor.result.@errorInfo.@missedModule @a @dependedFiles.insert
         ] if
 
-        cachedGlobalErrorInfoSize @processor.@result clearProcessorResult
+        -1 @processor.@result clearProcessorResult
       ] [
         moduleName: file.name;
         ("compiled file " moduleName) addLog
