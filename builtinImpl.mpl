@@ -209,7 +209,7 @@ mplNumberBuiltinOp: [
           arg @processor @block createDerefToRegister @irarg.@irNameId set
           arg @processor getMplSchema.irTypeId @irarg.@irTypeId set
           FALSE @irarg.@byRef set
-          irarg @args.pushBack
+          irarg @args.append
 
           result args String @opName FALSE dynamic @processor @block createCallIR retName:;
 
@@ -334,7 +334,7 @@ parseFieldToSignatureCaptureArray: [
     VarStruct varStruct.data.get.get.fields [
       refToVar: .refToVar;
       refToVar isVirtual ["input cannot be virtual" @processor block compilerError] when
-      refToVar @result.pushBack
+      refToVar @result.append
     ] each
   ] when
 
@@ -404,9 +404,9 @@ parseSignature: [
           #todo: detect temporality
           returnVar: return getVar;
           returnVar.temporary [
-            return @result.@outputs.pushBack
+            return @result.@outputs.append
           ] [
-            @return TRUE dynamic @processor @block createRef @result.@outputs.pushBack
+            @return TRUE dynamic @processor @block createRef @result.@outputs.append
           ] if
         ] if
       ] when
@@ -633,10 +633,10 @@ staticityOfBinResult: [
           FALSE @irarg.@byRef set
           arg1 @processor @block createDerefToRegister @irarg.@irNameId set
           arg1 @processor getMplSchema.irTypeId @irarg.@irTypeId set
-          irarg @args.pushBack
+          irarg @args.append
           arg2 @processor @block createDerefToRegister @irarg.@irNameId set
           arg2 @processor getMplSchema.irTypeId @irarg.@irTypeId set
-          irarg @args.pushBack
+          irarg @args.append
 
           result args String tag VarReal32 = ["@llvm.pow.f32" makeStringView] ["@llvm.pow.f64" makeStringView] if FALSE dynamic @processor @block createCallIR retName:;
 
@@ -736,7 +736,7 @@ staticityOfBinResult: [
               field: Field;
               processor.specialNames.emptyNameInfo @field.@nameInfo set
               element @field.@refToVar set
-              field @struct.@fields.pushBack
+              field @struct.@fields.append
               i 1 + @i set TRUE
             ] &&
           ] loop
@@ -763,7 +763,7 @@ staticityOfBinResult: [
             ] &&
           ] loop
 
-          result @block.@candidatesToDie.pushBack
+          result @block.@candidatesToDie.append
           result @block push
         ] when
       ] when
@@ -1129,22 +1129,22 @@ staticityOfBinResult: [
     field: Field;
     varPrev @field.@refToVar set
     "prev" makeStringView @processor findNameInfo @field.@nameInfo set
-    @field @struct.@fields.pushBack
+    @field @struct.@fields.append
 
     field: Field;
     varName @field.@refToVar set
     "name" makeStringView @processor findNameInfo @field.@nameInfo set
-    @field @struct.@fields.pushBack
+    @field @struct.@fields.append
 
     field: Field;
     varLine @field.@refToVar set
     "line" makeStringView @processor findNameInfo @field.@nameInfo set
-    @field @struct.@fields.pushBack
+    @field @struct.@fields.append
 
     field: Field;
     varColumn @field.@refToVar set
     "column" makeStringView @processor findNameInfo @field.@nameInfo set
-    @field @struct.@fields.pushBack
+    @field @struct.@fields.append
 
     @struct owner VarStruct @processor @block createVariable @processor.@varForCallTrace set
 
@@ -1477,7 +1477,7 @@ staticityOfBinResult: [
         @result @processor @block createAllocIR @processor @block callInit
 
         result isAutoStruct [
-          result @block.@candidatesToDie.pushBack
+          result @block.@candidatesToDie.append
         ] when
       ] when
 
@@ -1666,7 +1666,7 @@ staticityOfBinResult: [
               field: Field;
               processor.specialNames.emptyNameInfo @field.@nameInfo set
               @element TRUE dynamic @processor @block createRef @field.@refToVar set
-              field @struct.@fields.pushBack
+              field @struct.@fields.append
             ] each
 
             result: @struct owner VarStruct @processor @block createVariable;
@@ -1796,8 +1796,8 @@ tryFindInPath: [
       errorInfo: processor.files.getSize fullFileName makeStringView loadStringResult.data makeStringView @processor.@multiParserResult @processor.@nameManager addToProcess;
       errorInfo "" = [
         fileId: FALSE fullFileName makeStringView @processor addFileNameToProcessor;
-        fullFileName @processor.@options.@fileNames.pushBack
-        fileId @processor.@unfinishedFiles.pushBack
+        fullFileName @processor.@options.@fileNames.append
+        fileId @processor.@unfinishedFiles.append
         @fullFileName @result.@fullFileName set
         FindInPathResult.UNCOMPILED_FILE @result.!success
       ] [
@@ -1854,7 +1854,7 @@ tryFindInPath: [
           message: ("module not found: " fileName) assembleString;
           message @processor block compilerError
           oldSuccess [
-            @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.pushBack
+            @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.append
             -1 @processor.@result clearProcessorResult
           ] when
         ]
@@ -1894,7 +1894,7 @@ tryFindInPath: [
                 gnr: label.nameInfo index @processor @block file getNameWithOverloadIndex;
                 cnr: gnr depth @processor @block file captureName;
 
-                {refToVar: cnr.refToVar new; nameInfo: label.nameInfo new; } @addNameData.pushBack
+                {refToVar: cnr.refToVar new; nameInfo: label.nameInfo new; } @addNameData.append
 
                 labelCount 1 + !labelCount
               ] when
@@ -1965,7 +1965,7 @@ tryFindInPath: [
 
             message @processor block compilerError
             oldSuccess [
-              @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.pushBack
+              @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.append
               -1 @processor.@result clearProcessorResult
             ] when
           ] when

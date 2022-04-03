@@ -23,7 +23,7 @@ appendInstruction: [
   list: block:;;
   offset: block.programTemplate.size;
   list @block.@programTemplate.catMany
-  block.programTemplate.size offset - offset makeInstruction @block.@program.pushBack
+  block.programTemplate.size offset - offset makeInstruction @block.@program.append
 ];
 
 getMplSchema: [refToVar: processor: ;; refToVar getVar.mplSchemaId @processor.@schemaBuffer.at];
@@ -38,8 +38,8 @@ getStaticStructIR: [
   result: String;
   unfinishedVars: RefToVar Array;
   unfinishedTerminators: StringView Array;
-  refToVar @unfinishedVars.pushBack
-  ", " makeStringView @unfinishedTerminators.pushBack
+  refToVar @unfinishedVars.append
+  ", " makeStringView @unfinishedTerminators.append
   [
     unfinishedVars.getSize 0 > [
       current: unfinishedVars.last new;
@@ -66,12 +66,12 @@ getStaticStructIR: [
             struct.fields.getSize [
               current: struct.fields.getSize 1 - i - struct.fields.at.refToVar;
               current isVirtual ~ [
-                current @unfinishedVars.pushBack
+                current @unfinishedVars.append
                 first [
-                  struct.homogeneous ["]" makeStringView] ["}" makeStringView] if @unfinishedTerminators.pushBack
+                  struct.homogeneous ["]" makeStringView] ["}" makeStringView] if @unfinishedTerminators.append
                   FALSE dynamic @first set
                 ] [
-                  ", " makeStringView @unfinishedTerminators.pushBack
+                  ", " makeStringView @unfinishedTerminators.append
                 ] if
               ] when
             ] times
@@ -133,9 +133,9 @@ createAllocIR: [
       [varBlock.file isNil ~] "Topnode in nil file!" assert
       varBlock.file.usedInParams ~
     ] && [
-      "; global var from another file" toString @processor.@prolog.pushBack
+      "; global var from another file" toString @processor.@prolog.append
     ] [
-      (refToVar @processor getIrName " = private local_unnamed_addr global " refToVar @processor getIrType " zeroinitializer") assembleString @processor.@prolog.pushBack
+      (refToVar @processor getIrName " = private local_unnamed_addr global " refToVar @processor getIrType " zeroinitializer") assembleString @processor.@prolog.append
     ] if
 
     processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
@@ -158,9 +158,9 @@ createStaticInitIR: [
     [varBlock.file isNil ~] "Topnode in nil file!" assert
     varBlock.file.usedInParams ~
   ] && [
-    "; global var from another file" toString @processor.@prolog.pushBack
+    "; global var from another file" toString @processor.@prolog.append
   ] [
-    (refToVar @processor getIrName " = private local_unnamed_addr global " refToVar @processor getStaticStructIR) assembleString @processor.@prolog.pushBack
+    (refToVar @processor getIrName " = private local_unnamed_addr global " refToVar @processor getStaticStructIR) assembleString @processor.@prolog.append
   ] if
   processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
   refToVar new
@@ -171,7 +171,7 @@ createVarImportIR: [
 
   var: @refToVar getVar;
 
-  (refToVar @processor getIrName " = external global " refToVar @processor getIrType) assembleString @processor.@prolog.pushBack
+  (refToVar @processor getIrName " = external global " refToVar @processor getIrType) assembleString @processor.@prolog.append
   processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
 
   refToVar new
@@ -182,7 +182,7 @@ createVarExportIR: [
 
   var: @refToVar getVar;
 
-  (refToVar @processor getIrName " = dllexport global " refToVar @processor getIrType " zeroinitializer") assembleString @processor.@prolog.pushBack
+  (refToVar @processor getIrName " = dllexport global " refToVar @processor getIrType " zeroinitializer") assembleString @processor.@prolog.append
   processor.prolog.size 1 - @var.@globalDeclarationInstructionIndex set
 
   refToVar new
@@ -190,7 +190,7 @@ createVarExportIR: [
 
 createGlobalAliasIR: [
   alias: aliasee: aliaseeType: processor: ;;;;
-  (alias @processor getNameById " = alias " aliaseeType @processor getNameById ", " aliaseeType @processor getNameById "* " aliasee @processor getNameById) assembleString @processor.@prolog.pushBack
+  (alias @processor getNameById " = alias " aliaseeType @processor getNameById ", " aliaseeType @processor getNameById "* " aliasee @processor getNameById) assembleString @processor.@prolog.append
 ];
 
 createStoreConstant: [
@@ -221,7 +221,7 @@ createStringIR: [
 
   valueImplementation: string getStringImplementation;
 
-  (stringName " = private unnamed_addr constant {i32, [" string.size " x i8]} {i32 " string.size ", [" string.size " x i8] c\"" valueImplementation "\"}") assembleString @processor.@prolog.pushBack
+  (stringName " = private unnamed_addr constant {i32, [" string.size " x i8]} {i32 " string.size ", [" string.size " x i8] c\"" valueImplementation "\"}") assembleString @processor.@prolog.append
 ];
 
 createGetTextSizeIR: [
@@ -245,7 +245,7 @@ createGetTextSizeIR: [
 
 createTypeDeclaration: [
   alias: irType: processor: ;;;
-  (@alias " = type " @irType) assembleString @processor.@prolog.pushBack
+  (@alias " = type " @irType) assembleString @processor.@prolog.append
 ];
 
 createStaticGEP: [
@@ -418,7 +418,7 @@ createCheckedCopyToNewWith: [
         prevTmp @dstRef getVar.@temporary set
       ] if
     ] if
-    doDie [dstRef @block.@candidatesToDie.pushBack] when
+    doDie [dstRef @block.@candidatesToDie.append] when
   ] [
     srcRef isPlain [srcRef staticityOfVar Dynamic >] && [
       srcRef dstRef @processor @block createStoreConstant
@@ -511,7 +511,7 @@ createCallIR: [
 
   ")" @block.@programTemplate.cat
 
-  block.programTemplate.size offset - offset makeInstruction @block.@program.pushBack
+  block.programTemplate.size offset - offset makeInstruction @block.@program.append
 
   @processor @block addDebugLocationForLastInstruction
 
@@ -551,7 +551,7 @@ createComment: [
 
 addStrToProlog: [
   what: processor: ;;
-  what toString @processor.@prolog.pushBack
+  what toString @processor.@prolog.append
 ];
 
 createFloatBuiltins: [
@@ -629,7 +629,7 @@ createDtors: [
     cur: blockId processor.blocks.at.get;
     processor.options.partial ~ [cur.file.usedInParams new] || [
       id: cur.file.fileId new;
-      blockId id @dtorByFile.at.pushBack
+      blockId id @dtorByFile.at.append
     ] when
   ] each
 
@@ -661,9 +661,9 @@ addCtorsToBeginFunc: [
     previousVersion: @block.@program new;
     @block.@program.clear
 
-    0 @previousVersion.at @block.@program.pushBack
+    0 @previousVersion.at @block.@program.append
 
-    block.beginPosition @processor.@positions.pushBack
+    block.beginPosition @processor.@positions.append
 
     processor.moduleFunctions.getSize [
       i 0 > [ # skip definitions
@@ -682,7 +682,7 @@ addCtorsToBeginFunc: [
     previousVersion.getSize [
       i 0 >  [
         current: i @previousVersion.at;
-        @current @block.@program.pushBack
+        @current @block.@program.append
       ] when
     ] times
 
@@ -700,12 +700,12 @@ addDtorsToEndFunc: [
     previousVersion: @block.@program new;
     @block.@program.clear
 
-    block.beginPosition @processor.@positions.pushBack
+    block.beginPosition @processor.@positions.append
 
     previousVersion.getSize [
       i block.instructionCountBeforeRet < [
         current: i @previousVersion.at;
-        @current @block.@program.pushBack
+        @current @block.@program.append
       ] when
     ] times
 
@@ -725,7 +725,7 @@ addDtorsToEndFunc: [
 
     previousVersion.getSize block.instructionCountBeforeRet - [
       current: i block.instructionCountBeforeRet + @previousVersion.at;
-      @current @block.@program.pushBack
+      @current @block.@program.append
     ] times
 
     @processor.@positions.popBack
@@ -744,7 +744,7 @@ sortInstructions: [
   block.program.getSize [
     current: i @block.@program.at;
     current.fakeAlloca [
-      current.irName1 @bannedIds.pushBack
+      current.irName1 @bannedIds.append
       FALSE @current.!enabled
     ] when
   ] times
@@ -759,7 +759,7 @@ sortInstructions: [
         current.enabled [
           current.irName1 bannedId = [
             current.irName2 0 < ~ [
-              current.irName2 @bannedIds.pushBack
+              current.irName2 @bannedIds.append
             ] when
 
             FALSE @current.!enabled
@@ -779,35 +779,35 @@ sortInstructions: [
     current: i @block.@program.at;
     i 0 = [current.alloca new] || [
       current.fakePointer [
-        @current @fakePointersAllocs.pushBack
+        @current @fakePointersAllocs.append
       ] [
-        @current @allocs.pushBack
+        @current @allocs.append
       ] if
     ] [
       current.fakePointer [
-        @current @fakePointers.pushBack
+        @current @fakePointers.append
       ] [
-        @current @noallocs.pushBack
+        @current @noallocs.append
       ] if
     ] if
   ] times
 
   @block.@program.clear
-  @allocs             [@block.@program.pushBack] each
-  @fakePointersAllocs [@block.@program.pushBack] each
-  @fakePointers       [@block.@program.pushBack] each
-  @noallocs           [@block.@program.pushBack] each
+  @allocs             [@block.@program.append] each
+  @fakePointersAllocs [@block.@program.append] each
+  @fakePointers       [@block.@program.append] each
+  @noallocs           [@block.@program.append] each
 ];
 
 addAliasesForUsedNodes: [
   processor:;
 
-  String @processor.@prolog.pushBack
-  "; Func aliases" toString @processor.@prolog.pushBack
+  String @processor.@prolog.append
+  "; Func aliases" toString @processor.@prolog.append
   @processor.@blocks [
     block0: .get;
     block0 nodeHasCode [
-      @block0.@aliases [@processor.@prolog.pushBack] each
+      @block0.@aliases [@processor.@prolog.append] each
     ] when
   ] each
 ];
@@ -841,11 +841,11 @@ createCallTraceData: [
 
   tlPrefix: processor.options.threadModel 1 = ["thread_local "] [""] if;
 
-  "%type.callTraceInfo = type {%type.callTraceInfo*, i8*, i32, i32}" toString @processor.@prolog.pushBack
+  "%type.callTraceInfo = type {%type.callTraceInfo*, i8*, i32, i32}" toString @processor.@prolog.append
   processor.beginFuncIndex 0 < ~ [
-    ("@debug.callTracePtr = " tlPrefix "unnamed_addr global %type.callTraceInfo* null") assembleString @processor.@prolog.pushBack
+    ("@debug.callTracePtr = " tlPrefix "unnamed_addr global %type.callTraceInfo* null") assembleString @processor.@prolog.append
   ] [
-    ("@debug.callTracePtr = external " tlPrefix "unnamed_addr global %type.callTraceInfo*") assembleString @processor.@prolog.pushBack
+    ("@debug.callTracePtr = external " tlPrefix "unnamed_addr global %type.callTraceInfo*") assembleString @processor.@prolog.append
   ] if
 ];
 

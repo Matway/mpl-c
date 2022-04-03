@@ -26,11 +26,11 @@ optimizeLabels: [
       current:;
       current.data.getTag AstNodeType.Label = [
         AstNodeType.Label current.data.get.children @parserResult.@memory.at.@nodes [
-          @newIndexArray.@nodes.pushBack
+          @newIndexArray.@nodes.append
         ] each
       ] when
 
-      @current @newIndexArray.@nodes.pushBack
+      @current @newIndexArray.@nodes.append
     ] each
 
     @newIndexArray @currentIndexArray set
@@ -97,8 +97,8 @@ concatParserResult: [
       ] if
     ] each
 
-    @currentArray @mresult.@memory.pushBack
+    @currentArray @mresult.@memory.append
   ] each
 
-  current.root @mresult.@roots.pushBack
+  current.root @mresult.@roots.append
 ];

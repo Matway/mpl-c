@@ -69,10 +69,10 @@ addNameInfo: [
         forOverload   @nameWithOverload.@hasOverloadWord   set
 
         addNameCase NameCaseLocal = [
-          nameWithOverload @block.@labelNames.pushBack
+          nameWithOverload @block.@labelNames.append
         ] [
           addNameCase NameCaseFromModule = [
-            nameWithOverload @block.@fromModuleNames.pushBack
+            nameWithOverload @block.@fromModuleNames.append
           ] [
             addNameCase NameCaseCapture = [addNameCase NameCaseSelfObjectCapture =] || [addNameCase NameCaseClosureObjectCapture =] || [
               FALSE @addInfo set
@@ -200,7 +200,7 @@ createVariableWithVirtual: [
     4096 @processor.@variables.last.setReserve
   ] when
 
-  @v @processor.@variables.last.pushBack
+  @v @processor.@variables.last.append
   # now forget about v
 
   result: RefToVar;
@@ -241,7 +241,7 @@ createRefVariable: [
   branch.refToVar getVar.storageStaticity Dynamic = [
     @result Dynamic @processor @block makeStaticity drop
     createDependent [
-      (result new branch.refToVar new TRUE) @block.@dependentPointers.pushBack
+      (result new branch.refToVar new TRUE) @block.@dependentPointers.append
     ] when
   ] when
 
@@ -299,7 +299,7 @@ updateInputCount: [
 } () {} [
   entry: block:;;
 
-  entry @block.@stack.pushBack
+  entry @block.@stack.append
   -1 @block updateInputCount
 ] "push" exportFunction
 
@@ -309,7 +309,7 @@ updateInputCount: [
 } () {} [
   entry: block:;;
 
-  entry @block.@stack.pushBack
+  entry @block.@stack.append
 ] "pushForMatching" exportFunction
 
 setTopologyIndex: [
@@ -373,7 +373,7 @@ getPointeeWith: [
       @result @processor block unglobalize
       result.var     @pointee.setVar
       result.mutable @pointee.setMutable
-      (refToVar new pointee new TRUE) @block.@dependentPointers.pushBack
+      (refToVar new pointee new TRUE) @block.@dependentPointers.append
 
       TRUE @needReallyDeref set
     ] [
@@ -520,7 +520,7 @@ getFieldWith: [
         @newEvent @processor @block addShadowEvent
       ] [
         structIsDynamicStoraged [
-          (refToVar new fieldRefToVar new FALSE) @block.@dependentPointers.pushBack
+          (refToVar new fieldRefToVar new FALSE) @block.@dependentPointers.append
         ] when
       ] if
     ] when
@@ -543,7 +543,7 @@ captureEntireStruct: [
   refToVar:;
   unprocessed: RefToVar Array;
 
-  refToVar @unprocessed.pushBack
+  refToVar @unprocessed.append
 
   i: 0 dynamic;
   [
@@ -555,7 +555,7 @@ captureEntireStruct: [
         f: 0 dynamic;
         [
           f branch.fields.size < [
-            f @current @processor @block getField @unprocessed.pushBack
+            f @current @processor @block getField @unprocessed.append
             f 1 + @f set TRUE
           ] &&
         ] loop
@@ -665,8 +665,8 @@ makeVirtualVarReal: [
     result isVirtualType ~ [
       Static makeValuePair @result getVar.@staticity set
 
-      refToVar @unfinishedSrc.pushBack
-      result @unfinishedDst.pushBack
+      refToVar @unfinishedSrc.append
+      result @unfinishedDst.append
 
       # first pass: make new variable type
       [
@@ -689,9 +689,9 @@ makeVirtualVarReal: [
               j struct.fields.size < [
                 srcField: j struct.fields.at;
                 srcField.refToVar isVirtual ~ [
-                  srcField.refToVar @unfinishedSrc.pushBack
+                  srcField.refToVar @unfinishedSrc.append
                   dstField: j @lastDst @processor @block getField;
-                  dstField @unfinishedDst.pushBack
+                  dstField @unfinishedDst.append
                   @dstField @processor block unglobalize
                 ] [
                   dstField: j @lastDst @processor @block getField;
@@ -710,8 +710,8 @@ makeVirtualVarReal: [
 
       # second pass: create IR code for variable
       @result @processor block makeVariableType
-      refToVar @unfinishedSrc.pushBack
-      @result @processor @block createAllocIR @unfinishedDst.pushBack
+      refToVar @unfinishedSrc.append
+      @result @processor @block createAllocIR @unfinishedDst.append
 
       [
         unfinishedSrc.size 0 > [
@@ -728,9 +728,9 @@ makeVirtualVarReal: [
               j struct.fields.size < [
                 srcField: j struct.fields.at;
                 srcField.refToVar isVirtual ~ [
-                  srcField.refToVar @unfinishedSrc.pushBack
+                  srcField.refToVar @unfinishedSrc.append
                   dstField: j @lastDst @processor @block getField;
-                  dstField @unfinishedDst.pushBack
+                  dstField @unfinishedDst.append
                   @dstField @processor block unglobalize
                   @dstField j lastDst @processor @block createCheckedStaticGEP
                 ] when
@@ -772,7 +772,7 @@ makeVarSchema: [
 makeVarVirtual: [
   refToVar:;
   unfinished: RefToVar Array;
-  refToVar @unfinished.pushBack
+  refToVar @unfinished.append
   [
     unfinished.size 0 > [
       cur: @unfinished.last new;
@@ -788,7 +788,7 @@ makeVarVirtual: [
             j struct.fields.size < [processor compilable] && [
               curField: j struct.fields.at;
               curField.refToVar isVirtual ~ [
-                curField.refToVar @unfinished.pushBack
+                curField.refToVar @unfinished.append
               ] when
               j 1 + @j set TRUE
             ] &&
@@ -826,7 +826,7 @@ makeVarVirtual: [
 makeVarTreeDirty: [
   refToVar: processor: block:;;;
   unfinishedVars: RefToVar Array;
-  refToVar @unfinishedVars.pushBack
+  refToVar @unfinishedVars.append
 
   [
     unfinishedVars.size 0 > [
@@ -845,7 +845,7 @@ makeVarTreeDirty: [
             [
               j struct.fields.size < [
                 j struct.fields.at.refToVar isVirtual ~ [
-                  j @lastRefToVar @processor @block getField @unfinishedVars.pushBack
+                  j @lastRefToVar @processor @block getField @unfinishedVars.append
                 ] when
                 j 1 + @j set TRUE
               ] &&
@@ -854,7 +854,7 @@ makeVarTreeDirty: [
             var.data.getTag VarRef = [
               lastRefToVar staticityOfVar Static = [
                 pointee: @lastRefToVar @processor @block getPointeeWhileDynamize;
-                pointee @unfinishedVars.pushBack
+                pointee @unfinishedVars.append
               ] [
                 [lastRefToVar staticityOfVar Dynamic > ~] "Ref must be only Static or Dynamic!" assert
               ] if
@@ -903,7 +903,7 @@ makeVarDirty:   [processor: block: ;; Dirty   @processor @block makeVarDynamicOr
 makeVarTreeDynamicWith: [
   refToVar: dynamicStoraged: processor: block: ;;;;
   unfinishedVars: RefToVar Array;
-  refToVar @unfinishedVars.pushBack
+  refToVar @unfinishedVars.append
 
   [
     unfinishedVars.size 0 > [
@@ -919,7 +919,7 @@ makeVarTreeDynamicWith: [
         [
           j struct.fields.size < [
             j struct.fields.at.refToVar isVirtual ~ [
-              dynamicStoraged j @lastRefToVar @processor @block getFieldWith @unfinishedVars.pushBack
+              dynamicStoraged j @lastRefToVar @processor @block getFieldWith @unfinishedVars.append
             ] when
             j 1 + @j set TRUE
           ] &&
@@ -1030,10 +1030,10 @@ createNamedVariable: [
     block.parent 0 = [
       fr: nameInfo @block.@globalVariableNames.find;
       fr.success [
-        newRefToVar @fr.@value.pushBack
+        newRefToVar @fr.@value.append
       ] [
         newEntry: RefToVar Array;
-        newRefToVar @newEntry.pushBack
+        newRefToVar @newEntry.append
         nameInfo @newEntry @block.@globalVariableNames.insert
       ] if
     ] when
@@ -1064,7 +1064,7 @@ createNamedVariable: [
       nameInfo    @newField.@nameInfo set
       newRefToVar @newField.@refToVar set
 
-      newField @block.@struct.@fields.pushBack
+      newField @block.@struct.@fields.append
     ] when
 
     nameInfo @newRefToVar getVar.@mplNameId set
@@ -1122,7 +1122,7 @@ processListNode: [
       message toString @processor.@result.@errorInfo.@message set
       processor.positions.getSize [
         currentPosition: processor.positions.getSize 1 - i - processor.positions.at;
-        currentPosition @processor.@result.@errorInfo.@position.pushBack
+        currentPosition @processor.@result.@errorInfo.@position.append
       ] times
     ] when
   ] when
@@ -1147,7 +1147,7 @@ findPossibleModules: [
     ] each
 
     labelCount 0 > [
-      pair.key @result.pushBack
+      pair.key @result.append
     ] when
   ] each
 
@@ -1275,8 +1275,8 @@ addStableName: [
   nameInfo processor.captureTable.stableNames.getSize < ~ [nameInfo 1 + @processor.@captureTable.@stableNames.resize] when
   current: nameInfo @processor.@captureTable.@stableNames.at;
   current.getSize 0 = [current.last block.id = ~] || [
-    block.id @current.pushBack
-    nameInfo @block.@stableNames.pushBack
+    block.id @current.append
+    nameInfo @block.@stableNames.append
 
     newEvent: ShadowEvent;
     ShadowReasonCapture @newEvent.setTag
@@ -1296,13 +1296,13 @@ addToPossibleUnstables: [
   nameInfo: processor: block: ;;;
 
   nameInfo processor.possibleUnstables.getSize < ~ [nameInfo 1 + @processor.@possibleUnstables.resize] when
-  block.id nameInfo @processor.@possibleUnstables.at.pushBack
+  block.id nameInfo @processor.@possibleUnstables.at.append
 ];
 
 captureFileToBlock: [
   fileId: block: ;;
   [fileId block.capturedFiles.getSize < ~] [
-    FALSE @block.@capturedFiles.pushBack
+    FALSE @block.@capturedFiles.append
   ] while
 
   TRUE fileId @block.@capturedFiles.at set
@@ -1371,9 +1371,9 @@ captureName: [
             branch: ShadowReasonCapture @newEvent.get;
             newCapture @branch set
 
-            newCapture @block.@buildingMatchingInfo.@captures.pushBack
+            newCapture @block.@buildingMatchingInfo.@captures.append
             block.state NodeStateNew = [
-              newCapture @block.@matchingInfo.@captures.pushBack
+              newCapture @block.@matchingInfo.@captures.append
             ] when
 
             @block @shadow setTopologyIndex
@@ -1833,7 +1833,7 @@ checkVarForGlobalsFromAnotherFile: [
       headVar.capturedTail @resultVar.@capturedPrev set # newTail->oldTail
       result               @headVar.@capturedTail set # head->newTail
       head                 @resultVar.@capturedHead set # newTail->head
-      result @block.@capturedVars.pushBack       # remember
+      result @block.@capturedVars.append       # remember
     ];
 
     dynamicStoraged [
@@ -1951,8 +1951,8 @@ checkVarForGlobalsFromAnotherFile: [
     uncopiedSrc: RefToVar Array;
     uncopiedDst: RefToVar AsRef Array;
 
-    refToVar @uncopiedSrc.pushBack
-    @result AsRef @uncopiedDst.pushBack
+    refToVar @uncopiedSrc.append
+    @result AsRef @uncopiedDst.append
 
     i: 0 dynamic;
     [
@@ -1974,12 +1974,12 @@ checkVarForGlobalsFromAnotherFile: [
             [
               f branchSrc.fields.size < [
                 fromChild fromType or [
-                  f branchSrc.fields.at.refToVar @uncopiedSrc.pushBack
+                  f branchSrc.fields.at.refToVar @uncopiedSrc.append
                 ] [
-                  f @currentSrc @processor @block getField @uncopiedSrc.pushBack
+                  f @currentSrc @processor @block getField @uncopiedSrc.append
                 ] if
 
-                f @branchDst.@fields.at.@refToVar AsRef @uncopiedDst.pushBack
+                f @branchDst.@fields.at.@refToVar AsRef @uncopiedDst.append
 
                 f 1 + @f set TRUE
               ] &&
@@ -2005,8 +2005,8 @@ checkVarForGlobalsFromAnotherFile: [
   uncopiedSrc: RefToVar Array;
   uncopiedDst: RefToVar AsRef Array;
 
-  refSrc @uncopiedSrc.pushBack
-  @refDst AsRef @uncopiedDst.pushBack
+  refSrc @uncopiedSrc.append
+  @refDst AsRef @uncopiedDst.append
 
   i: 0 dynamic;
   [
@@ -2026,8 +2026,8 @@ checkVarForGlobalsFromAnotherFile: [
             fieldSrc: f @currentSrc @processor @block getField;
             fieldDst: f @currentDst @processor @block getField;
 
-            fieldSrc @uncopiedSrc.pushBack
-            @fieldDst AsRef @uncopiedDst.pushBack
+            fieldSrc @uncopiedSrc.append
+            @fieldDst AsRef @uncopiedDst.append
 
             f 1 + @f set TRUE
           ] &&
@@ -2099,9 +2099,9 @@ checkVarForGlobalsFromAnotherFile: [
       @newEvent @processor @block addShadowEvent
 
       #add input
-      newInput @block.@buildingMatchingInfo.@inputs.pushBack
+      newInput @block.@buildingMatchingInfo.@inputs.append
       block.state NodeStateNew = [
-        newInput @block.@matchingInfo.@inputs.pushBack
+        newInput @block.@matchingInfo.@inputs.append
       ] when
 
       forMatching ~ [result getVar.data.getTag VarInvalid = ~] && [
@@ -2304,7 +2304,7 @@ processReal64Node: [makeVarReal64 @block push];
 
 addBlock: [
   processor:;
-  Block owner @processor.@blocks.pushBack
+  Block owner @processor.@blocks.append
   processor.blocks.getSize 1 - @processor.@blocks.last.get.!id
 ];
 
@@ -2491,7 +2491,7 @@ argRecommendedToCopy: [
     ] when
 
     TRUE dynamic @refToVar.setMutable
-    refToVar @uninited.pushBack
+    refToVar @uninited.append
     i: 0 dynamic;
     [
       i uninited.size < [
@@ -2503,7 +2503,7 @@ argRecommendedToCopy: [
             f 0 > [
               f 1 - @f set TRUE
               f struct.fields.at.refToVar isAutoStruct [
-                f @current @processor @block processStaticAt @uninited.pushBack
+                f @current @processor @block processStaticAt @uninited.append
               ] when
             ] &&
           ] loop
@@ -2562,8 +2562,8 @@ argRecommendedToCopy: [
     unfinishedSrc: RefToVar Array;
     unfinishedDst: RefToVar Array;
 
-    refToSrc @unfinishedSrc.pushBack
-    refToDst @unfinishedDst.pushBack
+    refToSrc @unfinishedSrc.append
+    refToDst @unfinishedDst.append
     [
       unfinishedSrc.size 0 > [
         curSrc: @unfinishedSrc.last new;
@@ -2607,8 +2607,8 @@ argRecommendedToCopy: [
             [
               f structSrc.fields.size < [
                 srcField: f @curSrc @processor @block processStaticAt;
-                srcField @unfinishedSrc.pushBack
-                f @curDst @processor @block processStaticAt @unfinishedDst.pushBack
+                srcField @unfinishedSrc.append
+                f @curDst @processor @block processStaticAt @unfinishedDst.append
                 f 1 + @f set TRUE
               ] &&
             ] loop
@@ -2634,7 +2634,7 @@ argRecommendedToCopy: [
     unkilled: @processor.acquireVarRefArray;
     @refToVar fullUntemporize
     TRUE dynamic @refToVar.setMutable
-    refToVar @unkilled.pushBack
+    refToVar @unkilled.append
 
     [
       unkilled.size 0 > [
@@ -2663,7 +2663,7 @@ argRecommendedToCopy: [
           [
             f struct.fields.size < [
               f struct.fields.at.refToVar isAutoStruct [
-                f @last @processor @block processStaticAt @unkilled.pushBack
+                f @last @processor @block processStaticAt @unkilled.append
               ] when
               f 1 + @f set TRUE
             ] &&
@@ -2802,7 +2802,7 @@ finalizeListNode: [
             @curRef makeVarPtrCaptured
           ] if
 
-          newField @struct.@fields.pushBack
+          newField @struct.@fields.append
           i 1 + @i set processor compilable
         ] if
       ] &&
@@ -2837,7 +2837,7 @@ finalizeListNode: [
     ] loop
 
     block.stack.size validOutputCount - @block.@stack.shrink
-    refToStruct @block.@stack.pushBack
+    refToStruct @block.@stack.append
   ] when
 ];
 
@@ -2879,7 +2879,7 @@ finalizeObjectNode: [
     ] loop
   ] when
 
-  refToStruct @block.@stack.pushBack
+  refToStruct @block.@stack.append
 ];
 
 unregCodeNodeNames: [
@@ -2979,13 +2979,13 @@ addMatchingNode: [
 
   matchingNode: astArrayIndex @processor.@matchingNodes.at.get;
   matchingNode.treeMemory.getSize 0 = [
-    MatchingNodeEntry @matchingNode.@treeMemory.pushBack
+    MatchingNodeEntry @matchingNode.@treeMemory.append
   ] when
 
   matchingNode.count 1 + @matchingNode.@count set
 
   0 @block.@matchingChindIndex set
-  block.id 0 @matchingNode.@treeMemory.at.@nodeIndexes.pushBack
+  block.id 0 @matchingNode.@treeMemory.at.@nodeIndexes.append
 ];
 
 createGlobalAliases: [
@@ -3466,7 +3466,7 @@ makeCompilerPosition: [
       [
         i block.candidatesToDie.size < [
           current: i @block.@candidatesToDie.at;
-          current @processor.@globalDestructibleVars.pushBack
+          current @processor.@globalDestructibleVars.append
           i 1 + @i set TRUE
         ] &&
       ] loop
@@ -3490,7 +3490,7 @@ makeCompilerPosition: [
       ] loop
 
       retInstruction: retInstructionIndex @block.@program.at new;
-      @retInstruction @block.@program.pushBack
+      @retInstruction @block.@program.append
       FALSE retInstructionIndex @block.@program.at.@enabled set
     ] if
   ];
@@ -3673,7 +3673,7 @@ makeCompilerPosition: [
         output @newArg.@refToVar set
       ] if
 
-      newArg @block.@outputs.pushBack
+      newArg @block.@outputs.append
       i 1 + @i set processor compilable
     ] &&
   ] loop
@@ -3918,9 +3918,9 @@ makeCompilerPosition: [
   block.parent 0 = [
     [block.nodeCase NodeCaseCode = [block.nodeCase NodeCaseDtor =] ||] "Root node bust be simple code node or dtor node!" assert
     block.nodeCase NodeCaseCode = [
-      block.id @processor.@moduleFunctions.pushBack
+      block.id @processor.@moduleFunctions.append
     ] [
-      block.id @processor.@dtorFunctions.pushBack
+      block.id @processor.@dtorFunctions.append
     ] if
   ] when
 
@@ -4172,7 +4172,7 @@ addIndexArrayToProcess: [
 
   compilerPositionInfo.file   @codeNode.@file.set
   compilerPositionInfo        @codeNode.@beginPosition set
-  compilerPositionInfo        @processor.@positions.pushBack
+  compilerPositionInfo        @processor.@positions.append
 
   processor.depthOfRecursion 1 + @processor.@depthOfRecursion set
   processor.depthOfRecursion processor.maxDepthOfRecursion > [
