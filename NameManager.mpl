@@ -34,7 +34,7 @@ NameManager: [{
     current: nameId @names.at;
     item.file isNil [current.overloadCount 1 + @current.!overloadCount] when
     item.isLocal [current.localCount 1 + @current.!localCount] when
-    @item @current.@items.pushBack
+    @item @current.@items.append
   ];
 
   findItem: [

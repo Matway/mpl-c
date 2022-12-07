@@ -42,13 +42,13 @@ addToMainResult: [
   astArray:;
 
   newIndex: mainResult.memory.size;
-  @astArray @mainResult.@memory.pushBack
+  @astArray @mainResult.@memory.append
   newIndex
 ];
 
 addToLastUnfinished: [
   astNode:;
-  @astNode @unfinishedNodes.last.@nodes.pushBack
+  @astNode @unfinishedNodes.last.@nodes.append
 ];
 
 makeLabelNode: [
@@ -536,7 +536,7 @@ dCheck: [currentCode pc.digits inArray ~ ["wrong number constant" lexicalError] 
 xCheck: [
   currentCode pc.digits inArray ~ [
     currentCode ascii.xCode = [
-      -2 @currentArray.pushBack
+      -2 @currentArray.append
       iterate
     ] [
       "wrong number constant" lexicalError
@@ -567,7 +567,7 @@ parseDecNumber: [
 
   [
     currentCode pc.digits inArray [
-      currentCode ascii.zero - 0 cast @currentArray.pushBack
+      currentCode ascii.zero - 0 cast @currentArray.append
       iterate TRUE
     ] [
       currentCode ascii.dot = [
@@ -748,7 +748,7 @@ parseHexNumber: [
 
   [
     currentCode pc.hexDigits inArray [
-      currentCode 0 cast pc.hexToInt.at 0 cast @currentArray.pushBack
+      currentCode 0 cast pc.hexToInt.at 0 cast @currentArray.append
       iterate TRUE
     ] [
       currentCode ascii.dot = [
@@ -879,12 +879,12 @@ parseNumber: [
 
 makeLabel: [
   name:;
-  lastPosition @unfinishedPositions.pushBack
-  ascii.semicolon @unfinishedTerminators.pushBack
-  name toString @unfinishedLabelNames.pushBack
+  lastPosition @unfinishedPositions.append
+  ascii.semicolon @unfinishedTerminators.append
+  name toString @unfinishedLabelNames.append
   newAstNodeArray: AstNodeArray;
   lastPosition @newAstNodeArray.@positionInfo set
-  @newAstNodeArray @unfinishedNodes.pushBack
+  @newAstNodeArray @unfinishedNodes.append
 ];
 
 parseName: [
@@ -917,16 +917,16 @@ parseName: [
         currentCode ascii.dot = [
           dotState (
             DotState.MULTI_DOT [
-              currentSymbol @nameSymbols.pushBack
+              currentSymbol @nameSymbols.append
               iterate TRUE
             ]
             DotState.NOT_A_MEMBER [
-              currentSymbol @nameSymbols.pushBack
+              currentSymbol @nameSymbols.append
               DotState.MULTI_DOT @dotState set
               iterate TRUE
             ]
             DotState.WAS_FIRST_DOT [
-              currentSymbol @nameSymbols.pushBack
+              currentSymbol @nameSymbols.append
               DotState.MULTI_DOT @dotState set
               iterate TRUE
             ]
@@ -936,7 +936,7 @@ parseName: [
               ] [
                 checkFirst
                 checkOffset 1 + @checkOffset set
-                currentSymbol @nameSymbols.pushBack
+                currentSymbol @nameSymbols.append
                 DotState.WAS_FIRST_DOT @dotState set
                 iterate TRUE
               ] if
@@ -984,7 +984,7 @@ parseName: [
                   nameSymbols.getSize 1 > [0 nameSymbols.at "," =] && [
                     "identifier cannot start from comma" lexicalError
                   ] when
-                  currentSymbol @nameSymbols.pushBack
+                  currentSymbol @nameSymbols.append
                   iterate
                   FALSE @first set
                   TRUE
@@ -1072,20 +1072,20 @@ parseComment: [
 ];
 
 addNestedNode: [
-  currentPosition @unfinishedPositions.pushBack
+  currentPosition @unfinishedPositions.append
 
   newAstNodeArray: AstNodeArray;
   currentPosition @newAstNodeArray.@positionInfo set
-  @newAstNodeArray @unfinishedNodes.pushBack
+  @newAstNodeArray @unfinishedNodes.append
 
   currentCode ascii.openRBr = [
-    ascii.closeRBr @unfinishedTerminators.pushBack
+    ascii.closeRBr @unfinishedTerminators.append
   ] [
     currentCode ascii.openFBr = [
-      ascii.closeFBr @unfinishedTerminators.pushBack
+      ascii.closeFBr @unfinishedTerminators.append
     ] [
       currentCode ascii.openSBr = [
-        ascii.closeSBr @unfinishedTerminators.pushBack
+        ascii.closeSBr @unfinishedTerminators.append
       ] [
         "unknown starter for nested node" lexicalError
       ] if
@@ -1219,12 +1219,12 @@ parseNode: [
     unfinishedTerminators: Nat32 Array;
 
     fileId          @currentPosition.@fileId set
-    currentPosition @unfinishedPositions.pushBack
+    currentPosition @unfinishedPositions.append
     newAstNodeArray: AstNodeArray;
     currentPosition @newAstNodeArray.@positionInfo set
-    @newAstNodeArray @unfinishedNodes.pushBack
+    @newAstNodeArray @unfinishedNodes.append
 
-    ascii.null @unfinishedTerminators.pushBack
+    ascii.null @unfinishedTerminators.append
 
     iterate
     parseNode

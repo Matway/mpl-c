@@ -86,7 +86,7 @@ getVariableSchemaId: [
   ] [
     schemaId: processor.schemaBuffer.getSize;
     varSchema schemaId @processor.@schemaTable.insert
-    @varSchema @processor.@schemaBuffer.pushBack
+    @varSchema @processor.@schemaBuffer.append
     schemaId new
   ] if
 ];

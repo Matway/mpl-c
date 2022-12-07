@@ -433,7 +433,7 @@ tryMatchNode: [
       stackEntry noMatterToCopy ~ [
         stackEntry getVar.topologyIndexWhileMatching 0 < [
           eventVars.size @stackEntry getVar.@topologyIndexWhileMatching set
-          stackEntry @eventVars.pushBack
+          stackEntry @eventVars.append
         ] when
       ] when
     ];
@@ -588,7 +588,7 @@ changeNewNodeState: [
     NodeRecursionStateNew @newNode.@recursionState set
 
     processor.recursiveNodesStack.getSize 0 = [processor.recursiveNodesStack.last newNodeIndex = ~] || [
-      newNodeIndex @processor.@recursiveNodesStack.pushBack
+      newNodeIndex @processor.@recursiveNodesStack.append
     ] when
 
     NodeStateNoOutput @block.@state set
@@ -615,7 +615,7 @@ changeNewExportNodeState: [
     NodeRecursionStateNew @newNode.@recursionState set
 
     processor.recursiveNodesStack.getSize 0 = [processor.recursiveNodesStack.last newNodeIndex = ~] || [
-      newNodeIndex @processor.@recursiveNodesStack.pushBack
+      newNodeIndex @processor.@recursiveNodesStack.append
     ] when
 
     NodeStateHasOutput @block.@state set
@@ -690,7 +690,7 @@ fixOutputRefsRec: [
   stackEntry: appliedVars: ;;
 
   unfinishedStack: @processor.acquireVarRefArray;
-  stackEntry @unfinishedStack.pushBack
+  stackEntry @unfinishedStack.append
 
   i: 0 dynamic;
   [
@@ -724,7 +724,7 @@ fixOutputRefsRec: [
               fixedPointer: currentFromStack appliedVars fixRef;
               fixedPointer staticityOfVar Dynamic > [
                 fixed: fixedPointer @processor @block getPointeeNoDerefIR;
-                fixed @unfinishedStack.pushBack
+                fixed @unfinishedStack.append
               ] when
             ] [
               sourceVar.topologyIndex 0 < ~ [
@@ -743,7 +743,7 @@ fixOutputRefsRec: [
                 j stackStruct.fields.size < [
                   stackEntryVar.storageStaticity Static = [j stackStruct.fields.at.usedHere new] || [
                     stackField: j currentFromStack @processor @block getField;
-                    stackField @unfinishedStack.pushBack
+                    stackField @unfinishedStack.append
                   ] when
 
                   j 1 + @j set TRUE
@@ -893,7 +893,7 @@ applyNodeChanges: [
           stackEntry: @processor @block popForMatching;
           cacheEntry: branch.refToVar;
           stackEntry cacheEntry @appliedVars addAppliedVar
-          stackEntry @pops.pushBack
+          stackEntry @pops.append
         ]
         ShadowReasonCapture [
           branch:;
@@ -997,7 +997,7 @@ applyNodeChanges: [
       outputRef: currentOutput.refToVar @processor @block copyVarFromChild; # output is to inner var
 
       outputRef appliedVars fixOutputRefsRec # it is End
-      outputRef @appliedVars.@fixedOutputs.pushBack
+      outputRef @appliedVars.@fixedOutputs.append
       i 1 + @i set processor compilable
     ] &&
   ] loop
@@ -1092,7 +1092,7 @@ applyNamedStackChanges: [
   i: 0 dynamic;
   [
     i newNode.matchingInfo.inputs.getSize < [
-      @processor @block popForMatching @inputs.pushBack
+      @processor @block popForMatching @inputs.append
       i 1 + @i set TRUE
     ] &&
   ] loop
@@ -1103,10 +1103,10 @@ applyNamedStackChanges: [
   [
     i appliedVars.fixedOutputs.getSize < [
       outputRef: i @appliedVars.@fixedOutputs.at;
-      outputRef @outputs.pushBack
+      outputRef @outputs.append
       outputRef getVar.data.getTag VarStruct = [
         @outputRef markAsAbleToDie
-        outputRef @block.@candidatesToDie.pushBack
+        outputRef @block.@candidatesToDie.append
       ] when
       outputRef @block push
       i 1 + @i set TRUE
@@ -1117,7 +1117,7 @@ applyNamedStackChanges: [
     inputs @outputs newNode forcedName makeNamedCallInstruction
 
     implicitDerefInfo: @processor.@condArray;
-    newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
+    newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.append] each
     implicitDerefInfo appliedVars.fixedOutputs.getSize @block derefNEntries
     @implicitDerefInfo.clear
   ] when
@@ -1168,7 +1168,7 @@ makeCallInstructionWith: [
           currentInput @processor @block createDerefToRegister @arg.@irNameId set
         ] when
 
-        arg @argList.pushBack
+        arg @argList.append
       ] if
 
       i 1 + @i set TRUE
@@ -1197,7 +1197,7 @@ makeCallInstructionWith: [
           refToVar @processor getMplSchema.irTypeId @arg.@irTypeId set
           TRUE @arg.@byRef set
 
-          arg @argList.pushBack
+          arg @argList.append
         ] if
       ] if
 
@@ -1235,7 +1235,7 @@ makeCallInstructionWith: [
             ] when
           ] if
 
-          arg @argList.pushBack
+          arg @argList.append
         ] when
       ] when
 
@@ -1338,7 +1338,7 @@ useMatchingInfoOnly: [
         cacheEntry: branch.refToVar;
         stackEntry: @processor @block popForMatching;
         stackEntry cacheEntry addEventVar
-        stackEntry @pops.pushBack
+        stackEntry @pops.append
       ]
       ShadowReasonCapture [
         branch:;
@@ -1436,7 +1436,7 @@ useMatchingInfoOnly: [
       result: 0 newNode.outputs.at.refToVar @processor @block copyVarFromChild;
       TRUE @newNode.@deleted set
       @result @processor @block createStaticInitIR @block push
-      result @block.@candidatesToDie.pushBack
+      result @block.@candidatesToDie.append
     ] [
       forcedName: forcedNameString makeStringView dynamic;
       newNodeIndex forcedName processNamedCallByNode
@@ -1672,9 +1672,9 @@ useMatchingInfoOnly: [
             unfinishedV2: @processor.acquireVarRefArray;
             unfinishedD:  @processor.acquireVarRefArray;
 
-            value1   @unfinishedV1.pushBack
-            value2   @unfinishedV2.pushBack
-            refToDst @unfinishedD .pushBack
+            value1   @unfinishedV1.append
+            value2   @unfinishedV2.append
+            refToDst @unfinishedD .append
 
             [
               unfinishedD.size 0 > [
@@ -1701,9 +1701,9 @@ useMatchingInfoOnly: [
                   f: 0;
                   [
                     f structD.fields.size < [
-                      f structV1.fields.at.refToVar @unfinishedV1.pushBack
-                      f structV2.fields.at.refToVar @unfinishedV2.pushBack
-                      f structD .fields.at.refToVar @unfinishedD .pushBack
+                      f structV1.fields.at.refToVar @unfinishedV1.append
+                      f structV2.fields.at.refToVar @unfinishedV2.append
+                      f structD .fields.at.refToVar @unfinishedD .append
                       f 1 + @f set TRUE
                     ] &&
                   ] loop
@@ -1788,18 +1788,18 @@ useMatchingInfoOnly: [
                   outputElse.mutable outputThen.mutable and @newOutput.setMutable
                   outputElse varIsMoved outputThen varIsMoved and @newOutput.setMoved
                   outputThen outputElse newOutput mergeValuesRec
-                  i newNodeThen.outputs.size + longestOutputSize < ~ [newOutput @outputsThen.pushBack] when
-                  i newNodeElse.outputs.size + longestOutputSize < ~ [newOutput @outputsElse.pushBack] when
+                  i newNodeThen.outputs.size + longestOutputSize < ~ [newOutput @outputsThen.append] when
+                  i newNodeElse.outputs.size + longestOutputSize < ~ [newOutput @outputsElse.append] when
                   newOutput isVirtual [
-                    @newOutput @outputs.pushBack
+                    @newOutput @outputs.append
                   ] [
-                    @newOutput @processor @block createAllocIR @outputs.pushBack
+                    @newOutput @processor @block createAllocIR @outputs.append
                   ] if
                 ] [
                   ("branch types mismatch; in 'then' type is " outputThen @processor block getMplType "; in 'else' type is " outputElse @processor block getMplType) assembleString @processor block compilerError
                 ] if
 
-                isOutputImplicitDerefThen @implicitDerefInfo.pushBack
+                isOutputImplicitDerefThen @implicitDerefInfo.append
               ] [
                 "branch return cases mismatch" @processor block compilerError
               ] if
@@ -1813,9 +1813,9 @@ useMatchingInfoOnly: [
             [
               i longestInputSize < [
                 a: @processor @block pop;
-                a @inputs.pushBack
-                i newNodeThen.matchingInfo.inputs.size < [a @inputsThen.pushBack] when
-                i newNodeElse.matchingInfo.inputs.size < [a @inputsElse.pushBack] when
+                a @inputs.append
+                i newNodeThen.matchingInfo.inputs.size < [a @inputsThen.append] when
+                i newNodeElse.matchingInfo.inputs.size < [a @inputsElse.append] when
                 i 1 + @i set TRUE
               ] &&
             ] loop
@@ -1826,7 +1826,7 @@ useMatchingInfoOnly: [
                 outputRef: i @outputs.at;
                 outputRef getVar.data.getTag VarStruct = [
                   @outputRef markAsAbleToDie
-                  outputRef @block.@candidatesToDie.pushBack
+                  outputRef @block.@candidatesToDie.append
                 ] when
 
                 outputRef @block push
@@ -1981,7 +1981,7 @@ processDynamicLoop: [
           i: 0 dynamic;
           [
             i newNode.matchingInfo.inputs.size < [
-              @processor @block pop @inputs.pushBack
+              @processor @block pop @inputs.append
               i 1 + @i set TRUE
             ] &&
           ] loop
@@ -1990,9 +1990,9 @@ processDynamicLoop: [
           [
             i appliedVars.fixedOutputs.getSize < [
               curOutput: i appliedVars.fixedOutputs.at;
-              curOutput @outputs.pushBack
+              curOutput @outputs.append
               curOutput getVar.data.getTag VarStruct = [
-                curOutput @block.@candidatesToDie.pushBack
+                curOutput @block.@candidatesToDie.append
               ] when
 
               i 1 + newNode.outputs.size < [
@@ -2007,7 +2007,7 @@ processDynamicLoop: [
             [
               i inputs.getSize < [
                 curNodeInput: i inputs.at @processor @block copyVar;
-                curNodeInput @nodeInputs.pushBack
+                curNodeInput @nodeInputs.append
 
                 curNodeInput isVirtual ~ [
                   (curNodeInput @processor getIrType "*") assembleString makeStringView # with *
@@ -2031,7 +2031,7 @@ processDynamicLoop: [
           nodeInputs @outputs newNode makeCallInstruction
 
           implicitDerefInfo: @processor.@condArray;
-          newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.pushBack] each
+          newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.append] each
           implicitDerefInfo outputs.getSize 1 - @block derefNEntries
           processor.options.verboseIR ["loop end prepare..." @block createComment] when
           1 outputs.last @processor @block createBranch
@@ -2298,7 +2298,7 @@ processDynamicLoop: [
     ] if
 
     oldSuccess processor compilable ~ and processor.depthOfPre 0 = and processor.result.findModuleFail ~ and processor.result.passErrorThroughPRE ~ and [
-      @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.pushBack
+      @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.append
       oldRecursiveNodesStackSize @processor.@recursiveNodesStack.shrink
       -1 @processor.@result clearProcessorResult
 
@@ -2323,7 +2323,7 @@ fixSourcesRec: [
   refToVar:;
 
   unfinished: @processor.acquireVarRefArray;
-  refToVar @unfinished.pushBack
+  refToVar @unfinished.append
 
   i: 0 dynamic;
 
@@ -2334,7 +2334,7 @@ fixSourcesRec: [
       current @currentVar.@sourceOfValue set
       currentVar.data.getTag VarStruct = [
         VarStruct currentVar.data.get.get.fields [
-          .refToVar @unfinished.pushBack
+          .refToVar @unfinished.append
         ] each
       ] when
       i 1 + !i TRUE
@@ -2383,7 +2383,7 @@ callImportWith: [
               ] when
             ] [
               nodeMutable [stackEntry @processor @block makeVarTreeDirty] when
-              input @inputs.pushBack
+              input @inputs.append
             ]
           ) sequence
           i 1 + @i set processor compilable
@@ -2401,7 +2401,7 @@ callImportWith: [
             varStruct: VarStruct varargs.data.get.get;
             varStruct.fields.getSize [
               field: i @refToVarargs @processor @block processStaticAt;
-              field @inputs.pushBack
+              field @inputs.append
             ] times
 
             @refToVarargs @processor @block makeVarRealCaptured
@@ -2419,9 +2419,9 @@ callImportWith: [
 
           current @current getVar.@sourceOfValue set
           Dynamic makeValuePair @current getVar.@staticity set
-          current @outputs.pushBack
+          current @outputs.append
           current getVar.data.getTag VarStruct = [
-            current @block.@candidatesToDie.pushBack
+            current @block.@candidatesToDie.append
           ] when
 
           i 1 + @i set processor compilable
@@ -2441,7 +2441,7 @@ callImportWith: [
     ] [
       implicitDerefInfo: @processor.@condArray;
       outputs [
-        getVar.data.getTag VarRef = @implicitDerefInfo.pushBack
+        getVar.data.getTag VarRef = @implicitDerefInfo.append
       ] each
 
       implicitDerefInfo outputs.getSize @block derefNEntries

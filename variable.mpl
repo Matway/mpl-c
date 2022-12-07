@@ -58,7 +58,7 @@ isStaticData: [
   var: refToVar getVar;
   refToVar isVirtual ~ [var.data.getTag VarStruct =] && [
     unfinished: RefToVar Array;
-    refToVar @unfinished.pushBack
+    refToVar @unfinished.append
     result: TRUE dynamic;
     [
       result [unfinished.getSize 0 >] && [
@@ -74,7 +74,7 @@ isStaticData: [
             curVar: current getVar;
             curVar.data.getTag VarStruct = [
               struct: VarStruct curVar.data.get.get;
-              struct.fields [.refToVar @unfinished.pushBack] each
+              struct.fields [.refToVar @unfinished.append] each
             ] [
               FALSE dynamic @result set
             ] if
@@ -473,10 +473,10 @@ makeDbgTypeId: [
       ] when
 
       fieldi.refToVar isVirtual [
-        -1 @branch.@realFieldIndexes.pushBack
+        -1 @branch.@realFieldIndexes.append
       ] [
         FALSE @branch.@fullVirtual set
-        realFieldCount @branch.@realFieldIndexes.pushBack
+        realFieldCount @branch.@realFieldIndexes.append
         realFieldCount 1 + @realFieldCount set
       ] if
 

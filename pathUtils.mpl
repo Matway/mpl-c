@@ -41,7 +41,7 @@ simplifyPath: [
       splittedPath.chars.dataSize 0 > [
         position: 0 dynamic;
         fragments: String Array;
-        String @fragments.pushBack
+        String @fragments.append
 
         isCurrent: ["." =];
         isBack: [".." =];
@@ -62,7 +62,7 @@ simplifyPath: [
                 @fragments.popBack
               ] when
 
-              String @fragments.pushBack
+              String @fragments.append
             ] when
           ] [
             char @lastFragment.cat

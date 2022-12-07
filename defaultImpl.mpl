@@ -395,7 +395,7 @@ addBlockIdTo: [
     ] loop
 
     result [
-      NameInfoCoord @line.pushBack
+      NameInfoCoord @line.append
       block @line.last.@block.set
       file  @line.last.@file.set
 
@@ -403,7 +403,7 @@ addBlockIdTo: [
       nameInfo          @nameWithOverload.@nameInfo set
       nameOverloadDepth @nameWithOverload.@nameOverloadDepth set
       #other fields does not matter
-      nameWithOverload @block.@captureNames.pushBack
+      nameWithOverload @block.@captureNames.append
     ] when
 
     result
@@ -758,10 +758,10 @@ addShadowEvent: [
 
   block.astArrayIndex 0 < ~ [
     #begin of var go to matching
-    event @block.@buildingMatchingInfo.@shadowEvents.pushBack
+    event @block.@buildingMatchingInfo.@shadowEvents.append
 
     block.state NodeStateNew = [
-      event @block.@matchingInfo.@shadowEvents.pushBack
+      event @block.@matchingInfo.@shadowEvents.append
     ] when
 
     block.recursionState NodeRecursionStateNew = [
@@ -775,12 +775,12 @@ addShadowEvent: [
         eventHash @matchingNodePair.@eventHash set
         result    @matchingNodePair.@childIndex set
 
-        @matchingNodePair @machingMemoryNode.@childIndices.pushBack
+        @matchingNodePair @machingMemoryNode.@childIndices.append
 
         newMatchingNodeEntry: MatchingNodeEntry;
         event             @newMatchingNodeEntry.@parentEvent set
         currentEntryIndex @newMatchingNodeEntry.@parentIndex set
-        @newMatchingNodeEntry @matchingNode.@treeMemory.pushBack
+        @newMatchingNodeEntry @matchingNode.@treeMemory.append
 
         result
       ];
@@ -879,7 +879,7 @@ addShadowEvent: [
       @processor @block FALSE deleteMatchingNode
       currentEntryIndex @block.@matchingChindIndex set
       currentMemory: currentEntryIndex @matchingNode.@treeMemory.at;
-      block.id @currentMemory.@nodeIndexes.pushBack
+      block.id @currentMemory.@nodeIndexes.append
     ] if
   ] when
 ];

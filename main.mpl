@@ -198,8 +198,8 @@ checkedSaveString: [
     multiParserResult: MultiParserResult;
     nameManager: NameInfoEntry NameManager;
 
-    "*builtins"    toString @options.@fileNames.pushBack
-    "*definitions" toString @options.@fileNames.pushBack
+    "*builtins"    toString @options.@fileNames.append
+    "*definitions" toString @options.@fileNames.append
     "main" toString @options.@beginFunc set
     "main" toString @options.@endFunc set
 
@@ -258,7 +258,7 @@ checkedSaveString: [
                       "Invalid argument: " print option print LF print
                       FALSE @success set
                     ] [
-                      option simplifyFileName @options.@fileNames.pushBack
+                      option simplifyFileName @options.@fileNames.append
                     ] if
                   ]
                 ) case
@@ -268,7 +268,7 @@ checkedSaveString: [
                 OPT_ANY !nextOption
               ]
               OPT_LINKER_OPTION [
-                option toString @options.@linkerOptions.pushBack
+                option toString @options.@linkerOptions.append
                 OPT_ANY !nextOption
               ]
               OPT_DEFINITION [
@@ -311,7 +311,7 @@ checkedSaveString: [
                 OPT_ANY !nextOption
               ]
               OPT_INCLUDE_PATH [
-                option simplifyFileName @options.@includePaths.pushBack
+                option simplifyFileName @options.@includePaths.append
                 OPT_ANY !nextOption
               ]
               OPT_BEGIN_FUNC [
@@ -333,7 +333,7 @@ checkedSaveString: [
                 OPT_ANY !nextOption
               ]
               OPT_HIDE_PREFIX [
-                option simplifyFileName @options.@hidePrefixes.pushBack
+                option simplifyFileName @options.@hidePrefixes.append
                 OPT_ANY !nextOption
               ]
               []

@@ -223,7 +223,7 @@ Processor: [{
   ];
 
   releaseVarRefArray: [
-    @varRefArrays.pushBack
+    @varRefArrays.append
     @varRefArrays.last.clear
   ];
 

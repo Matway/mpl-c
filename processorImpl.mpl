@@ -77,7 +77,7 @@ debugMemory [
     newFile.name @processor addFileDebugInfo @newFile.!debugId
   ] when
 
-  @newFile owner @processor.@files.pushBack
+  @newFile owner @processor.@files.append
   #here we can implement search in cmd
   fileId
 ] "addFileNameToProcessor" exportFunction
@@ -180,7 +180,7 @@ debugMemory [
       1    @compilerPositionInfo.@line set
       1    @compilerPositionInfo.@column set
       file @compilerPositionInfo.@file.set
-      compilerPositionInfo @processor.@positions.pushBack
+      compilerPositionInfo @processor.@positions.append
       topNodeIndex: StringView 0 NodeCaseCode astArrayIndex CFunctionSignature @processor astNodeToCodeNode;
       @processor.@positions.popBack
 
@@ -189,10 +189,10 @@ debugMemory [
         ("postpone compilation of \"" file.name "\" because \"" processor.result.errorInfo.missedModule "\" is not compiled yet") addLog
         fr: processor.result.errorInfo.missedModule makeStringView @dependedFiles.find;
         fr.success [
-          n @fr.@value.pushBack
+          n @fr.@value.append
         ] [
           a: Int32 Array;
-          n @a.pushBack
+          n @a.append
           @processor.result.@errorInfo.@missedModule @a @dependedFiles.insert
         ] if
 
@@ -214,7 +214,7 @@ debugMemory [
               i fr.value.size < [
                 numberOfDependent: fr.value.size 1 - i - fr.value.at;
                 (numberOfDependent processor.files.at.get.name " is dependent from it, try to recompile") addLog
-                numberOfDependent @processor.@unfinishedFiles.pushBack
+                numberOfDependent @processor.@unfinishedFiles.append
                 i 1 + @i set TRUE
               ] &&
             ] loop
@@ -229,7 +229,7 @@ debugMemory [
     n: 0 dynamic;
     [
       n processor.multiParserResult.roots.size < [
-        processor.multiParserResult.roots.size n - @processor.@unfinishedFiles.pushBack
+        processor.multiParserResult.roots.size n - @processor.@unfinishedFiles.append
         n 1 + @n set TRUE
       ] &&
     ] loop
@@ -248,7 +248,7 @@ debugMemory [
     ] when
 
     processor.result.success ~ [
-      @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.pushBack
+      @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.append
     ] when
 
     processor.result.globalErrorInfo.getSize 0 > [
@@ -294,7 +294,7 @@ debugMemory [
         ] when
 
         processor.result.success ~ [
-          @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.pushBack
+          @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.append
         ] when
       ] when
     ] when

@@ -547,7 +547,7 @@ makeStringId: [
   ] [
     result: processor.nameBuffer.size;
     string makeStringView result @processor.@nameTable.insert
-    @string @processor.@nameBuffer.pushBack
+    @string @processor.@nameBuffer.append
     result
   ] if
 ];
@@ -556,7 +556,7 @@ makeDefaultVarId: [
   varId: processor: ;;
 
   [varId processor.defaultVarNames.getSize < ~] [
-    -1 @processor.@defaultVarNames.pushBack
+    -1 @processor.@defaultVarNames.append
   ] while
 
   result: varId @processor.@defaultVarNames.at;

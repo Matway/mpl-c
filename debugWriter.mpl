@@ -18,7 +18,7 @@
 "pathUtils"    use
 
 addDebugString: [
-  @processor.@debugInfo.@strings.pushBack
+  @processor.@debugInfo.@strings.append
 ];
 
 addDebugProlog: [
@@ -200,7 +200,7 @@ getTypeDebugDeclaration: [
                 field: f struct.fields.at;
                 field.refToVar isVirtual ~ [
                   memberInfo: @offset field f @processor block addMemberInfo;
-                  memberInfo @members.pushBack
+                  memberInfo @members.append
                 ] when
                 f 1 + @f set TRUE
               ] &&
@@ -280,7 +280,7 @@ getDebugType: [
   splitted.success [
     splitted.chars.getSize 1024 > [
       1024 @splitted.@chars.shrink
-      "..." makeStringView @splitted.@chars.pushBack
+      "..." makeStringView @splitted.@chars.append
     ] when
   ] [
     ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString @processor block compilerError
@@ -336,7 +336,7 @@ addGlobalVariableDebugInfo: [
       ", line: " processor.positions.last.line ", type: !" debugDeclarationIndex ", isLocal: false, isDefinition: true)") assembleString addDebugString
 
     result: index 1 -;
-    result @processor.@debugInfo.@globals.pushBack
+    result @processor.@debugInfo.@globals.append
     result
   ] [
     -1
@@ -468,7 +468,7 @@ addLexicalBlockLocation: [
   index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
-  ("!" index " = !DILexicalBlockFile(scope: !" funcDbgIndex ", file: !" fileDbgIndex ", discriminator: 0)")  assembleString @processor.@debugInfo.@strings.pushBack
+  ("!" index " = !DILexicalBlockFile(scope: !" funcDbgIndex ", file: !" fileDbgIndex ", discriminator: 0)")  assembleString @processor.@debugInfo.@strings.append
   index funcDbgIndex @processor.@debugInfo.@locationIds.insert
   index
 ];
