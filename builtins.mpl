@@ -5,19 +5,15 @@
 # It is forbidden to use the content or any part of it for any purpose without explicit permission from the owner.
 # By contributing to the repository, contributors acknowledge that ownership of their work transfers to the owner.
 
-"String" use
+"String"  use
 "control" use
-"conventions" use
 
-"Block" use
-"MplFile" use
-"Var" use
+"Block"       use
+"Var"         use
 "builtinImpl" use
-"codeNode" use
-"declarations" use
+"codeNode"    use
 "defaultImpl" use
-"processor" use
-"variable" use
+"processor"   use
 
 builtins: (
   {name: "!"                             ; impl: @mplBuiltinExclamation             ;}
@@ -44,7 +40,9 @@ builtins: (
   {name: "callField"                     ; impl: @mplBuiltinCallField               ;}
   {name: "cast"                          ; impl: @mplBuiltinCast                    ;}
   {name: "ceil"                          ; impl: @mplBuiltinCeil                    ;}
+  {name: "code?"                         ; impl: @mplBuiltinCodeQuestion            ;}
   {name: "codeRef"                       ; impl: @mplBuiltinCodeRef                 ;}
+  {name: "codeRef?"                      ; impl: @mplBuiltinCodeRefQuestion         ;}
   {name: "compileOnce"                   ; impl: @mplBuiltinCompileOnce             ;}
   {name: "const"                         ; impl: @mplBuiltinConst                   ;}
   {name: "cos"                           ; impl: @mplBuiltinCos                     ;}
@@ -55,7 +53,11 @@ builtins: (
   {name: "failProc"                      ; impl: @mplBuiltinFailProc                ;}
   {name: "fieldCount"                    ; impl: @mplBuiltinFieldCount              ;}
   {name: "fieldIndex"                    ; impl: @mplBuiltinFieldIndex              ;}
+  {name: "fieldIsRef"                    ; impl: @mplBuiltinFieldIsRef              ;}
+  {name: "fieldIsVirtual"                ; impl: @mplBuiltinFieldIsVirtual          ;}
   {name: "fieldName"                     ; impl: @mplBuiltinFieldName               ;}
+  {name: "fieldRead"                     ; impl: @mplBuiltinFieldRead               ;}
+  {name: "fieldWrite"                    ; impl: @mplBuiltinFieldWrite              ;}
   {name: "floor"                         ; impl: @mplBuiltinFloor                   ;}
   {name: "getCallTrace"                  ; impl: @mplBuiltinGetCallTrace            ;}
   {name: "has"                           ; impl: @mplBuiltinHas                     ;}
@@ -101,8 +103,10 @@ builtins: (
   {name: "textSplit"                     ; impl: @mplBuiltinTextSplit               ;}
   {name: "ucall"                         ; impl: @mplBuiltinUcall                   ;}
   {name: "uif"                           ; impl: @mplBuiltinUif                     ;}
+  {name: "unconst"                       ; impl: @mplBuiltinUnconst                 ;}
   {name: "use"                           ; impl: @mplBuiltinUse                     ;}
   {name: "virtual"                       ; impl: @mplBuiltinVirtual                 ;}
+  {name: "virtual?"                      ; impl: @mplBuiltinVirtualQuestion         ;}
   {name: "xor"                           ; impl: @mplBuiltinXor                     ;}
   {name: "~"                             ; impl: @mplBuiltinNot                     ;}
 );

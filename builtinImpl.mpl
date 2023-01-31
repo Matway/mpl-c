@@ -6,7 +6,6 @@
 # By contributing to the repository, contributors acknowledge that ownership of their work transfers to the owner.
 
 "Array"     use
-"HashTable" use
 "Owner"     use
 "String"    use
 "algorithm" use
@@ -15,7 +14,6 @@
 
 "Block"           use
 "Var"             use
-"astNodeType"     use
 "codeNode"        use
 "debugWriter"     use
 "declarations"    use
@@ -27,10 +25,6 @@
 "processor"       use
 "staticCall"      use
 "variable"        use
-
-debugMemory [
-  "memory.getMemoryMetrics" use
-] [] uif
 
 declareBuiltin: [
   virtual declareBuiltinName:;
@@ -45,8 +39,6 @@ declareBuiltin: [
 ];
 
 mplBuiltinProcessAtList: [
-  refToStruct: @processor @block pop;
-  refToIndex: @processor @block pop;
   compileOnce
 
   result: RefToVar;
@@ -109,6 +101,18 @@ mplBuiltinProcessAtList: [
   ] when
 
   result
+];
+
+mplBuiltinProcessAtListKeyObject: [
+  refToStruct: @processor @block pop;
+  refToIndex:  @processor @block pop;
+  mplBuiltinProcessAtList
+];
+
+mplBuiltinProcessAtListObjectKey: [
+  refToIndex:  @processor @block pop;
+  refToStruct: @processor @block pop;
+  mplBuiltinProcessAtList
 ];
 
 mplNumberBinaryOp: [
@@ -433,7 +437,7 @@ staticityOfBinResult: [
 ];
 
 [
-  field: mplBuiltinProcessAtList;
+  field: mplBuiltinProcessAtListKeyObject;
   processor compilable [
     field @processor @block setRef
   ] when
@@ -556,7 +560,7 @@ staticityOfBinResult: [
 ] "mplBuiltinGreater" @declareBuiltin ucall
 
 [
-  field: mplBuiltinProcessAtList;
+  field: mplBuiltinProcessAtListKeyObject;
   processor compilable [
     field isVirtual [@field @processor @block makeVirtualVarReal @field set] when
     @field @processor @block derefAndPush
@@ -901,6 +905,13 @@ staticityOfBinResult: [
 ] "mplBuiltinCeil" @declareBuiltin ucall
 
 [
+  refToVar: @processor @block pop;
+  processor compilable [
+    refToVar getVar.data.getTag VarCode = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
+  ] when
+] "mplBuiltinCodeQuestion" @declareBuiltin ucall
+
+[
   (
     [processor compilable]
     [signature: parseSignature;]
@@ -916,6 +927,13 @@ staticityOfBinResult: [
     ]
   ) sequence
 ] "mplBuiltinCodeRef" @declareBuiltin ucall
+
+[
+  refToVar: @processor @block pop;
+  processor compilable [
+    refToVar getVar.data.getTag VarImport = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
+  ] when
+] "mplBuiltinCodeRefQuestion" @declareBuiltin ucall
 
 [
   TRUE dynamic @block.@nodeCompileOnce set
@@ -1103,6 +1121,54 @@ staticityOfBinResult: [
           struct: VarStruct var.data.get.get;
           count 0 < [count struct.fields.getSize < ~] || ["index is out of bounds" @processor block compilerError] when
           processor compilable [
+            count struct.fields.at.refToVar getVar.data.getTag VarRef = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
+          ] when
+        ] when
+      ] when
+    ] when
+  ] when
+] "mplBuiltinFieldIsRef" @declareBuiltin ucall
+
+[
+  refToCount: @processor @block pop;
+  refToVar:   @processor @block pop;
+  processor compilable [
+    varCount: refToCount getVar;
+    varCount.data.getTag VarInt32 = ~ ["index must be Int32" @processor block compilerError] when
+    processor compilable [
+      refToCount staticityOfVar Dynamic > ~ ["index must be static" @processor block compilerError] when
+      processor compilable [
+        count: VarInt32 varCount.data.get.end 0 cast;
+        var: refToVar getVar;
+        var.data.getTag VarStruct = ~ ["not a combined" @processor block compilerError] when
+        processor compilable [
+          struct: VarStruct var.data.get.get;
+          count 0 < [count struct.fields.getSize < ~] || ["index is out of bounds" @processor block compilerError] when
+          processor compilable [
+            count struct.fields.at.refToVar isVirtual makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
+          ] when
+        ] when
+      ] when
+    ] when
+  ] when
+] "mplBuiltinFieldIsVirtual" @declareBuiltin ucall
+
+[
+  refToCount: @processor @block pop;
+  refToVar:   @processor @block pop;
+  processor compilable [
+    varCount: refToCount getVar;
+    varCount.data.getTag VarInt32 = ~ ["index must be Int32" @processor block compilerError] when
+    processor compilable [
+      refToCount staticityOfVar Dynamic > ~ ["index must be static" @processor block compilerError] when
+      processor compilable [
+        count: VarInt32 varCount.data.get.end 0 cast;
+        var: refToVar getVar;
+        var.data.getTag VarStruct = ~ ["not a combined" @processor block compilerError] when
+        processor compilable [
+          struct: VarStruct var.data.get.get;
+          count 0 < [count struct.fields.getSize < ~] || ["index is out of bounds" @processor block compilerError] when
+          processor compilable [
             count struct.fields.at.nameInfo processor.nameManager.getText @processor @block makeVarString @block push
           ] when
         ] when
@@ -1110,6 +1176,21 @@ staticityOfBinResult: [
     ] when
   ] when
 ] "mplBuiltinFieldName" @declareBuiltin ucall
+
+[
+  field: mplBuiltinProcessAtListObjectKey;
+  processor compilable [
+    field isVirtual [@field @processor @block makeVirtualVarReal @field set] when
+    @field @processor @block derefAndPush
+  ] when
+] "mplBuiltinFieldRead" @declareBuiltin ucall
+
+[
+  field: mplBuiltinProcessAtListObjectKey;
+  processor compilable [
+    field @processor @block setRef
+  ] when
+] "mplBuiltinFieldWrite" @declareBuiltin ucall
 
 [
   TRUE dynamic @processor.@usedFloatBuiltins set
@@ -1752,6 +1833,17 @@ staticityOfBinResult: [
   ] when
 ] "mplBuiltinUif" @declareBuiltin ucall
 
+[
+  refToVar: @processor @block pop;
+  processor compilable [
+    refToVar getVar.data.getTag VarImport = ~ [refToVar getVar.data.getTag VarString = ~] && [
+      TRUE @refToVar.setMutable
+    ] when
+
+    refToVar @block push
+  ] when
+] "mplBuiltinUnconst" @declareBuiltin ucall
+
 FindInPathResult: {
   NO_FILE: [0];
   FILE_WITH_ERROR: [1];
@@ -1981,6 +2073,13 @@ tryFindInPath: [
   block.nextLabelIsVirtual ["duplicate virtual specifier" @processor block compilerError] when
   TRUE @block.@nextLabelIsVirtual set
 ] "mplBuiltinVirtual" @declareBuiltin ucall
+
+[
+  refToVar: @processor @block pop;
+  processor compilable [
+    refToVar isVirtual makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
+  ] when
+] "mplBuiltinVirtualQuestion" @declareBuiltin ucall
 
 [
   VarCond VarNatX 1 + [a2:; a1:; "xor" makeStringView] [xor] [new] [y:; x:;] mplNumberBinaryOp
