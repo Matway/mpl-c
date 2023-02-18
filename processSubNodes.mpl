@@ -20,6 +20,7 @@
 "declarations" use
 "defaultImpl"  use
 "irWriter"     use
+"logger"       use
 "processor"    use
 "staticCall"   use
 "variable"     use

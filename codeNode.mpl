@@ -22,6 +22,7 @@
 "declarations" use
 "defaultImpl"  use
 "irWriter"     use
+"logger"       use
 "pathUtils"    use
 "processor"    use
 "staticCall"   use
