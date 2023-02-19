@@ -5,8 +5,10 @@
 # It is forbidden to use the content or any part of it for any purpose without explicit permission from the owner.
 # By contributing to the repository, contributors acknowledge that ownership of their work transfers to the owner.
 
-"String" use
+"String"  use
 "control" use
+
+"logger" use
 
 staticCall: [
   staticCallBody:;

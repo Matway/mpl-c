@@ -18,6 +18,7 @@
 "NameManager"   use
 "astNodeType"   use
 "declarations"  use
+"logger"        use
 "pathUtils"     use
 "processor"     use
 "processorImpl" use

@@ -25,6 +25,7 @@
 "declarations"    use
 "defaultImpl"     use
 "irWriter"        use
+"logger"          use
 "parser"          use
 "pathUtils"       use
 "processSubNodes" use

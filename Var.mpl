@@ -5,14 +5,15 @@
 # It is forbidden to use the content or any part of it for any purpose without explicit permission from the owner.
 # By contributing to the repository, contributors acknowledge that ownership of their work transfers to the owner.
 
-"Array" use
-"Owner" use
-"String" use
-"Variant" use
+"Array"     use
+"Owner"     use
+"String"    use
+"Variant"   use
 "algorithm" use
-"control" use
+"control"   use
 
-"Mref" use
+"Mref"       use
+"logger"     use
 "staticCall" use
 
 Dirty:   [0n8 dynamic];
