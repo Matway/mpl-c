@@ -358,6 +358,7 @@ addToProcess: [
 
 {
   processor: Processor Ref;
+  fileText: StringView Cref;
   fileName: StringView Cref;
   fromCmd: Cond;
 } Int32 {} "addFileNameToProcessor" importFunction

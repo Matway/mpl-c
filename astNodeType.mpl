@@ -53,14 +53,15 @@ NamedBranch: [{
 }];
 
 makePositionInfo: [{
-  token:  String;
-  column: new;
-  line:   new;
-  offset: new;
-  fileId: new;
+  token:       String;
+  column:      new;
+  line:        new;
+  offsetStart: new;
+  offsetEnd:   new;
+  fileId:      new;
 }];
 
-PositionInfo: [-1 dynamic -1 dynamic 1 dynamic 0 dynamic makePositionInfo];
+PositionInfo: [-1 dynamic -1 dynamic -1 dynamic 1 dynamic 0 dynamic makePositionInfo];
 
 AstNode: [{
   virtual AST_NODE: ();

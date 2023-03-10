@@ -207,6 +207,7 @@ createPlainIR: [
 ];
 
 createStringIR: [
+  block:;
   processor:;
   refToVar:;
   string:;
@@ -221,7 +222,13 @@ createStringIR: [
 
   valueImplementation: string getStringImplementation;
 
-  (stringName " = private unnamed_addr constant {i32, [" string.size " x i8]} {i32 " string.size ", [" string.size " x i8] c\"" valueImplementation "\"}") assembleString @processor.@prolog.append
+  prolog: (stringName " = private unnamed_addr constant {i32, [" string.size " x i8]} {i32 " string.size ", [" string.size " x i8] c\"" valueImplementation "\"}") assembleString;
+  block.nextStringAttribute.size 0 = ~ [
+    ", " @prolog.cat
+    block.nextStringAttribute @prolog.cat
+  ] when
+
+  @prolog @processor.@prolog.append
 ];
 
 createGetTextSizeIR: [

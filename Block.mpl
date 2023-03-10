@@ -237,6 +237,8 @@ Block: [{
   lastBrLabelName:    0 dynamic;
   variableCountDelta: 0 dynamic;
 
+  nextStringAttribute: String;
+
   INIT: [];
   DIE: [];
 }];

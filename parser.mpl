@@ -35,7 +35,8 @@ codeunitTail?: [
 
 fillPositionInfo: [
   astNode:;
-  lastPosition   @astNode.@positionInfo set
+  lastPosition @astNode.@positionInfo set
+  currentPosition.offsetStart new @astNode.@positionInfo.!offsetEnd
 ];
 
 addToMainResult: [
@@ -382,8 +383,8 @@ inArray: [
 undo: [
   mainResult.success [
     prevPosition @currentPosition set
-    currentPosition.offset 0 < ~ [
-      currentPosition.offset splittedString.chars.at @currentSymbol set
+    currentPosition.offsetStart 0 < ~ [
+      currentPosition.offsetStart splittedString.chars.at @currentSymbol set
       currentSymbol.data Nat32 cast @currentCode set
     ] [
       StringView @currentSymbol set
@@ -401,12 +402,12 @@ iterate: [
       currentPosition.line 1 + @currentPosition.@line set
     ] when
 
-    fileId                     @currentPosition.@fileId set
-    currentPosition.offset 1 + @currentPosition.@offset set
-    currentPosition.column 1 + @currentPosition.@column set
+    fileId                          @currentPosition.@fileId      set
+    currentPosition.offsetStart 1 + @currentPosition.@offsetStart set
+    currentPosition.column      1 + @currentPosition.@column      set
 
-    currentPosition.offset splittedString.chars.getSize < [
-      currentPosition.offset splittedString.chars.at @currentSymbol set
+    currentPosition.offsetStart splittedString.chars.getSize < [
+      currentPosition.offsetStart splittedString.chars.at @currentSymbol set
       currentSymbol.data Nat32 cast @currentCode set
     ] [
       StringView @currentSymbol set
@@ -562,7 +563,7 @@ parseDecNumber: [
   #3 after n/r
 
   result: 0 dynamic;
-  tokenBegin: currentPosition.offset hasMinus [1 -][new] if;
+  tokenBegin: currentPosition.offsetStart hasMinus [1 -][new] if;
   tokenEnd: tokenBegin new;
 
   [
@@ -631,7 +632,7 @@ parseDecNumber: [
     ] if
 
     p:;
-    p [currentPosition.offset @tokenEnd set] when
+    p [currentPosition.offsetStart @tokenEnd set] when
     p mainResult.success and
   ] loop
 
@@ -743,7 +744,7 @@ parseHexNumber: [
   #1 after n
 
   result: 0 dynamic;
-  tokenBegin: currentPosition.offset hasMinus [3 -][2 -] if;
+  tokenBegin: currentPosition.offsetStart hasMinus [3 -][2 -] if;
   tokenEnd: tokenBegin new;
 
   [
@@ -781,7 +782,7 @@ parseHexNumber: [
     ] if
 
     p:;
-    p [ currentPosition.offset @tokenEnd set ] when
+    p [ currentPosition.offsetStart @tokenEnd set ] when
     p mainResult.success and
   ] loop
 
@@ -900,8 +901,8 @@ parseName: [
   read: FALSE dynamic;
   write: FALSE dynamic;
   label: FALSE dynamic;
-  checkOffset: currentPosition.offset new;
-  checkFirst: [currentPosition.offset checkOffset > ["invalid identifier" lexicalError] when];
+  checkOffset: currentPosition.offsetStart new;
+  checkFirst: [currentPosition.offsetStart checkOffset > ["invalid identifier" lexicalError] when];
   nameSymbols: StringView Array;
   first: TRUE dynamic;
 
@@ -1118,46 +1119,51 @@ parseNode: [
               @unfinishedPositions.popBack
 
               currentCode ascii.closeRBr = [
+                iterate
                 @unfinishedNodes.last makeListNode
                 @unfinishedNodes.popBack
                 @unfinishedTerminators.popBack
                 addToLastUnfinished
               ] [
                 currentCode ascii.closeSBr = [
+                  iterate
                   @unfinishedNodes.last makeCodeNode
                   @unfinishedNodes.popBack
                   @unfinishedTerminators.popBack
                   addToLastUnfinished
                 ] [
                   currentCode ascii.closeFBr = [
+                    iterate
                     @unfinishedNodes.last makeObjectNode
                     @unfinishedNodes.popBack
                     @unfinishedTerminators.popBack
                     addToLastUnfinished
                   ] [
-                    currentCode ascii.null = [
-                      unfinishedNodes.getSize 1 = ~ [
-                        "unexpected end of the file!" makeStringView lexicalError
-                      ] when
-                      0 @unfinishedNodes.at addToMainResult @mainResult.@root set
+                    currentCode ascii.semicolon = [
+                      iterate
+                      @unfinishedLabelNames.last @unfinishedNodes.last makeLabelNode
                       @unfinishedNodes.popBack
                       @unfinishedTerminators.popBack
+                      @unfinishedLabelNames.popBack
+                      addToLastUnfinished
                     ] [
-                      currentCode ascii.semicolon = [
-                        @unfinishedLabelNames.last @unfinishedNodes.last makeLabelNode
+                      currentCode ascii.null = [
+                        unfinishedNodes.getSize 1 = ~ [
+                          "unexpected end of the file!" makeStringView lexicalError
+                        ] when
+                        0 @unfinishedNodes.at addToMainResult @mainResult.@root set
                         @unfinishedNodes.popBack
                         @unfinishedTerminators.popBack
-                        @unfinishedLabelNames.popBack
-                        addToLastUnfinished
                       ] [
                         "unknown terminator" makeStringView lexicalError
                       ] if
+
+                      iterate
                     ] if
                   ] if
                 ] if
               ] if
             ] if
-            iterate
 
             currentCode pc.specials inArray ~
             [currentCode ascii.comma = ~] &&
@@ -1231,7 +1237,7 @@ parseNode: [
   ] [
     FALSE @mainResult.@success set
     ("wrong encoding, can not recognize line and column, offset in bytes: " splittedString.errorOffset) assembleString @mainResult.@errorInfo.@message set
-    splittedString.errorOffset 0 cast @mainResult.@errorInfo.@position.@offset set
+    splittedString.errorOffset 0 cast @mainResult.@errorInfo.@position.@offsetStart set
     0 @mainResult.@errorInfo.@position.@line set
     splittedString.errorOffset 0 cast @mainResult.@errorInfo.@position.@column set
   ] if

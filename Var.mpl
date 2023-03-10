@@ -445,15 +445,32 @@ getPlainValueInformation: [
   var: getVar;
   result: String;
 
-  var.staticity.end Weak < [
-    " dynamic" toString !result
+  var.staticity.end Dirty = [
+    " dirty" toString !result
   ] [
-    var.data.getTag  VarCond VarReal64 1 + [
-      tag: new;
-      branch: tag var.data.get;
-      (" static: " branch.end) assembleString !result
-    ] staticCall
+    var.staticity.end Dynamic = [
+      " dynamic" toString !result
+    ] [
+      var.staticity.end Weak = [
+        " weak:" toString !result
+      ] [
+        var.staticity.end Static = [
+          " static:" toString !result
+        ] [
+          var.staticity.end Virtual = [
+            " virtual:" toString !result
+          ] when
+        ] if
+      ] if
+
+      var.data.getTag VarCond VarReal64 1 + [
+        tag: new;
+        branch: tag var.data.get;
+        (" " branch.end) assembleString @result.cat
+      ] staticCall
+    ] if
   ] if
+
   result
 ];
 

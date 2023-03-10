@@ -407,6 +407,7 @@ checkedSaveString: [
           ("MPL compiler version " COMPILER_SOURCE_VERSION LF) printList
           "Input files ignored" print LF print
         ] [
+          options.fileNames.size @options.@fileTexts.resize
           options.fileNames.getSize [
             fileName: i options.fileNames @;
 
@@ -421,6 +422,7 @@ checkedSaveString: [
                   ("Loaded string from " fileName) addLog
                   ("HASH=" loadStringResult.data hash) addLog
                   i fileName makeStringView loadStringResult.data makeStringView @multiParserResult @nameManager addToProcessAndCheck
+                  @loadStringResult.@data i @options.@fileTexts !
                 ] [
                   "Unable to load string:" print fileName print LF print
                   FALSE @success set

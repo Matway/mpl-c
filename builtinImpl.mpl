@@ -776,6 +776,22 @@ staticityOfBinResult: [
 ] "mplBuiltinArray" @declareBuiltin ucall
 
 [
+  (
+    [processor compilable]
+    [refToText: @processor @block pop;]
+    [
+      refToText staticityOfVar Weak < ["name must be static string" @processor block compilerError] when
+    ] [
+      varText: refToText getVar;
+      varText.data.getTag VarString = ~ ["name must be static string" @processor block compilerError] when
+    ] [
+      block: 0 @processor.@blocks.at.get;
+      VarString varText.data.get new @block.!nextStringAttribute
+    ]
+  ) sequence
+] "mplBuiltinAttribute" @declareBuiltin ucall
+
+[
   @processor @block defaultCall
 ] "mplBuiltinCall" @declareBuiltin ucall
 
@@ -934,6 +950,41 @@ staticityOfBinResult: [
     refToVar getVar.data.getTag VarImport = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
   ] when
 ] "mplBuiltinCodeRefQuestion" @declareBuiltin ucall
+
+[
+  refToCode:    @processor @block pop;
+  processor compilable [
+    code: refToCode getVar;
+    code.data.getTag VarCode = ~ ["must be [CODE]" @processor block compilerError] [
+      astNodeArray: VarCode code.data.get.index processor.multiParserResult.memory.at;
+      astNodeArray.nodes.size Int64 cast makeValuePair VarInt32 @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
+    ] if
+  ] when
+] "mplBuiltinCodeTokenCount" @declareBuiltin ucall
+
+[
+  refToOrdinal: @processor @block pop;
+  refToCode:    @processor @block pop;
+  processor compilable [
+    varCode:    refToCode    getVar;
+    varOrdinal: refToOrdinal getVar;
+    varCode.data.getTag VarCode = ~ ["First argument must be [CODE]" @processor block compilerError] [
+      varOrdinal.data.getTag VarInt32 = ~ ["Ordinal must be Int32" @processor block compilerError] [
+        refToOrdinal staticityOfVar Weak < ["Ordinal must be static" @processor block compilerError] [
+          astNodeArray: VarCode varCode.data.get.index processor.multiParserResult.memory.at;
+          ordinal: VarInt32 varOrdinal.data.get.end Int32 cast;
+          ordinal 0 astNodeArray.nodes.size within ~ ["Ordinal is out of bounds" @processor block compilerError] [
+            astNode: ordinal astNodeArray.nodes @;
+            ordinal astNodeArray.nodes @ .positionInfo.fileId processor.files.at.get.text.getStringView
+            ordinal astNodeArray.nodes @ .positionInfo.offsetStart
+            ordinal astNodeArray.nodes @ .positionInfo.offsetEnd range
+            @processor @block makeVarString @block push
+          ] if
+        ] if
+      ] if
+    ] if
+  ] when
+] "mplBuiltinCodeTokenRead" @declareBuiltin ucall
 
 [
   TRUE dynamic @block.@nodeCompileOnce set
@@ -1887,7 +1938,7 @@ tryFindInPath: [
     loadStringResult.success [
       errorInfo: processor.files.getSize fullFileName makeStringView loadStringResult.data makeStringView @processor.@multiParserResult @processor.@nameManager addToProcess;
       errorInfo "" = [
-        fileId: FALSE fullFileName makeStringView @processor addFileNameToProcessor;
+        fileId: FALSE fullFileName makeStringView loadStringResult.data makeStringView @processor addFileNameToProcessor;
         fullFileName @processor.@options.@fileNames.append
         fileId @processor.@unfinishedFiles.append
         @fullFileName @result.@fullFileName set

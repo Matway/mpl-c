@@ -62,16 +62,18 @@ debugMemory [
 
 {
   processor: Processor Ref;
+  fileText: StringView Cref;
   fileName: StringView Cref;
   fromCmd: Cond;
 } Int32 {} [
-  fromCmd: fileName: processor: ;;;
+  fromCmd: fileName: fileText: processor:;;;;
   newFile: File;
 
   fileId: processor.files.getSize;
-  fileId            @newFile.@fileId set
   fileName toString @newFile.@name set
   fromCmd           @newFile.@usedInParams set
+  fileId            @newFile.@fileId set
+  fileText toString @newFile.@text set
   fileName toString fileId @processor.@fileNameIds.insert
 
   processor.options.debug [
@@ -125,15 +127,14 @@ debugMemory [
   TRUE dynamic @processor.@blocks.last.get.@root set
 
   errorInCmdNames: FALSE dynamic;
-  processor.options.fileNames [
-    current:;
+  processor.options.fileNames.size [
     errorInCmdNames ~ [
       #here set first parameter to TRUE to make cmd files visible
-      TRUE current makeStringView @processor addFileNameToProcessor 0 < [
+      TRUE i processor.options.fileNames @ makeStringView i processor.options.fileTexts @ makeStringView @processor addFileNameToProcessor 0 < [
         TRUE !errorInCmdNames
       ] when
     ] when
-  ] each
+  ] times
 
   @processor.@blocks.last.get 0 @processor.@files.at.get.@rootBlock.set
 

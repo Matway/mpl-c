@@ -36,6 +36,7 @@ builtins: (
   {name: "alignment"                     ; impl: @mplBuiltinAlignment               ;}
   {name: "and"                           ; impl: @mplBuiltinAnd                     ;}
   {name: "array"                         ; impl: @mplBuiltinArray                   ;}
+  {name: "attribute"                     ; impl: @mplBuiltinAttribute               ;}
   {name: "call"                          ; impl: @mplBuiltinCall                    ;}
   {name: "callField"                     ; impl: @mplBuiltinCallField               ;}
   {name: "cast"                          ; impl: @mplBuiltinCast                    ;}
@@ -43,6 +44,8 @@ builtins: (
   {name: "code?"                         ; impl: @mplBuiltinCodeQuestion            ;}
   {name: "codeRef"                       ; impl: @mplBuiltinCodeRef                 ;}
   {name: "codeRef?"                      ; impl: @mplBuiltinCodeRefQuestion         ;}
+  {name: "codeTokenCount"                ; impl: @mplBuiltinCodeTokenCount          ;}
+  {name: "codeTokenRead"                 ; impl: @mplBuiltinCodeTokenRead           ;}
   {name: "compileOnce"                   ; impl: @mplBuiltinCompileOnce             ;}
   {name: "const"                         ; impl: @mplBuiltinConst                   ;}
   {name: "cos"                           ; impl: @mplBuiltinCos                     ;}

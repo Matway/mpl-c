@@ -37,6 +37,7 @@ ProcessorOptions: [{
   beginFunc:              String;
   endFunc:                String;
   fileNames:              StringArray;
+  fileTexts:              StringArray;
   includePaths:           StringArray;
   hidePrefixes:           StringArray;
   pointerSize:            64nx dynamic;

@@ -2370,7 +2370,7 @@ addBlock: [
     block: 0 @processor.@blocks.at.get;
 
     string VarString @processor @block createVariable @refToVar set
-    string.getStringView @refToVar @processor createStringIR
+    string.getStringView @refToVar @processor @block createStringIR
     string refToVar @processor.@stringNames.insert
 
     @refToVar fullUntemporize
@@ -2384,6 +2384,7 @@ addBlock: [
     } @processor @block addNameInfo
   ] if
 
+  0 0 @processor.@blocks.at.get .@nextStringAttribute.resize
   gnr: refToVar getVar.mplNameId @processor @block getName;
   cnr: @gnr 0 dynamic @processor @block processor.positions.last.file captureName;
 
