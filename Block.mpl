@@ -185,8 +185,8 @@ Block: [{
   hasEmptyLambdas:     FALSE dynamic;
   nodeIsRecursive:     FALSE dynamic;
   nextLabelIsVirtual:  FALSE dynamic;
-  nextLabelIsConst:    FALSE dynamic;
   nextLabelIsOverload: FALSE dynamic;
+  nextLabelIsPrivate:  FALSE dynamic;
   recursionState:      NodeRecursionStateNo;
   state:               NodeStateNew;
   struct:              Struct;

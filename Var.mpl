@@ -125,6 +125,8 @@ RefToVar: [{
   assigned: [data 3nx ~ and 0nx = ~];
   equal: [other:; var other.var is];
   hash: [address: var storageAddress; address 32n32 rshift address + Nat32 cast];
+
+  SCHEMA_NAME: "RefToVar" virtual;
 } dynamic];
 
 makeValuePair: [
@@ -169,6 +171,8 @@ Variable: [{
   tref:                              TRUE dynamic;
   temporary:                         TRUE dynamic;
 
+  private:                           FALSE dynamic;
+
   data: (
     Nat8                   #VarInvalid
     Cond        makeValuePair  #VarCond
@@ -194,6 +198,8 @@ Variable: [{
 
   INIT: [];
   DIE: [];
+
+  SCHEMA_NAME: "Variable" virtual;
 }];
 
 virtual VarSchema: Variable Ref;

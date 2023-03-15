@@ -1670,6 +1670,11 @@ staticityOfBinResult: [
 ] "mplBuiltinPrintStackTrace" @declareBuiltin ucall
 
 [
+  block.nextLabelIsPrivate ["duplicate private specifier" @processor block compilerError] when
+  TRUE @block.!nextLabelIsPrivate
+] "mplBuiltinPrivate" @declareBuiltin ucall
+
+[
   refToName: @processor @block pop;
   processor compilable [
     refToName staticityOfVar Weak < ["name must be static string" @processor block compilerError] when

@@ -92,6 +92,7 @@ builtins: (
   {name: "printShadowEvents"             ; impl: @mplBuiltinPrintShadowEvents       ;}
   {name: "printStack"                    ; impl: @mplBuiltinPrintStack              ;}
   {name: "printStackTrace"               ; impl: @mplBuiltinPrintStackTrace         ;}
+  {name: "private"                       ; impl: @mplBuiltinPrivate                 ;}
   {name: "raiseStaticError"              ; impl: @mplBuiltinRaiseStaticError        ;}
   {name: "recursive"                     ; impl: @mplBuiltinRecursive               ;}
   {name: "rshift"                        ; impl: @mplBuiltinRShift                  ;}

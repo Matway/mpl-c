@@ -1041,6 +1041,11 @@ createNamedVariable: [
 
     FALSE @block.!nextLabelIsOverload
 
+    block.nextLabelIsPrivate [
+      TRUE newRefToVar getVar .!private
+      FALSE @block.!nextLabelIsPrivate
+    ] when
+
     processor compilable [processor.options.debug new] && [newRefToVar isVirtual ~] && [
       newRefToVar isGlobal [
         processor.options.partial new [
@@ -1927,6 +1932,8 @@ checkVarForGlobalsFromAnotherFile: [
   ] when
 
   srcVar.mplSchemaId @dstVar.@mplSchemaId set
+
+  srcVar.private new @dstVar.!private
 ] "copyOneVarWithImpl" exportFunction
 
 {
@@ -2236,8 +2243,14 @@ processMember: [
       fr: nameInfo refToStruct @processor block findField;
       fr.success [
         index: fr.index new;
-        fieldRef: index @refToStruct @processor @block processStaticAt;
-        TRUE dynamic refToStruct fieldRef read nameInfo pushName # let it be marker about field
+        structInfo: VarStruct refToStruct getVar .@data.get.get;
+        fieldVar: index @structInfo.@fields.at.@refToVar getVar;
+        fieldVar .private [
+          "the field is private" @processor block compilerError
+        ] [
+          fieldRef: index @refToStruct @processor @block processStaticAt;
+          TRUE dynamic refToStruct fieldRef read nameInfo pushName # let it be marker about field
+        ] if
       ] [
         fieldError
       ] if
@@ -3244,6 +3257,7 @@ makeCompilerPosition: [
 
   block.nextLabelIsVirtual  ["unused virtual specifier"  @processor block compilerError] when
   block.nextLabelIsOverload ["unused overload specifier" @processor block compilerError] when
+  block.nextLabelIsPrivate  ["unused private specifier"  @processor block compilerError] when
 
   block.nodeCase NodeCaseList   = [finalizeListNode] when
   block.nodeCase NodeCaseObject = [finalizeObjectNode] when
