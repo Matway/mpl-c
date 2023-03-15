@@ -266,9 +266,9 @@ getDbgSchemaNameType: [
 
     resultDBG "" = [
       mplStruct.fields.size 0 > [0 mplStruct.fields.at.nameInfo processor.specialNames.emptyNameInfo = ~] && [
-        "object" toString @resultDBG set
+        "dict" toString @resultDBG set
       ] [
-        "list" toString @resultDBG set
+        "tuple" toString @resultDBG set
       ] if
     ] when
   ] when
@@ -280,6 +280,10 @@ getDebugType: [
   refToVar: processor: block:;;;
   result: hasSchemaName: refToVar @processor getDbgSchemaNameType;;
   hasSchemaName ~ [
+    result.size 0 = ~ [
+      "." @result.cat
+    ] when
+
     dbgType: refToVar @processor getDbgType;
     splitted: dbgType splitString;
     splitted.success [
@@ -291,7 +295,7 @@ getDebugType: [
       ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString @processor block compilerError
     ] if
 
-    splitted.chars assembleString !result
+    splitted.chars @result.catMany
   ] when
 
   @result
