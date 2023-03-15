@@ -280,13 +280,6 @@ getDebugType: [
   refToVar: processor: block:;;;
   result: hasSchemaName: refToVar @processor getDbgSchemaNameType;;
   hasSchemaName ~ [
-    result.size 0 = ~ [
-      "." @result.cat
-    ] when
-
-    refToVar getVar.mplSchemaId new @result.cat
-    "." @result.cat
-
     dbgType: refToVar @processor getDbgType;
     splitted: dbgType splitString;
     splitted.success [
@@ -298,7 +291,7 @@ getDebugType: [
       ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString @processor block compilerError
     ] if
 
-    splitted.chars @result.catMany
+    splitted.chars assembleString !result
   ] when
 
   @result

@@ -1700,6 +1700,13 @@ staticityOfBinResult: [
 ] "mplBuiltinSame" @declareBuiltin ucall
 
 [
+  refToVar: @processor @block pop;
+  processor compilable [
+    refToVar @processor block getDebugType @processor @block makeVarString @block push
+  ] when
+] "mplBuiltinSchemaName" @declareBuiltin ucall
+
+[
   @processor @block defaultSet
 ] "mplBuiltinSet" @declareBuiltin ucall
 

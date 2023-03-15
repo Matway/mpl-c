@@ -146,19 +146,19 @@ getPlainDataMPLType: [
   var: getVar;
   result: String;
   var.data.getTag (
-    VarCond   ["i1" toString @result set]
-    VarInt8   ["i8" toString @result set]
-    VarInt16  ["i16" toString @result set]
-    VarInt32  ["i32" toString @result set]
-    VarInt64  ["i64" toString @result set]
-    VarIntX   ["ix" toString @result set]
-    VarNat8   ["n8" toString @result set]
-    VarNat16  ["n16" toString @result set]
-    VarNat32  ["n32" toString @result set]
-    VarNat64  ["n64" toString @result set]
-    VarNatX   ["nx" toString @result set]
-    VarReal32 ["r32" toString @result set]
-    VarReal64 ["r64" toString @result set]
+    VarCond   ["Cond"   toString !result]
+    VarInt8   ["Int8"   toString !result]
+    VarInt16  ["Int16"  toString !result]
+    VarInt32  ["Int32"  toString !result]
+    VarInt64  ["Int64"  toString !result]
+    VarIntX   ["Intx"   toString !result]
+    VarNat8   ["Nat8"   toString !result]
+    VarNat16  ["Nat16"  toString !result]
+    VarNat32  ["Nat32"  toString !result]
+    VarNat64  ["Nat64"  toString !result]
+    VarNatX   ["Natx"   toString !result]
+    VarReal32 ["Real32" toString !result]
+    VarReal64 ["Real64" toString !result]
     [
       ("Tag = " var.data.getTag) addLog
       "Unknown plain struct MPL type" failProc
@@ -500,9 +500,11 @@ makeDbgTypeId: [
     refToVar @processor block generateIrTypeId @varSchema.!irTypeId
   ] when
 
-  processor.options.debug [varSchema.dbgTypeId -1 =] && [
+  varSchema.dbgTypeId -1 = [
     refToVar @processor block generateDebugTypeId @varSchema.!dbgTypeId
-    refToVar @processor block makeDbgTypeId
+    processor.options.debug [
+      refToVar @processor block makeDbgTypeId
+    ] when
   ] when
 ] "makeVariableType" exportFunction
 
