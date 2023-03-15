@@ -27,7 +27,7 @@ addDebugProlog: [
 
   String addDebugString
   String addDebugString
-  processor.debugInfo.strings.dataSize 1 - @processor.@debugInfo.@cuStringNumber set
+  processor.debugInfo.strings.size 1 - @processor.@debugInfo.@cuStringNumber set
 
   indexCodeView: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
@@ -44,12 +44,12 @@ addDebugProlog: [
 
   ("!" indexPIC " = !{i32 1, !\"PIC Level\", i32 2}") assembleString addDebugString
 
-  ("!llvm.module.flags = !{!" indexCodeView ", !" indexDebug ", !" indexPIC "}") assembleString processor.debugInfo.strings.dataSize 5 - @processor.@debugInfo.@strings.at set
+  ("!llvm.module.flags = !{!" indexCodeView ", !" indexDebug ", !" indexPIC "}") assembleString processor.debugInfo.strings.size 5 - @processor.@debugInfo.@strings.at set
 
   index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   String addDebugString
-  processor.debugInfo.strings.dataSize 1 - @processor.@debugInfo.@unitStringNumber set
+  processor.debugInfo.strings.size 1 - @processor.@debugInfo.@unitStringNumber set
   index #for unit
 
   t: @processor addExpression;
@@ -76,11 +76,11 @@ addLinkerOptionsDebugInfo: [
   index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
 
-  processor.options.linkerOptions.getSize 0 > [
+  processor.options.linkerOptions.size 0 > [
     ("!llvm.linker.options = !{!" index "}") assembleString addDebugString
     optionsList: String;
     ("!" index " = !{") @optionsList.catMany
-    processor.options.linkerOptions.getSize [
+    processor.options.linkerOptions.size [
       i 0 > [
         ", " @optionsList.cat
       ] when
@@ -196,7 +196,7 @@ getTypeDebugDeclaration: [
             f: 0 dynamic;
             offset: 0 dynamic;
             [
-              f struct.fields.dataSize < [
+              f struct.fields.size < [
                 field: f struct.fields.at;
                 field.refToVar isVirtual ~ [
                   memberInfo: @offset field f @processor block addMemberInfo;
@@ -212,7 +212,7 @@ getTypeDebugDeclaration: [
             ("!" index " = !{")   @newDebugInfo.catMany
             f: 0 dynamic;
             [
-              f members.dataSize < [
+              f members.size < [
                 f 0 > [", "     @newDebugInfo.cat] when
                 "!"                @newDebugInfo.cat
                 f members.at @newDebugInfo.cat
@@ -283,7 +283,7 @@ getDebugType: [
     dbgType: refToVar @processor getDbgType;
     splitted: dbgType splitString;
     splitted.success [
-      splitted.chars.getSize 1024 > [
+      splitted.chars.size 1024 > [
         1024 @splitted.@chars.shrink
         "..." makeStringView @splitted.@chars.append
       ] when
@@ -500,7 +500,7 @@ correctUnitInfo: [
   index: processor.debugInfo.lastId new;
   processor.debugInfo.lastId 1 + @processor.@debugInfo.@lastId set
   newDebugInfo: ("!" index " = !{" ) assembleString;
-  processor.debugInfo.globals.getSize [
+  processor.debugInfo.globals.size [
     i 0 > [", "  @newDebugInfo.cat] when
     "!" @newDebugInfo.cat
     i processor.debugInfo.globals.at @newDebugInfo.cat

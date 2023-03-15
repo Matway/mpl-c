@@ -566,7 +566,7 @@ tryMatchAllNodesForRealFunction: [
 fixRecursionStack: [
   i: block.id new;
   [
-    processor.recursiveNodesStack.getSize 0 > [i newNodeIndex = ~] && [
+    processor.recursiveNodesStack.size 0 > [i newNodeIndex = ~] && [
       current: i @processor.@blocks.at.get;
       i processor.recursiveNodesStack.last = [
         NodeRecursionStateNo @current.@recursionState set
@@ -588,7 +588,7 @@ changeNewNodeState: [
     fixRecursionStack
     NodeRecursionStateNew @newNode.@recursionState set
 
-    processor.recursiveNodesStack.getSize 0 = [processor.recursiveNodesStack.last newNodeIndex = ~] || [
+    processor.recursiveNodesStack.size 0 = [processor.recursiveNodesStack.last newNodeIndex = ~] || [
       newNodeIndex @processor.@recursiveNodesStack.append
     ] when
 
@@ -615,7 +615,7 @@ changeNewExportNodeState: [
     fixRecursionStack
     NodeRecursionStateNew @newNode.@recursionState set
 
-    processor.recursiveNodesStack.getSize 0 = [processor.recursiveNodesStack.last newNodeIndex = ~] || [
+    processor.recursiveNodesStack.size 0 = [processor.recursiveNodesStack.last newNodeIndex = ~] || [
       newNodeIndex @processor.@recursiveNodesStack.append
     ] when
 
@@ -968,7 +968,7 @@ applyNodeChanges: [
     ] when
   ] times
 
-  currentChangesNode.capturedFiles.getSize [
+  currentChangesNode.capturedFiles.size [
     i currentChangesNode.capturedFiles.at [
       i @block captureFileToBlock
     ] when
@@ -1092,17 +1092,17 @@ applyNamedStackChanges: [
 
   i: 0 dynamic;
   [
-    i newNode.matchingInfo.inputs.getSize < [
+    i newNode.matchingInfo.inputs.size < [
       @processor @block popForMatching @inputs.append
       i 1 + @i set TRUE
     ] &&
   ] loop
 
-  newNode.matchingInfo.inputs.getSize @block updateInputCount
+  newNode.matchingInfo.inputs.size @block updateInputCount
 
   i: 0 dynamic;
   [
-    i appliedVars.fixedOutputs.getSize < [
+    i appliedVars.fixedOutputs.size < [
       outputRef: i @appliedVars.@fixedOutputs.at;
       outputRef @outputs.append
       outputRef getVar.data.getTag VarStruct = [
@@ -1119,7 +1119,7 @@ applyNamedStackChanges: [
 
     implicitDerefInfo: @processor.@condArray;
     newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.append] each
-    implicitDerefInfo appliedVars.fixedOutputs.getSize @block derefNEntries
+    implicitDerefInfo appliedVars.fixedOutputs.size @block derefNEntries
     @implicitDerefInfo.clear
   ] when
 
@@ -1146,12 +1146,12 @@ makeCallInstructionWith: [
   argRet: RefToVar;
   argList: @processor.@irArgumentArray;
 
-  [newNode.variadic [inputs.getSize newNode.matchingInfo.inputs.getSize =] ||] "Input count mismatch!" assert
+  [newNode.variadic [inputs.size newNode.matchingInfo.inputs.size =] ||] "Input count mismatch!" assert
 
   i: 0 dynamic;
   [
-    i inputs.getSize < [
-      currentInputArgCase: i newNode.matchingInfo.inputs.getSize < [
+    i inputs.size < [
+      currentInputArgCase: i newNode.matchingInfo.inputs.size < [
         i newNode.matchingInfo.inputs.at.argCase new
       ] [
         ArgCopy
@@ -1386,7 +1386,7 @@ useMatchingInfoOnly: [
 
   @pops @processor.releaseVarRefArray
 
-  newNode.capturedFiles.getSize [
+  newNode.capturedFiles.size [
     i newNode.capturedFiles.at [
       i @block captureFileToBlock
     ] when
@@ -1421,7 +1421,7 @@ useMatchingInfoOnly: [
   newNode: newNodeIndex @processor.@blocks.at.get;
 
   processor compilable [
-    block.parent 0 = [nodeCase NodeCaseList = nodeCase NodeCaseObject = or] && [newNode.matchingInfo.inputs.getSize 0 =] && [newNode.outputs.getSize 1 =] && [
+    block.parent 0 = [nodeCase NodeCaseList = nodeCase NodeCaseObject = or] && [newNode.matchingInfo.inputs.size 0 =] && [newNode.outputs.size 1 =] && [
       realCapturesCount: 0;
       newNode.matchingInfo.captures [
         capture:;
@@ -1464,7 +1464,7 @@ useMatchingInfoOnly: [
 
   processor compilable [
     oldSuccess: processor compilable;
-    oldGlobalErrorCount: processor.result.globalErrorInfo.getSize;
+    oldGlobalErrorCount: processor.result.globalErrorInfo.size;
 
     newNodeIndex: preAstArrayIndex @processor @block tryMatchAllNodes;
     newNodeIndex 0 < [
@@ -1989,7 +1989,7 @@ processDynamicLoop: [
 
           i: 0 dynamic;
           [
-            i appliedVars.fixedOutputs.getSize < [
+            i appliedVars.fixedOutputs.size < [
               curOutput: i appliedVars.fixedOutputs.at;
               curOutput @outputs.append
               curOutput getVar.data.getTag VarStruct = [
@@ -2006,7 +2006,7 @@ processDynamicLoop: [
           createPhiNodes: [
             i: 0 dynamic;
             [
-              i inputs.getSize < [
+              i inputs.size < [
                 curNodeInput: i inputs.at @processor @block copyVar;
                 curNodeInput @nodeInputs.append
 
@@ -2033,7 +2033,7 @@ processDynamicLoop: [
 
           implicitDerefInfo: @processor.@condArray;
           newNode.outputs [.argCase isImplicitDeref @implicitDerefInfo.append] each
-          implicitDerefInfo outputs.getSize 1 - @block derefNEntries
+          implicitDerefInfo outputs.size 1 - @block derefNEntries
           processor.options.verboseIR ["loop end prepare..." @block createComment] when
           1 outputs.last @processor @block createBranch
           @block createLabel
@@ -2100,7 +2100,7 @@ processDynamicLoop: [
         newNode.state NodeStateHasOutput = [NodeStateHasOutput @block.@state set] when
         appliedVars: newNode applyNodeChanges;
 
-        appliedVars.fixedOutputs.getSize 0 = ["loop body must return Cond" @processor block compilerError] when
+        appliedVars.fixedOutputs.size 0 = ["loop body must return Cond" @processor block compilerError] when
         processor compilable [
           condition: newNode.outputs.last.refToVar;
           condVar: condition getVar;
@@ -2157,8 +2157,8 @@ processDynamicLoop: [
   asCodeRef [NodeCaseCodeRefDeclaration][NodeCaseDeclaration] if @declarationNode.@nodeCase set
   signature.variadic @declarationNode.@variadic set
 
-  signature.inputs.getSize [
-    r: signature.inputs.getSize 1 - i - signature.inputs.at @processor @block copyVarFromChild;
+  signature.inputs.size [
+    r: signature.inputs.size 1 - i - signature.inputs.at @processor @block copyVarFromChild;
     @r @processor block unglobalize
     FALSE @r.setMutable
     r @block push
@@ -2205,8 +2205,8 @@ processDynamicLoop: [
     processor.varForFails @block pushForMatching
 
     # we dont know count of used in export entites
-    signature.inputs.getSize [
-      r: signature.inputs.getSize 1 - i - signature.inputs.at @processor @block copyVarFromType;
+    signature.inputs.size [
+      r: signature.inputs.size 1 - i - signature.inputs.at @processor @block copyVarFromType;
       r @processor @block makeVarTreeDynamic
       @r @processor block unglobalize
       @r fullUntemporize
@@ -2219,7 +2219,7 @@ processDynamicLoop: [
     ] times
 
     oldSuccess: processor compilable;
-    oldRecursiveNodesStackSize: processor.recursiveNodesStack.getSize;
+    oldRecursiveNodesStackSize: processor.recursiveNodesStack.size;
 
     newNodeIndex: astArrayIndex @processor @block tryMatchAllNodesForRealFunction;
     newNodeIndex 0 < [
@@ -2259,9 +2259,9 @@ processDynamicLoop: [
       newNodeIndex changeNewExportNodeState
 
       newNode: newNodeIndex processor.blocks.at.get;
-      newNode.outputs.getSize 1 > ["export function cant have 2 or more outputs" @processor block compilerError] when
-      newNode.outputs.getSize 1 = [signature.outputs.getSize 0 =] && ["signature is void, export function must be without output" @processor block compilerError] when
-      newNode.outputs.getSize 0 = [signature.outputs.getSize 1 =] && ["signature is not void, export function must have output" @processor block compilerError] when
+      newNode.outputs.size 1 > ["export function cant have 2 or more outputs" @processor block compilerError] when
+      newNode.outputs.size 1 = [signature.outputs.size 0 =] && ["signature is void, export function must be without output" @processor block compilerError] when
+      newNode.outputs.size 0 = [signature.outputs.size 1 =] && ["signature is not void, export function must have output" @processor block compilerError] when
       newNode.state NodeStateCompiled = ~ [
         successBeforeCaptures [
           "can not implement lambda inside itself body" @processor block compilerError
@@ -2271,7 +2271,7 @@ processDynamicLoop: [
       ] when
 
       processor compilable [
-        signature.outputs.getSize [
+        signature.outputs.size [
           currentInNode: i newNode.outputs.at.refToVar;
           currentInSignature: i signature.outputs.at;
 
@@ -2283,7 +2283,7 @@ processDynamicLoop: [
       ] when
     ] when
 
-    signature.inputs.getSize 1 + [@processor @block popForMatching drop] times
+    signature.inputs.size 1 + [@processor @block popForMatching drop] times
 
     processor compilable [
       ("successfully processed export: " makeStringView name makeStringView) addLog
@@ -2329,7 +2329,7 @@ fixSourcesRec: [
   i: 0 dynamic;
 
   [
-    i unfinished.getSize < [
+    i unfinished.size < [
       current: i @unfinished.at;
       currentVar: @current getVar;
       current @currentVar.@sourceOfValue set
@@ -2400,7 +2400,7 @@ callImportWith: [
             varargs.data.getTag VarStruct = ~ ["varargs must be a struct" @processor block compilerError] when
           ] [
             varStruct: VarStruct varargs.data.get.get;
-            varStruct.fields.getSize [
+            varStruct.fields.size [
               field: i @refToVarargs @processor @block processStaticAt;
               field @inputs.append
             ] times
@@ -2412,7 +2412,7 @@ callImportWith: [
     ] [
       i: 0 dynamic;
       [
-        i declarationNode.outputs.getSize < [
+        i declarationNode.outputs.size < [
           currentOutput: i declarationNode.outputs.at.refToVar;
           current: currentOutput @processor @block copyVarFromChild;
           current @processor @block makeVarTreeDirty
@@ -2433,7 +2433,7 @@ callImportWith: [
       inputs @outputs declarationNode forcedName refToVar dynamicFunc TRUE dynamic @processor @block makeCallInstructionWith
       i: 0 dynamic;
       [
-        i outputs.getSize < [
+        i outputs.size < [
           currentOutput: i outputs.at;
           currentOutput @block push
           i 1 + @i set processor compilable
@@ -2445,7 +2445,7 @@ callImportWith: [
         getVar.data.getTag VarRef = @implicitDerefInfo.append
       ] each
 
-      implicitDerefInfo outputs.getSize @block derefNEntries
+      implicitDerefInfo outputs.size @block derefNEntries
       @implicitDerefInfo.clear
     ]
   ) sequence

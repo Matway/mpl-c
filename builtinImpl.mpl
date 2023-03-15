@@ -932,7 +932,7 @@ staticityOfBinResult: [
     [processor compilable]
     [signature: parseSignature;]
     [
-      name: ("null." processor.blocks.getSize) assembleString;
+      name: ("null." processor.blocks.size) assembleString;
       newBlock: signature name makeStringView TRUE dynamic @processor @block processImportFunction @processor.@blocks.at.get;
     ]
     [
@@ -1170,7 +1170,7 @@ staticityOfBinResult: [
         var.data.getTag VarStruct = ~ ["not a combined" @processor block compilerError] when
         processor compilable [
           struct: VarStruct var.data.get.get;
-          count 0 < [count struct.fields.getSize < ~] || ["index is out of bounds" @processor block compilerError] when
+          count 0 < [count struct.fields.size < ~] || ["index is out of bounds" @processor block compilerError] when
           processor compilable [
             count struct.fields.at.refToVar getVar.data.getTag VarRef = makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
           ] when
@@ -1194,7 +1194,7 @@ staticityOfBinResult: [
         var.data.getTag VarStruct = ~ ["not a combined" @processor block compilerError] when
         processor compilable [
           struct: VarStruct var.data.get.get;
-          count 0 < [count struct.fields.getSize < ~] || ["index is out of bounds" @processor block compilerError] when
+          count 0 < [count struct.fields.size < ~] || ["index is out of bounds" @processor block compilerError] when
           processor compilable [
             count struct.fields.at.refToVar isVirtual makeValuePair VarCond @processor @block createVariable Static @processor @block makeStaticity @processor @block createPlainIR @block push
           ] when
@@ -1218,7 +1218,7 @@ staticityOfBinResult: [
         var.data.getTag VarStruct = ~ ["not a combined" @processor block compilerError] when
         processor compilable [
           struct: VarStruct var.data.get.get;
-          count 0 < [count struct.fields.getSize < ~] || ["index is out of bounds" @processor block compilerError] when
+          count 0 < [count struct.fields.size < ~] || ["index is out of bounds" @processor block compilerError] when
           processor compilable [
             count struct.fields.at.nameInfo processor.nameManager.getText @processor @block makeVarString @block push
           ] when
@@ -1948,7 +1948,7 @@ tryFindInPath: [
   @fullFileName checkLoadedFile ~ [
     loadStringResult: fullFileName loadString;
     loadStringResult.success [
-      errorInfo: processor.files.getSize fullFileName makeStringView loadStringResult.data makeStringView @processor.@multiParserResult @processor.@nameManager addToProcess;
+      errorInfo: processor.files.size fullFileName makeStringView loadStringResult.data makeStringView @processor.@multiParserResult @processor.@nameManager addToProcess;
       errorInfo "" = [
         fileId: FALSE fullFileName makeStringView loadStringResult.data makeStringView @processor addFileNameToProcessor;
         fullFileName @processor.@options.@fileNames.append

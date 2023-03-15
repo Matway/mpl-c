@@ -341,7 +341,7 @@ makeParserConstants: [{
     result: Cond Array;
     256 @result.resize
 
-    result.getSize [
+    result.size [
       i left.at i right.at or i @result.at set
     ] times
 
@@ -406,7 +406,7 @@ iterate: [
     currentPosition.offsetStart 1 + @currentPosition.@offsetStart set
     currentPosition.column      1 + @currentPosition.@column      set
 
-    currentPosition.offsetStart splittedString.chars.getSize < [
+    currentPosition.offsetStart splittedString.chars.size < [
       currentPosition.offsetStart splittedString.chars.at @currentSymbol set
       currentSymbol.data Nat32 cast @currentCode set
     ] [
@@ -638,26 +638,26 @@ parseDecNumber: [
 
   token: splittedString.chars tokenBegin tokenEnd range assembleString;
 
-  afterT.getSize 2 > [ "error in number constant" lexicalError ] when
+  afterT.size 2 > [ "error in number constant" lexicalError ] when
 
   typeName: 0 dynamic;
-  afterT.getSize [typeName 100 * i afterT.at + 1 + @typeName set] times
+  afterT.size [typeName 100 * i afterT.at + 1 + @typeName set] times
 
   typeClass 2 = [
     type: 0.0r64 dynamic;
     ten: 10.0r64 dynamic;
     result: 0.0r64 dynamic;
-    beforeDot.getSize [result 10.0r64 * i beforeDot.at type cast + @result set] times
+    beforeDot.size [result 10.0r64 * i beforeDot.at type cast + @result set] times
     tenRcp: 0.1r64 dynamic;
     fracPartFactor: tenRcp new;
-    afterDot.getSize [
+    afterDot.size [
       digit: i afterDot.at type cast;
       digit  fracPartFactor * result + @result set
       fracPartFactor tenRcp * @fracPartFactor set
     ] times
 
     decOrder: 0.0r64 dynamic;
-    afterE.getSize [decOrder 10.0r64 * i afterE.at type cast + @decOrder set] times
+    afterE.size [decOrder 10.0r64 * i afterE.at type cast + @decOrder set] times
     hasEMinus [decOrder neg @decOrder set] when
     hasMinus [result neg @result set] when
     result 10.0r64 decOrder ^ * @result set
@@ -677,7 +677,7 @@ parseDecNumber: [
       type: 0n64 dynamic;
       ten: 10n64 dynamic;
       result: 0n64 dynamic;
-      beforeDot.getSize [result 10n64 * i beforeDot.at 0i64 cast type cast + @result set] times
+      beforeDot.size [result 10n64 * i beforeDot.at 0i64 cast type cast + @result set] times
       typeName 705 = [
         result token makeNumbern64Node addToLastUnfinished
       ] [
@@ -703,7 +703,7 @@ parseDecNumber: [
       type: 0i64 dynamic;
       ten: 10i64 dynamic;
       result: 0i64 dynamic;
-      beforeDot.getSize [result 10i64 * i beforeDot.at type cast + @result set] times
+      beforeDot.size [result 10i64 * i beforeDot.at type cast + @result set] times
       hasMinus [result neg @result set] when
       typeName 705 = [
         result token makeNumberi64Node addToLastUnfinished
@@ -787,18 +787,18 @@ parseHexNumber: [
   ] loop
 
   token: splittedString.chars tokenBegin tokenEnd range assembleString;
-  afterT.getSize 2 > [ "error in number constant" lexicalError ] when
+  afterT.size 2 > [ "error in number constant" lexicalError ] when
 
   typeName: 0 dynamic;
-  afterT.getSize [typeName 100 * i afterT.at + 1 + @typeName set] times
+  afterT.size [typeName 100 * i afterT.at + 1 + @typeName set] times
   hasMinus ["negative hex constants not allowed" lexicalError] when
 
   typeClass 1 = [
     type: 0n64;
     ten: 10n64;
     result: 0n64;
-    beforeT.getSize 0 = ["empty hex constant" lexicalError] when
-    beforeT.getSize [result 16n64 * i beforeT.at 0i64 cast type cast + @result set] times
+    beforeT.size 0 = ["empty hex constant" lexicalError] when
+    beforeT.size [result 16n64 * i beforeT.at 0i64 cast type cast + @result set] times
     typeName 705 = [
       result token makeNumbern64Node addToLastUnfinished
     ] [
@@ -824,8 +824,8 @@ parseHexNumber: [
     type: 0i64 dynamic;
     ten: 10i64 dynamic;
     result: 0i64 dynamic;
-    beforeT.getSize 0 = ["empty hex constant" lexicalError] when
-    beforeT.getSize [result 16i64 * i beforeT.at type cast + @result set] times
+    beforeT.size 0 = ["empty hex constant" lexicalError] when
+    beforeT.size [result 16i64 * i beforeT.at type cast + @result set] times
     typeName 705 = [
       result token makeNumberi64Node addToLastUnfinished
     ] [
@@ -932,7 +932,7 @@ parseName: [
               iterate TRUE
             ]
             [
-              nameSymbols.getSize 0 > [
+              nameSymbols.size 0 > [
                 FALSE
               ] [
                 checkFirst
@@ -956,7 +956,7 @@ parseName: [
               TRUE @write set
               iterate TRUE
             ] [
-              currentCode ascii.comma = nameSymbols.getSize 0 > and [
+              currentCode ascii.comma = nameSymbols.size 0 > and [
                 FALSE
               ] [
                 currentCode pc.endNames inArray [
@@ -982,7 +982,7 @@ parseName: [
                     ]
                   ) case
 
-                  nameSymbols.getSize 1 > [0 nameSymbols.at "," =] && [
+                  nameSymbols.size 1 > [0 nameSymbols.at "," =] && [
                     "identifier cannot start from comma" lexicalError
                   ] when
                   currentSymbol @nameSymbols.append
@@ -1003,7 +1003,7 @@ parseName: [
   mainResult.success [
     read write and ["wrong identifier" lexicalError] when
 
-    nameSymbols.getSize 0 = [
+    nameSymbols.size 0 = [
       read [
         label ["@" makeLabel FALSE]["@" makeNameNode addToLastUnfinished TRUE] if
       ] [
@@ -1148,7 +1148,7 @@ parseNode: [
                       addToLastUnfinished
                     ] [
                       currentCode ascii.null = [
-                        unfinishedNodes.getSize 1 = ~ [
+                        unfinishedNodes.size 1 = ~ [
                           "unexpected end of the file!" makeStringView lexicalError
                         ] when
                         0 @unfinishedNodes.at addToMainResult @mainResult.@root set
@@ -1196,7 +1196,7 @@ parseNode: [
       success: parseIdentifier;
     ] if
 
-    unfinishedNodes.getSize 0 > [mainResult.success new] &&
+    unfinishedNodes.size 0 > [mainResult.success new] &&
   ] loop
 ];
 

@@ -69,7 +69,7 @@ debugMemory [
   fromCmd: fileName: fileText: processor:;;;;
   newFile: File;
 
-  fileId: processor.files.getSize;
+  fileId: processor.files.size;
   fileName toString @newFile.@name set
   fromCmd           @newFile.@usedInParams set
   fileId            @newFile.@fileId set
@@ -175,7 +175,7 @@ debugMemory [
       file !lastFile
       astArrayIndex: n 1 - processor.multiParserResult.roots.at;
 
-      processor.result.globalErrorInfo.getSize @cachedGlobalErrorInfoSize set
+      processor.result.globalErrorInfo.size @cachedGlobalErrorInfoSize set
 
       compilerPositionInfo: CompilerPositionInfo;
 
@@ -253,7 +253,7 @@ debugMemory [
       @processor.@result.@errorInfo @processor.@result.@globalErrorInfo.append
     ] when
 
-    processor.result.globalErrorInfo.getSize 0 > [
+    processor.result.globalErrorInfo.size 0 > [
       FALSE @processor.@result.@success set
     ] when
 
@@ -264,7 +264,7 @@ debugMemory [
 
       0 @processor.@result clearProcessorResult
 
-      dependedFiles.getSize 0 > [
+      dependedFiles.size 0 > [
         hasError: FALSE dynamic;
         hasErrorMessage: FALSE dynamic;
         dependedFiles [
@@ -303,7 +303,7 @@ debugMemory [
   ] when
 
   ("all nodes generated" makeStringView) addLog
-  [processor compilable ~ [processor.recursiveNodesStack.getSize 0 =] ||] "Recursive stack is not empty!" assert
+  [processor compilable ~ [processor.recursiveNodesStack.size 0 =] ||] "Recursive stack is not empty!" assert
 
   getTreeSize: [
     result: 0nx dynamic;
@@ -323,7 +323,7 @@ debugMemory [
 
   processor.result.success [
     ("nameCount=" processor.nameManager.names.size
-      "; irNameCount=" processor.nameBuffer.size "; block count=" processor.blocks.getSize "; block size=" BlockSchema storageSize "; est var count=" processor.variables.getSize 4096 * "; var size=" VarSchema storageSize "; tree size=" getTreeSize) addLog
+      "; irNameCount=" processor.nameBuffer.size "; block count=" processor.blocks.size "; block size=" BlockSchema storageSize "; est var count=" processor.variables.size 4096 * "; var size=" VarSchema storageSize "; tree size=" getTreeSize) addLog
 
     ("max depth of recursion=" processor.maxDepthOfRecursion) addLog
 
@@ -529,18 +529,18 @@ debugMemory [
     ] each
   ] [
     ("nameCount=" processor.nameManager.names.size
-      "; irNameCount=" processor.nameBuffer.size "; block count=" processor.blocks.getSize "; block size=" BlockSchema storageSize "; est var count=" processor.variables.getSize 4096 * "; var size=" VarSchema storageSize "; tree size=" getTreeSize) addLog
+      "; irNameCount=" processor.nameBuffer.size "; block count=" processor.blocks.size "; block size=" BlockSchema storageSize "; est var count=" processor.variables.size 4096 * "; var size=" VarSchema storageSize "; tree size=" getTreeSize) addLog
   ] if
 
   processor.result.success ~ [
-    processor.result.globalErrorInfo.getSize [
+    processor.result.globalErrorInfo.size [
       current: i processor.result.globalErrorInfo @;
       i 0 > [LF @result.cat] when
-      current.position.getSize 0 = [
+      current.position.size 0 = [
         ("error, "  current.message LF) [@result.cat] each
       ] [
         first: TRUE;
-        current.position.getSize [
+        current.position.size [
           nodePosition: i current.position @;
           processor.options.hidePrefixes [nodePosition.file.name swap beginsWith ~] all [
             (nodePosition.file.name "(" nodePosition.line  ","  nodePosition.column "): ") [@result.cat] each

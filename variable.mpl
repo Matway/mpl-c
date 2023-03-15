@@ -62,7 +62,7 @@ isStaticData: [
     refToVar @unfinished.append
     result: TRUE dynamic;
     [
-      result [unfinished.getSize 0 >] && [
+      result [unfinished.size 0 >] && [
         current: unfinished.last new;
         @unfinished.popBack
         current isVirtual [
@@ -272,7 +272,7 @@ makeStructStorageSize: [
   maxA: 1nx;
   j: 0;
   [
-    j struct.fields.dataSize < [
+    j struct.fields.size < [
       curField: j struct.fields.at;
       curField.refToVar isVirtual ~ [
         curS: curField.refToVar @processor getStorageSize;
@@ -296,7 +296,7 @@ makeStructAlignment: [
   struct: VarStruct @var.@data.get.get;
   j: 0;
   [
-    j struct.fields.dataSize < [
+    j struct.fields.size < [
       curField: j struct.fields.at;
       curField.refToVar isVirtual ~ [
         curA: curField.refToVar @processor getAlignment;
@@ -371,10 +371,10 @@ getFuncMplType: [
     "[" @result.cat
     i: 0;
     [
-      i args.getSize < [
+      i args.size < [
         current: i args.at;
         current @processor block getMplType @result.cat
-        i 1 + args.getSize < [
+        i 1 + args.size < [
           "," @result.cat
         ] when
         i 1 + @i set TRUE
@@ -402,10 +402,10 @@ getFuncDbgType: [
     "[" @result.cat
     i: 0;
     [
-      i args.getSize < [
+      i args.size < [
         current: i args.at;
         current @processor getDbgType @result.cat
-        i 1 + args.getSize < [
+        i 1 + args.size < [
           "," @result.cat
         ] when
         i 1 + @i set TRUE
@@ -465,7 +465,7 @@ makeDbgTypeId: [
     FALSE @branch.@hasDestructor set
 
     i: 0 dynamic;
-    branch.fields.dataSize [
+    branch.fields.size [
       field0: 0 branch.fields.at;
       fieldi: i branch.fields.at;
 
@@ -582,7 +582,7 @@ makeDbgTypeId: [
       branch: VarStruct @var.@data.get.get;
       branch.fullVirtual ~ [
         branch.homogeneous [
-          ("[" branch.fields.dataSize " x " 0 branch.fields.at.refToVar @processor getIrType "]") @resultIR.catMany
+          ("[" branch.fields.size " x " 0 branch.fields.at.refToVar @processor getIrType "]") @resultIR.catMany
         ] [
           "{" @resultIR.cat
           firstGood: TRUE;
@@ -645,7 +645,7 @@ makeDbgTypeId: [
         "{" @resultMPL.cat
         i: 0 dynamic;
         [
-          i branch.fields.dataSize < [
+          i branch.fields.size < [
             curField: i branch.fields.at;
             curField.refToVar getVar.data.getTag VarStruct = [curField.refToVar isVirtual ~] && [
               (
@@ -759,7 +759,7 @@ findFieldWithOverloadDepth: [
 
   var.data.getTag VarStruct = [
     struct: VarStruct var.data.get.get;
-    i: struct.fields.dataSize new dynamic;
+    i: struct.fields.size dynamic;
 
     [
       i 0 > [

@@ -65,7 +65,7 @@ createDefinition: [
   i: 0;
 
   [
-    i splittedOption.chars.getSize < [
+    i splittedOption.chars.size < [
       i splittedOption.chars.at "=" = [
         i @eqIndex set
         FALSE
@@ -102,18 +102,18 @@ parseIntegerOption: [
     ]
     [
       codepoints: splitResult.chars;
-      codepoints.getSize 0 = [
+      codepoints.size 0 = [
         "value is empty" toString @result.!error
       ] when
     ]
     [
       codepointIndex: 0;
-      [result.error "" = [codepointIndex codepoints.getSize <] &&] [
+      [result.error "" = [codepointIndex codepoints.size <] &&] [
         codepoint: codepointIndex codepoints @;
         asciiCode: codepoint.data Nat32 cast;
         asciiCode (
           [code:; asciiCode ascii.zero < [asciiCode ascii.nine >] ||] ["value has non-digit character" toString @result.!error]
-          [code:; code ascii.zero = [codepointIndex 0 =] && [codepoints.getSize 1 >] &&] ["value has leading zeros" toString @result.!error]
+          [code:; code ascii.zero = [codepointIndex 0 =] && [codepoints.size 1 >] &&] ["value has leading zeros" toString @result.!error]
           [
             digit: asciiCode ascii.zero - Int32 cast;
             result.value 10 * digit + @result.@value set
@@ -356,7 +356,7 @@ checkedSaveString: [
       FALSE @success set
     ] when
 
-    options.fileNames.getSize 2 = [
+    options.fileNames.size 2 = [
       hasVersion [
         DEBUG [
           ("MPL compiler version " COMPILER_SOURCE_VERSION " debug" LF) printList
@@ -408,7 +408,7 @@ checkedSaveString: [
           "Input files ignored" print LF print
         ] [
           options.fileNames.size @options.@fileTexts.resize
-          options.fileNames.getSize [
+          options.fileNames.size [
             fileName: i options.fileNames @;
 
             i 0 = [

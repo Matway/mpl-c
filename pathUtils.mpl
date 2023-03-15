@@ -16,7 +16,7 @@ extractClearPath: [
     splittedPath.success [
       lastPosition: -1;
 
-      splittedPath.chars.getSize [
+      splittedPath.chars.size [
         i splittedPath.chars.at "\\" = i splittedPath.chars.at "/" = or [
           i @lastPosition set
         ] when
@@ -37,7 +37,7 @@ simplifyPath: [
       resultPath: String;
       resultFileName: String;
 
-      splittedPath.chars.dataSize 0 > [
+      splittedPath.chars.size 0 > [
         position: 0 dynamic;
         fragments: String Array;
         String @fragments.append
@@ -55,8 +55,8 @@ simplifyPath: [
               lastFragment isCurrent [ @fragments.popBack ] when
 
               lastFragment isBack
-              [fragments.getSize 1 >] &&
-              [fragments.getSize 2 - @fragments.at isBack ~] && [
+              [fragments.size 1 >] &&
+              [fragments.size 2 - @fragments.at isBack ~] && [
                 @fragments.popBack
                 @fragments.popBack
               ] when
@@ -68,8 +68,8 @@ simplifyPath: [
           ] if
         ] each
 
-        fragments.getSize [
-          i 1 + fragments.dataSize < [
+        fragments.size [
+          i 1 + fragments.size < [
             i 0 > ["/" @resultPath.cat] when
             i fragments.at @resultPath.cat
           ] [

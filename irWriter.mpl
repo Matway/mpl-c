@@ -41,7 +41,7 @@ getStaticStructIR: [
   refToVar @unfinishedVars.append
   ", " makeStringView @unfinishedTerminators.append
   [
-    unfinishedVars.getSize 0 > [
+    unfinishedVars.size 0 > [
       current: unfinishedVars.last new;
       @unfinishedVars.popBack
 
@@ -63,8 +63,8 @@ getStaticStructIR: [
             struct: VarStruct curVar.data.get.get;
             struct.homogeneous ["[" makeStringView] ["{" makeStringView] if @result.cat
             first: TRUE dynamic;
-            struct.fields.getSize [
-              current: struct.fields.getSize 1 - i - struct.fields.at.refToVar;
+            struct.fields.size [
+              current: struct.fields.size 1 - i - struct.fields.at.refToVar;
               current isVirtual ~ [
                 current @unfinishedVars.append
                 first [
@@ -271,7 +271,7 @@ createDynamicGEP: [
   struct: structRefToVar getVar;
   indexRegister: indexRefToVar @processor @block createDerefToRegister;
   processor.options.arrayChecks [
-    structSize: VarStruct struct.data.get.get.fields.getSize; #in homogenius struct it is = realFieldIndex
+    structSize: VarStruct struct.data.get.get.fields.size; #in homogenius struct it is = realFieldIndex
     checkRegister: @processor @block generateRegisterIRName;
 
     ("  " checkRegister @processor getNameById " = icmp ult i32 " indexRegister @processor getNameById ", " structSize) @block appendInstruction
@@ -602,7 +602,7 @@ getLLPriority: [
 createCheckers: [
   processor:;
 
-  processor.files.getSize [
+  processor.files.size [
     i 1 > [
       currentFile:  i processor.files.at.get;
       currentName: currentFile.name stripExtension nameWithoutBadSymbols;
@@ -629,7 +629,7 @@ createDtors: [
   processor:;
   dtorByFile: Int32 Array Array;
 
-  processor.files.getSize @dtorByFile.resize
+  processor.files.size @dtorByFile.resize
 
   processor.dtorFunctions [
     blockId:;
@@ -640,7 +640,7 @@ createDtors: [
     ] when
   ] each
 
-  processor.files.getSize [
+  processor.files.size [
     i 1 > [
       currentFile: i processor.files.at.get;
       currentName: currentFile.name stripExtension nameWithoutBadSymbols;
@@ -672,7 +672,7 @@ addCtorsToBeginFunc: [
 
     block.beginPosition @processor.@positions.append
 
-    processor.moduleFunctions.getSize [
+    processor.moduleFunctions.size [
       i 0 > [ # skip definitions
         currentFunction: i processor.moduleFunctions.at processor.blocks.at.get;
 
@@ -686,7 +686,7 @@ addCtorsToBeginFunc: [
       ] when
     ] times
 
-    previousVersion.getSize [
+    previousVersion.size [
       i 0 >  [
         current: i @previousVersion.at;
         @current @block.@program.append
@@ -709,16 +709,16 @@ addDtorsToEndFunc: [
 
     block.beginPosition @processor.@positions.append
 
-    previousVersion.getSize [
+    previousVersion.size [
       i block.instructionCountBeforeRet < [
         current: i @previousVersion.at;
         @current @block.@program.append
       ] when
     ] times
 
-    processor.moduleFunctions.getSize [
+    processor.moduleFunctions.size [
       i 0 > [ # skip definitions
-        currentFunction: processor.moduleFunctions.getSize i - processor.moduleFunctions.at processor.blocks.at.get;
+        currentFunction: processor.moduleFunctions.size i - processor.moduleFunctions.at processor.blocks.at.get;
 
         currentFile: currentFunction.file;
         currentName: currentFile.name stripExtension nameWithoutBadSymbols;
@@ -730,7 +730,7 @@ addDtorsToEndFunc: [
       ] when
     ] times
 
-    previousVersion.getSize block.instructionCountBeforeRet - [
+    previousVersion.size block.instructionCountBeforeRet - [
       current: i block.instructionCountBeforeRet + @previousVersion.at;
       @current @block.@program.append
     ] times
@@ -748,7 +748,7 @@ sortInstructions: [
 
   bannedIds: Int32 Array;
 
-  block.program.getSize [
+  block.program.size [
     current: i @block.@program.at;
     current.fakeAlloca [
       current.irName1 @bannedIds.append
@@ -757,11 +757,11 @@ sortInstructions: [
   ] times
 
   [
-    bannedIds.getSize 0 > [
+    bannedIds.size 0 > [
       bannedId: bannedIds.last new;
       @bannedIds.popBack
 
-      block.program.getSize [
+      block.program.size [
         current: i @block.@program.at;
         current.enabled [
           current.irName1 bannedId = [
@@ -782,7 +782,7 @@ sortInstructions: [
     ] &&
   ] loop
 
-  block.program.getSize [
+  block.program.size [
     current: i @block.@program.at;
     i 0 = [current.alloca new] || [
       current.fakePointer [

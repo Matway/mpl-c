@@ -322,7 +322,7 @@ getVirtualValue: [
       "{" @result.cat
       struct: VarStruct var.data.get.get;
 
-      struct.fields.getSize [
+      struct.fields.size [
         i 0 > ["," @result.cat] when
         i struct.fields.at .refToVar isVirtual ~ [
           i struct.fields.at .refToVar getVirtualValue @result.cat
@@ -579,7 +579,7 @@ makeStringId: [
 makeDefaultVarId: [
   varId: processor: ;;
 
-  [varId processor.defaultVarNames.getSize < ~] [
+  [varId processor.defaultVarNames.size < ~] [
     -1 @processor.@defaultVarNames.append
   ] while
 

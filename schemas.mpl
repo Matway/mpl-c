@@ -25,13 +25,13 @@ makeVariableSchema: [
       functionId: VarImport var.data.get;
       node: functionId processor.blocks.at.get;
       signature: node.csignature;
-      signature.inputs.getSize @functionSchema.@inputSchemaIds.resize
-      signature.inputs.getSize [
+      signature.inputs.size @functionSchema.@inputSchemaIds.resize
+      signature.inputs.size [
         i signature.inputs.at getVar.mplSchemaId i @functionSchema.@inputSchemaIds.at set
       ] times
 
-      signature.outputs.getSize @functionSchema.@outputSchemaIds.resize
-      signature.outputs.getSize [
+      signature.outputs.size @functionSchema.@outputSchemaIds.resize
+      signature.outputs.size [
         i signature.outputs.at getVar.mplSchemaId i @functionSchema.@outputSchemaIds.at set
       ] times
 
@@ -50,8 +50,8 @@ makeVariableSchema: [
       VariableSchemaTags.STRUCT_SCHEMA @varSchema.@data.setTag
       structSchema: VariableSchemaTags.STRUCT_SCHEMA @varSchema.@data.get;
       struct: VarStruct var.data.get.get;
-      struct.fields.getSize @structSchema.@data.resize
-      struct.fields.getSize [
+      struct.fields.size @structSchema.@data.resize
+      struct.fields.size [
         field: i struct.fields.at;
         fieldSchema: FieldSchema;
         field.refToVar getVar.mplSchemaId @fieldSchema.@valueSchemaId set
@@ -84,7 +84,7 @@ getVariableSchemaId: [
   findResult.success [
     findResult.value new
   ] [
-    schemaId: processor.schemaBuffer.getSize;
+    schemaId: processor.schemaBuffer.size;
     varSchema schemaId @processor.@schemaTable.insert
     @varSchema @processor.@schemaBuffer.append
     schemaId new

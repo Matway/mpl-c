@@ -70,7 +70,7 @@ optimizeNames: [
 concatParserResult: [
   mresult:;
   current:;
-  shift: mresult.memory.getSize;
+  shift: mresult.memory.size;
 
   adjustArray: [
     astArrayIndex:;

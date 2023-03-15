@@ -275,8 +275,8 @@ getStackDepth: [
 } () {} [
   processor: block: ;;
 
-  processor.positions.getSize [
-    currentPosition: processor.positions.getSize 1 - i - processor.positions.at;
+  processor.positions.size [
+    currentPosition: processor.positions.size 1 - i - processor.positions.at;
 
     processor.options.hidePrefixes [currentPosition.file.name swap beginsWith ~] all [
       (
@@ -341,7 +341,7 @@ printAstArrayTree: [
 
   ("Print astArrayTree for " astArrayIndex LF) printList
   matchingMode: astArrayIndex processor.matchingNodes.at.get;
-  matchingMode.treeMemory.getSize [
+  matchingMode.treeMemory.size [
     entry: i matchingMode.treeMemory.at;
     (i "  nodeIndexes: ") printList
     entry.nodeIndexes [v:; (v " ") printList] each
@@ -770,7 +770,7 @@ addShadowEvent: [
         event: machingMemoryNode:;;
 
         matchingNodePair: MatchingNodePair;
-        result: matchingNode.treeMemory.getSize;
+        result: matchingNode.treeMemory.size;
 
         eventHash @matchingNodePair.@eventHash set
         result    @matchingNodePair.@childIndex set

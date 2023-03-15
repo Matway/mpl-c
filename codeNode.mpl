@@ -461,7 +461,7 @@ getFieldWith: [
   [var.data.getTag VarStruct =] "Not a combined!" assert
   structInfo: VarStruct @var.@data.get.get;
 
-  mplFieldIndex 0 < ~ [mplFieldIndex structInfo.fields.getSize <] && [
+  mplFieldIndex 0 < ~ [mplFieldIndex structInfo.fields.size <] && [
     fieldRefToVar: mplFieldIndex @structInfo.@fields.at.@refToVar;
     fieldVar: @fieldRefToVar getVar;
     fieldVar.data.getTag VarStruct = [
@@ -959,7 +959,7 @@ checkPossibleUnstables: [
   nameInfo: processor: block: ;;;
 
   block.parent 0 = [
-    nameInfo processor.possibleUnstables.getSize < [
+    nameInfo processor.possibleUnstables.size < [
       current: nameInfo @processor.@possibleUnstables.at;
       current [
         blockId:;
@@ -1126,8 +1126,8 @@ processListNode: [
 
     processor.depthOfPre 0 = [processor.result.passErrorThroughPRE new] || [
       message toString @processor.@result.@errorInfo.@message set
-      processor.positions.getSize [
-        currentPosition: processor.positions.getSize 1 - i - processor.positions.at;
+      processor.positions.size [
+        currentPosition: processor.positions.size 1 - i - processor.positions.at;
         currentPosition @processor.@result.@errorInfo.@position.append
       ] times
     ] when
@@ -1164,9 +1164,9 @@ catPossibleModulesList: [
   message: nameInfo: processor: ;;;
 
   possibleModuleNames: nameInfo processor findPossibleModules;
-  possibleModuleNames.getSize 0 > [
+  possibleModuleNames.size 0 > [
     "; try use name from modules: " @message.cat
-    possibleModuleNames.getSize [
+    possibleModuleNames.size [
       i 0 > [", " @message.cat] when
       i possibleModuleNames.at @message.cat
     ] times
@@ -1278,9 +1278,9 @@ nameResultIsStable: [
 addStableName: [
   refToVar: nameInfo: nameOverloadDepth: file: processor: block: ;;;;;;
 
-  nameInfo processor.captureTable.stableNames.getSize < ~ [nameInfo 1 + @processor.@captureTable.@stableNames.resize] when
+  nameInfo processor.captureTable.stableNames.size < ~ [nameInfo 1 + @processor.@captureTable.@stableNames.resize] when
   current: nameInfo @processor.@captureTable.@stableNames.at;
-  current.getSize 0 = [current.last block.id = ~] || [
+  current.size 0 = [current.last block.id = ~] || [
     block.id @current.append
     nameInfo @block.@stableNames.append
 
@@ -1301,13 +1301,13 @@ addStableName: [
 addToPossibleUnstables: [
   nameInfo: processor: block: ;;;
 
-  nameInfo processor.possibleUnstables.getSize < ~ [nameInfo 1 + @processor.@possibleUnstables.resize] when
+  nameInfo processor.possibleUnstables.size < ~ [nameInfo 1 + @processor.@possibleUnstables.resize] when
   block.id nameInfo @processor.@possibleUnstables.at.append
 ];
 
 captureFileToBlock: [
   fileId: block: ;;
-  [fileId block.capturedFiles.getSize < ~] [
+  [fileId block.capturedFiles.size < ~] [
     FALSE @block.@capturedFiles.append
   ] while
 
@@ -1405,7 +1405,7 @@ captureName: [
                 varForFake @fakePointer @processor @block createRefOperation
                 nameInfo fakePointer @processor @block addVariableMetadata
                 3 [
-                  TRUE block.program.getSize 1 - i - @block.@program.at.@fakePointer set
+                  TRUE block.program.size 1 - i - @block.@program.at.@fakePointer set
                 ] times
                 @processor @block addDebugLocationForLastInstruction
               ] when
@@ -2319,7 +2319,7 @@ processReal64Node: [makeVarReal64 @block push];
 addBlock: [
   processor:;
   Block owner @processor.@blocks.append
-  processor.blocks.getSize 1 - @processor.@blocks.last.get.!id
+  processor.blocks.size 1 - @processor.@blocks.last.get.!id
 ];
 
 {
@@ -2993,7 +2993,7 @@ addMatchingNode: [
   ] if
 
   matchingNode: astArrayIndex @processor.@matchingNodes.at.get;
-  matchingNode.treeMemory.getSize 0 = [
+  matchingNode.treeMemory.size 0 = [
     MatchingNodeEntry @matchingNode.@treeMemory.append
   ] when
 
@@ -3010,8 +3010,8 @@ createGlobalAliases: [
     pair:;
 
     nameInfo: pair.key;
-    pair.value.getSize [
-      index: pair.value.getSize 1 - i -;
+    pair.value.size [
+      index: pair.value.size 1 - i -;
       refToVar: i @pair.@value.at;
       refToVar isVirtual ~ [
         var: @refToVar getVar;
@@ -3050,7 +3050,7 @@ deleteNode: [
 ];
 
 clearRecursionStack: [
-  processor.recursiveNodesStack.getSize 0 > [processor.recursiveNodesStack.last block.id =] && [
+  processor.recursiveNodesStack.size 0 > [processor.recursiveNodesStack.last block.id =] && [
     @processor.@recursiveNodesStack.popBack
   ] when
 ];
@@ -3111,7 +3111,7 @@ checkRecursionOfCodeNode: [
 
   removePrevNodes: [
     #go back from end of   nodes to current node, delete "hasOutput" and "noOutput" nodes
-    i: processor.blocks.getSize 1 -;
+    i: processor.blocks.size 1 -;
     processed: FALSE dynamic;
     [
       i 0 < ~ [
@@ -3140,7 +3140,7 @@ checkRecursionOfCodeNode: [
   ];
 
   approvePrevNodes: [
-    [processor.recursiveNodesStack.getSize 0 >] "recursiveNodesStack is empty!" assert
+    [processor.recursiveNodesStack.size 0 >] "recursiveNodesStack is empty!" assert
     [
       processor.recursiveNodesStack.last block.id = [
         ("processor.recursiveNodesStack.last=" processor.recursiveNodesStack.last "; but block.id=" block.id) addLog
@@ -3149,7 +3149,7 @@ checkRecursionOfCodeNode: [
     ] "Processor.recursionStack mismatch!" assert
     @processor.@recursiveNodesStack.popBack
     #go back from end of   nodes to current node, mark "hasOutput" nodes as "Compiled"; "noOutput" nodes - logic error, assert
-    i: processor.blocks.getSize 1 -;
+    i: processor.blocks.size 1 -;
     processed: FALSE dynamic;
     [
       i 0  < ~ [
@@ -3201,7 +3201,7 @@ checkRecursionOfCodeNode: [
 
           #compare shadow events
           result [
-            block.matchingInfo.shadowEvents.getSize block.buildingMatchingInfo.shadowEvents.getSize = ~ [
+            block.matchingInfo.shadowEvents.size block.buildingMatchingInfo.shadowEvents.size = ~ [
               FALSE @result set
             ] when
           ] when
@@ -3399,7 +3399,7 @@ makeCompilerPosition: [
   ];
 
   backPassEvents: [
-    block.dependentPointers.getSize [
+    block.dependentPointers.size [
       current: block.dependentPointers.size 1 - i - @block.@dependentPointers.at;
       dependent: 1 @current @ getVar;
 
@@ -3526,7 +3526,7 @@ makeCompilerPosition: [
   String @block.@signature set
 
   inputCountMismatch: [
-    ("In signature there are " forcedSignature.inputs.getSize " inputs, but really here " validInputCount " inputs") assembleString @processor block compilerError
+    ("In signature there are " forcedSignature.inputs.size " inputs, but really here " validInputCount " inputs") assembleString @processor block compilerError
   ];
 
   block.buildingMatchingInfo.maxInputCount @block.@buildingMatchingInfo.@inputs.shrink
@@ -3534,7 +3534,7 @@ makeCompilerPosition: [
 
   hasForcedSignature [
     forcedSignature @block.@csignature set
-    validInputCount forcedSignature.inputs.getSize = ~ [
+    validInputCount forcedSignature.inputs.size = ~ [
       inputCountMismatch
     ] when
   ] when
@@ -3646,7 +3646,7 @@ makeCompilerPosition: [
     ] loop
   ] when
 
-  invalidOutputCount: block.matchingInfo.inputs.getSize block.matchingInfo.maxInputCount -;
+  invalidOutputCount: block.matchingInfo.inputs.size block.matchingInfo.maxInputCount -;
 
   block.parent 0 =
   [block.stack.size invalidOutputCount >] && [
@@ -3815,7 +3815,7 @@ makeCompilerPosition: [
 
   block.variadic [
     isDeclaration [
-      block.buildingMatchingInfo.inputs.getSize 0 = [
+      block.buildingMatchingInfo.inputs.size 0 = [
         "..." @signature.cat
         "..." @argumentList.cat
       ] [
