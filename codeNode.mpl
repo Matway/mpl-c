@@ -1933,7 +1933,9 @@ checkVarForGlobalsFromAnotherFile: [
 
   srcVar.mplSchemaId @dstVar.@mplSchemaId set
 
-  srcVar.private new @dstVar.!private
+  toNew ~ [
+    srcVar.private new @dstVar.!private
+  ] when
 ] "copyOneVarWithImpl" exportFunction
 
 {
