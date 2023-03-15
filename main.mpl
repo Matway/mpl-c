@@ -79,8 +79,8 @@ createDefinition: [
   eqIndex 0 < [
     (splittedOption.chars assembleString ": ();" LF) assembleString @definitions.cat
   ] [
-    name: 0 eqIndex splittedOption.chars makeSubRange assembleString;
-    value: eqIndex 1 + splittedOption.chars.getSize splittedOption.chars makeSubRange assembleString;
+    name: splittedOption.chars eqIndex head assembleString;
+    value: splittedOption.chars eqIndex 1 + unhead assembleString;
     (name makeStringView ": [" value makeStringView " static];" LF) assembleString @definitions.cat
   ] if
 ];

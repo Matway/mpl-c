@@ -636,7 +636,7 @@ parseDecNumber: [
     p mainResult.success and
   ] loop
 
-  token: tokenBegin tokenEnd splittedString.chars makeSubRange assembleString;
+  token: splittedString.chars tokenBegin tokenEnd range assembleString;
 
   afterT.getSize 2 > [ "error in number constant" lexicalError ] when
 
@@ -786,7 +786,7 @@ parseHexNumber: [
     p mainResult.success and
   ] loop
 
-  token: tokenBegin tokenEnd splittedString.chars makeSubRange assembleString;
+  token: splittedString.chars tokenBegin tokenEnd range assembleString;
   afterT.getSize 2 > [ "error in number constant" lexicalError ] when
 
   typeName: 0 dynamic;

@@ -14,7 +14,6 @@ extractClearPath: [
   splittedPath: splitString;
   [
     splittedPath.success [
-      position: 0;
       lastPosition: -1;
 
       splittedPath.chars.getSize [
@@ -23,7 +22,7 @@ extractClearPath: [
         ] when
       ] times
 
-      position lastPosition 1 + splittedPath.chars makeSubRange assembleString
+      splittedPath.chars lastPosition 1 + head assembleString
     ] [
       String
     ] if
