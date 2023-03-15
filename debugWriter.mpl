@@ -244,6 +244,7 @@ getDbgSchemaNameType: [
   refToVar: processor: ;;
   var: refToVar getVar;
   resultDBG: String;
+  hasSchemaName: FALSE;
   var.data.getTag VarStruct = [
     mplStruct: VarStruct var.data.get.get;
     mplStruct.fields [
@@ -257,6 +258,8 @@ getDbgSchemaNameType: [
               VarString fieldDerefVar.data.get @resultDBG set
             ] when
           ] when
+
+          TRUE !hasSchemaName
         ] when
       ] when
     ] each
@@ -270,29 +273,34 @@ getDbgSchemaNameType: [
     ] when
   ] when
 
-  resultDBG
+  resultDBG hasSchemaName
 ];
 
 getDebugType: [
   refToVar: processor: block:;;;
-  dbgType: refToVar @processor getDbgType;
-  splitted: dbgType splitString;
-  splitted.success [
-    splitted.chars.getSize 1024 > [
-      1024 @splitted.@chars.shrink
-      "..." makeStringView @splitted.@chars.append
+  result: hasSchemaName: refToVar @processor getDbgSchemaNameType;;
+  hasSchemaName ~ [
+    result.size 0 = ~ [
+      "." @result.cat
     ] when
-  ] [
-    ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString @processor block compilerError
-  ] if
 
-  schemaName: refToVar @processor getDbgSchemaNameType;
-  result: schemaName "" = [
-    (refToVar getVar.mplSchemaId ".") assembleString
-  ] [
-    (schemaName "." refToVar getVar.mplSchemaId ".") assembleString
-  ] if;
-  splitted.chars @result.catMany
+    refToVar getVar.mplSchemaId new @result.cat
+    "." @result.cat
+
+    dbgType: refToVar @processor getDbgType;
+    splitted: dbgType splitString;
+    splitted.success [
+      splitted.chars.getSize 1024 > [
+        1024 @splitted.@chars.shrink
+        "..." makeStringView @splitted.@chars.append
+      ] when
+    ] [
+      ("Wrong dbgType name encoding" splitted.chars assembleString) assembleString @processor block compilerError
+    ] if
+
+    splitted.chars @result.catMany
+  ] when
+
   @result
 ];
 
