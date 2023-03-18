@@ -310,10 +310,10 @@ debugMemory [
     processor.matchingNodes [
       current:;
       current.valid? [
-        current.get.treeMemory.dataReserve Natx cast current.get.treeMemory.elementType storageSize * result + !result
+        current.get.treeMemory.@Item storageSize current.get.treeMemory.reserve Natx cast * result + !result
         current.get.treeMemory [
           current:;
-          current.childIndices.dataReserve Natx cast current.childIndices.elementType storageSize * result + !result
+          current.childIndices.@Item storageSize current.childIndices.reserve Natx cast * result + !result
         ] each
       ] when
     ] each
