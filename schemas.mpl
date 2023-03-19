@@ -67,7 +67,7 @@ makeVariableSchema: [
   ) case
 
   refToVar isVirtual [
-    schemaId: varSchema @processor getVariableSchemaId;
+    schemaId: @varSchema @processor getVariableSchemaId;
     VariableSchemaTags.VIRTUAL_VALUE_SCHEMA @varSchema.@data.setTag
     virtualValueSchema: VariableSchemaTags.VIRTUAL_VALUE_SCHEMA @varSchema.@data.get;
     schemaId new @virtualValueSchema.!schemaId

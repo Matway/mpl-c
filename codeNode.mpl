@@ -2623,10 +2623,17 @@ argRecommendedToCopy: [
             f: 0 dynamic;
             [
               f structSrc.fields.size < [
-                srcField: f @curSrc @processor @block processStaticAt;
-                srcField @unfinishedSrc.append
-                f @curDst @processor @block processStaticAt @unfinishedDst.append
-                f 1 + @f set TRUE
+                fieldRef: f structSrc.fields.at.refToVar;
+                fieldRef.mutable [fieldRef isVirtual ~ [fieldRef.var.data.getTag VarRef =] &&] && [
+                  "Unable to copy a mutable reference" @processor block compilerError
+                  FALSE
+                ] [
+                  srcField: f @curSrc @processor @block processStaticAt;
+                  srcField @unfinishedSrc.append
+                  f @curDst @processor @block processStaticAt @unfinishedDst.append
+                  f 1 + !f
+                  TRUE
+                ] if
               ] &&
             ] loop
           ] if
