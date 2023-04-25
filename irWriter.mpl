@@ -130,7 +130,7 @@ createAllocIR: [
   block.parent 0 = [
     processor.options.partial new [
       varBlock: block;
-      [varBlock.file isNil ~] "Topnode in nil file!" assert
+      [varBlock.file nil? ~] "Topnode in nil file!" assert
       varBlock.file.usedInParams ~
     ] && [
       "; global var from another file" toString @processor.@prolog.append
@@ -155,7 +155,7 @@ createStaticInitIR: [
 
   processor.options.partial new [
     varBlock: block;
-    [varBlock.file isNil ~] "Topnode in nil file!" assert
+    [varBlock.file nil? ~] "Topnode in nil file!" assert
     varBlock.file.usedInParams ~
   ] && [
     "; global var from another file" toString @processor.@prolog.append
@@ -483,7 +483,7 @@ createRetValue: [
 
 createCallIR: [
   refToRet: argList: conventionName: funcName: hasCallTrace: processor: block: ;;;;;;;
-  haveRet: refToRet.var isNil ~;
+  haveRet: refToRet.var nil? ~;
   retName: 0;
 
   processor.options.hidePrefixes [processor.positions.last.file.name swap beginsWith ~] all [

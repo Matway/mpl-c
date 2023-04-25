@@ -341,7 +341,7 @@ tryMatchNode: [
 
   labmdaMismatch: currentMatchingNode.hasEmptyLambdas [
     topNode: block.topNode;
-    [topNode.file isNil ~] "Topnode in nil file!" assert
+    [topNode.file nil? ~] "Topnode in nil file!" assert
     topNode.file.usedInParams new
   ] &&;
 
@@ -493,7 +493,7 @@ tryMatchNode: [
 
             processor.options.partial ~ [
               topNode: block.topNode;
-              [topNode.file isNil ~] "Topnode in nil file!" assert
+              [topNode.file nil? ~] "Topnode in nil file!" assert
               topNode.file.usedInParams new
             ] || @branch set
           ]
@@ -1250,7 +1250,7 @@ makeCallInstructionWith: [
     convName: newNode.convention;
     retName: argRet argList convName funcName hasCallTrace [newNode.hasCallTrace new] || @processor @block createCallIR;
 
-    argRet.var isNil ~ [
+    argRet.var nil? ~ [
       @retName argRet @processor @block createStoreFromRegister
     ] when
   ] when
@@ -2197,7 +2197,7 @@ processDynamicLoop: [
 
   processor.options.partial ~ [
     topNode: block.topNode;
-    [topNode.file isNil ~] "Topnode in nil file!" assert
+    [topNode.file nil? ~] "Topnode in nil file!" assert
     topNode.file.usedInParams new
   ] || [
     ("process export: " makeStringView name makeStringView) addLog

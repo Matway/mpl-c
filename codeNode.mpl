@@ -1050,7 +1050,7 @@ createNamedVariable: [
       newRefToVar isGlobal [
         processor.options.partial new [
           varBlock: block;
-          [varBlock.file isNil ~] "Topnode in nil file!" assert
+          [varBlock.file nil? ~] "Topnode in nil file!" assert
           varBlock.file.usedInParams ~
         ] && [
           #do not create dbg info
@@ -1766,12 +1766,12 @@ checkVarForGlobalsFromAnotherFile: [
   processor.options.partial [
     refToVar isVirtual ~ [
       topNode: block.topNode;
-      [topNode isNil ~] "Topnode is nil!" assert
-      [topNode.file isNil ~] "Topnode in nil file!" assert
+      [topNode nil? ~] "Topnode is nil!" assert
+      [topNode.file nil? ~] "Topnode in nil file!" assert
       topNode.file.usedInParams ~ [
         var: refToVar getVar;
         varBlock: var.host;
-        varBlock.file isNil ~ [
+        varBlock.file nil? ~ [
           varBlock.file.usedInParams ~ [
             TRUE @block.!empty
             @block setBlockEmptyLambdas
@@ -2443,7 +2443,7 @@ addLambdaEvent: [
 
       processor.options.partial [
         topNode: block.topNode;
-        [topNode.file isNil ~] "Topnode in nil file!" assert
+        [topNode.file nil? ~] "Topnode in nil file!" assert
         topNode.file.usedInParams ~
       ] && [
         @block setBlockEmptyLambdas
@@ -3027,9 +3027,9 @@ createGlobalAliases: [
         oldIrNameId: var.irNameId new;
         ("@" block.file.name stripExtension nameWithoutBadSymbols "." nameInfo processor.nameManager.getText "." index) assembleString @processor makeStringId @var.@irNameId set
 
-        [block.file isNil ~] "createGlobalAliases in nil file!" assert
+        [block.file nil? ~] "createGlobalAliases in nil file!" assert
         processor.options.partial [
-          [block.file isNil ~] "Nil file in createGlobalAliases!" assert
+          [block.file nil? ~] "Nil file in createGlobalAliases!" assert
           block.file.usedInParams ~
         ] && [
           refToVar @processor @block createVarImportIR drop
@@ -3714,7 +3714,7 @@ makeCompilerPosition: [
   block.parent 0 = ~
   [processor.options.partial ~] ||
   [
-    [block.file isNil ~] "Block in nil file!" assert
+    [block.file nil? ~] "Block in nil file!" assert
     block.file.usedInParams new
   ] || [
     callDestructors
@@ -3875,7 +3875,7 @@ makeCompilerPosition: [
       event: i block.buildingMatchingInfo.shadowEvents.at;
 
       getFileName: [
-        file:; file isNil ["NIL" makeStringView] [file.name makeStringView] if
+        file:; file nil? ["NIL" makeStringView] [file.name makeStringView] if
       ];
 
       (
@@ -4306,7 +4306,7 @@ addIndexArrayToProcess: [
       [processor.options.partial new] &&
       [
         topNode: block.topNode;
-        [topNode.file isNil ~] "Topnode in nil file!" assert
+        [topNode.file nil? ~] "Topnode in nil file!" assert
         topNode.file.usedInParams ~
       ] &&
     ] ||

@@ -1086,7 +1086,7 @@ staticityOfBinResult: [
       ("@" name) assembleString @processor makeStringId @var.@irNameId set
 
       processor.options.partial [
-        [block.file isNil ~] "ExportVariable in nil file!" assert
+        [block.file nil? ~] "ExportVariable in nil file!" assert
         block.file.usedInParams ~
       ] && [
         @refToVar @processor @block createVarImportIR drop
