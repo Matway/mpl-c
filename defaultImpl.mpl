@@ -295,7 +295,7 @@ printShadowEvent: [
   event: index: building: processor: block: ;;;;;
 
   getFileName: [
-    file:; file isNil ["NIL" makeStringView] [file.name makeStringView] if
+    file:; file nil? ["NIL" makeStringView] [file.name makeStringView] if
   ];
 
   getTopologyIndex: [
@@ -544,7 +544,7 @@ sameEvents: [
         ] [
           getFileName: [
             file:;
-            file isNil ["NIL" makeStringView] [file.name makeStringView] if
+            file nil? ["NIL" makeStringView] [file.name makeStringView] if
           ];
 
           ("Capture events are different; "
@@ -805,7 +805,7 @@ addShadowEvent: [
               event: i block.buildingMatchingInfo.shadowEvents.at;
 
               getFileName: [
-                file:; file isNil ["NIL" makeStringView] [file.name makeStringView] if
+                file:; file nil? ["NIL" makeStringView] [file.name makeStringView] if
               ];
 
               (

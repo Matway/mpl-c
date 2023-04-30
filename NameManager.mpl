@@ -32,7 +32,7 @@ NameManager: [{
     item: nameId:;;
 
     current: nameId @names.at;
-    item.file isNil [current.overloadCount 1 + @current.!overloadCount] when
+    item.file nil? [current.overloadCount 1 + @current.!overloadCount] when
     item.isLocal [current.localCount 1 + @current.!localCount] when
     @item @current.@items.append
   ];
@@ -46,7 +46,7 @@ NameManager: [{
       index 1 - !index
       index -1 = [
         itemFile: index items.at.file;
-        itemFile isNil [file isNil] || [itemFile file is] ||
+        itemFile nil? [file nil?] || [itemFile file is] ||
       ] || ~
     ] loop
 
@@ -62,7 +62,7 @@ NameManager: [{
       index 1 - !index
       index -1 = [
         itemFile: index items.at.file;
-        file isNil [itemFile file is] ||
+        file nil? [itemFile file is] ||
       ] || ~
     ] loop
 
@@ -93,7 +93,7 @@ NameManager: [{
     nameId:;
 
     current: nameId @names.at;
-    current.items.last.file isNil [current.overloadCount 1 - @current.!overloadCount] when
+    current.items.last.file nil? [current.overloadCount 1 - @current.!overloadCount] when
     current.items.last.isLocal [current.localCount 1 - @current.!localCount] when
 
     @current.@items.popBack
