@@ -11,7 +11,7 @@ jobs:
       uses: actions/checkout@main
 
     - name: mplc
-      run: curl -Ls -o build/mplc.exe https://github.com/Matway/mpl-c/releases/latest/download/mplc.exe
+      run: curl -LSs -o build/mplc.exe https://github.com/Matway/mpl-c/releases/latest/download/mplc.exe
 
     - name: sl
       run: git clone --depth 1 --single-branch https://github.com/Matway/mpl-sl.git sl
