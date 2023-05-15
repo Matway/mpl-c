@@ -1,0 +1,28 @@
+name: Build Compiler
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: сheckout
+      uses: actions/checkout@main
+
+    - name: mplc
+      run: curl -LSs -o build/mplc.exe https://github.com/Matway/mpl-c/releases/latest/download/mplc.exe
+
+    - name: sl
+      run: git clone --depth 1 --single-branch https://github.com/Matway/mpl-sl.git sl
+
+    - name: build
+      run: cd build && ./build.bat
+
+    - name: artifacts
+      uses: actions/upload-artifact@main
+      with:
+        name: mplc
+        path: |
+          build/*.exe
+          build/*.ll
