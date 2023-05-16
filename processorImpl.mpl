@@ -340,13 +340,13 @@ debugMemory [
         where:;
 
         result: 0nx;
-        where.dataReserve Natx cast where.elementSize * result + !result
+        where.reserve Natx cast where.@Item storageSize * result + !result
         where [
           where1:;
-          where1.dataReserve Natx cast where1.elementSize * result + !result
+          where1.reserve Natx cast where1.@Item storageSize * result + !result
           where1 [
             where2:;
-            where2.dataReserve Natx cast where2.elementSize * result + !result
+            where2.reserve Natx cast where2.@Item storageSize * result + !result
           ] each
         ] each
 

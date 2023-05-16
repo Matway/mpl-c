@@ -78,11 +78,6 @@ makeVarDerefCaptured: [
   TRUE @refToVar getVar.@capturedForDeref set
 ];
 
-defaultFailProc: [
-  processor: block: ;;
-  text: @processor @block pop;
-];
-
 defaultSet: [
   processor: block: ;;
   refToDst: @processor @block pop;

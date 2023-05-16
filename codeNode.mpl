@@ -2726,7 +2726,7 @@ killStruct: [
 
   failProcRefToVar getVar.data.getTag VarBuiltin = [
     #no overload
-    @processor @block defaultFailProc
+    "The key doesn't known at compile-time. To use such keys either provide [failProc] or disable bounds check" @processor @block compilerError
   ] [
     @failProcRefToVar @processor @block derefAndPush
     @processor @block defaultCall

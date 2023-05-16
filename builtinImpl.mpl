@@ -1116,8 +1116,8 @@ staticityOfBinResult: [
   ) sequence
 ] "mplBuiltinExportVariable" @declareBuiltin ucall
 
-[
-  @processor @block defaultFailProc
+[ # See also "createFailWithMessageImpl"
+  "there is no [failProc] provided" @processor @block compilerError
 ] "mplBuiltinFailProc" @declareBuiltin ucall
 
 [
